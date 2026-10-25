@@ -1,0 +1,200 @@
+{
+  "scope": "Real account-native calls, with private identity and content omitted. A passed RPC alone does not prove an asynchronous capability completed.",
+  "records": [
+    {
+      "method": "initialize",
+      "status": "passed",
+      "resultKeys": [
+        "userAgent",
+        "codexHome",
+        "platformFamily",
+        "platformOs"
+      ],
+      "seconds": 0.08
+    },
+    {
+      "method": "account/read",
+      "status": "passed",
+      "resultKeys": [
+        "account",
+        "requiresOpenaiAuth",
+        "workspaceRouting"
+      ],
+      "seconds": 1.6
+    },
+    {
+      "method": "account/rateLimits/read",
+      "status": "passed",
+      "resultKeys": [
+        "ordinaryUsageAllowed",
+        "rateLimits",
+        "rateLimitsByLimitId",
+        "rateLimitResetCredits",
+        "accountId",
+        "rateLimitUpsell"
+      ],
+      "seconds": 1.57
+    },
+    {
+      "method": "account/usage/read",
+      "status": "passed",
+      "resultKeys": [
+        "summary",
+        "dailyUsageBuckets",
+        "threadUsage"
+      ],
+      "seconds": 1.97
+    },
+    {
+      "method": "account/workspaceMessages/read",
+      "status": "blocked",
+      "error": "workspace messages fetch timed out",
+      "seconds": 1.17
+    },
+    {
+      "method": "app/list",
+      "status": "blocked",
+      "error": "HTTP 403: Cloudflare requires browser verification on this service endpoint.",
+      "seconds": 1.86
+    },
+    {
+      "method": "app/installed",
+      "status": "passed",
+      "resultKeys": [
+        "apps"
+      ],
+      "seconds": 0.2
+    },
+    {
+      "method": "plugin/share/list",
+      "status": "passed",
+      "resultKeys": [
+        "data"
+      ],
+      "seconds": 1.57
+    },
+    {
+      "method": "remoteControl/enable",
+      "status": "passed",
+      "resultKeys": [
+        "status",
+        "serverName",
+        "installationId",
+        "environmentId"
+      ],
+      "seconds": 0.17
+    },
+    {
+      "method": "remoteControl/status/read",
+      "status": "passed",
+      "resultKeys": [
+        "status",
+        "serverName",
+        "installationId",
+        "environmentId"
+      ],
+      "seconds": 0.2
+    },
+    {
+      "method": "remoteControl/status/read",
+      "status": "passed",
+      "resultKeys": [
+        "status",
+        "serverName",
+        "installationId",
+        "environmentId"
+      ],
+      "seconds": 0.15
+    },
+    {
+      "method": "remoteControl/status/read",
+      "status": "passed",
+      "resultKeys": [
+        "status",
+        "serverName",
+        "installationId",
+        "environmentId"
+      ],
+      "seconds": 0.17
+    },
+    {
+      "method": "remoteControl/client/list",
+      "status": "passed",
+      "resultKeys": [
+        "data",
+        "nextCursor"
+      ],
+      "seconds": 1.56
+    },
+    {
+      "method": "remoteControl/pairing/start",
+      "status": "passed",
+      "resultKeys": [
+        "pairingCode",
+        "manualPairingCode",
+        "environmentId",
+        "expiresAt"
+      ],
+      "seconds": 1.68
+    },
+    {
+      "method": "remoteControl/pairing/status",
+      "status": "passed",
+      "resultKeys": [
+        "claimed"
+      ],
+      "seconds": 1.64
+    },
+    {
+      "method": "remoteControl/disable",
+      "status": "passed",
+      "resultKeys": [
+        "status",
+        "serverName",
+        "installationId",
+        "environmentId"
+      ],
+      "seconds": 0.25
+    },
+    {
+      "method": "thread/start",
+      "status": "passed",
+      "resultKeys": [
+        "thread",
+        "model",
+        "modelProvider",
+        "serviceTier",
+        "disabledPluginIds",
+        "cwd",
+        "runtimeWorkspaceRoots",
+        "instructionSources",
+        "approvalPolicy",
+        "approvalsReviewer",
+        "sandbox",
+        "activePermissionProfile",
+        "reasoningEffort",
+        "multiAgentMode"
+      ],
+      "seconds": 0.43
+    },
+    {
+      "method": "thread/realtime/start",
+      "status": "passed",
+      "resultKeys": [],
+      "seconds": 0.42
+    },
+    {
+      "feature": "chatgpt_realtime_connection",
+      "status": "blocked",
+      "errors": [
+        "realtime conversation requires API key auth"
+      ]
+    },
+    {
+      "method": "thread/realtime/stop",
+      "status": "passed",
+      "resultKeys": [],
+      "seconds": 0.16
+    }
+  ]
+}

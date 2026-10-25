@@ -1,62 +1,25 @@
-"""Opt-in real app-server integration: CODEX_WEB_TEST_URL=http://127.0.0.1:8765."""
-import base64
-import json
+"""Opt-in real browser integration: CODEX_WEB_TEST_URL=http://127.0.0.1:8765.
+
+Every functional request is initiated by the real protocol panel Execute button.
+"""
 import os
-import secrets
-import socket
-import struct
+from pathlib import Path
+import tempfile
 import unittest
-import urllib.request
-from urllib.parse import urlparse
+import uuid
+from browser_client import BrowserNativeClient
 
 
-class NativeClient:
-    def __init__(self,url):
-        parsed=urlparse(url)
-        with urllib.request.urlopen(url+'/')as response:self.cookie=response.headers['Set-Cookie'].split(';')[0]
-        self.socket=socket.create_connection((parsed.hostname,parsed.port),timeout=60)
-        self.reader=self.socket.makefile('rb')
-        key=base64.b64encode(secrets.token_bytes(16)).decode()
-        request=f'GET /ws/rpc HTTP/1.1\r\nHost: {parsed.netloc}\r\nOrigin: {url}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: {key}\r\nCookie: {self.cookie}\r\n\r\n'
-        self.socket.sendall(request.encode())
-        status=self.reader.readline();assert b'101' in status,status
-        while self.reader.readline()!=b'\r\n':pass
-        self.counter=0;self.events=[]
-
-    def send(self,message):
-        data=json.dumps(message).encode();mask=secrets.token_bytes(4)
-        header=b'\x81'+(bytes([128|len(data)])if len(data)<126 else b'\xfe'+struct.pack('!H',len(data)))
-        self.socket.sendall(header+mask+bytes(c^mask[i%4]for i,c in enumerate(data)))
-
-    def receive(self):
-        first=self.reader.read(2)
-        if len(first)!=2:raise EOFError()
-        n=first[1]&127
-        if n==126:n=struct.unpack('!H',self.reader.read(2))[0]
-        if n==127:n=struct.unpack('!Q',self.reader.read(8))[0]
-        data=self.reader.read(n)
-        if first[0]&15==8:raise EOFError()
-        return json.loads(data)
-
-    def rpc(self,method,params):
-        self.counter+=1;ident=self.counter;self.send({'id':ident,'method':method,'params':params})
-        while True:
-            response=self.receive()
-            if response.get('id')==ident and 'method'not in response:return response
-            self.events.append(response)
-
-    def close(self):
-        self.socket.shutdown(socket.SHUT_RDWR);self.reader.close();self.socket.close()
-
-
-@unittest.skipUnless(os.environ.get('CODEX_WEB_TEST_URL'),'Set CODEX_WEB_TEST_URL to test the real native runtime')
+@unittest.skipUnless(os.environ.get('CODEX_WEB_TEST_URL'),'Set CODEX_WEB_TEST_URL to test through the actual web page')
 class NativeIntegrationTests(unittest.TestCase):
     def setUp(self):
-        self.client=NativeClient(os.environ['CODEX_WEB_TEST_URL'])
-        result=self.client.rpc('initialize',{'clientInfo':{'name':'codex_web_test','version':'1.0'},'capabilities':{'experimentalApi':True}})
+        self.temp=tempfile.TemporaryDirectory(prefix='codex-browser-integration-')
+        self.client=BrowserNativeClient(os.environ['CODEX_WEB_TEST_URL'],Path(self.temp.name)/'requests.json')
+        result=self.client.rpc('initialize',{})
         self.assertIn('result',result);self.client.send({'method':'initialized'})
 
-    def tearDown(self):self.client.close()
+    def tearDown(self):
+        self.client.close();self.temp.cleanup()
 
     def test_native_model_catalog_and_ephemeral_thread(self):
         models=self.client.rpc('model/list',{})
@@ -67,7 +30,7 @@ class NativeIntegrationTests(unittest.TestCase):
     def test_native_filesystem_and_errors(self):
         response=self.client.rpc('fs/readDirectory',{'path':'/tmp'})
         self.assertIsInstance(response['result']['entries'],list)
-        invalid=self.client.rpc('this/method/does/not/exist',{})
+        invalid=self.client.rpc('fs/readFile',{'path':'/tmp/codex-acceptance-missing-'+uuid.uuid4().hex})
         self.assertIn('error',invalid)
 
     def test_native_command_execution(self):

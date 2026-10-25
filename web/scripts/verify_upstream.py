@@ -33,23 +33,30 @@ def verify(codex=None):
     lock=json.loads((ROOT/'upstream-lock.json').read_text())
     commit=subprocess.check_output(['git','-C',str(upstream),'rev-parse','HEAD'],text=True).strip()
     dirty=subprocess.check_output(['git','-C',str(upstream),'status','--porcelain','--untracked-files=all'],text=True).strip()
-    if dirty or commit!=lock['sourceCommit']:
+    ignored=subprocess.check_output(['git','-C',str(upstream),'ls-files','--others','--ignored','--exclude-standard'],text=True).strip()
+    if dirty or ignored or commit!=lock['sourceCommit']:
         raise RuntimeError('Upstream source differs from the locked pristine commit')
     result={'sourceCommit':commit,'pristine':True}
     if codex:
         provenance=json.loads((ROOT/'native/provenance.json').read_text())
+        if provenance.get('layoutVersion')!=1:
+            raise RuntimeError('Rebuild the complete native package, including sandbox resources')
         if provenance['sourceCommit']!=commit:
             raise RuntimeError('Native binary was built from another commit')
         for name,digest in provenance['sha256'].items():
-            with (ROOT/'native/bin'/name).open('rb') as file:
+            with (ROOT/'native'/name).open('rb') as file:
                 if hashlib.file_digest(file,'sha256').hexdigest()!=digest:
                     raise RuntimeError('Native binary hash mismatch: '+name)
         with tempfile.TemporaryDirectory(prefix='codex-web-verify-')as output:
             subprocess.run([str(codex),'app-server','generate-json-schema','--experimental','--out',output],check=True)
             native=json.loads((Path(output)/'ClientRequest.json').read_text())
-        source=json.loads(source_exports()['ClientRequest.json'])
+            exports=source_exports()
+            for name in ['ClientRequest.json','ClientNotification.json','ServerRequest.json','ServerNotification.json']:
+                if json.loads(exports[name])!=json.loads((Path(output)/name).read_text()):
+                    raise RuntimeError('Native/source full schema mismatch: '+name)
+        source=json.loads(exports['ClientRequest.json'])
         missing=sorted(methods(source)-methods(native));extra=sorted(methods(native)-methods(source))
-        result.update(sourceMethodCount=len(methods(source)),nativeMethodCount=len(methods(native)),missing=missing,extra=extra)
+        result.update(sourceMethodCount=len(methods(source)),nativeMethodCount=len(methods(native)),fullSchemasMatch=True,missing=missing,extra=extra)
         if missing or extra:
             raise RuntimeError('Native/source protocol mismatch: '+json.dumps(result))
     return result

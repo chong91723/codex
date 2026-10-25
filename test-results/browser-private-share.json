@@ -1,0 +1,29 @@
+{
+  "origin": "real browser protocol panel buttons",
+  "records": [
+    {
+      "method": "plugin/share/save",
+      "status": "passed"
+    },
+    {
+      "method": "plugin/share/updateTargets",
+      "status": "blocked",
+      "error": "update remote plugin share targets: remote plugin catalog request to https://chatgpt.com/backend-api/ps/plugins/[test-plugin-id]/shares failed with status 400 Bad Request: {\"detail\":\"WORKSPACE scope requires an active workspace\"}"
+    },
+    {
+      "method": "plugin/share/checkout",
+      "status": "blocked",
+      "error": "checkout plugin share: remote plugin `[test-plugin-id]` is not available for plugin/share/checkout"
+    },
+    {
+      "method": "plugin/share/delete",
+      "status": "blocked",
+      "error": "delete remote plugin share: remote plugin catalog request to https://chatgpt.com/backend-api/public/plugins/workspace/[test-plugin-id] failed with status 400 Bad Request: {\"detail\":\"Workspace plugin creation requires an active workspace.\"}"
+    },
+    {
+      "feature": "private_test_plugin_cleanup",
+      "status": "blocked",
+      "reason": "The native workspace delete endpoint requires an active workspace; the current account has only personal space."
+    }
+  ]
+}

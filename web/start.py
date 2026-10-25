@@ -32,6 +32,7 @@ def deepseek_profile(state_dir):
         config_path.write_text('\n'.join([
             'model = "deepseek-flash"', 'model_provider = "deepseek"', 'model_reasoning_effort = "high"',
             'web_search = "disabled"', 'sandbox_mode = "workspace-write"', 'approval_policy = "on-request"',
+            'tools.update_plan.enabled = true',
             'model_catalog_json = ' + json.dumps(str(catalog_path)),
             '[model_providers.deepseek]', 'name = "DeepSeek"', 'base_url = "https://api.deepseek.com/"',
             'wire_api = "responses"', 'env_key = "DEEPSEEK_API_KEY"', 'requires_openai_auth = false',
@@ -47,8 +48,10 @@ def main():
     args,extra=parser.parse_known_args()
     child_env=os.environ.copy()
     native=ROOT.parent/'native'/'bin'/'codex'
-    if native.is_file():
-        child_env.setdefault('CODEX_BIN',str(native))
+    if '--codex' not in extra:
+        if not native.is_file():
+            raise SystemExit('Build the latest source first: python3 web/scripts/build_native.py')
+        child_env['CODEX_BIN']=str(native)
     if args.deepseek:
         profile=deepseek_profile(args.state_dir.resolve())
         key=child_env.get('DEEPSEEK_API_KEY') or getpass.getpass('DeepSeek API key (not saved): ')

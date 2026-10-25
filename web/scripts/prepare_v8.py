@@ -6,6 +6,7 @@ artifacts. Checksums and URLs are read from pristine upstream source.
 """
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
+import json
 import os
 from pathlib import Path
 import re
@@ -20,16 +21,27 @@ def download(url,destination,expected):
         with path.open('rb')as file:return hashlib.file_digest(file,'sha256').hexdigest()==expected
     if valid(destination):return destination
     destination.parent.mkdir(parents=True,exist_ok=True)
-    opener=urllib.request.build_opener()
-    with opener.open(urllib.request.Request(url,method='HEAD'),timeout=60)as response:
-        size=int(response.headers.get('Content-Length','0'));final_url=response.url
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    try:
+        with opener.open(urllib.request.Request(url,method='HEAD'),timeout=12)as response:
+            size=int(response.headers.get('Content-Length','0'));final_url=response.url
+    except Exception:
+        # Same official asset via GitHub's asset API when the web endpoint stalls.
+        match=re.fullmatch(r'https://github.com/([^/]+/[^/]+)/releases/download/([^/]+)/([^/]+)',url)
+        if not match:raise
+        repo,tag,name=match.groups()
+        with opener.open(f'https://api.github.com/repos/{repo}/releases/tags/{tag}',timeout=60)as response:release=json.load(response)
+        asset=next(item for item in release['assets']if item['name']==name)
+        request=urllib.request.Request(f'https://api.github.com/repos/{repo}/releases/assets/{asset["id"]}',method='HEAD',headers={'Accept':'application/octet-stream'})
+        with opener.open(request,timeout=60)as response:
+            size=asset['size'];final_url=response.url
     chunk_size=2*1024*1024
     def chunk(index):
         begin=index*chunk_size;end=min(size,begin+chunk_size)-1
         target=destination.with_suffix(destination.suffix+'.part'+str(index))
         if target.is_file()and target.stat().st_size==end-begin+1:return target
         request=urllib.request.Request(final_url,headers={'Range':f'bytes={begin}-{end}'})
-        with urllib.request.urlopen(request,timeout=120)as response:
+        with opener.open(request,timeout=120)as response:
             if response.status!=206:raise RuntimeError('Server did not honor byte ranges')
             with target.open('wb')as file:
                 while block:=response.read(256*1024):file.write(block)
@@ -44,7 +56,7 @@ def download(url,destination,expected):
                 with part.open('rb')as source:
                     while block:=source.read(1024*1024):file.write(block)
     else:
-        with urllib.request.urlopen(url,timeout=120)as response,temp.open('wb')as file:
+        with opener.open(final_url,timeout=120)as response,temp.open('wb')as file:
             while block:=response.read(256*1024):file.write(block)
         parts=[]
     if not valid(temp):raise RuntimeError('Upstream-pinned V8 checksum mismatch: '+destination.name)

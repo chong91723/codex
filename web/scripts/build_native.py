@@ -8,6 +8,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -19,14 +20,50 @@ def git(*args):
 
 def clean():
     status=git('status','--porcelain','--untracked-files=all')
+    ignored=git('ls-files','--others','--ignored','--exclude-standard')
+    if ignored:
+        raise SystemExit('Generated files were found inside upstream; keep all build output outside it.\n'+ignored)
     if status:
         raise SystemExit('Upstream is modified; refusing to build. Preserve or restore your changes manually.\n'+status)
+
+
+def assemble(profile='dev',rg_bin=None):
+    clean()
+    commit,tree=git('rev-parse','HEAD'),git('rev-parse','HEAD^{tree}')
+    output=ROOT/'.toolchains'/'build-target'/('release'if profile=='release'else'debug')
+    os.environ['CODEX_REPO_ROOT']=str(ROOT/'upstream')
+    sys.dont_write_bytecode=True
+    sys.path.insert(0,str(ROOT/'upstream'/'scripts'))
+    from codex_package.layout import build_package_dir,validate_package_dir
+    from codex_package.targets import PACKAGE_VARIANTS,TARGET_SPECS,PackageInputs
+    from codex_package.ripgrep import resolve_rg_bin
+    spec=TARGET_SPECS['x86_64-unknown-linux-gnu'];variant=PACKAGE_VARIANTS['codex']
+    rg=resolve_rg_bin(spec,Path(rg_bin)if rg_bin else(Path(shutil.which('rg'))if shutil.which('rg')else None))
+    inputs=PackageInputs(entrypoint_bin=output/'codex',code_mode_host_bin=output/'codex-code-mode-host',rg_bin=rg,bwrap_bin=output/'bwrap',codex_command_runner_bin=None,codex_windows_sandbox_setup_bin=None)
+    native=ROOT/'native';native.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.package-',dir=native)as temp:
+        stage=Path(temp)
+        build_package_dir(stage,'0.0.0',variant,spec,inputs)
+        validate_package_dir(stage,variant,spec)
+        for path in stage.rglob('*'):
+            destination=native/path.relative_to(stage)
+            if path.is_dir():destination.mkdir(exist_ok=True)
+            else:path.replace(destination)
+    names=['bin/codex','bin/codex-code-mode-host','codex-resources/bwrap','codex-path/rg','codex-package.json']
+    hashes={}
+    for name in names:
+        with (native/name).open('rb')as file:hashes[name]=hashlib.file_digest(file,'sha256').hexdigest()
+    provenance={'sourceCommit':commit,'sourceTree':tree,'profile':profile,'layoutVersion':1,'builtAt':datetime.now(timezone.utc).isoformat(),'sha256':hashes}
+    (native/'provenance.json').write_text(json.dumps(provenance,indent=2)+'\n')
+    clean()
+    print('Source package complete; CLI, code-mode host, sandbox, ripgrep and metadata verified.',flush=True)
 
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--jobs',type=int,default=2)
     parser.add_argument('--release',action='store_true')
+    parser.add_argument('--rg-bin',type=Path,help='Optional existing ripgrep binary, as supported by the upstream package builder')
     args=parser.parse_args()
     clean()
     commit,tree=git('rev-parse','HEAD'),git('rev-parse','HEAD^{tree}')
@@ -45,7 +82,7 @@ def main():
     cargo=shutil.which('cargo',path=env['PATH'])
     if not cargo:
         raise SystemExit('Install the Rust toolchain specified in upstream/codex-rs/rust-toolchain.toml first.')
-    target=ROOT/'native'/'target'
+    target=ROOT/'.toolchains'/'build-target'
     command=[cargo,'build','--locked','--target-dir',str(target),'-j',str(args.jobs)]
     if args.release:
         command.append('--release')
@@ -57,24 +94,14 @@ def main():
         from prepare_v8 import prepare
         env.update(prepare())
         subprocess.run([*command,'-p','codex-code-mode-host','--bin','codex-code-mode-host'],cwd=ROOT/'upstream'/'codex-rs',env=env,check=True)
+        subprocess.run([*command,'-p','codex-bwrap','--bin','bwrap'],cwd=ROOT/'upstream'/'codex-rs',env=env,check=True)
     finally:
         clean()
         if git('rev-parse','HEAD')!=commit:
             raise SystemExit('Upstream commit changed during the build')
-    binary_dir=ROOT/'native'/'bin'
-    binary_dir.mkdir(parents=True,exist_ok=True)
-    hashes={}
-    for name in ['codex','codex-code-mode-host']:
-        built=target/('release'if args.release else'debug')/name
-        destination=binary_dir/name
-        shutil.copy2(built,destination)
-        with destination.open('rb') as file:
-            hashes[name]=hashlib.file_digest(file,'sha256').hexdigest()
-    provenance={'sourceCommit':commit,'sourceTree':tree,'profile':'release'if args.release else'dev',
-                'builtAt':datetime.now(timezone.utc).isoformat(),'sha256':hashes}
-    (ROOT/'native'/'provenance.json').write_text(json.dumps(provenance,indent=2)+'\n')
+    assemble('release'if args.release else'dev',args.rg_bin)
     print('Source build complete; upstream is clean.',flush=True)
-    subprocess.run([str(binary_dir/'codex'),'--version'],check=True)
+    subprocess.run([str(ROOT/'native/bin/codex'),'--version'],check=True)
 
 
 if __name__=='__main__':

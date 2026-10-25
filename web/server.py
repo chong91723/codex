@@ -220,9 +220,11 @@ class Settings:
         if not Path(self.codex).is_file():
             raise ValueError('Build the latest source first: python3 web/scripts/build_native.py')
         native = ROOT.parent / 'native' / 'bin' / 'codex'
+        self.provenance = None
         if Path(self.codex).resolve() == native.resolve():
             from scripts.verify_upstream import verify
             verify(native)
+            self.provenance = json.loads((ROOT.parent / 'native' / 'provenance.json').read_text())
         self.workspace = Path(args.workspace).expanduser().resolve()
         self.workspace.mkdir(parents=True, exist_ok=True)
         self.bind, self.port = args.bind, args.port
@@ -253,9 +255,7 @@ class Settings:
     def status(self):
         manifest = ROOT.parent / 'upstream-lock.json'
         baseline = json.loads(manifest.read_text()) if manifest.exists() else None
-        provenance_file = ROOT.parent / 'native' / 'provenance.json'
-        provenance = json.loads(provenance_file.read_text()) if provenance_file.exists() else None
-        return {'version': self.version, 'workspace': str(self.workspace), 'baseline': baseline, 'build': provenance,
+        return {'version': self.version, 'runtimePath': self.codex, 'workspace': str(self.workspace), 'baseline': baseline, 'build': self.provenance,
                 'transport': 'stdio', 'pid': os.getpid()}
 
 

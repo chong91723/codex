@@ -16,6 +16,7 @@ def create(workspace,profile):
     marketplace=workspace/'fixture-marketplace/.agents/plugins/marketplace.json';marketplace.parent.mkdir(parents=True,exist_ok=True)
     marketplace.write_text(json.dumps({'name':'native-test-market','plugins':[{'name':'native-test','source':{'source':'local','path':'./plugins/native-test'}}]}))
     (workspace/'readme-test.txt').write_text('NATIVE_FILE_OK\n')
+    (workspace/'calculator.py').write_text('def average(values):\n    return sum(values) / len(values) if values else 0\n')
     subprocess.run(['git','init','-q',str(workspace)],check=True)
     subprocess.run(['git','-C',str(workspace),'config','user.name','Codex Acceptance'],check=True)
     subprocess.run(['git','-C',str(workspace),'config','user.email','acceptance@example.invalid'],check=True)
