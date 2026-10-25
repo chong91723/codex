@@ -7,7 +7,7 @@ const pretty = value => JSON.stringify(value, null, 2);
 function configDiff(before,after,prefix=''){const edits=[];const object=value=>value&&typeof value==='object'&&!Array.isArray(value);for(const key of new Set([...Object.keys(before),...Object.keys(after)])){const segment=/^[A-Za-z0-9_-]+$/.test(key)?key:JSON.stringify(key);const path=prefix?prefix+'.'+segment:segment;if(!(key in after)){edits.push({keyPath:path,value:null,mergeStrategy:'replace'});continue;}if(object(before[key])&&object(after[key]))edits.push(...configDiff(before[key],after[key],path));else if(JSON.stringify(before[key])!==JSON.stringify(after[key]))edits.push({keyPath:path,value:after[key],mergeStrategy:'replace'});}return edits;}
 const safeURL = value => { try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : null; } catch { return null; } };
 const state = { ws: null, pending: new Map(), counter: 0, ready: false, view: 'chat', thread: null, threadArchived:false, threadBusy:false, attachmentLoads:0, turns: [], items: new Map(), live: new Map(), activeTurns: new Map(), threads: [], cursor: null, archived: false, attachments: [], events: [], requests: new Map(), models: [], status: null, schema: null, serverSchema: null, currentMethod: null, reconnect: null, selectedCwd: localStorage.getItem('codex.cwd') || '', listGeneration: 0, navigationGeneration:0, threadLoading:false, restoreError:false };
-let toastTimer, searchTimer, term, termWS, termResize;
+let toastTimer, searchTimer, term, termWS, termResize, termFit, termResizeFrame;
 function toast(message) { $('#toast').textContent = message; $('#toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').hidden = true, 5500); }
 function nativeErrorMessage(error){const message=error?.message||String(error);if(/cf_chl_|challenge-platform/i.test(message))return '远端服务要求浏览器验证（HTTP 403）。请检查代理出口，或在官方服务完成验证后重试。';if(/<html/i.test(message))return '远端服务返回网页错误，请检查网络连接和登录状态。';return message;}
 function report(error) { toast(nativeErrorMessage(error)); }
@@ -95,7 +95,7 @@ function markdown(text) {
 const toolNames = { reasoning:'思考过程', commandExecution:'执行命令', fileChange:'文件更改', mcpToolCall:'MCP 调用', dynamicToolCall:'工具调用', webSearch:'搜索网页', imageView:'查看图片', imageGeneration:'图像', collabAgentToolCall:'子代理', plan:'计划', contextCompaction:'压缩上下文', enteredReviewMode:'开始代码审查', exitedReviewMode:'审查结果' };
 function renderItem(item, done = false) {
   if (item.type === 'userMessage') { const node = el('div', 'message user'); for (const content of item.content || []) { if (content.text) node.append(document.createTextNode(content.text)); else if (content.type?.toLowerCase().includes('image')) node.append(el('div', 'subtle', '[图片附件]')); else node.append(el('div', 'subtle', pretty(redact(content)))); } return node; }
-  if (item.type === 'agentMessage') { const node = el('div', 'message agent'); node.append(markdown(item.text || '')); return node; }
+  if (item.type === 'agentMessage') { const node = el('div', 'message agent'); node.append(markdown(item.text || ''));if(item.phase==='final_answer'||!item.phase&&done){const actions=el('div','message-actions'),copy=button('',async()=>{await navigator.clipboard.writeText(item.text||'');toast('已复制回答');},'icon-button');copy.append(icon('copy'));copy.title=copy.ariaLabel='复制回答';actions.append(copy);node.append(actions);}return node; }
   const node = el('details', 'tool-item'); node.open = item.type === 'fileChange';
   const title = toolNames[item.type] || item.type || '原生事件'; const status = item.status || (done ? 'completed' : 'inProgress');
   node.append(el('summary', '', (['completed','succeeded'].includes(status) ? '✓ ' : status === 'failed' ? '✕ ' : '· ') + title + (item.command ? ' · ' + item.command : item.tool ? ' · ' + item.tool : '')));
@@ -177,7 +177,7 @@ function mountItem(item, node, done, turnId) {
   node.dataset.item = item.id;
   if(existing) {if(node.tagName==='DETAILS')node.open=existing.node.open;existing.node.replaceWith(node);}
   const entry={item,node,done,turnId};state.items.set(item.id,entry);placeItem(entry);
-  $('#welcome').hidden = true; scrollMessages();
+  $('#welcome').hidden = true;$('#view-chat').classList.remove('empty'); scrollMessages();
 }
 function upsertItem(item, done = false, turnId = null) {
   if (!item?.id) return;
@@ -198,19 +198,19 @@ async function loadThreads(more = false) {
 }
 function renderThreadList() {
   const list = $('#thread-list'); list.replaceChildren();
-  for (const thread of state.threads) { const row = button('', () => openThread(thread.id), 'thread-row' + (state.thread?.id === thread.id ? ' active' : '')); const dot=el('span','thread-dot'+(state.activeTurns.has(thread.id)?' running':''));if(state.activeTurns.has(thread.id))dot.title='此页面正在执行任务';row.append(dot, el('span', '', thread.name || thread.preview || '未命名会话')); const date = new Date(thread.updatedAt * 1000); row.append(el('time', '', date.toLocaleDateString('zh-CN', { month:'numeric', day:'numeric' }))); list.append(row); }
+  for (const thread of state.threads) { const row = button('', () => openThread(thread.id), 'thread-row' + (state.thread?.id === thread.id ? ' active' : '')); const dot=el('span','thread-dot'+(state.activeTurns.has(thread.id)?' running':''));if(state.activeTurns.has(thread.id))dot.title='此页面正在执行任务';row.append(dot, el('span', '', thread.name || thread.preview || '未命名会话')); const date = new Date(thread.updatedAt * 1000); row.title=(thread.name||thread.preview||'未命名会话')+' · '+date.toLocaleString();row.append(el('time', '', date.toLocaleDateString('zh-CN', { month:'numeric', day:'numeric' }))); list.append(row); }
   if (!state.threads.length) list.append(el('div', 'empty-small subtle', state.archived ? '暂无归档会话' : '从一次新会话开始。'));
   $('#threads-more').hidden = !state.cursor;
 }
 function setCwd(path) { state.selectedCwd = path; localStorage.setItem('codex.cwd', path); const name = path.split('/').filter(Boolean).pop() || path; $('#project-name').textContent = name; $('#breadcrumb').textContent = name; $('#cwd-label').textContent = path; }
 function threadRoute(){const params=new URLSearchParams(location.search);return {id:params.get('thread'),archived:params.get('archived')==='1'};}
 function setThreadRoute(id=null,archived=false,replace=false){const url=new URL(location.href);url.searchParams.delete('token');url.searchParams.delete('thread');url.searchParams.delete('archived');if(id){url.searchParams.set('thread',id);if(archived)url.searchParams.set('archived','1');}if(url.href!==location.href)history[replace?'replaceState':'pushState'](null,'',url);}
-function resetChat(route=true) { state.navigationGeneration++;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='向 Codex 描述任务，或输入 / 查看操作'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false; $('#chat-toolbar').hidden = true; $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; $('#usage-label').textContent = '原生 Codex 运行时'; renderThreadList(); renderRequests(); updateSend(); }
-function adoptThread(thread,archived=false,busy=false) { if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请先取消归档以继续任务':'向 Codex 描述任务，或输入 / 查看操作';$('#chat-toolbar').hidden=false;$('#thread-info').textContent=thread.id;$('#page-title').textContent=thread.name||thread.preview||'新会话';renderRequests();updateSend(); }
+function resetChat(route=true) {$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='询问任何问题'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false; $('#chat-toolbar').hidden = true; $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; $('#usage-label').textContent = '原生 Codex 运行时'; renderThreadList(); renderRequests(); updateSend(); }
+function adoptThread(thread,archived=false,busy=false) { if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请先取消归档以继续任务':'询问任何问题';$('#chat-toolbar').hidden=false;$('#thread-info').textContent=thread.id;$('#page-title').textContent=thread.name||thread.preview||'新会话';renderRequests();updateSend(); }
 async function restoreThreadRoute(){const route=threadRoute();if(route.id){state.archived=route.archived;$('#thread-list-label').textContent=route.archived?'归档会话':'最近会话';await openThread(route.id,{archived:route.archived,replace:true});loadThreads().catch(report);}else resetChat(false);}
 async function openThread(id,{archived=state.archived&&state.threads.some(thread=>thread.id===id),replace=false}={}) {
   const generation=++state.navigationGeneration;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
-  showView('chat');$('#prompt').disabled=true;$('#welcome').hidden=true;$('#messages').replaceChildren(el('div','loading','读取原生会话…'));state.items.clear();state.live.clear();
+  showView('chat');$('#view-chat').classList.remove('empty');$('#prompt').disabled=true;$('#welcome').hidden=true;$('#messages').replaceChildren(el('div','loading','读取原生会话…'));state.items.clear();state.live.clear();
   try {
     let result,busy=false;
     for(let attempt=0;attempt<4;attempt++){
@@ -231,7 +231,7 @@ async function hydrateThread(thread, generation=state.navigationGeneration) {
   if (state.thread?.id !== thread.id||generation!==state.navigationGeneration) return;
   state.turns = turns; $('#messages').replaceChildren(); state.items.clear(); state.activeTurns.delete(thread.id);
   for (const turn of turns) { if (turn.status === 'inProgress') state.activeTurns.set(thread.id, turn.id); for (const item of turn.items || []) upsertItem(item, turn.status !== 'inProgress', turn.id); renderTurnOutcome(turn); }
-  $('#welcome').hidden = turns.length > 0; $('#chat-toolbar').hidden = false; $('#page-title').textContent = thread.name || thread.preview || '新会话'; $('#thread-info').textContent = thread.id; updateSend();
+  $('#welcome').hidden = turns.length > 0;$('#view-chat').classList.toggle('empty',turns.length===0); $('#chat-toolbar').hidden = false; $('#page-title').textContent = thread.name || thread.preview || '新会话'; $('#thread-info').textContent = thread.id; updateSend();
 }
 async function ensureThread() {
   if (state.thread) return state.thread;
@@ -493,9 +493,37 @@ function renderAttachments(){const root=$('#attachments');root.replaceChildren()
 async function readAttachments(files){for(const file of Array.from(files)){if(file.size>16*1024*1024){toast(file.name+' 超过 16 MiB');continue;}if(file.type.startsWith('image/')||file.type.startsWith('audio/')){const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});state.attachments.push({name:file.name,preview:file.type.startsWith('image/')?url:null,input:{type:file.type.startsWith('image/')?'image':'audio',url}});}else{const text=await file.text();state.attachments.push({name:file.name,input:{type:'text',text:'文件 '+file.name+'\n'+text,text_elements:[]}});}}renderAttachments();}
 async function fileBrowser(path=state.selectedCwd){const data=await rpc('fs/readDirectory',{path});$('#file-panel').hidden=false;$('#file-path').textContent=path;$('#file-tree').replaceChildren(button('..',()=>fileBrowser(path.split('/').slice(0,-1).join('/')||'/'),'file-row'));$('#file-preview').hidden=true;for(const entry of data.entries||[]){const name=typeof entry==='string'?entry:entry.fileName||entry.name;const full=path.replace(/\/$/,'')+'/'+name;const isDirectory=entry.isDirectory||entry.type==='directory';const row=button('',async()=>{if(isDirectory)return fileBrowser(full);{const result=await rpc('fs/readFile',{path:full});const pre=$('#file-preview');pre.textContent=result.text||result.content||(result.dataBase64?new TextDecoder().decode(Uint8Array.from(atob(result.dataBase64),c=>c.charCodeAt(0))):pretty(result));pre.hidden=false;}},'file-row');row.append(icon(isDirectory?'folder':'file'),document.createTextNode(name));$('#file-tree').append(row);}}
 async function threadAction(action){const id=state.thread?.id;if(!id)return;switch(action){case'delete':if(state.threadBusy)throw new Error('请先关闭使用此会话的其他页面，再执行永久删除');return openDialog('永久删除会话',root=>{root.append(el('p','','将永久删除“'+(state.thread.name||state.thread.preview||id)+'”的会话历史及其创建的子代理会话，无法撤销。'));if(state.activeTurns.has(id))root.append(el('p','','此会话中的当前任务会被停止。'));},async()=>{await rpc('thread/delete',{threadId:id});if(state.thread?.id===id)resetChat();await loadThreads();toast('会话历史已永久删除');},'永久删除');case'rename':return askText('重命名会话','会话名称',state.thread.name||'',async name=>{await rpc('thread/name/set',{threadId:id,name});state.thread.name=name;$('#page-title').textContent=name;await loadThreads();});case'fork':{const result=await rpc('thread/fork',{threadId:id});return openThread(result.thread.id);}case'compact':await rpc('thread/compact/start',{threadId:id});return toast('已请求原生上下文压缩');case'review':await rpc('review/start',{threadId:id,target:{type:'uncommittedChanges'}});return;case'revert':return rollbackThread(id);case'archive':case'unarchive':await rpc('thread/'+action,{threadId:id});resetChat();return loadThreads();case'export':{const result={thread:state.thread,turns:await paged('thread/turns/list',{threadId:id,itemsView:'full',sortDirection:'asc',limit:100})};const url=URL.createObjectURL(new Blob([pretty(result)],{type:'application/json'}));const link=el('a');link.href=url;link.download='codex-'+id+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;}}}
-function terminalFit(){if(!term||$('#terminal-panel').hidden)return;const node=$('#terminal');const cols=Math.max(20,Math.floor((node.clientWidth-28)/8));const rows=Math.max(5,Math.floor((node.clientHeight-22)/15));term.resize(cols,rows);if(termWS?.readyState===WebSocket.OPEN)termWS.send(JSON.stringify({cols,rows}));}
-function openTerminal(){ $('#terminal-panel').hidden=false;if(!term){if(!window.Terminal)return toast('本地 xterm.js 组件缺失');term=new Terminal({fontFamily:'ui-monospace, SFMono-Regular, Consolas, monospace',fontSize:12,lineHeight:1.15,cursorBlink:true,theme:{background:'#161b17',foreground:'#dae3d8'},scrollback:10000,allowProposedApi:false});term.open($('#terminal'));term.onData(data=>{if(termWS?.readyState===WebSocket.OPEN)termWS.send(JSON.stringify({data:btoa(String.fromCharCode(...new TextEncoder().encode(data)))}));});termResize=new ResizeObserver(terminalFit);termResize.observe($('#terminal'));}terminalFit();term.focus(); }
-function startTerminal(){openTerminal();if(!term)return;const args=JSON.parse($('#cli-args').value);if(!Array.isArray(args)||args.some(arg=>typeof arg!=='string'))throw new Error('CLI 参数必须为字符串数组');termWS?.close();term.reset();term.writeln('\x1b[90m启动本机原生 Codex CLI…\x1b[0m');const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws/terminal?'+new URLSearchParams({cwd:state.selectedCwd,args:JSON.stringify(args)}));termWS=ws;ws.onopen=terminalFit;ws.onmessage=event=>{if(termWS!==ws)return;const msg=JSON.parse(event.data);if(msg.data)term.write(Uint8Array.from(atob(msg.data),c=>c.charCodeAt(0)));if(msg.exit!=null)term.writeln('\r\n\x1b[90m进程退出：'+msg.exit+'\x1b[0m');if(msg.bridge==='error')term.writeln(msg.message);};ws.onclose=()=>{if(termWS===ws)term.writeln('\r\n\x1b[90m终端连接已关闭\x1b[0m');};term.focus();}
+function terminalFit(){
+  if(!term||!termFit||$('#terminal-panel').hidden)return;
+  const dimensions=termFit.proposeDimensions();if(!dimensions||dimensions.cols<2||dimensions.rows<2)return;
+  termFit.fit();
+  if(termWS?.readyState===WebSocket.OPEN)termWS.send(JSON.stringify({cols:term.cols,rows:term.rows}));
+}
+function terminalStatus(text){$('#terminal-status').textContent=text;}
+function openTerminal(){
+  $('#terminal-panel').hidden=false;
+  if(!term){
+    if(!window.Terminal||!window.FitAddon)return toast('本地终端组件缺失');
+    term=new Terminal({fontFamily:'ui-monospace, SFMono-Regular, Consolas, monospace',fontSize:12,lineHeight:1.15,cursorBlink:true,disableStdin:true,theme:{background:'#161b17',foreground:'#dae3d8'},scrollback:10000,allowProposedApi:false});
+    termFit=new FitAddon.FitAddon();term.loadAddon(termFit);term.open($('#terminal'));
+    term.writeln('\x1b[90m点击上方「启动 CLI」进入 Codex 命令行。\r\n参数框使用 JSON 数组，默认 []；例如 ["--help"]。\x1b[0m');
+    term.onData(data=>{if(termWS?.readyState===WebSocket.OPEN){term.scrollToBottom();termWS.send(JSON.stringify({data:btoa(String.fromCharCode(...new TextEncoder().encode(data)))}));}});
+    termResize=new ResizeObserver(()=>{cancelAnimationFrame(termResizeFrame);termResizeFrame=requestAnimationFrame(terminalFit);});termResize.observe($('#terminal'));
+    document.fonts?.ready.then(terminalFit);
+  }
+  terminalFit();if(termWS?.readyState===WebSocket.OPEN)term.focus();else $('#terminal-start').focus();
+}
+function startTerminal(){
+  const args=JSON.parse($('#cli-args').value);if(!Array.isArray(args)||args.some(arg=>typeof arg!=='string'))throw new Error('CLI 参数必须为字符串数组');
+  openTerminal();if(!term)return;
+  termWS?.close();term.options.disableStdin=true;term.reset();term.writeln('\x1b[90m正在启动 Codex CLI…\x1b[0m');terminalStatus('连接中');
+  const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws/terminal?'+new URLSearchParams({cwd:state.selectedCwd,args:JSON.stringify(args)}));termWS=ws;
+  ws.onopen=()=>{if(termWS!==ws)return;terminalFit();term.options.disableStdin=false;terminalStatus('运行中');term.focus();};
+  ws.onmessage=event=>{if(termWS!==ws)return;const msg=JSON.parse(event.data);if(msg.data)term.write(Uint8Array.from(atob(msg.data),c=>c.charCodeAt(0)));if(msg.exit!=null){term.options.disableStdin=true;terminalStatus('已退出');term.writeln('\r\n\x1b[90m进程退出：'+msg.exit+'\x1b[0m');}if(msg.bridge==='error'){term.options.disableStdin=true;terminalStatus('启动失败');term.writeln(msg.message);}};
+  ws.onclose=()=>{if(termWS!==ws)return;term.options.disableStdin=true;terminalStatus('连接已关闭');term.writeln('\r\n\x1b[90m终端连接已关闭，可点击「启动 CLI」重新进入。\x1b[0m');};
+  ws.onerror=()=>{if(termWS===ws)terminalStatus('连接失败');};
+}
+function expandTerminal(){const expanded=$('.main').classList.toggle('terminal-expanded');$('#terminal-expand').textContent=expanded?'还原':'展开';$('#terminal-expand').ariaLabel=expanded?'还原终端面板':'展开终端面板';requestAnimationFrame(()=>{terminalFit();term?.focus();});}
 function toggleTheme(){const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;localStorage.setItem('codex.theme',theme);}
 async function fetchJSON(path){const response=await fetch(path);if(!response.ok)throw new Error((await response.json()).error||'HTTP '+response.status);return response.json();}
 async function init(){
@@ -514,7 +542,7 @@ async function init(){
   $('#attach-button').onclick=()=>$('#file-input').click();$('#file-input').onchange=()=>{const files=Array.from($('#file-input').files);$('#file-input').value='';state.attachmentLoads++;updateSend();readAttachments(files).catch(report).finally(()=>{state.attachmentLoads--;updateSend();});};
   $('#thread-action').onchange=()=>{const action=$('#thread-action').value;$('#thread-action').value='';threadAction(action).catch(report);};
   $('#files-toggle').onclick=()=>{if(!$('#file-panel').hidden)$('#file-panel').hidden=true;else fileBrowser().catch(report);};$('#files-close').onclick=()=>$('#file-panel').hidden=true;
-  $('#terminal-toggle').onclick=openTerminal;$('#terminal-start').onclick=()=>{try{startTerminal();}catch(error){report(error);}};$('#terminal-close').onclick=()=>{termWS?.close();$('#terminal-panel').hidden=true;};
+  $('#terminal-toggle').onclick=openTerminal;$('#terminal-start').onclick=()=>{try{startTerminal();}catch(error){report(error);}};$('#terminal-expand').onclick=expandTerminal;$('#terminal-close').onclick=()=>{termWS?.close();$('#terminal-panel').hidden=true;$('.main').classList.remove('terminal-expanded');$('#terminal-expand').textContent='展开';terminalStatus('未启动');};
   document.addEventListener('keydown',event=>{if((event.metaKey||event.ctrlKey)&&event.key==='k'){event.preventDefault();resetChat();showView('chat');}});
   const [status,schema,serverSchema]=await Promise.all([fetchJSON('/api/status'),fetchJSON('/api/schema/ClientRequest.json'),fetchJSON('/api/schema/ServerRequest.json')]);state.status=status;state.schema=schema;state.serverSchema=serverSchema;setCwd(state.selectedCwd||status.workspace);$('#runtime-pill').textContent=status.build?'源码 '+status.build.sourceCommit.slice(0,7):status.version.replace('codex-cli ','v');await connect();
 }

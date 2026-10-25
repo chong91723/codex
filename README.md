@@ -1,6 +1,6 @@
 # Codex Web Native
 
-参照 Codex 桌面端布局实现的本地 Web 工作台。代理内核直接从最新 Codex 开源源码编译；Web 层只做界面与协议传输。上游源码以子模块保存在 `upstream/`，禁止在该目录修改源码。
+基于 Codex 原生运行时的个人 AI 网页助手，页面与交互参考 ChatGPT 网页端。完整保留 Codex 的技能、MCP、文件、沙箱、审批、CLI 及全部原生协议入口。代理内核直接从最新 Codex 开源源码编译；Web 层只做界面与协议传输。上游源码以子模块保存在 `upstream/`，禁止在该目录修改源码。
 
 ## 获取与运行
 
@@ -50,12 +50,12 @@ supports_websockets = false
 ## 原生能力入口
 
 - 会话：新建、恢复、搜索、分页、重命名、分叉、归档、永久删除、上下文压缩、历史回退、代码审查、JSON 导出。选中的会话保存在当前标签页 URL 中，刷新、书签及浏览器前进/后退可直接恢复；恢复失败会明确显示错误并阻止静默新建。同一会话被另一页面占用时显示只读历史，关闭占用页面后可重试继续。
-- 对话：模型与推理强度、流式回答、推理摘要、工具执行、文件差异、计划、子代理事件、中断与执行中补充输入、图片和文本附件。每个任务的思考、过程说明、命令、文件更改及工具过程整体默认折叠，最终回答独立显示；人工确认继续直接显示。
+- 对话：输入框下方并排选择模型与思考强度，通过左下角“＋”添加图片或文本文件（支持多选、预览与移除）；流式回答、流式回答、推理摘要、工具执行、文件差异、计划、子代理事件、中断与执行中补充输入、图片和文本附件。每个任务的思考、过程说明、命令、文件更改及工具过程整体默认折叠，最终回答独立显示并可复制；人工确认继续直接显示。
 - 交互：命令与文件修改审批、权限请求、用户问题；任意服务端请求均保留自定义 JSON 响应入口；原生 Guardian 审核结果可显示并由用户确认被拒绝的具体操作。
 - 扩展：原生技能发现、启停、调用；从本机上传自定义 `SKILL.md` 或完整 Skill 文件夹；添加 stdio / Streamable HTTP MCP、启停、OAuth、工具与资源；插件和应用目录。
 - 设置：原生配置读取、按项写入、沙箱和审批策略、账户登录与额度。
 - **原生能力面板**：启动时从实际源码编译的程序导出完整实验性 JSON Schema；全部客户端方法可选择、查看参数、生成必填参数模板并原样调用，所有事件可查看。未做专用界面的开源功能也通过此入口使用。
-- **原生 CLI 终端**：使用真实 PTY 和本地 xterm.js 运行同一源码编译的 `codex`。参数以字符串 JSON 数组输入，例如 `["--help"]`、`["mcp", "list"]`、`["resume"]`。支持键盘输入、控制键、终端尺寸变化和退出状态。
+- **原生 CLI 终端**：使用真实 PTY 和本地 xterm.js 运行同一源码编译的 `codex`。参数以字符串 JSON 数组输入，例如 `["--help"]`、`["mcp", "list"]`、`["resume"]`。先点击“启动 CLI”进入原生命令行；支持中英文键盘输入、控制键、终端尺寸变化和退出状态，可展开/还原面板。终端按实际字体尺寸自动适配行列，保留底部输入行和面板边界。
 
 RPC/CLI 能力来自 Codex 本身。账户套餐、外部服务、操作系统和模型是否支持某项功能，仍由原生程序决定；界面显示真实结果与错误。未实现闭源桌面专有功能或自建云调度服务。
 
@@ -131,6 +131,9 @@ node web/tests/custom_tools_desktop.mjs
 python3 web/start.py --deepseek --state-dir .local-state/activity-turn-acceptance --port 8768 --workspace /绝对路径/测试工作区
 node web/tests/activity_desktop.mjs
 node web/tests/thread_lifecycle_desktop.mjs
+
+python3 web/start.py --deepseek --state-dir .local-state/chat-ui-acceptance --port 8769 --workspace /绝对路径/独立测试工作区
+CODEX_WEB_URL=http://127.0.0.1:8769 node web/tests/chat_layout_desktop.mjs
 ```
 
 并发和删除专项只会删除本次新建的测试会话，要求使用上述独立配置目录。
@@ -144,6 +147,6 @@ node web/tests/thread_lifecycle_desktop.mjs
 - [Codex 开源仓库](https://github.com/openai/codex)
 - [OpenAI app-server 文档](https://developers.openai.com/codex/app-server)
 - [DeepSeek 原生 Codex 集成说明](https://api-docs.deepseek.com/quick_start/agent_integrations/codex/)
-- xterm.js 6.0.0：MIT，许可证保存在 `web/public/vendor/XTERM-LICENSE`。
+- xterm.js 6.0.0 与官方 @xterm/addon-fit 0.11.0：MIT，许可证分别保存在 `web/public/vendor/XTERM-LICENSE` 和 `XTERM-FIT-LICENSE`。所有组件随页面本地提供，无需 CDN。
 
 本项目为独立 Web 界面，不是 OpenAI 官方桌面产品。

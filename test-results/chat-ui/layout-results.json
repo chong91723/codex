@@ -1,0 +1,436 @@
+{
+  "origin": "real Chromium desktop controls, clipboard and native CLI PTY; no upstream source changes",
+  "results": [
+    {
+      "name": "欢迎标题与输入框在不同桌面尺寸下不重叠",
+      "status": "passed",
+      "evidence": [
+        {
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "gap": 24
+        },
+        {
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "gap": 24
+        },
+        {
+          "viewport": {
+            "width": 1024,
+            "height": 768
+          },
+          "gap": 24
+        }
+      ]
+    },
+    {
+      "name": "模型与思考强度相邻，工具入口集中在侧栏，176 项原生能力保留",
+      "status": "passed",
+      "evidence": {
+        "positions": [
+          {
+            "viewport": {
+              "width": 1440,
+              "height": 1000
+            },
+            "model": {
+              "x": 502,
+              "y": 494,
+              "width": 125,
+              "height": 28,
+              "top": 494,
+              "right": 627,
+              "bottom": 522,
+              "left": 502
+            },
+            "effort": {
+              "x": 631,
+              "y": 494,
+              "width": 84,
+              "height": 28,
+              "top": 494,
+              "right": 715,
+              "bottom": 522,
+              "left": 631
+            }
+          },
+          {
+            "viewport": {
+              "width": 1280,
+              "height": 720
+            },
+            "model": {
+              "x": 422,
+              "y": 368,
+              "width": 125,
+              "height": 28,
+              "top": 368,
+              "right": 547,
+              "bottom": 396,
+              "left": 422
+            },
+            "effort": {
+              "x": 551,
+              "y": 368,
+              "width": 84,
+              "height": 28,
+              "top": 368,
+              "right": 635,
+              "bottom": 396,
+              "left": 551
+            }
+          },
+          {
+            "viewport": {
+              "width": 1024,
+              "height": 768
+            },
+            "model": {
+              "x": 306,
+              "y": 389.59375,
+              "width": 125,
+              "height": 28,
+              "top": 389.59375,
+              "right": 431,
+              "bottom": 417.59375,
+              "left": 306
+            },
+            "effort": {
+              "x": 435,
+              "y": 389.59375,
+              "width": 84,
+              "height": 28,
+              "top": 389.59375,
+              "right": 519,
+              "bottom": 417.59375,
+              "left": 435
+            }
+          }
+        ],
+        "nativeMethodCount": 176,
+        "allOriginalSidebarEntries": 6
+      }
+    },
+    {
+      "name": "真实回复可复制，消息区与过程折叠保持可用",
+      "status": "passed",
+      "evidence": {
+        "realModelReply": true,
+        "clipboardExact": true,
+        "processCollapsed": true,
+        "model": "deepseek-flash",
+        "effort": "low"
+      }
+    },
+    {
+      "name": "加号打开文件选择，图片预览及移除重选正常，模型真实理解图片与文本",
+      "status": "passed",
+      "evidence": {
+        "fileChooserFromPlus": true,
+        "imagePreview": true,
+        "imageRemoveAndReselect": true,
+        "nativeInputTypes": [
+          "text",
+          "text",
+          "image"
+        ],
+        "modelReply": "The image is predominantly **blue**. The marker is **ATTACHED_UI_DOCUMENT_8294**."
+      }
+    },
+    {
+      "name": "终端未启动时显示操作指引，避免静默丢弃输入",
+      "status": "passed",
+      "evidence": {
+        "unconnectedInputDisabled": true,
+        "startControlVisible": true
+      }
+    },
+    {
+      "name": "默认 CLI 的英文和中文输入真实回显且完整可见",
+      "status": "passed",
+      "evidence": {
+        "asciiEcho": true,
+        "chineseEcho": true,
+        "geometry": {
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "panel": {
+            "x": 272,
+            "y": 608,
+            "width": 1156,
+            "height": 380,
+            "top": 608,
+            "right": 1428,
+            "bottom": 988,
+            "left": 272
+          },
+          "host": {
+            "x": 285,
+            "y": 661,
+            "width": 1130,
+            "height": 314,
+            "top": 661,
+            "right": 1415,
+            "bottom": 975,
+            "left": 285
+          },
+          "screen": {
+            "x": 285,
+            "y": 661,
+            "width": 1113,
+            "height": 304,
+            "top": 661,
+            "right": 1398,
+            "bottom": 965,
+            "left": 285
+          },
+          "rows": 19,
+          "cols": 154,
+          "cellHeight": 16
+        }
+      }
+    },
+    {
+      "name": "缩放窗口及展开还原时，终端底部和输入行始终在可见区域",
+      "status": "passed",
+      "evidence": {
+        "sizes": [
+          {
+            "viewport": {
+              "width": 1280,
+              "height": 720
+            },
+            "panel": {
+              "x": 272,
+              "y": 434.40625,
+              "width": 996,
+              "height": 273.59375,
+              "top": 434.40625,
+              "right": 1268,
+              "bottom": 708,
+              "left": 272
+            },
+            "host": {
+              "x": 285,
+              "y": 487.40625,
+              "width": 970,
+              "height": 207.59375,
+              "top": 487.40625,
+              "right": 1255,
+              "bottom": 695,
+              "left": 285
+            },
+            "screen": {
+              "x": 285,
+              "y": 487.40625,
+              "width": 954,
+              "height": 192,
+              "top": 487.40625,
+              "right": 1239,
+              "bottom": 679.40625,
+              "left": 285
+            },
+            "rows": 12,
+            "cols": 132,
+            "cellHeight": 16
+          },
+          {
+            "viewport": {
+              "width": 1024,
+              "height": 768
+            },
+            "panel": {
+              "x": 242,
+              "y": 464.171875,
+              "width": 770,
+              "height": 291.828125,
+              "top": 464.171875,
+              "right": 1012,
+              "bottom": 756,
+              "left": 242
+            },
+            "host": {
+              "x": 255,
+              "y": 517.171875,
+              "width": 744,
+              "height": 225.828125,
+              "top": 517.171875,
+              "right": 999,
+              "bottom": 743,
+              "left": 255
+            },
+            "screen": {
+              "x": 255,
+              "y": 517.171875,
+              "width": 730,
+              "height": 224,
+              "top": 517.171875,
+              "right": 985,
+              "bottom": 741.171875,
+              "left": 255
+            },
+            "rows": 14,
+            "cols": 101,
+            "cellHeight": 16
+          }
+        ],
+        "expanded": {
+          "viewport": {
+            "width": 1024,
+            "height": 768
+          },
+          "panel": {
+            "x": 242,
+            "y": 66,
+            "width": 770,
+            "height": 690,
+            "top": 66,
+            "right": 1012,
+            "bottom": 756,
+            "left": 242
+          },
+          "host": {
+            "x": 255,
+            "y": 119,
+            "width": 744,
+            "height": 624,
+            "top": 119,
+            "right": 999,
+            "bottom": 743,
+            "left": 255
+          },
+          "screen": {
+            "x": 255,
+            "y": 119,
+            "width": 730,
+            "height": 624,
+            "top": 119,
+            "right": 985,
+            "bottom": 743,
+            "left": 255
+          },
+          "rows": 39,
+          "cols": 101,
+          "cellHeight": 16
+        },
+        "restoredWithoutRestart": true
+      }
+    },
+    {
+      "name": "深浅主题切换及原生版本命令输出可见",
+      "status": "passed",
+      "evidence": {
+        "darkAndLight": true,
+        "nativeCliExit": 0
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "origin": "browser"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "plugin/list",
+      "origin": "browser"
+    },
+    {
+      "method": "app/list",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/readDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "turn/start",
+      "origin": "browser",
+      "model": "deepseek-flash",
+      "effort": "low",
+      "inputTypes": [
+        "text"
+      ],
+      "imageDataUrl": false
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "turn/start",
+      "origin": "browser",
+      "model": "deepseek-flash",
+      "effort": "low",
+      "inputTypes": [
+        "text",
+        "text",
+        "image"
+      ],
+      "imageDataUrl": true
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    }
+  ],
+  "browserErrors": []
+}
