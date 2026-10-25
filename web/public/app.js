@@ -61,15 +61,15 @@ function handleEvent(msg) {
   if (method === 'thread/started') loadThreads().catch(() => {});
   if (method === 'account/updated' || method === 'account/login/completed') loadAccount().catch(() => {});
   if (method === 'turn/started') { state.activeTurns.set(p.threadId, p.turn.id); updateSend(); }
-  if (method === 'turn/completed') { state.activeTurns.delete(p.threadId); updateSend(); if (currentEvent(p)) { if (p.turn.error) toast(p.turn.error.message || pretty(p.turn.error)); renderTurnOutcome(p.turn); const index=state.turns.findIndex(turn=>turn.id===p.turn.id); if(index<0)state.turns.push(p.turn);else state.turns[index]=p.turn; loadThreads().catch(() => {}); } }
+  if (method === 'turn/completed') { state.activeTurns.delete(p.threadId); updateSend(); if (currentEvent(p)) { if (p.turn.error) toast(p.turn.error.message || pretty(p.turn.error)); renderTurnOutcome(p.turn); const index=state.turns.findIndex(turn=>turn.id===p.turn.id); if(index<0)state.turns.push(p.turn);else state.turns[index]=p.turn; refreshActivityGroups(p.turn.id); loadThreads().catch(() => {}); } }
   if (!currentEvent(p)) return;
   if (method === 'item/autoApprovalReview/started' || method === 'item/autoApprovalReview/completed') renderGuardianReview(p);
   if (method === 'guardianWarning') toast(p.message);
-  if (method === 'item/started' || method === 'item/completed') { upsertItem(p.item, method === 'item/completed'); }
-  if (method === 'item/agentMessage/delta') appendDelta(p.itemId, p.delta, 'agentMessage');
-  if (method === 'item/reasoning/summaryTextDelta' || method === 'item/reasoning/textDelta') appendDelta(p.itemId, p.delta, 'reasoning');
-  if (method === 'item/commandExecution/outputDelta') appendDelta(p.itemId, p.delta, 'commandExecution');
-  if (method === 'item/fileChange/outputDelta') appendDelta(p.itemId, p.delta, 'fileChange');
+  if (method === 'item/started' || method === 'item/completed') { upsertItem(p.item, method === 'item/completed', p.turnId); }
+  if (method === 'item/agentMessage/delta') appendDelta(p.itemId, p.delta, 'agentMessage', p.turnId);
+  if (method === 'item/reasoning/summaryTextDelta' || method === 'item/reasoning/textDelta') appendDelta(p.itemId, p.delta, 'reasoning', p.turnId);
+  if (method === 'item/commandExecution/outputDelta') appendDelta(p.itemId, p.delta, 'commandExecution', p.turnId);
+  if (method === 'item/fileChange/outputDelta') appendDelta(p.itemId, p.delta, 'fileChange', p.turnId);
   if (method === 'turn/diff/updated') { state.lastDiff = p.diff; }
   if (method === 'turn/plan/updated') { const box = $('#plan-summary'); box.replaceChildren(); if (p.explanation) box.append(el('p', '', p.explanation)); for (const step of p.plan || []) box.append(el('div', 'plan-step ' + step.status, (step.status === 'completed' ? '✓ ' : step.status === 'inProgress' ? '◉ ' : '○ ') + step.step)); box.hidden = false; }
   if (method === 'thread/tokenUsage/updated') { const usage = p.tokenUsage?.total || p.tokenUsage?.last || p.tokenUsage; if (usage) $('#usage-label').textContent = (usage.totalTokens || usage.inputTokens || 0).toLocaleString() + ' tokens'; }
@@ -103,20 +103,66 @@ function renderItem(item, done = false) {
   else body.textContent = item.aggregatedOutput || item.output || item.text || pretty(redact(item));
   node.append(body); return node;
 }
-function upsertItem(item, done = false) {
-  if (!item?.id) return;
-  const existing = state.items.get(item.id), open = existing?.node.open;
-  const node = renderItem(item, done); node.dataset.item = item.id;
-  if (existing) { if (open != null && node.tagName === 'DETAILS') node.open = open; existing.node.replaceWith(node); } else $('#messages').append(node);
-  state.items.set(item.id, { item, node }); state.live.delete(item.id); $('#welcome').hidden = true; scrollMessages();
+function isActivity(item) {
+  return !['userMessage','agentMessage','fileChange','imageView','imageGeneration','enteredReviewMode','exitedReviewMode'].includes(item.type);
 }
-function appendDelta(id, delta, type) {
+function createActivityGroup(turnId) {
+  const group = el('details', 'activity-group'); group.dataset.turnId = turnId || '';
+  const summary = el('summary'), arrow = icon('down'), dot = el('span', 'activity-dot');
+  arrow.classList.add('activity-chevron'); arrow.setAttribute('aria-hidden', 'true'); dot.setAttribute('aria-hidden', 'true');
+  summary.append(arrow, dot, el('span', 'activity-label'), el('span', 'activity-count'));
+  group.append(summary, el('div', 'activity-items')); $('#messages').append(group); return group;
+}
+function updateActivityGroup(group) {
+  if (!group) return;
+  const entries = [...$('.activity-items', group).children].map(node => state.items.get(node.dataset.item)).filter(Boolean);
+  const turn = state.turns.find(turn => turn.id === group.dataset.turnId);
+  const finished = turn && turn.status !== 'inProgress';
+  const pending = finished ? [] : entries.filter(entry => !entry.done && !['completed','succeeded','failed','declined'].includes(entry.item.status));
+  const failed = entries.filter(({item}) => ['failed','declined'].includes(item.status) || (item.exitCode != null && item.exitCode !== 0)).length;
+  const thoughts = entries.filter(entry => entry.item.type === 'reasoning').length;
+  const commands = entries.filter(entry => entry.item.type === 'commandExecution').length;
+  const tools = entries.length - thoughts - commands, counts = [];
+  if (thoughts) counts.push(thoughts + ' 次思考');
+  if (commands) counts.push(commands + ' 条命令');
+  if (tools) counts.push(tools + ' 项工具活动');
+  const latest = pending.at(-1)?.item;
+  const label = turn?.status === 'interrupted' ? '执行已中断' : turn?.status === 'failed' ? '执行失败' :
+    latest ? (latest.type === 'reasoning' ? '正在思考…' : latest.type === 'commandExecution' ? '正在执行命令…' : '正在调用工具…') :
+    failed ? '思考与执行 · ' + failed + ' 项未成功' : '思考与执行';
+  $('.activity-label', group).textContent = label; $('.activity-count', group).textContent = counts.join(' · ');
+  $('.activity-dot', group).hidden = !pending.length;
+  group.classList.toggle('running', pending.length > 0); group.classList.toggle('has-errors', failed > 0 || turn?.status === 'failed');
+}
+function refreshActivityGroups(turnId) {
+  $$('.activity-group', $('#messages')).filter(group => group.dataset.turnId === turnId).forEach(updateActivityGroup);
+}
+function mountItem(item, node, done, turnId) {
+  const existing = state.items.get(item.id);
+  turnId = turnId || existing?.turnId || state.activeTurns.get(state.thread?.id) || '';
+  node.dataset.item = item.id;
+  let group = existing?.node.closest('.activity-group');
+  if (existing) {
+    if (node.tagName === 'DETAILS') node.open = existing.node.open;
+    existing.node.replaceWith(node);
+  } else if (isActivity(item)) {
+    group = $('#messages').lastElementChild;
+    if (!group?.classList.contains('activity-group') || group.dataset.turnId !== turnId) group = createActivityGroup(turnId);
+    $('.activity-items', group).append(node);
+  } else $('#messages').append(node);
+  state.items.set(item.id, { item, node, done, turnId }); updateActivityGroup(group);
+  $('#welcome').hidden = true; scrollMessages();
+}
+function upsertItem(item, done = false, turnId = null) {
+  if (!item?.id) return;
+  mountItem(item, renderItem(item, done), done, turnId); state.live.delete(item.id);
+}
+function appendDelta(id, delta, type, turnId = null) {
   if (!id || typeof delta !== 'string') return;
   const entry = state.items.get(id); const text = (state.live.get(id) ?? (type === 'agentMessage' ? entry?.item.text : type === 'commandExecution' ? entry?.item.aggregatedOutput : '') ?? '') + delta;
   state.live.set(id, text); const item = { ...(entry?.item || {}), id, type };
   if (type === 'commandExecution') item.aggregatedOutput = text; else if (type === 'reasoning') item.summary = [text]; else item.text = text;
-  const node = renderItem(item); if (entry) { if (node.tagName === 'DETAILS') node.open = entry.node.open; entry.node.replaceWith(node); } else $('#messages').append(node);
-  state.items.set(id, { item, node }); $('#welcome').hidden = true; scrollMessages();
+  mountItem(item, renderItem(item, entry?.done || false), entry?.done || false, turnId);
 }
 async function loadThreads(more = false) {
   const generation = ++state.listGeneration;
@@ -144,7 +190,7 @@ async function hydrateThread(thread) {
   if (!turns.length) turns = await paged('thread/turns/list', { threadId:thread.id, itemsView:'full', sortDirection:'asc', limit:100 });
   if (state.thread?.id !== thread.id) return;
   state.turns = turns; $('#messages').replaceChildren(); state.items.clear(); state.activeTurns.delete(thread.id);
-  for (const turn of turns) { if (turn.status === 'inProgress') state.activeTurns.set(thread.id, turn.id); for (const item of turn.items || []) upsertItem(item, turn.status !== 'inProgress'); renderTurnOutcome(turn); }
+  for (const turn of turns) { if (turn.status === 'inProgress') state.activeTurns.set(thread.id, turn.id); for (const item of turn.items || []) upsertItem(item, turn.status !== 'inProgress', turn.id); renderTurnOutcome(turn); }
   $('#welcome').hidden = turns.length > 0; $('#chat-toolbar').hidden = false; $('#page-title').textContent = thread.name || thread.preview || '新会话'; $('#thread-info').textContent = thread.id; updateSend();
 }
 async function ensureThread() {
