@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="使用原生 Codex 开源能力的本地 Web 工作台">
+  <title>Codex · Web</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/vendor/xterm.css">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/vendor/xterm.js" defer></script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg"><defs>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 11.5a8 8 0 0 1-8 8H5l-3 2v-10a9 9 0 0 1 18 0Z"/></symbol>
+<symbol id="i-code" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-13-2 16"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9H3Z"/></symbol>
+<symbol id="i-skill" viewBox="0 0 24 24"><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5Z"/></symbol>
+<symbol id="i-mcp" viewBox="0 0 24 24"><path d="m8 15 7-7m-4-3 2-2a4 4 0 0 1 6 6l-2 2M7 13l-2 2a4 4 0 0 0 6 6l2-2m-5-3 8-8"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="m10 3-1 3-3 1-3 3 1 3-1 3 3 2 3 1 1 2h4l1-2 3-1 3-2-1-3 1-3-3-3-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></symbol>
+<symbol id="i-terminal" viewBox="0 0 24 24"><path d="m5 6 6 6-6 6m8 0h7"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M12 20V4m-6 6 6-6 6 6"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+<symbol id="i-archive" viewBox="0 0 24 24"><path d="M4 8v12h16V8M3 3h18v5H3Zm6 9h6"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M5 3h9l5 5v13H5Zm9 0v6h5M8 13h8m-8 4h6"/></symbol>
+<symbol id="i-branch" viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="18" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><path d="M6 7v10m12-10c0 7-12 2-12 9"/></symbol>
+</defs></svg>
+<aside class="sidebar" id="sidebar">
+  <div class="brand-row"><a class="brand" href="/" aria-label="Codex 首页"><svg viewBox="0 0 32 32" class="logo"><path d="m11 7-8 9 8 9M21 7l8 9-8 9M18 4l-4 24"/></svg><strong>Codex</strong><span class="badge">WEB</span></a><button class="icon-button" id="collapse" aria-label="收起侧栏"><svg><use href="#i-panel"/></svg></button></div>
+  <nav class="main-nav" aria-label="主导航">
+    <button class="nav-button primary-nav" data-view="chat" id="new-chat"><svg><use href="#i-plus"/></svg>新建会话<kbd>⌘ K</kbd></button>
+    <button class="nav-button" data-view="skills"><svg><use href="#i-skill"/></svg>技能</button>
+    <button class="nav-button" data-view="mcp"><svg><use href="#i-mcp"/></svg>MCP 服务</button>
+    <button class="nav-button" data-view="plugins"><svg><use href="#i-grid"/></svg>插件与应用</button>
+    <button class="nav-button" data-view="protocol"><svg><use href="#i-code"/></svg>原生能力</button>
+  </nav>
+  <div class="sidebar-section"><span>项目</span><button class="icon-button" id="project-edit" aria-label="选择项目"><svg><use href="#i-plus"/></svg></button></div>
+  <button class="project-button" id="project-button"><svg><use href="#i-folder"/></svg><span id="project-name">工作区</span><svg class="tiny"><use href="#i-down"/></svg></button>
+  <div class="sidebar-section"><span id="thread-list-label">最近会话</span><button class="icon-button" id="archive-toggle" aria-label="查看归档"><svg><use href="#i-archive"/></svg></button></div>
+  <label class="thread-search"><svg><use href="#i-search"/></svg><input id="thread-search" placeholder="搜索会话" aria-label="搜索会话"></label>
+  <div class="thread-list" id="thread-list"><div class="subtle empty-small">正在连接原生运行时…</div></div>
+  <button id="threads-more" class="text-button" hidden>加载更多</button>
+  <footer class="sidebar-footer"><button class="nav-button" data-view="settings"><svg><use href="#i-settings"/></svg>设置<span id="runtime-pill" class="version-pill">本地</span></button><button class="account-button" data-view="account"><span class="avatar">C</span><span><strong id="account-name">本地账户</strong><small id="account-status">由 Codex 管理登录</small></span><svg><use href="#i-down"/></svg></button></footer>
+</aside>
+<main class="main">
+  <header class="topbar"><div class="topbar-left"><button class="icon-button" id="show-sidebar" aria-label="展开侧栏"><svg><use href="#i-panel"/></svg></button><span id="breadcrumb">工作区</span><span class="slash">/</span><strong id="page-title">新建会话</strong></div><div class="topbar-right"><span class="connection" id="connection"><i></i>连接中</span><button class="icon-button" id="files-toggle" title="文件" aria-label="文件浏览器"><svg><use href="#i-folder"/></svg></button><button class="icon-button" id="terminal-toggle" title="原生终端" aria-label="原生终端"><svg><use href="#i-terminal"/></svg></button><button class="icon-button" id="theme-toggle" title="切换主题" aria-label="切换主题">◐</button></div></header>
+  <div class="error-banner" id="connection-error" hidden></div>
+  <div class="workspace-body">
+    <section class="chat-view" id="view-chat">
+      <div class="chat-toolbar" id="chat-toolbar" hidden><span class="subtle" id="thread-info"></span><select id="thread-action" aria-label="会话操作"><option value="">会话操作</option><option value="rename">重命名</option><option value="fork">分叉会话</option><option value="compact">压缩上下文</option><option value="review">审查未提交更改</option><option value="revert">回退最近一轮</option><option value="archive">归档</option><option value="unarchive">取消归档</option><option value="export">导出会话</option></select></div>
+      <div class="conversation-scroll" id="conversation-scroll"><div class="welcome" id="welcome"><div class="welcome-mark"><svg viewBox="0 0 32 32"><path d="m11 7-8 9 8 9M21 7l8 9-8 9M18 4l-4 24"/></svg></div><p class="eyebrow">你的代码，你的工作区</p><h1>今天想构建什么？</h1><p class="welcome-description">从一个想法开始，让 Codex 和你一起把它实现。</p><div class="suggestions"><button data-prompt="先阅读当前项目，介绍代码结构和启动方式。"><svg><use href="#i-folder"/></svg><strong>熟悉项目</strong><span>了解代码结构与运行方式</span></button><button data-prompt="检查当前项目，找出一个值得修复的问题，先向我解释再着手修改。"><svg><use href="#i-code"/></svg><strong>查找问题</strong><span>一起定位并修复代码缺陷</span></button><button data-prompt="审查工作区中尚未提交的改动，关注潜在错误和回归风险。"><svg><use href="#i-branch"/></svg><strong>审查改动</strong><span>关注正确性与潜在回归</span></button></div></div><div class="messages" id="messages" aria-live="polite"></div></div>
+      <div id="requests" class="requests" aria-live="assertive"></div>
+      <div class="composer-area"><div class="plan-summary" id="plan-summary" hidden></div><div class="composer"><div class="attachments" id="attachments"></div><textarea id="prompt" placeholder="向 Codex 描述任务，或输入 / 查看操作" rows="2" aria-label="任务内容"></textarea><div class="composer-bottom"><div class="composer-options"><button class="icon-button" id="attach-button" title="添加图片或文本" aria-label="添加附件"><svg><use href="#i-plus"/></svg></button><input type="file" id="file-input" multiple hidden><select id="model" aria-label="模型"><option value="">默认模型</option></select><select id="effort" aria-label="推理强度"><option value="">默认推理</option></select></div><button id="send" class="send-button" title="发送" aria-label="发送任务"><svg><use href="#i-arrow"/></svg></button></div></div><div class="composer-meta"><button id="cwd-button"><svg><use href="#i-folder"/></svg><span id="cwd-label">工作区</span><svg><use href="#i-down"/></svg></button><span id="usage-label">原生 Codex 运行时</span><span>Enter 发送 · Shift Enter 换行</span></div></div>
+    </section>
+    <section class="content-view" id="view-panel" hidden><div id="panel-content"></div></section>
+    <aside class="file-panel" id="file-panel" hidden><div class="panel-header"><strong>项目文件</strong><button id="files-close" class="icon-button" aria-label="关闭文件面板"><svg><use href="#i-close"/></svg></button></div><div class="file-path" id="file-path"></div><div id="file-tree"></div><pre id="file-preview" hidden></pre></aside>
+  </div>
+  <section class="terminal-panel" id="terminal-panel" hidden><div class="panel-header"><div><svg><use href="#i-terminal"/></svg><strong>原生 Codex CLI</strong><span class="subtle">独立终端会话</span></div><div class="terminal-actions"><input id="cli-args" value="[]" aria-label="CLI 参数 JSON 数组" title="Codex CLI 参数，例如 [&#34;--help&#34;]"><button id="terminal-start" class="small-button">启动</button><button id="terminal-close" class="icon-button" aria-label="关闭终端"><svg><use href="#i-close"/></svg></button></div></div><div id="terminal"></div></section>
+</main>
+<dialog id="dialog"><form id="dialog-form"><div class="dialog-title"><h2 id="dialog-title"></h2><button type="button" id="dialog-close" class="icon-button" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div><div id="dialog-body"></div><div class="dialog-actions"><button type="button" id="dialog-cancel" class="small-button">取消</button><button id="dialog-submit" class="solid-button" type="submit">保存</button></div></form></dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+</body></html>
