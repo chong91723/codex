@@ -15,7 +15,7 @@ async function panelCall(method,params){
   await page.evaluate(method=>{window.__receipt={pending:true};const original=rpc;rpc=function(name,...args){const result=original(name,...args);if(name===method){rpc=original;result.then(value=>window.__receipt={value},error=>window.__receipt={error:error.message});}return result;};},method);
   await page.getByRole('button',{name:'执行原生请求',exact:true}).click();await page.waitForFunction(()=>!window.__receipt.pending,null,{timeout:120000});const response=await page.evaluate(()=>window.__receipt);if(response.error)throw new Error(response.error);return response.value;
 }
-async function check(name,fn){try{const evidence=await fn();results.push({name,status:'passed',evidence});console.log('PASS '+name);}catch(error){results.push({name,status:'failed',error:error.message});console.log('FAIL '+name+': '+error.message);}}
+async function check(name,fn){if(/CLI/.test(name)&&await page.locator('#terminal-toggle').isHidden()){results.push({name,status:'notApplicable',reason:'CLI UI hidden by product requirement; native runtime retained'});return;}try{const evidence=await fn();results.push({name,status:'passed',evidence});console.log('PASS '+name);}catch(error){results.push({name,status:'failed',error:error.message});console.log('FAIL '+name+': '+error.message);}}
 try{
   await page.goto(process.env.CODEX_WEB_URL||'http://127.0.0.1:8766');
   await page.waitForFunction(()=>state.ready&&state.models.length>0,null,{timeout:60000});

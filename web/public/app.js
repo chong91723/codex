@@ -6,7 +6,7 @@ const icon = name => { const node = document.createElementNS('http://www.w3.org/
 const pretty = value => JSON.stringify(value, null, 2);
 function configDiff(before,after,prefix=''){const edits=[];const object=value=>value&&typeof value==='object'&&!Array.isArray(value);for(const key of new Set([...Object.keys(before),...Object.keys(after)])){const segment=/^[A-Za-z0-9_-]+$/.test(key)?key:JSON.stringify(key);const path=prefix?prefix+'.'+segment:segment;if(!(key in after)){edits.push({keyPath:path,value:null,mergeStrategy:'replace'});continue;}if(object(before[key])&&object(after[key]))edits.push(...configDiff(before[key],after[key],path));else if(JSON.stringify(before[key])!==JSON.stringify(after[key]))edits.push({keyPath:path,value:after[key],mergeStrategy:'replace'});}return edits;}
 const safeURL = value => { try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : null; } catch { return null; } };
-const state = { ws: null, pending: new Map(), counter: 0, ready: false, view: 'chat', thread: null, threadArchived:false, threadBusy:false, attachmentLoads:0, threadSettings:new Map(), imageCache:new Map(), runtimeDefaults:null, turns: [], items: new Map(), live: new Map(), activeTurns: new Map(), threads: [], cursor: null, archived: false, attachments: [], events: [], requests: new Map(), models: [], status: null, schema: null, serverSchema: null, currentMethod: null, reconnect: null, selectedCwd: localStorage.getItem('codex.cwd') || '', listGeneration: 0, navigationGeneration:0, threadLoading:false, restoreError:false };
+const state = { ws: null, pending: new Map(), counter: 0, ready: false, view: 'chat', thread: null, threadArchived:false, threadBusy:false, attachmentLoads:0, threadSettings:new Map(), imageCache:new Map(), mcpCache:new Map(), mcpRequests:new Map(), mcpRevision:0, skillGroups:new Set(["common","custom"]), skillQuery:"", runtimeDefaults:null, turns: [], items: new Map(), live: new Map(), activeTurns: new Map(), threads: [], cursor: null, archived: false, attachments: [], events: [], requests: new Map(), models: [], status: null, schema: null, serverSchema: null, currentMethod: null, reconnect: null, selectedCwd: localStorage.getItem('codex.cwd') || '', listGeneration: 0, navigationGeneration:0, threadLoading:false, restoreError:false };
 let toastTimer, searchTimer, term, termWS, termResize, termFit, termResizeFrame;
 function toast(message) { $('#toast').textContent = message; $('#toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').hidden = true, 5500); }
 function nativeErrorMessage(error){const message=error?.message||String(error);if(/cf_chl_|challenge-platform/i.test(message))return '远端服务要求浏览器验证（HTTP 403）。请检查代理出口，或在官方服务完成验证后重试。';if(/<html/i.test(message))return '远端服务返回网页错误，请检查网络连接和登录状态。';return message;}
@@ -38,7 +38,7 @@ async function connect() {
   ws.onopen = async () => {
     try {
       state.runtimeInfo = await rpc('initialize', { clientInfo: { name: 'codex_web_native', title: 'Codex Web', version: '1.0.0' }, capabilities: { experimentalApi: true } });
-      ws.send(JSON.stringify({ method: 'initialized' })); state.ready = true;
+      ws.send(JSON.stringify({ method: 'initialized' })); invalidateMcpCache();state.ready = true;
       setConnection('online', '原生已连接'); $('#connection-error').hidden = true;
       const generation=state.navigationGeneration;
       await Promise.allSettled([loadThreads(), loadModels(), loadAccount()]);
@@ -58,6 +58,7 @@ function addEvent(msg) { state.events.push({ at: new Date().toLocaleTimeString()
 function currentEvent(params) { return !params.threadId || params.threadId === state.thread?.id; }
 function handleEvent(msg) {
   const p = msg.params || {}, method = msg.method;
+  if(method==='mcpServer/startupStatus/updated'){invalidateMcpCache();state.mcpViewUpdate?.(p);}
   if (method === 'serverRequest/resolved') { state.requests.delete(String(p.requestId)); renderRequests(); }
   if (method === 'thread/settings/updated') {state.threadSettings.set(p.threadId,p.threadSettings);if(p.threadId===state.thread?.id&&state.view==='settings')renderSettings().catch(report);}
   if (method === 'thread/started') loadThreads().catch(() => {});
@@ -89,13 +90,13 @@ function modelProvider(){return state.threadSettings.get(state.thread?.id)?.mode
 function modelPreferenceKey(provider=modelProvider()){return provider===(state.runtimeDefaults?.model_provider||'openai')?'codex.model':'codex.model.'+provider;}
 function restoreDefaultModelChoice(){
   if(!state.runtimeDefaults)return;
-  const provider=state.runtimeDefaults.model_provider||'openai';for(const option of $$('#model option')){if(option.dataset.provider&&option.dataset.provider!==provider)option.remove();else option.disabled=false;}
+  const provider=state.runtimeDefaults.model_provider||'openai';for(const option of $$('#model option')){option.disabled=false;}
   const saved=localStorage.getItem(modelPreferenceKey(provider));$('#model').value=$$('#model option').some(option=>option.value===saved)?saved:'';$('#model').title='模型提供方：'+provider;loadEfforts();
 }
 function selectThreadModel(threadId){
   const settings=state.threadSettings.get(threadId);if(!settings?.model||!settings.modelProvider)return;
   const provider=settings.modelProvider,defaultProvider=state.runtimeDefaults?.model_provider||'openai';
-  for(const option of $$('#model option'))option.disabled=(option.dataset.provider||defaultProvider)!==provider;
+  for(const option of $$('#model option'))option.disabled=false;
   let option=$$('#model option').find(option=>option.value===settings.model&&(option.dataset.provider||defaultProvider)===provider);
   if(!option){option=new Option((provider==='openai'?'ChatGPT · ':'')+settings.model,settings.model);option.dataset.provider=provider;$('#model').append(option);}
   option.disabled=false;$('#model').value=settings.model;$('#model').title='模型提供方：'+provider;loadEfforts();
@@ -125,13 +126,12 @@ function renderGeneratedImage(item){
   if(source)loadImageElement(image,source);else if(path)loadImageElement(image,null,path);else{figure.append(el('p','subtle','图片附件：'+(item.fileId||'暂不可读取')));return figure;}
   figure.append(image);const caption=el('figcaption');caption.append(el('span','subtle','Codex 原生生图'),button('查看大图',()=>imagePreview(image.src,'生成的图片',path)),button('下载图片',()=>{const link=el('a');link.href=image.src;link.download=path?.split('/').pop()||'codex-image.png';link.click();}));figure.append(caption);return figure;
 }
-async function startImageChat(skill){
-  // Custom providers intentionally hide OpenAI account status; native auth owns validation.
-  const model=localStorage.getItem(modelPreferenceKey('openai'))||((state.runtimeDefaults?.model_provider||'openai')==='openai'?state.runtimeDefaults?.model:null)||'gpt-5.6-luna';
-  const result=await rpc('thread/start',{cwd:state.selectedCwd,model,config:{model_provider:'openai'}});
-  resetChat();state.threadSettings.set(result.thread.id,{model:result.model,modelProvider:result.modelProvider,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread);
-  state.attachments.push({name:skill.name,input:{type:'skill',name:skill.name,path:skill.path}});renderAttachments();await showView('chat');loadThreads().catch(report);$('#prompt').focus();toast('已创建 ChatGPT 原生生图会话；新对话仍使用默认模型');
+async function startProviderChat(model,provider){
+  const result=await rpc('thread/start',{cwd:state.selectedCwd,model,config:{model_provider:provider}});
+  resetChat();state.threadSettings.set(result.thread.id,{model:result.model,modelProvider:result.modelProvider,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread);showView('chat');loadThreads().catch(report);
+  toast('已创建 '+(provider==='openai'?'ChatGPT':'新模型')+' 会话，已启用的技能可在对话中调用');
 }
+function selectedModelProvider(){return $('#model').selectedOptions[0]?.dataset.provider||state.runtimeDefaults?.model_provider||'openai';}
 function markdown(text) {
   const wrapper=el('div','markdown');
   if(!window.marked||!window.DOMPurify){wrapper.textContent=text||'';return wrapper;}
@@ -286,7 +286,8 @@ async function hydrateThread(thread, generation=state.navigationGeneration) {
 }
 async function ensureThread() {
   if (state.thread) return state.thread;
-  const result = await rpc('thread/start', { cwd:state.selectedCwd, model:$('#model').value || null });
+  const provider=selectedModelProvider(),config=provider!==(state.runtimeDefaults?.model_provider||'openai')?{model_provider:provider}:undefined;
+  const result = await rpc('thread/start', { cwd:state.selectedCwd, model:$('#model').value || null,config });
   state.threadSettings.set(result.thread.id,{model:result.model,modelProvider:result.modelProvider,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread); loadThreads().catch(() => {}); return result.thread;
 }
 function updateSend() { const deletion=$('#thread-action option[value=delete]');if(deletion)deletion.disabled=state.threadBusy; const running = !state.threadBusy&&state.activeTurns.has(state.thread?.id); $('#send').disabled=state.threadLoading||state.restoreError||state.threadBusy||(!running&&(state.threadArchived||state.attachmentLoads>0)); $('#send').classList.toggle('running', running); $('#send').title = running ? '中断当前任务' : state.attachmentLoads>0?'正在读取附件':'发送'; $('#send').ariaLabel = running ? '中断当前任务' : '发送任务'; }
@@ -318,9 +319,10 @@ async function loadModels() {
   $('#model').replaceChildren(new Option(model?'默认 · '+model:'默认模型',''));
   $('#model').title='模型提供方：'+(configuration.config?.model_provider||'原生默认提供方');
   for(const model of state.models){const option=new Option(model.displayName||model.model,model.model);option.dataset.provider=configuration.config?.model_provider||'openai';$('#model').append(option);}
+  if((configuration.config?.model_provider||'openai')!=='openai'&&state.modelDetails.some(model=>model.model==='gpt-5.6-luna')){const imageModel=new Option('ChatGPT · gpt-5.6-luna（支持生图）','gpt-5.6-luna');imageModel.dataset.provider='openai';$('#model').append(imageModel);}
   const saved=localStorage.getItem('codex.model');if(saved){if(!state.models.some(model=>model.model===saved))$('#model').append(new Option(saved,saved));$('#model').value=saved;}loadEfforts();
 }
-function loadEfforts() { const model = (state.modelDetails||state.models).find(m => m.model === $('#model').value); const enums = state.schema?.definitions?.ReasoningEffort?.enum || []; $('#effort').replaceChildren(new Option('默认推理', '')); for (const effort of model?.supportedReasoningEfforts || enums.map(reasoningEffort => ({ reasoningEffort }))) $('#effort').append(new Option(effort.reasoningEffort, effort.reasoningEffort)); const saved = localStorage.getItem('codex.effort'); if ($$('#effort option').some(x => x.value === saved)) $('#effort').value = saved; }
+function loadEfforts() { const model = (state.modelDetails||state.models).find(m => m.model === ($('#model').value||state.runtimeDefaults?.model)); const enums = state.schema?.definitions?.ReasoningEffort?.enum || []; $('#effort').replaceChildren(new Option('默认推理', '')); for (const effort of model?.supportedReasoningEfforts || enums.map(reasoningEffort => ({ reasoningEffort }))) $('#effort').append(new Option(effort.reasoningEffort, effort.reasoningEffort)); const saved = localStorage.getItem('codex.effort'); if ($$('#effort option').some(x => x.value === saved)) $('#effort').value = saved; }
 async function loadAccount() { const data = await rpc('account/read', { refreshToken:false }); state.account = data; $('#account-name').textContent = data.account?.email || (data.account?.type === 'apiKey' ? 'API 密钥账户' : '本地账户'); $('#account-status').textContent = data.account?.planType || data.account?.type || (data.requiresOpenaiAuth ? '需要登录' : '自定义模型提供方'); if (state.view === 'account') renderAccount(); }
 function showView(view) {
   state.view = view; $$('.main-nav .nav-button,.sidebar-footer .nav-button').forEach(node => node.classList.toggle('active', node.dataset.view === view));
@@ -396,20 +398,40 @@ function importSkillDialog() {
     toast('Skill 已导入并启用');await renderSkills();
   },'导入并启用');
 }
-async function renderSkills() {
+function isPetSkill(skill){return skill.name.startsWith('work-pets:');}
+function skillPresentation(skill){
+  const known=state.skillCatalog?.[skill.name];if(known)return known;
+  const original=skill.shortDescription||skill.description||'';
+  return {title:skill.interface?.displayName||skill.name,description:/[\u3400-\u9fff]/.test(original)?original:'已安装的自定义技能，启用后可在对话中让 Agent 按需要调用。',original};
+}
+async function renderSkills(){
   const data=await rpc('skills/list',{cwds:[state.selectedCwd],forceReload:true});if(state.view!=='skills')return;
-  const root=panelHeading('为任务添加技能','导入自己的 Skill，使用原生运行时发现、启用、停用和执行。','skill');
-  root.append(button('导入自定义 Skill',importSkillDialog,'solid-button'));const grid=el('div','card-grid management-grid');root.append(grid);
-  const seen=new Set();
-  for(const group of data.data||[]){for(const skill of group.skills||[]){
-    if(seen.has(skill.path))continue;seen.add(skill.path);
-    const enabled=skill.enabled!==false,card=el('article','card');card.dataset.skillPath=skill.path;
-    card.append(el('h3','',skill.interface?.displayName||skill.name),el('span','tag',enabled?'已启用':'已停用'),el('p','',skill.shortDescription||skill.description),el('span','tag',skill.scope||'本地技能'),el('div','path',skill.path));
-    const actions=el('div','card-actions'),use=button('在会话中使用',()=>{state.attachments.push({name:skill.name,input:{type:'skill',name:skill.name,path:skill.path}});renderAttachments();showView('chat');});use.disabled=!enabled;
-    if(skill.name==='imagegen'){const generate=button('使用 ChatGPT 原生生图',()=>startImageChat(skill),'solid-button');generate.disabled=!enabled;actions.append(generate);card.append(el('p','subtle','原生生图使用 ChatGPT 授权和 OpenAI 图像服务，会创建独立会话；日常默认模型保持原样。'));}
-    actions.append(use,button(enabled?'停用':'启用',async()=>{await rpc('skills/config/write',{path:skill.path,enabled:!enabled});state.attachments=state.attachments.filter(a=>a.input?.path!==skill.path);renderAttachments();await renderSkills();}));card.append(actions);grid.append(card);
-  }for(const error of group.errors||[])grid.append(el('div','panel-error',pretty(error)));}
-  if(!grid.children.length)grid.append(el('div','card subtle','还没有技能，点击上方按钮导入。'));
+  const root=panelHeading('技能','启用后，Agent 会根据任务需要调用技能。你也可以直接在对话中提醒它使用。','skill');
+  const toolbar=el('div','skills-toolbar'),search=el('input','field-input');search.type='search';search.ariaLabel=search.placeholder='搜索技能名称或用途';search.value=state.skillQuery;
+  toolbar.append(search,button('导入自定义 Skill',importSkillDialog,'solid-button'));root.append(toolbar);
+  const seen=new Set(),skills=[];
+  for(const group of data.data||[])for(const skill of group.skills||[]){if(seen.has(skill.path)||isPetSkill(skill))continue;seen.add(skill.path);skills.push(skill);}
+  const summary=el('p','subtle skill-count'),groups=el('div','skill-groups');root.append(summary,groups);
+  const category=skill=>skill.scope==='system'?'common':skill.name.startsWith('openai-templates:')?'templates':skill.name.includes(':')?'plugins':'custom';
+  const categories=[['common','常用技能'],['custom','自定义与项目技能'],['plugins','插件技能'],['templates','文档、表格与演示模板']];
+  function draw(){
+    const query=state.skillQuery.trim().toLocaleLowerCase(),matching=skills.filter(skill=>{const p=skillPresentation(skill);return !query||[skill.name,p.title,p.description].join(' ').toLocaleLowerCase().includes(query);});
+    summary.textContent=query?'找到 '+matching.length+' 项技能':'共 '+skills.length+' 项技能 · 插件和模板按用途收起';groups.replaceChildren();
+    for(const [key,label]of categories){
+      const members=matching.filter(skill=>category(skill)===key);if(!members.length)continue;
+      const section=el('details','skill-group');section.dataset.skillGroup=key;section.open=!!query||state.skillGroups.has(key);const heading=el('summary');heading.append(el('span','',label),el('span','tag',members.length+' 项'));section.append(heading);section.ontoggle=()=>{if(!query){if(section.open)state.skillGroups.add(key);else state.skillGroups.delete(key);}};
+      const grid=el('div','skill-grid');section.append(grid);groups.append(section);
+      for(const skill of members){
+        const p=skillPresentation(skill),enabled=skill.enabled!==false,card=el('article','card skill-card');card.dataset.skillPath=skill.path;card.dataset.skillName=skill.name;
+        const header=el('div','skill-card-heading');header.append(el('h3','',p.title),el('span','tag '+(enabled?'enabled-tag':''),enabled?'已启用':'已停用'));card.append(header,el('p','skill-description',p.description));
+        if(p.original&&!/[\u3400-\u9fff]/.test(p.original)){const original=el('details','skill-original');original.append(el('summary','','原始说明'),el('p','',p.original));card.append(original);}
+        const actions=el('div','skill-card-footer');actions.append(el('span','subtle',({common:'内置技能',custom:skill.scope==='repo'?'当前项目':'个人技能',plugins:'插件提供',templates:'模板技能'})[key]),button(enabled?'停用':'启用',async()=>{await rpc('skills/config/write',{path:skill.path,enabled:!enabled});state.attachments=state.attachments.filter(a=>a.input?.path!==skill.path);renderAttachments();toast('技能已'+(enabled?'停用':'启用'));await renderSkills();}));card.append(actions);grid.append(card);
+      }
+    }
+    if(!matching.length)groups.append(el('p','empty-small',query?'没有找到匹配的技能。':'还没有技能，点击上方按钮导入。'));
+  }
+  search.oninput=()=>{state.skillQuery=search.value;draw();};draw();
+  for(const group of data.data||[])for(const error of group.errors||[])root.append(el('p','panel-error',nativeErrorMessage(error.message||error)));
 }
 function parseStringObject(value,label){const object=JSON.parse(value||'{}');if(!object||Array.isArray(object)||typeof object!=='object'||Object.values(object).some(value=>typeof value!=='string'))throw new Error(label+' 必须是字符串值组成的 JSON 对象');return object;}
 function customMcpDialog(existingNames) {
@@ -446,24 +468,46 @@ function customMcpDialog(existingNames) {
 }
 async function writeMcpConfig(name,value,before,key='') {
   await rpc('config/batchWrite',{edits:[{keyPath:'mcp_servers.'+JSON.stringify(name)+(key?'.'+key:''),value,mergeStrategy:'replace'}],expectedVersion:before.layers?.find(layer=>layer.name?.type==='user'&&!layer.name?.profile)?.version,reloadUserConfig:true});
+  invalidateMcpCache();
   try{await rpc('config/mcpServer/reload',null);}catch(error){throw new Error('配置已保存，但重新加载未完成：'+nativeErrorMessage(error));}
 }
-async function renderMcp() {
-  const [data,result]=await Promise.all([paged('mcpServerStatus/list',{limit:100}),rpc('config/read',{includeLayers:true,cwd:state.selectedCwd})]);if(state.view!=='mcp')return;
-  const configs=result.config?.mcp_servers||{},names=new Set([...Object.keys(configs),...data.map(server=>server.name)]);
-  const root=panelHeading('连接你的工具','添加 stdio 或 HTTP MCP，启用后由 Codex 原生加载并在任务中使用。','mcp'),actions=el('div','card-actions');
-  actions.append(button('添加自定义 MCP',()=>customMcpDialog(names),'solid-button'),button('重新加载配置',async()=>{await rpc('config/mcpServer/reload',null);await renderMcp();}));root.append(actions);
-  const grid=el('div','card-grid management-grid');root.append(grid);
-  for(const name of names){
-    const config=configs[name],server=data.find(server=>server.name===name),enabled=config?.enabled!==false,card=el('article','card');card.dataset.mcpName=name;
-    card.append(el('h3','',name),el('span','tag',enabled?'已启用':'已停用'));
-    if(config)card.append(el('div','path',config.url?new URL(config.url).origin+' · HTTP':config.command+' · stdio'));
-    if(enabled){card.append(el('p','',server?({notStarted:'尚未连接',starting:'连接中',connected:'已连接',authenticationRequired:'需要认证',failed:'连接失败',cancelled:'连接已取消',disabled:'原生策略已停用'}[server.runtimeStatus]||'原生工具目录')+' · '+Object.keys(server.tools||{}).length+' 个工具 · '+(server.resources||[]).length+' 个资源':'正在等待原生连接状态'));if(server?.toolsError)card.append(el('p','panel-error',nativeErrorMessage(new Error(server.toolsError))));}
-    const controls=el('div','card-actions');if(config)controls.append(button(enabled?'停用':'启用',async()=>{const before=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});await writeMcpConfig(name,!enabled,before,'enabled');toast('MCP 已'+(enabled?'停用':'启用')+'，从下一次任务开始生效');await renderMcp();}));
-    if(server){controls.append(button('查看工具与资源',()=>showJSON(name,server)));if(enabled&&config?.url)controls.append(button('OAuth 登录',async()=>showAuthResult(await rpc('mcpServer/oauth/login',{name}))));}
-    card.append(controls);grid.append(card);
+function invalidateMcpCache(){state.mcpRevision++;state.mcpCache.clear();state.mcpRequests.clear();}
+function mcpStatusRequest(params,force=false){
+  const key=JSON.stringify([state.selectedCwd,params]),cached=state.mcpCache.get(key);if(!force&&cached&&Date.now()-cached.time<30000)return Promise.resolve(cached.data);
+  if(state.mcpRequests.has(key))return state.mcpRequests.get(key);
+  const revision=state.mcpRevision;const promise=paged('mcpServerStatus/list',params).then(data=>{if(revision!==state.mcpRevision)return data;if(state.mcpCache.size>=32)state.mcpCache.delete(state.mcpCache.keys().next().value);state.mcpCache.set(key,{time:Date.now(),data});return data;}).finally(()=>{if(state.mcpRequests.get(key)===promise)state.mcpRequests.delete(key);});state.mcpRequests.set(key,promise);return promise;
+}
+async function showMcpDetails(name){
+  let content;openDialog(name,root=>{content=el('div');content.append(el('p','loading','正在读取完整工具与资源…'));root.append(content);},async()=>{},'关闭');
+  try{const params={limit:100,detail:'full',serverName:name};if(state.thread?.id&&!state.threadBusy&&!state.threadArchived)params.threadId=state.thread.id;const data=await mcpStatusRequest(params);if(content.isConnected)content.replaceChildren(el('pre','',pretty(redact(data.find(server=>server.name===name)||{message:'当前没有此服务的目录，请刷新连接状态。'}))));}
+  catch(error){if(content.isConnected)content.replaceChildren(el('p','panel-error',nativeErrorMessage(error)),button('重试',()=>showMcpDetails(name)));}
+}
+async function renderMcp(){
+  const root=panelHeading('MCP 服务','连接外部工具。添加并启用后，Agent 可在对话中按需调用。','mcp'),actions=el('div','card-actions'),status=el('p','subtle mcp-discovery-status');status.setAttribute('role','status');
+  const names=new Set(),grid=el('div','card-grid management-grid mcp-grid');let configs={},servers=[],configLoading=true,statusLoading=true,configError=null,statusError=null;
+  const params={limit:100,detail:'toolsAndAuthOnly'};if(state.thread?.id&&!state.threadBusy&&!state.threadArchived)params.threadId=state.thread.id;
+  const cached=state.mcpCache.get(JSON.stringify([state.selectedCwd,params]));if(cached)servers=cached.data;
+  const add=button('添加自定义 MCP',()=>customMcpDialog(names),'solid-button'),refresh=button('刷新连接状态',()=>loadStatus(true));
+  actions.append(add,refresh,button('重新加载配置',async()=>{invalidateMcpCache();await rpc('config/mcpServer/reload',null);await renderMcp();}));root.append(actions,status,grid);
+  const active=()=>state.view==='mcp'&&grid.isConnected;
+  function draw(){
+    if(!active())return;names.clear();for(const name of [...Object.keys(configs),...servers.map(server=>server.name)])names.add(name);
+    add.disabled=configLoading;refresh.disabled=statusLoading;status.textContent=statusLoading?(servers.length?'已显示最近状态，正在后台更新…':'正在后台连接工具服务，页面可正常操作…'):statusError?'连接状态暂不可用，已保留服务配置。':'连接状态已更新 · 完整资源按需读取';
+    grid.replaceChildren();if(configError)grid.append(el('p','panel-error','读取配置失败：'+nativeErrorMessage(configError)),button('重试读取配置',loadConfig));if(statusError)grid.append(el('p','panel-error',nativeErrorMessage(statusError)),button('重试连接状态',()=>loadStatus(true)));
+    for(const name of names){
+      const config=configs[name],server=servers.find(server=>server.name===name),enabled=config?.enabled!==false,card=el('article','card mcp-card');card.dataset.mcpName=name;
+      const heading=el('div','skill-card-heading');heading.append(el('h3','',name),el('span','tag',enabled?'已启用':'已停用'));card.append(heading);
+      if(config)card.append(el('p','subtle',config.url?new URL(config.url).origin+' · HTTP':config.command+' · stdio'));
+      if(enabled){const runtime={notStarted:'尚未连接',starting:'连接中',connected:'已连接',authenticationRequired:'需要认证',failed:'连接失败',cancelled:'连接已取消',disabled:'原生策略已停用'}[server?.runtimeStatus]||(server?.toolsError?'连接失败':null);card.append(el('p','mcp-state',server?(runtime||'工具目录已就绪')+' · '+Object.keys(server.tools||{}).length+' 个工具':statusError?'暂时无法获取连接状态':'正在读取连接状态…'));if(server?.toolsError)card.append(el('p','panel-error',nativeErrorMessage(new Error(server.toolsError))));}
+      const controls=el('div','card-actions');if(config)controls.append(button(enabled?'停用':'启用',async()=>{const before=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});await writeMcpConfig(name,!enabled,before,'enabled');toast('MCP 已'+(enabled?'停用':'启用')+'，从下一次任务开始生效');await renderMcp();}));
+      if(enabled)controls.append(button('查看工具与资源',()=>showMcpDetails(name)));if(enabled&&config?.url)controls.append(button('OAuth 登录',async()=>showAuthResult(await rpc('mcpServer/oauth/login',{name}))));card.append(controls);grid.append(card);
+    }
+    if(!names.size)grid.append(el('div','card subtle',configLoading?'正在读取服务配置…':statusLoading?'还没有自定义 MCP，可点击上方按钮添加。正在发现其他工具服务…':'还没有 MCP，点击上方按钮添加。'));
   }
-  if(!names.size)grid.append(el('div','card subtle','还没有 MCP，点击上方按钮添加。'));
+  async function loadConfig(){configLoading=true;configError=null;draw();try{const result=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});configs=result.config?.mcp_servers||{};}catch(error){configError=error;}finally{configLoading=false;draw();}}
+  async function loadStatus(force=false){statusLoading=true;statusError=null;draw();try{servers=await mcpStatusRequest(params,force);}catch(error){statusError=error;}finally{statusLoading=false;draw();}}
+  state.mcpViewUpdate=p=>{if(!active()||p.threadId&&p.threadId!==state.thread?.id)return;const server=servers.find(server=>server.name===p.name);if(server){server.runtimeStatus={starting:'starting',ready:'connected',failed:'failed',cancelled:'cancelled'}[p.status];if(p.error)server.toolsError=p.error;draw();}};
+  draw();loadConfig();loadStatus();
 }
 async function renderPlugins(){
   const root=panelHeading('插件与应用','原生目录中的扩展。可用性由 Codex 配置、账户和服务决定。','grid');
@@ -603,12 +647,12 @@ async function init(){
   $$('[data-prompt]').forEach(node=>node.onclick=()=>{$('#prompt').value=node.dataset.prompt;$('#prompt').focus();});
   $('#thread-search').oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadThreads().catch(report),300);};$('#threads-more').onclick=()=>loadThreads(true).catch(report);
   $('#archive-toggle').onclick=()=>{state.archived=!state.archived;$('#thread-list-label').textContent=state.archived?'归档会话':'最近会话';loadThreads().catch(report);};
-  $('#model').onchange=()=>{localStorage.setItem(modelPreferenceKey(),$('#model').value);loadEfforts();};$('#effort').onchange=()=>localStorage.setItem('codex.effort',$('#effort').value);
+  $('#model').onchange=()=>{const model=$('#model').value,provider=selectedModelProvider();localStorage.setItem(modelPreferenceKey(provider),model);loadEfforts();if(state.thread&&provider!==modelProvider())startProviderChat(model||state.runtimeDefaults.model,provider).catch(error=>{selectThreadModel(state.thread.id);report(error);});else $('#model').title='模型提供方：'+provider;};$('#effort').onchange=()=>localStorage.setItem('codex.effort',$('#effort').value);
   $('#attach-button').onclick=()=>$('#file-input').click();$('#file-input').onchange=()=>{const files=Array.from($('#file-input').files);$('#file-input').value='';state.attachmentLoads++;updateSend();readAttachments(files).catch(report).finally(()=>{state.attachmentLoads--;updateSend();});};
   $('#thread-action').onchange=()=>{const action=$('#thread-action').value;$('#thread-action').value='';threadAction(action).catch(report);};
   $('#files-toggle').onclick=()=>{if(!$('#file-panel').hidden)$('#file-panel').hidden=true;else fileBrowser().catch(report);};$('#files-close').onclick=()=>$('#file-panel').hidden=true;
   $('#terminal-toggle').onclick=openTerminal;$('#terminal-start').onclick=()=>{try{startTerminal();}catch(error){report(error);}};$('#terminal-expand').onclick=expandTerminal;$('#terminal-close').onclick=()=>{termWS?.close();$('#terminal-panel').hidden=true;$('.main').classList.remove('terminal-expanded');$('#terminal-expand').textContent='展开';terminalStatus('未启动');};
   document.addEventListener('keydown',event=>{if((event.metaKey||event.ctrlKey)&&event.key==='k'){event.preventDefault();resetChat();showView('chat');}});
-  const [status,schema,serverSchema]=await Promise.all([fetchJSON('/api/status'),fetchJSON('/api/schema/ClientRequest.json'),fetchJSON('/api/schema/ServerRequest.json')]);state.status=status;state.schema=schema;state.serverSchema=serverSchema;setCwd(state.selectedCwd||status.workspace);$('#runtime-pill').textContent=status.build?'源码 '+status.build.sourceCommit.slice(0,7):status.version.replace('codex-cli ','v');await connect();
+  const [status,schema,serverSchema,skillCatalog]=await Promise.all([fetchJSON('/api/status'),fetchJSON('/api/schema/ClientRequest.json'),fetchJSON('/api/schema/ServerRequest.json'),fetchJSON('/skill-catalog.zh-CN.json').catch(()=>({}))]);state.skillCatalog=skillCatalog;state.status=status;state.schema=schema;state.serverSchema=serverSchema;setCwd(state.selectedCwd||status.workspace);$('#runtime-pill').textContent=status.build?'源码 '+status.build.sourceCommit.slice(0,7):status.version.replace('codex-cli ','v');await connect();
 }
 init().catch(error=>showConnectionError(error.message));

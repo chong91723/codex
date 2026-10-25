@@ -24,12 +24,7 @@ try{
   await page.locator('#files-toggle').click();
   await page.waitForSelector('#file-panel:not([hidden])');
   await page.locator('#files-close').click();
-  await page.locator('#terminal-toggle').click();
-  await page.locator('#cli-args').fill('["--version"]');
-  await page.locator('#terminal-start').click();
-  await page.waitForTimeout(1500);
-  console.log(JSON.stringify({terminal:await page.locator('#terminal').innerText()}));
-  await page.locator('#terminal-close').click();
+  if(!await page.locator('#terminal-toggle').isHidden())throw new Error('CLI entry should be hidden');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);
   console.log(JSON.stringify({errors,desktopOverflow:overflow,screenshotDir}));
   if(errors.length||overflow)process.exitCode=1;

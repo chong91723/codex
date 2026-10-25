@@ -1,0 +1,266 @@
+{
+  "origin": "real Chromium desktop controls, clipboard and hidden CLI; no upstream source changes",
+  "results": [
+    {
+      "name": "欢迎标题与输入框在不同桌面尺寸下不重叠",
+      "status": "passed",
+      "evidence": [
+        {
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "gap": 24
+        },
+        {
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "gap": 24
+        },
+        {
+          "viewport": {
+            "width": 1024,
+            "height": 768
+          },
+          "gap": 24
+        }
+      ]
+    },
+    {
+      "name": "模型与思考强度相邻，工具入口集中在侧栏，176 项原生能力保留",
+      "status": "passed",
+      "evidence": {
+        "positions": [
+          {
+            "viewport": {
+              "width": 1440,
+              "height": 1000
+            },
+            "model": {
+              "x": 502,
+              "y": 494,
+              "width": 190,
+              "height": 28,
+              "top": 494,
+              "right": 692,
+              "bottom": 522,
+              "left": 502
+            },
+            "effort": {
+              "x": 696,
+              "y": 494,
+              "width": 84,
+              "height": 28,
+              "top": 494,
+              "right": 780,
+              "bottom": 522,
+              "left": 696
+            }
+          },
+          {
+            "viewport": {
+              "width": 1280,
+              "height": 720
+            },
+            "model": {
+              "x": 422,
+              "y": 368,
+              "width": 190,
+              "height": 28,
+              "top": 368,
+              "right": 612,
+              "bottom": 396,
+              "left": 422
+            },
+            "effort": {
+              "x": 616,
+              "y": 368,
+              "width": 84,
+              "height": 28,
+              "top": 368,
+              "right": 700,
+              "bottom": 396,
+              "left": 616
+            }
+          },
+          {
+            "viewport": {
+              "width": 1024,
+              "height": 768
+            },
+            "model": {
+              "x": 306,
+              "y": 389.59375,
+              "width": 190,
+              "height": 28,
+              "top": 389.59375,
+              "right": 496,
+              "bottom": 417.59375,
+              "left": 306
+            },
+            "effort": {
+              "x": 500,
+              "y": 389.59375,
+              "width": 84,
+              "height": 28,
+              "top": 389.59375,
+              "right": 584,
+              "bottom": 417.59375,
+              "left": 500
+            }
+          }
+        ],
+        "nativeMethodCount": 176,
+        "allOriginalSidebarEntries": 6
+      }
+    },
+    {
+      "name": "真实回复可复制，消息区与过程折叠保持可用",
+      "status": "passed",
+      "evidence": {
+        "realModelReply": true,
+        "clipboardExact": true,
+        "processCollapsed": true,
+        "model": "deepseek-flash",
+        "effort": "low"
+      }
+    },
+    {
+      "name": "加号打开文件选择，图片预览及移除重选正常，模型真实理解图片与文本",
+      "status": "passed",
+      "evidence": {
+        "fileChooserFromPlus": true,
+        "imagePreview": true,
+        "imageRemoveAndReselect": true,
+        "nativeInputTypes": [
+          "text",
+          "text",
+          "image"
+        ],
+        "modelReply": "The dominant color is vivid royal blue.\n\nMarker: `ATTACHED_UI_DOCUMENT_8294`"
+      }
+    },
+    {
+      "name": "CLI 界面隐藏且底层终端能力保留",
+      "status": "passed",
+      "evidence": {
+        "cliVisible": false,
+        "runtimeFunctionsRetained": true
+      }
+    },
+    {
+      "name": "深浅主题切换保持可用",
+      "status": "passed",
+      "evidence": {
+        "darkAndLight": true
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "origin": "browser"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "plugin/list",
+      "origin": "browser"
+    },
+    {
+      "method": "app/list",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/readDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "turn/start",
+      "origin": "browser",
+      "model": "deepseek-flash",
+      "effort": "low",
+      "inputTypes": [
+        "text"
+      ],
+      "imageDataUrl": false
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "turn/start",
+      "origin": "browser",
+      "model": "deepseek-flash",
+      "effort": "low",
+      "inputTypes": [
+        "text",
+        "text",
+        "image"
+      ],
+      "imageDataUrl": true
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    }
+  ],
+  "browserErrors": []
+}
