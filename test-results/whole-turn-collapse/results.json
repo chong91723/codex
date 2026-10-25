@@ -1,0 +1,491 @@
+{
+  "source": "real DeepSeek turns initiated by web chat controls",
+  "results": [
+    {
+      "name": "整轮思考、过程说明、命令和文件更改整体折叠，流式展开状态稳定",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1727f-83c7-7cd0-9f9f-8debcbcb0ab4",
+        "groups": [
+          {
+            "turnId": "01a1727f-8426-7d20-a9cf-96a0dff67027",
+            "open": false,
+            "summary": "思考与执行\n4 条过程说明 · 2 次思考 · 3 条命令 · 1 项工具活动",
+            "height": 34,
+            "items": 10
+          }
+        ],
+        "rootItems": [
+          "message user",
+          "activity-group",
+          "message agent"
+        ],
+        "agentText": "\n\n\n\nACTIVITY_GROUP_DONE",
+        "expandedHeight": 606.125,
+        "nativeOrderPreserved": true
+      }
+    },
+    {
+      "name": "刷新恢复历史后仍默认合并折叠",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1727f-83c7-7cd0-9f9f-8debcbcb0ab4",
+        "groups": [
+          {
+            "turnId": "01a1727f-8426-7d20-a9cf-96a0dff67027",
+            "open": false,
+            "summary": "思考与执行\n4 条过程说明 · 2 次思考 · 3 条命令 · 1 项工具活动",
+            "height": 34,
+            "items": 10
+          }
+        ],
+        "rootItems": [
+          "message user",
+          "activity-group",
+          "message agent"
+        ],
+        "agentText": "\n\n\n\nACTIVITY_GROUP_DONE",
+        "automaticReloadRestoration": true
+      }
+    },
+    {
+      "name": "失败命令在折叠摘要中标出，回答保持独立",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1727f-83c7-7cd0-9f9f-8debcbcb0ab4",
+        "groups": [
+          {
+            "turnId": "01a1727f-8426-7d20-a9cf-96a0dff67027",
+            "open": false,
+            "summary": "思考与执行\n4 条过程说明 · 2 次思考 · 3 条命令 · 1 项工具活动",
+            "height": 34,
+            "items": 10
+          },
+          {
+            "turnId": "01a1727f-ff1f-7f73-997c-9fad2d90de69",
+            "open": false,
+            "summary": "思考与执行 · 1 项未成功\n1 条过程说明 · 1 次思考 · 1 条命令",
+            "height": 34,
+            "items": 3
+          }
+        ],
+        "rootItems": [
+          "message user",
+          "activity-group",
+          "message agent",
+          "message user",
+          "activity-group has-errors",
+          "message agent"
+        ],
+        "agentText": "\n\n\n\nACTIVITY_GROUP_DONE\n\nACTIVITY_FAILURE_RECORDED"
+      }
+    },
+    {
+      "name": "中断后停止运行状态，下一轮和历史互不混合",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1727f-83c7-7cd0-9f9f-8debcbcb0ab4",
+        "groups": [
+          {
+            "turnId": "01a1727f-8426-7d20-a9cf-96a0dff67027",
+            "open": false,
+            "summary": "思考与执行\n4 条过程说明 · 2 次思考 · 3 条命令 · 1 项工具活动",
+            "height": 34,
+            "items": 10
+          },
+          {
+            "turnId": "01a1727f-ff1f-7f73-997c-9fad2d90de69",
+            "open": false,
+            "summary": "思考与执行 · 1 项未成功\n1 条过程说明 · 1 次思考 · 1 条命令",
+            "height": 34,
+            "items": 3
+          },
+          {
+            "turnId": "01a17280-1924-79d1-b03b-59a8b857c421",
+            "open": false,
+            "summary": "执行已中断\n1 条过程说明 · 1 次思考",
+            "height": 34,
+            "items": 2
+          }
+        ],
+        "rootItems": [
+          "message user",
+          "activity-group",
+          "message agent",
+          "message user",
+          "activity-group has-errors",
+          "message agent",
+          "message user",
+          "activity-group",
+          "panel-error message"
+        ],
+        "agentText": "\n\n\n\nACTIVITY_GROUP_DONE\n\nACTIVITY_FAILURE_RECORDED\n"
+      }
+    },
+    {
+      "name": "浏览器前进后退恢复选中会话，新建操作清除会话地址",
+      "status": "passed",
+      "evidence": {
+        "backAndForward": true,
+        "newChatClearsRoute": true
+      }
+    },
+    {
+      "name": "归档会话刷新后恢复且保持只读",
+      "status": "passed",
+      "evidence": {
+        "archivedRouteRestored": true,
+        "readOnly": true
+      }
+    },
+    {
+      "name": "无效会话链接显示恢复错误，禁止静默新建",
+      "status": "passed",
+      "evidence": {
+        "errorVisible": true,
+        "explicitNewChatWorks": true
+      }
+    },
+    {
+      "name": "另一页面占用时显示只读历史，释放后重试继续同一会话",
+      "status": "passed",
+      "evidence": {
+        "busyHistoryPreserved": true,
+        "conflictingWritesBlocked": true,
+        "sameThreadContinuesAfterRelease": true,
+        "reloadDuringWriterShutdownRestored": true
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "origin": "browser"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "turn/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/name/set",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "initialize",
+      "origin": "browser"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "turn/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "turn/start",
+      "origin": "browser"
+    },
+    {
+      "method": "turn/interrupt",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "initialize",
+      "origin": "browser"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/archive",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/read",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/turns/list",
+      "origin": "browser"
+    },
+    {
+      "method": "initialize",
+      "origin": "browser"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/read",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/turns/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/unarchive",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "initialize",
+      "origin": "browser"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "turn/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "initialize",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/read",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/turns/list",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "initialize",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser:second-page"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser:second-page"
+    }
+  ],
+  "browserErrors": []
+}

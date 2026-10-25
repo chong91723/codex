@@ -2,13 +2,21 @@
 
 验收日期：2026-10-25。官方源码基线：`970111f6cb62cc02fe36a82ea7d71b37a2889c97`。已重新获取官方 HEAD，确认仍为此提交。上游源码、未跟踪文件和忽略文件检查均干净；CLI、Code Mode Host、Linux bwrap 与 ripgrep 使用完整原生包布局。源码和执行程序导出的四组完整协议定义一致，共 176 个客户端方法。源码内版本号为 `0.0.0`，通过提交号和构建哈希标识实际版本，没有修改上游版本号。
 
-## 会话过程折叠修复（2026-10-25）
+## 会话恢复、整轮折叠与自定义扩展（2026-10-25）
 
-连续的思考、命令和工具活动合并到同一个默认收起的“思考与执行”区域，展开后保留各项详情及完整命令输出；用户消息、回答、文件差异和人工审批继续直接显示。分组遵循原始顺序及任务边界，流式更新保留用户选择的展开状态。
+主界面已补齐原生永久删除入口，侧栏显示运行中的任务。不同会话可并发执行，同一会话的原生写入锁保持有效。旧会话的选择写入 URL，刷新后直接通过原生会话接口恢复。支持浏览器前进/后退及归档只读恢复；被另一页面占用时保留只读历史并提供重试入口；无效地址显示恢复错误，禁止静默创建新会话。每次任务的思考、过程说明、命令、文件更改和工具活动都在同一个默认收起的“思考与执行”区域，最终回答独立显示。展开状态在流式更新中保持，人工审批继续直接显示。
 
-本次 4 项专项验收全部从真实网页发起，使用真实 DeepSeek 命令执行，浏览器 JavaScript 错误为 0：连续活动合并及流式展开状态、刷新恢复历史、失败命令提示、中断及不同任务分组。一次思考与三条命令合并后只占 34 像素；展开并查看第一条命令输出时高度约 213 像素。原始消息顺序保持一致。
+本次完成 23 项真实网页检查，浏览器 JavaScript 错误为 0：
 
-[专项记录](test-results/activity-collapse/results.json) · [收起截图](test-results/activity-collapse/collapsed.png) · [展开截图](test-results/activity-collapse/expanded.png)。截图遮盖账户与其他会话列表。此修复仅修改 Web 层，未修改官方源码。
+- 8 项会话专项：整轮折叠及流式展开状态、刷新直接恢复、失败命令摘要、中断与任务边界、浏览器前进/后退、归档只读恢复、无效链接错误处理、另一页面占用时的只读历史及释放后重试。[专项记录](test-results/whole-turn-collapse/results.json)
+- 10 项扩展专项：上传单个 SKILL.md、完整文件夹导入、原生技能启停、DeepSeek 实际读取技能资源和执行脚本、重名保护及无效导入清理、自定义 stdio MCP、现有会话中真实 MCP 调用、启停与刷新持久化、HTTP MCP OAuth 与受保护工具调用、会话恢复。[专项记录](test-results/custom-tools/results.json)
+- 3 项并发与删除专项：同一网页的两个不同会话同时执行真实命令（以进程实际输出的时间戳验证运行重叠）、删除确认取消及永久删除、归档会话永久删除。仅删除本次测试新建的会话；普通无害命令没有触发审批。[专项记录](test-results/thread-lifecycle/results.json)
+- 1 项原生计划专项：真实调用 update_plan，计划位于本轮收起的过程区域，可手动展开查看。[计划记录](test-results/whole-turn-collapse/plan-results.json)
+- 1 项既有会话回归：用户报告问题的旧会话 71 个原生条目完整保留；刷新后自动恢复，显示为用户消息、一个 34 像素的过程折叠区和最终回答。没有发起新模型任务，记录只保留数量，不包含用户会话内容。[回归记录](test-results/whole-turn-collapse/existing-chat.json)
+
+测试任务中的过程说明、思考、命令及文件更改整体收起后仅占 34 像素，原始条目顺序保持一致。[收起截图](test-results/whole-turn-collapse/collapsed.png) · [展开截图](test-results/whole-turn-collapse/expanded.png) · [技能界面](test-results/custom-tools/skills.png) · [MCP 界面](test-results/custom-tools/mcp.png)。截图遮盖账户与其他会话列表。
+
+Skills 导入使用原生文件接口和技能发现、配置接口；MCP 使用原生配置写入、重载、连接与确认请求。启停保留原配置。此前工具调用等待的问题是缺少原生 MCP 确认按钮，现已补齐并通过真实模型调用验证。没有自动批准用户操作，`approval_policy = "on-request"`、`sandbox_mode = "workspace-write"` 及沙箱网络设置保持原样。官方源码无修改，官方 HEAD 与本地源码仍一致。
 
 ## 验收口径
 
@@ -83,6 +91,10 @@ python3 web/scripts/create_test_fixtures.py --help
 # 设置 PLAYWRIGHT_MODULE、CHROMIUM_BIN，以及 CODEX_TEST_NODE（Python 驱动用）。
 # DeepSeek 测试服务监听 8765，ChatGPT 独立已登录测试服务监听 8766。
 node web/tests/desktop_acceptance.mjs
+# 以下三项使用 README 中的两个独立专项配置实例。
+node web/tests/custom_tools_desktop.mjs
+node web/tests/activity_desktop.mjs
+node web/tests/thread_lifecycle_desktop.mjs
 python3 web/tests/native_acceptance.py --output /tmp/browser-native.json
 python3 web/tests/native_acceptance.py --only-sandbox --output /tmp/browser-linux.json
 python3 web/tests/native_acceptance.py --only-git-marketplace --output /tmp/browser-marketplace.json

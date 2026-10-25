@@ -1,0 +1,605 @@
+{
+  "source": "real web uploads, forms, toggles and chat; unmodified native Codex + DeepSeek",
+  "results": [
+    {
+      "name": "网页上传单个 SKILL.md 并由原生发现",
+      "status": "passed",
+      "evidence": {
+        "nativePath": "/root/Codex/.local-state/custom-tools-acceptance/skills/browser-single-skill/SKILL.md"
+      }
+    },
+    {
+      "name": "网页导入完整 Skill 文件夹、脚本和资源",
+      "status": "passed",
+      "evidence": {
+        "files": 3,
+        "resourcesPreserved": true
+      }
+    },
+    {
+      "name": "Skill 停用和启用写入原生配置",
+      "status": "passed",
+      "evidence": {
+        "nativeDisabled": true,
+        "reenabled": true
+      }
+    },
+    {
+      "name": "DeepSeek 实际使用上传 Skill 的资源和脚本",
+      "status": "passed",
+      "evidence": {
+        "nativeCommands": 3,
+        "resourceAndScriptExecuted": true
+      }
+    },
+    {
+      "name": "重名导入不覆盖已有技能，无效 Skill 自动清理",
+      "status": "passed",
+      "evidence": {
+        "collisionPreservedOriginal": true,
+        "invalidImportRolledBack": true
+      }
+    },
+    {
+      "name": "网页添加自定义 stdio MCP 并加载原生工具",
+      "status": "passed",
+      "evidence": {
+        "tools": 1
+      }
+    },
+    {
+      "name": "DeepSeek 在现有会话实际调用新添加的 MCP",
+      "status": "passed",
+      "evidence": {
+        "nativeTool": "echo",
+        "existingThread": true
+      }
+    },
+    {
+      "name": "MCP 停用、重启页面及重新启用保留配置",
+      "status": "passed",
+      "evidence": {
+        "disabledServerRemainsVisible": true,
+        "persistsAfterReload": true,
+        "originalOptionsPreserved": true
+      }
+    },
+    {
+      "name": "网页添加 HTTP MCP、OAuth 登录并实际调用",
+      "status": "passed",
+      "evidence": {
+        "pkceExchange": true,
+        "authenticatedCall": true,
+        "httpToggle": true
+      }
+    },
+    {
+      "name": "刷新直接恢复原会话、整次任务仅一个折叠过程区",
+      "status": "passed",
+      "evidence": {
+        "selectedThreadRestored": true,
+        "turns": 2
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "origin": "browser"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/remove",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/remove",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/remove",
+      "origin": "browser"
+    },
+    {
+      "method": "config/value/write",
+      "origin": "browser"
+    },
+    {
+      "method": "config/value/write",
+      "origin": "browser"
+    },
+    {
+      "method": "config/mcpServer/reload",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/createDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/createDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/writeFile",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/config/write",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/createDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/createDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/writeFile",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/createDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/writeFile",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/createDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/writeFile",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/config/write",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/readFile",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/config/write",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/config/write",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "turn/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/createDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/createDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/readFile",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/createDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/createDirectory",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/writeFile",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/remove",
+      "origin": "browser"
+    },
+    {
+      "method": "fs/getMetadata",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/batchWrite",
+      "origin": "browser"
+    },
+    {
+      "method": "config/mcpServer/reload",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "turn/start",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/batchWrite",
+      "origin": "browser"
+    },
+    {
+      "method": "config/mcpServer/reload",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "initialize",
+      "origin": "browser"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/batchWrite",
+      "origin": "browser"
+    },
+    {
+      "method": "config/mcpServer/reload",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/batchWrite",
+      "origin": "browser"
+    },
+    {
+      "method": "config/mcpServer/reload",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServer/oauth/login",
+      "origin": "browser"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/mcpServer/reload",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServer/tool/call",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/batchWrite",
+      "origin": "browser"
+    },
+    {
+      "method": "config/mcpServer/reload",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "config/batchWrite",
+      "origin": "browser"
+    },
+    {
+      "method": "config/mcpServer/reload",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    },
+    {
+      "method": "initialize",
+      "origin": "browser"
+    },
+    {
+      "method": "initialized",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "model/list",
+      "origin": "browser"
+    },
+    {
+      "method": "account/read",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/resume",
+      "origin": "browser"
+    },
+    {
+      "method": "thread/list",
+      "origin": "browser"
+    },
+    {
+      "method": "skills/list",
+      "origin": "browser"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "origin": "browser"
+    },
+    {
+      "method": "config/read",
+      "origin": "browser"
+    }
+  ],
+  "browserErrors": [],
+  "approvalCount": 0
+}

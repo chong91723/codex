@@ -6,7 +6,7 @@ const icon = name => { const node = document.createElementNS('http://www.w3.org/
 const pretty = value => JSON.stringify(value, null, 2);
 function configDiff(before,after,prefix=''){const edits=[];const object=value=>value&&typeof value==='object'&&!Array.isArray(value);for(const key of new Set([...Object.keys(before),...Object.keys(after)])){const segment=/^[A-Za-z0-9_-]+$/.test(key)?key:JSON.stringify(key);const path=prefix?prefix+'.'+segment:segment;if(!(key in after)){edits.push({keyPath:path,value:null,mergeStrategy:'replace'});continue;}if(object(before[key])&&object(after[key]))edits.push(...configDiff(before[key],after[key],path));else if(JSON.stringify(before[key])!==JSON.stringify(after[key]))edits.push({keyPath:path,value:after[key],mergeStrategy:'replace'});}return edits;}
 const safeURL = value => { try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : null; } catch { return null; } };
-const state = { ws: null, pending: new Map(), counter: 0, ready: false, view: 'chat', thread: null, threadArchived:false, attachmentLoads:0, turns: [], items: new Map(), live: new Map(), activeTurns: new Map(), threads: [], cursor: null, archived: false, attachments: [], events: [], requests: new Map(), models: [], status: null, schema: null, serverSchema: null, currentMethod: null, reconnect: null, selectedCwd: localStorage.getItem('codex.cwd') || '', listGeneration: 0 };
+const state = { ws: null, pending: new Map(), counter: 0, ready: false, view: 'chat', thread: null, threadArchived:false, threadBusy:false, attachmentLoads:0, turns: [], items: new Map(), live: new Map(), activeTurns: new Map(), threads: [], cursor: null, archived: false, attachments: [], events: [], requests: new Map(), models: [], status: null, schema: null, serverSchema: null, currentMethod: null, reconnect: null, selectedCwd: localStorage.getItem('codex.cwd') || '', listGeneration: 0, navigationGeneration:0, threadLoading:false, restoreError:false };
 let toastTimer, searchTimer, term, termWS, termResize;
 function toast(message) { $('#toast').textContent = message; $('#toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').hidden = true, 5500); }
 function nativeErrorMessage(error){const message=error?.message||String(error);if(/cf_chl_|challenge-platform/i.test(message))return '远端服务要求浏览器验证（HTTP 403）。请检查代理出口，或在官方服务完成验证后重试。';if(/<html/i.test(message))return '远端服务返回网页错误，请检查网络连接和登录状态。';return message;}
@@ -40,8 +40,9 @@ async function connect() {
       state.runtimeInfo = await rpc('initialize', { clientInfo: { name: 'codex_web_native', title: 'Codex Web', version: '1.0.0' }, capabilities: { experimentalApi: true } });
       ws.send(JSON.stringify({ method: 'initialized' })); state.ready = true;
       setConnection('online', '原生已连接'); $('#connection-error').hidden = true;
+      const generation=state.navigationGeneration;
       await Promise.allSettled([loadThreads(), loadModels(), loadAccount()]);
-      if (state.thread) { const id = state.thread.id; const archived=state.threadArchived;const result = await rpc(archived?'thread/read':'thread/resume', { threadId: id,...(archived?{includeTurns:false}:{}) }); if (state.thread?.id === id) { adoptThread(result.thread,archived); await hydrateThread(result.thread); } }
+      if(generation===state.navigationGeneration) await restoreThreadRoute();
     } catch (error) { showConnectionError(error.message); }
   };
   ws.onclose = () => {
@@ -59,9 +60,10 @@ function handleEvent(msg) {
   const p = msg.params || {}, method = msg.method;
   if (method === 'serverRequest/resolved') { state.requests.delete(String(p.requestId)); renderRequests(); }
   if (method === 'thread/started') loadThreads().catch(() => {});
+  if (method === 'thread/deleted') {state.activeTurns.delete(p.threadId);if(state.thread?.id===p.threadId)resetChat();loadThreads().catch(()=>{});}
   if (method === 'account/updated' || method === 'account/login/completed') loadAccount().catch(() => {});
-  if (method === 'turn/started') { state.activeTurns.set(p.threadId, p.turn.id); updateSend(); }
-  if (method === 'turn/completed') { state.activeTurns.delete(p.threadId); updateSend(); if (currentEvent(p)) { if (p.turn.error) toast(p.turn.error.message || pretty(p.turn.error)); renderTurnOutcome(p.turn); const index=state.turns.findIndex(turn=>turn.id===p.turn.id); if(index<0)state.turns.push(p.turn);else state.turns[index]=p.turn; refreshActivityGroups(p.turn.id); loadThreads().catch(() => {}); } }
+  if (method === 'turn/started') { state.activeTurns.set(p.threadId, p.turn.id);renderThreadList(); updateSend(); }
+  if (method === 'turn/completed') { state.activeTurns.delete(p.threadId);renderThreadList(); updateSend(); if (currentEvent(p)) { if (p.turn.error) toast(p.turn.error.message || pretty(p.turn.error)); const turn={...p.turn,items:p.turn.items?.length?p.turn.items:[...state.items.values()].filter(entry=>entry.turnId===p.turn.id).map(entry=>entry.item)};renderTurnOutcome(turn); const index=state.turns.findIndex(item=>item.id===turn.id); if(index<0)state.turns.push(turn);else state.turns[index]=turn; refreshActivityGroups(turn.id); loadThreads().catch(() => {}); } }
   if (!currentEvent(p)) return;
   if (method === 'item/autoApprovalReview/started' || method === 'item/autoApprovalReview/completed') renderGuardianReview(p);
   if (method === 'guardianWarning') toast(p.message);
@@ -71,7 +73,7 @@ function handleEvent(msg) {
   if (method === 'item/commandExecution/outputDelta') appendDelta(p.itemId, p.delta, 'commandExecution', p.turnId);
   if (method === 'item/fileChange/outputDelta') appendDelta(p.itemId, p.delta, 'fileChange', p.turnId);
   if (method === 'turn/diff/updated') { state.lastDiff = p.diff; }
-  if (method === 'turn/plan/updated') { const box = $('#plan-summary'); box.replaceChildren(); if (p.explanation) box.append(el('p', '', p.explanation)); for (const step of p.plan || []) box.append(el('div', 'plan-step ' + step.status, (step.status === 'completed' ? '✓ ' : step.status === 'inProgress' ? '◉ ' : '○ ') + step.step)); box.hidden = false; }
+  if (method === 'turn/plan/updated') renderTurnPlan(p);
   if (method === 'thread/tokenUsage/updated') { const usage = p.tokenUsage?.total || p.tokenUsage?.last || p.tokenUsage; if (usage) $('#usage-label').textContent = (usage.totalTokens || usage.inputTokens || 0).toLocaleString() + ' tokens'; }
   if (method === 'thread/realtime/error') toast(p.message||'实时连接失败');
   if (method === 'windowsSandbox/setupCompleted' && !p.success) toast(p.error||'Windows 沙箱设置未完成');
@@ -103,8 +105,17 @@ function renderItem(item, done = false) {
   else body.textContent = item.aggregatedOutput || item.output || item.text || pretty(redact(item));
   node.append(body); return node;
 }
-function isActivity(item) {
-  return !['userMessage','agentMessage','fileChange','imageView','imageGeneration','enteredReviewMode','exitedReviewMode'].includes(item.type);
+function isActivity(item, turnId) {
+  if(item.type==='userMessage')return false;
+  if(item.type!=='agentMessage')return true;
+  if(item.phase==='final_answer')return false;
+  if(item.phase==='commentary')return true;
+  const turn=state.turns.find(turn=>turn.id===turnId);
+  if(turn&&turn.status!=='inProgress') {
+    const last=(turn.items||[]).filter(item=>item.type==='agentMessage'&&item.phase!=='commentary').at(-1);
+    return last?.id!==item.id;
+  }
+  return true;
 }
 function createActivityGroup(turnId) {
   const group = el('details', 'activity-group'); group.dataset.turnId = turnId || '';
@@ -122,35 +133,50 @@ function updateActivityGroup(group) {
   const failed = entries.filter(({item}) => ['failed','declined'].includes(item.status) || (item.exitCode != null && item.exitCode !== 0)).length;
   const thoughts = entries.filter(entry => entry.item.type === 'reasoning').length;
   const commands = entries.filter(entry => entry.item.type === 'commandExecution').length;
-  const tools = entries.length - thoughts - commands, counts = [];
+  const notes=entries.filter(entry=>entry.item.type==='agentMessage').length;
+  const tools = entries.length - thoughts - commands - notes, counts = [];
+  if(notes)counts.push(notes+' 条过程说明');
   if (thoughts) counts.push(thoughts + ' 次思考');
   if (commands) counts.push(commands + ' 条命令');
   if (tools) counts.push(tools + ' 项工具活动');
   const latest = pending.at(-1)?.item;
   const label = turn?.status === 'interrupted' ? '执行已中断' : turn?.status === 'failed' ? '执行失败' :
-    latest ? (latest.type === 'reasoning' ? '正在思考…' : latest.type === 'commandExecution' ? '正在执行命令…' : '正在调用工具…') :
+    latest ? (latest.type === 'reasoning' ? '正在思考…' : latest.type === 'commandExecution' ? '正在执行命令…' : latest.type==='agentMessage'?'正在处理任务…':'正在调用工具…') :
     failed ? '思考与执行 · ' + failed + ' 项未成功' : '思考与执行';
   $('.activity-label', group).textContent = label; $('.activity-count', group).textContent = counts.join(' · ');
   $('.activity-dot', group).hidden = !pending.length;
   group.classList.toggle('running', pending.length > 0); group.classList.toggle('has-errors', failed > 0 || turn?.status === 'failed');
 }
+function renderTurnPlan(params) {
+  const turnId=params.turnId||state.activeTurns.get(state.thread?.id)||'';
+  const group=$$('.activity-group',$('#messages')).find(group=>group.dataset.turnId===turnId)||createActivityGroup(turnId);
+  let box=$('.activity-plan',group);if(!box){box=el('div','activity-plan');$('.activity-items',group).append(box);}
+  box.replaceChildren(el('strong','','任务计划'));if(params.explanation)box.append(el('p','',params.explanation));
+  for(const step of params.plan||[])box.append(el('div','plan-step '+step.status,(step.status==='completed'?'✓ ':step.status==='inProgress'?'◉ ':'○ ')+step.step));
+  updateActivityGroup(group);scrollMessages();
+}
 function refreshActivityGroups(turnId) {
+  for(const entry of [...state.items.values()].filter(entry=>entry.turnId===turnId))placeItem(entry);
   $$('.activity-group', $('#messages')).filter(group => group.dataset.turnId === turnId).forEach(updateActivityGroup);
+}
+function placeItem(entry) {
+  const {item,node,turnId}=entry, oldGroup=node.closest('.activity-group');
+  if(isActivity(item,turnId)) {
+    const group=$$('.activity-group', $('#messages')).find(group=>group.dataset.turnId===turnId)||createActivityGroup(turnId);
+    if(node.parentElement!==$('.activity-items',group))$('.activity-items',group).append(node);
+    updateActivityGroup(group);
+  } else if(node.parentElement!==$('#messages')) {
+    const entries=[...state.items.values()], next=entries.slice(entries.indexOf(entry)+1).find(other=>other.node.parentElement===$('#messages'));
+    $('#messages').insertBefore(node,next?.node||null);
+  }
+  if(oldGroup&&!$('.activity-items',oldGroup).children.length)oldGroup.remove();else updateActivityGroup(oldGroup);
 }
 function mountItem(item, node, done, turnId) {
   const existing = state.items.get(item.id);
   turnId = turnId || existing?.turnId || state.activeTurns.get(state.thread?.id) || '';
   node.dataset.item = item.id;
-  let group = existing?.node.closest('.activity-group');
-  if (existing) {
-    if (node.tagName === 'DETAILS') node.open = existing.node.open;
-    existing.node.replaceWith(node);
-  } else if (isActivity(item)) {
-    group = $('#messages').lastElementChild;
-    if (!group?.classList.contains('activity-group') || group.dataset.turnId !== turnId) group = createActivityGroup(turnId);
-    $('.activity-items', group).append(node);
-  } else $('#messages').append(node);
-  state.items.set(item.id, { item, node, done, turnId }); updateActivityGroup(group);
+  if(existing) {if(node.tagName==='DETAILS')node.open=existing.node.open;existing.node.replaceWith(node);}
+  const entry={item,node,done,turnId};state.items.set(item.id,entry);placeItem(entry);
   $('#welcome').hidden = true; scrollMessages();
 }
 function upsertItem(item, done = false, turnId = null) {
@@ -172,23 +198,37 @@ async function loadThreads(more = false) {
 }
 function renderThreadList() {
   const list = $('#thread-list'); list.replaceChildren();
-  for (const thread of state.threads) { const row = button('', () => openThread(thread.id), 'thread-row' + (state.thread?.id === thread.id ? ' active' : '')); row.append(el('span', 'thread-dot'), el('span', '', thread.name || thread.preview || '未命名会话')); const date = new Date(thread.updatedAt * 1000); row.append(el('time', '', date.toLocaleDateString('zh-CN', { month:'numeric', day:'numeric' }))); list.append(row); }
+  for (const thread of state.threads) { const row = button('', () => openThread(thread.id), 'thread-row' + (state.thread?.id === thread.id ? ' active' : '')); const dot=el('span','thread-dot'+(state.activeTurns.has(thread.id)?' running':''));if(state.activeTurns.has(thread.id))dot.title='此页面正在执行任务';row.append(dot, el('span', '', thread.name || thread.preview || '未命名会话')); const date = new Date(thread.updatedAt * 1000); row.append(el('time', '', date.toLocaleDateString('zh-CN', { month:'numeric', day:'numeric' }))); list.append(row); }
   if (!state.threads.length) list.append(el('div', 'empty-small subtle', state.archived ? '暂无归档会话' : '从一次新会话开始。'));
   $('#threads-more').hidden = !state.cursor;
 }
 function setCwd(path) { state.selectedCwd = path; localStorage.setItem('codex.cwd', path); const name = path.split('/').filter(Boolean).pop() || path; $('#project-name').textContent = name; $('#breadcrumb').textContent = name; $('#cwd-label').textContent = path; }
-function resetChat() { state.thread = null; state.threadArchived=false; $('#prompt').disabled=false; $('#prompt').placeholder='向 Codex 描述任务，或输入 / 查看操作'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false; $('#chat-toolbar').hidden = true; $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; $('#usage-label').textContent = '原生 Codex 运行时'; renderThreadList(); renderRequests(); updateSend(); }
-function adoptThread(thread,archived=false) { if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived;$('#prompt').placeholder=archived?'会话已归档，请先取消归档以继续任务':'向 Codex 描述任务，或输入 / 查看操作';$('#chat-toolbar').hidden=false;$('#thread-info').textContent=thread.id;$('#page-title').textContent=thread.name||thread.preview||'新会话';updateSend(); }
-async function openThread(id) {
-  showView('chat'); $('#welcome').hidden = true; $('#messages').replaceChildren(el('div', 'loading', '读取原生会话…')); state.items.clear(); state.live.clear();
-  const archived=state.archived&&state.threads.some(thread=>thread.id===id);
-  const result = await rpc(archived?'thread/read':'thread/resume', { threadId:id,...(archived?{includeTurns:false}:{}) }); adoptThread(result.thread,archived);
-  await hydrateThread(result.thread); renderThreadList(); updateSend();
+function threadRoute(){const params=new URLSearchParams(location.search);return {id:params.get('thread'),archived:params.get('archived')==='1'};}
+function setThreadRoute(id=null,archived=false,replace=false){const url=new URL(location.href);url.searchParams.delete('token');url.searchParams.delete('thread');url.searchParams.delete('archived');if(id){url.searchParams.set('thread',id);if(archived)url.searchParams.set('archived','1');}if(url.href!==location.href)history[replace?'replaceState':'pushState'](null,'',url);}
+function resetChat(route=true) { state.navigationGeneration++;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='向 Codex 描述任务，或输入 / 查看操作'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false; $('#chat-toolbar').hidden = true; $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; $('#usage-label').textContent = '原生 Codex 运行时'; renderThreadList(); renderRequests(); updateSend(); }
+function adoptThread(thread,archived=false,busy=false) { if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请先取消归档以继续任务':'向 Codex 描述任务，或输入 / 查看操作';$('#chat-toolbar').hidden=false;$('#thread-info').textContent=thread.id;$('#page-title').textContent=thread.name||thread.preview||'新会话';renderRequests();updateSend(); }
+async function restoreThreadRoute(){const route=threadRoute();if(route.id){state.archived=route.archived;$('#thread-list-label').textContent=route.archived?'归档会话':'最近会话';await openThread(route.id,{archived:route.archived,replace:true});loadThreads().catch(report);}else resetChat(false);}
+async function openThread(id,{archived=state.archived&&state.threads.some(thread=>thread.id===id),replace=false}={}) {
+  const generation=++state.navigationGeneration;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
+  showView('chat');$('#prompt').disabled=true;$('#welcome').hidden=true;$('#messages').replaceChildren(el('div','loading','读取原生会话…'));state.items.clear();state.live.clear();
+  try {
+    let result,busy=false;
+    for(let attempt=0;attempt<4;attempt++){
+      try{result=await rpc(archived?'thread/read':'thread/resume',{threadId:id,...(archived?{includeTurns:false}:{})});break;}
+      catch(error){if(archived||!/already has an active writer/i.test(error.message))throw error;if(generation!==state.navigationGeneration)return;if(attempt<3){await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));if(generation!==state.navigationGeneration)return;}else{result=await rpc('thread/read',{threadId:id,includeTurns:false});busy=true;}}
+    }
+    if(generation!==state.navigationGeneration)return;adoptThread(result.thread,archived,busy);
+    await hydrateThread(result.thread,generation);
+    if(generation!==state.navigationGeneration)return;if(busy){const notice=el('div','panel-error');notice.dataset.threadBusy='';notice.append(el('p','','此会话正在另一个页面中使用，当前显示历史记录。关闭该页面后，可重试继续会话。'),button('重试继续会话',()=>openThread(id,{archived,replace:true})));$('#messages').prepend(notice);}renderThreadList();
+  } catch(error) {
+    if(generation!==state.navigationGeneration)return;state.restoreError=true;state.thread=null;$('#chat-toolbar').hidden=true;
+    $('#messages').replaceChildren(el('div','panel-error','无法恢复此会话：'+nativeErrorMessage(error)),button('重试恢复会话',()=>openThread(id,{archived,replace:true})),button('新建会话',()=>resetChat()));
+  } finally {if(generation===state.navigationGeneration){state.threadLoading=false;$('#prompt').disabled=state.threadArchived||state.threadBusy||state.restoreError;updateSend();}}
 }
-async function hydrateThread(thread) {
+async function hydrateThread(thread, generation=state.navigationGeneration) {
   let turns = thread.turns || [];
   if (!turns.length) turns = await paged('thread/turns/list', { threadId:thread.id, itemsView:'full', sortDirection:'asc', limit:100 });
-  if (state.thread?.id !== thread.id) return;
+  if (state.thread?.id !== thread.id||generation!==state.navigationGeneration) return;
   state.turns = turns; $('#messages').replaceChildren(); state.items.clear(); state.activeTurns.delete(thread.id);
   for (const turn of turns) { if (turn.status === 'inProgress') state.activeTurns.set(thread.id, turn.id); for (const item of turn.items || []) upsertItem(item, turn.status !== 'inProgress', turn.id); renderTurnOutcome(turn); }
   $('#welcome').hidden = turns.length > 0; $('#chat-toolbar').hidden = false; $('#page-title').textContent = thread.name || thread.preview || '新会话'; $('#thread-info').textContent = thread.id; updateSend();
@@ -198,10 +238,12 @@ async function ensureThread() {
   const result = await rpc('thread/start', { cwd:state.selectedCwd, model:$('#model').value || null });
   adoptThread(result.thread); loadThreads().catch(() => {}); return result.thread;
 }
-function updateSend() { const running = state.activeTurns.has(state.thread?.id); $('#send').disabled=!running&&(state.threadArchived||state.attachmentLoads>0); $('#send').classList.toggle('running', running); $('#send').title = running ? '中断当前任务' : state.attachmentLoads>0?'正在读取附件':'发送'; $('#send').ariaLabel = running ? '中断当前任务' : '发送任务'; }
+function updateSend() { const deletion=$('#thread-action option[value=delete]');if(deletion)deletion.disabled=state.threadBusy; const running = !state.threadBusy&&state.activeTurns.has(state.thread?.id); $('#send').disabled=state.threadLoading||state.restoreError||state.threadBusy||(!running&&(state.threadArchived||state.attachmentLoads>0)); $('#send').classList.toggle('running', running); $('#send').title = running ? '中断当前任务' : state.attachmentLoads>0?'正在读取附件':'发送'; $('#send').ariaLabel = running ? '中断当前任务' : '发送任务'; }
 async function submitPrompt() {
   if (!state.ready) return toast('请等待原生运行时连接');
+  if(state.threadLoading||state.restoreError)return toast('请先完成当前会话的恢复');
   if(state.threadArchived)return toast('请先取消归档，再继续这个会话');
+  if(state.threadBusy)return toast('请先关闭使用此会话的其他页面，再重试继续会话');
   if(state.attachmentLoads)return toast('附件正在读取，请稍候');
   const text = $('#prompt').value.trim();
   if (!text && !state.attachments.length) return;
@@ -211,7 +253,7 @@ async function submitPrompt() {
   const running = state.activeTurns.get(thread.id);
   const result = running ? await rpc('turn/steer', { threadId:thread.id, expectedTurnId:running, input }) : await rpc('turn/start', { threadId:thread.id, input, model:$('#model').value || null, effort:$('#effort').value || null });
   if (result.turn) state.activeTurns.set(thread.id, result.turn.id);
-  $('#prompt').value=''; state.attachments=[]; renderAttachments(); updateSend();
+  $('#prompt').value='';$('#prompt').style.height='auto'; state.attachments=[]; renderAttachments(); updateSend();
 }
 async function loadModels() { const result = await rpc('model/list', { includeHidden:false }); state.models = result.data || []; $('#model').replaceChildren(new Option('默认模型', '')); for (const model of state.models) $('#model').append(new Option(model.displayName || model.model, model.model)); const saved = localStorage.getItem('codex.model'); if (saved) { if (!state.models.some(m => m.model === saved)) $('#model').append(new Option(saved, saved)); $('#model').value = saved; } loadEfforts(); }
 function loadEfforts() { const model = state.models.find(m => m.model === $('#model').value); const enums = state.schema?.definitions?.ReasoningEffort?.enum || []; $('#effort').replaceChildren(new Option('默认推理', '')); for (const effort of model?.supportedReasoningEfforts || enums.map(reasoningEffort => ({ reasoningEffort }))) $('#effort').append(new Option(effort.reasoningEffort, effort.reasoningEffort)); const saved = localStorage.getItem('codex.effort'); if ($$('#effort option').some(x => x.value === saved)) $('#effort').value = saved; }
@@ -235,18 +277,128 @@ function openDialog(title, build, submit, submitLabel = '保存') {
 }
 function askText(title, label, value, submit, { secret=false, multiline=false } = {}) { openDialog(title, root => { root.append(el('label', '', label)); const input = el(multiline ? 'textarea' : 'input', multiline ? 'code-editor' : 'field-input'); input.id='dialog-value'; if (secret) input.type='password'; input.value=value; input.required=true; root.append(input); }, root => submit($('#dialog-value', root).value)); }
 async function editProject() { askText('选择工作区', '输入项目的绝对路径。原生 Codex 会在这个目录执行任务。', state.selectedCwd, async path => { await rpc('fs/readDirectory', { path }); setCwd(path); resetChat(); showView('chat'); }); }
-async function renderSkills() {
-  const data = await rpc('skills/list', { cwds:[state.selectedCwd], forceReload:true }); if (state.view !== 'skills') return;
-  const root = panelHeading('为任务添加技能', '使用本机 Codex 发现的技能。技能由原生运行时加载与执行。', 'skill'); const grid=el('div','card-grid'); root.append(grid);
-  for (const group of data.data || []) { for (const skill of group.skills || []) { const card=el('article','card'); card.append(el('h3','',skill.interface?.displayName || skill.name), el('p','',skill.shortDescription || skill.description), el('span','tag',skill.scope || '本地技能'), el('div','path',skill.path)); const actions=el('div','card-actions'); actions.append(button('在会话中使用', () => { state.attachments.push({ name:skill.name, input:{type:'skill',name:skill.name,path:skill.path} }); renderAttachments(); showView('chat'); }),button(skill.enabled === false ? '启用' : '停用', async () => { await rpc('skills/config/write',{path:skill.path, enabled:skill.enabled === false}); await renderSkills(); })); card.append(actions); grid.append(card); } for (const error of group.errors || []) grid.append(el('div','panel-error',pretty(error))); }
-  if (!grid.children.length) grid.append(el('div','card subtle','当前项目尚未发现技能。可以在 Codex 技能目录添加 SKILL.md。'));
-}
 async function paged(method, params={}) { const all=[]; let cursor=null; do { const result=await rpc(method,{...params,cursor}); all.push(...(result.data || [])); cursor=result.nextCursor; } while(cursor); return all; }
+function formField(root,label,id,{value='',type='text',multiline=false,required=false,placeholder=''}={}) {
+  const group=el('div','form-field'),caption=el('label','',label),input=el(multiline?'textarea':'input',multiline?'code-editor compact-editor':'field-input');
+  input.id=id;caption.htmlFor=id;if(!multiline)input.type=type;input.value=value;input.required=required;input.placeholder=placeholder;group.append(caption,input);root.append(group);return input;
+}
+function readBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(new Error('无法读取 '+file.name));reader.readAsDataURL(file);});}
+function importSkillDialog() {
+  let selected=[];
+  openDialog('导入自定义 Skill',root=>{
+    root.append(el('p','','选择 Mac 本机的 SKILL.md，或包含 SKILL.md、脚本和资源的完整文件夹。导入后可在所有项目中使用。'));
+    const name=formField(root,'技能目录名称','skill-import-name',{required:true,placeholder:'my-custom-skill'});name.pattern='[A-Za-z0-9][A-Za-z0-9_-]{0,63}';
+    const single=el('input'),folder=el('input');single.type=folder.type='file';single.accept='.md';folder.multiple=true;folder.setAttribute('webkitdirectory','');single.id='skill-file-input';folder.id='skill-folder-input';single.hidden=folder.hidden=true;
+    const status=el('p','subtle','尚未选择文件'),actions=el('div','card-actions');actions.append(button('选择 SKILL.md',()=>single.click()),button('选择 Skill 文件夹',()=>folder.click()));root.append(actions,single,folder,status);
+    function select(files,directory){
+      selected=[];try{
+        const source=Array.from(files);if(!source.length)return;
+        if(source.length>1000)throw new Error('最多导入 1000 个文件');
+        const paths=new Set();let total=0;
+        for(const file of source){
+          const path=directory?file.webkitRelativePath.split('/').slice(1).join('/'):'SKILL.md';
+          if(!path||path.includes('\\')||path.split('/').some(part=>!part||part==='.'||part==='..'))throw new Error('文件路径无效');
+          if(paths.has(path))throw new Error('文件路径重复：'+path);paths.add(path);
+          total+=file.size;if(file.size>16*1024*1024||total>64*1024*1024)throw new Error('单文件上限 16 MiB，总大小上限 64 MiB');
+          selected.push({file,path});
+        }
+        if(!paths.has('SKILL.md'))throw new Error('所选文件夹的根目录必须包含 SKILL.md');
+        if(!directory&&source[0].name!=='SKILL.md')throw new Error('请选择名为 SKILL.md 的文件');
+        if(!name.value){const suggested=directory?source[0].webkitRelativePath.split('/')[0]:'custom-skill';name.value=suggested.replace(/[^A-Za-z0-9_-]+/g,'-').replace(/^[^A-Za-z0-9]+/,'').slice(0,64)||'custom-skill';}
+        status.textContent='已选择 '+selected.length+' 个文件 · '+(total/1024).toFixed(1)+' KiB';
+      }catch(error){selected=[];status.textContent=error.message;report(error);}
+    }
+    single.onchange=()=>select(single.files,false);folder.onchange=()=>select(folder.files,true);
+  },async root=>{
+    if(!selected.length)throw new Error('请先选择有效的 Skill 文件');
+    const name=$('#skill-import-name',root).value.trim();if(!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name))throw new Error('目录名只能包含英文字母、数字、短横线和下划线');
+    const home=state.runtimeInfo?.codexHome;if(!home||!home.startsWith('/'))throw new Error('未取得原生 Codex 技能目录');
+    const parent=home.replace(/\/$/,'')+'/skills',destination=parent+'/'+name;
+    await rpc('fs/createDirectory',{path:parent});
+    // Non-recursive mkdir is exclusive: an existing skill is never overwritten.
+    try{await rpc('fs/createDirectory',{path:destination,recursive:false});}catch(error){throw new Error('无法创建技能目录；若名称已存在，请更换名称。'+nativeErrorMessage(error));}
+    try{
+      const directories=new Set([destination]);
+      for(const {file,path}of selected){
+        const target=destination+'/'+path,dir=target.slice(0,target.lastIndexOf('/'));
+        if(!directories.has(dir)){await rpc('fs/createDirectory',{path:dir});directories.add(dir);}
+        await rpc('fs/writeFile',{path:target,dataBase64:await readBase64(file)});
+      }
+      const data=await rpc('skills/list',{cwds:[state.selectedCwd],forceReload:true});
+      const skills=(data.data||[]).flatMap(group=>group.skills||[]);const skill=skills.find(skill=>skill.path===destination+'/SKILL.md');
+      if(!skill){const errors=(data.data||[]).flatMap(group=>group.errors||[]).filter(error=>String(error.path||'').startsWith(destination));throw new Error('Codex 无法加载此 Skill：'+(errors.length?errors.map(error=>error.message||pretty(error)).join('\n'):'请检查 SKILL.md 的 name 和 description 元数据'));}
+      await rpc('skills/config/write',{path:skill.path,enabled:true});
+    }catch(error){try{await rpc('fs/remove',{path:destination,recursive:true,force:true});}catch{throw new Error(nativeErrorMessage(error)+'；清理未完成，请检查 '+destination);}throw error;}
+    toast('Skill 已导入并启用');await renderSkills();
+  },'导入并启用');
+}
+async function renderSkills() {
+  const data=await rpc('skills/list',{cwds:[state.selectedCwd],forceReload:true});if(state.view!=='skills')return;
+  const root=panelHeading('为任务添加技能','导入自己的 Skill，使用原生运行时发现、启用、停用和执行。','skill');
+  root.append(button('导入自定义 Skill',importSkillDialog,'solid-button'));const grid=el('div','card-grid management-grid');root.append(grid);
+  const seen=new Set();
+  for(const group of data.data||[]){for(const skill of group.skills||[]){
+    if(seen.has(skill.path))continue;seen.add(skill.path);
+    const enabled=skill.enabled!==false,card=el('article','card');card.dataset.skillPath=skill.path;
+    card.append(el('h3','',skill.interface?.displayName||skill.name),el('span','tag',enabled?'已启用':'已停用'),el('p','',skill.shortDescription||skill.description),el('span','tag',skill.scope||'本地技能'),el('div','path',skill.path));
+    const actions=el('div','card-actions'),use=button('在会话中使用',()=>{state.attachments.push({name:skill.name,input:{type:'skill',name:skill.name,path:skill.path}});renderAttachments();showView('chat');});use.disabled=!enabled;
+    actions.append(use,button(enabled?'停用':'启用',async()=>{await rpc('skills/config/write',{path:skill.path,enabled:!enabled});state.attachments=state.attachments.filter(a=>a.input?.path!==skill.path);renderAttachments();await renderSkills();}));card.append(actions);grid.append(card);
+  }for(const error of group.errors||[])grid.append(el('div','panel-error',pretty(error)));}
+  if(!grid.children.length)grid.append(el('div','card subtle','还没有技能，点击上方按钮导入。'));
+}
+function parseStringObject(value,label){const object=JSON.parse(value||'{}');if(!object||Array.isArray(object)||typeof object!=='object'||Object.values(object).some(value=>typeof value!=='string'))throw new Error(label+' 必须是字符串值组成的 JSON 对象');return object;}
+function customMcpDialog(existingNames) {
+  openDialog('添加自定义 MCP',root=>{
+    formField(root,'服务名称','mcp-name',{required:true,placeholder:'my-tools'}).pattern='[A-Za-z0-9][A-Za-z0-9_-]{0,63}';
+    const caption=el('label','','连接方式'),transport=el('select','field-input');transport.id='mcp-transport';caption.htmlFor=transport.id;transport.append(new Option('stdio · 启动服务器上的命令','stdio'),new Option('HTTP · 连接 Streamable HTTP 服务','http'));root.append(caption,transport);
+    const stdio=el('div'),http=el('div');http.hidden=true;root.append(stdio,http);
+    formField(stdio,'启动命令','mcp-command',{placeholder:'npx / uvx / python3'});
+    formField(stdio,'命令参数（JSON 数组）','mcp-args',{multiline:true,value:'[]',placeholder:'["-y", "@example/mcp-server"]'});
+    formField(stdio,'工作目录（可选，服务器绝对路径）','mcp-cwd');
+    formField(stdio,'环境变量（可选，JSON 对象）','mcp-env',{multiline:true,value:'{}'});
+    formField(http,'服务 URL','mcp-url',{type:'url',placeholder:'https://example.com/mcp'});
+    formField(http,'Bearer Token 环境变量名（可选）','mcp-bearer-env',{placeholder:'MY_MCP_TOKEN'});
+    formField(http,'请求头（可选，JSON 对象）','mcp-headers',{multiline:true,value:'{}'});
+    formField(http,'从环境变量读取请求头（可选，JSON 对象）','mcp-env-headers',{multiline:true,value:'{}',placeholder:'{"Authorization":"MY_AUTH_HEADER"}'});
+    transport.onchange=()=>{stdio.hidden=transport.value!=='stdio';http.hidden=transport.value!=='http';$$('input,textarea',stdio).forEach(input=>input.disabled=stdio.hidden);$$('input,textarea',http).forEach(input=>input.disabled=http.hidden);};transport.onchange();
+    const label=el('label','check-label'),enabled=el('input');enabled.type='checkbox';enabled.id='mcp-enabled';enabled.checked=true;label.append(enabled,document.createTextNode(' 添加后启用'));root.append(label,el('p','','命令和环境变量使用服务器环境。需要 OAuth 的 HTTP 服务可在添加后登录。保存的密钥仅写入本机 Codex 配置。'));
+  },async root=>{
+    const value=id=>$('#'+id,root).value.trim(),name=value('mcp-name');if(!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name))throw new Error('服务名只能包含英文字母、数字、短横线和下划线');
+    const before=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});if(existingNames.has(name)||Object.hasOwn(before.config?.mcp_servers||{},name))throw new Error('此服务名已存在，请更换名称');
+    const config={enabled:$('#mcp-enabled',root).checked};
+    if(value('mcp-transport')==='stdio'){
+      if(!value('mcp-command'))throw new Error('请输入启动命令');config.command=value('mcp-command');
+      config.args=JSON.parse(value('mcp-args')||'[]');if(!Array.isArray(config.args)||config.args.some(v=>typeof v!=='string'))throw new Error('命令参数必须为字符串 JSON 数组');
+      const env=parseStringObject(value('mcp-env'),'环境变量');if(Object.keys(env).length)config.env=env;if(value('mcp-cwd')){if(!value('mcp-cwd').startsWith('/'))throw new Error('请输入服务器的绝对工作目录');config.cwd=value('mcp-cwd');}
+    }else{
+      const url=safeURL(value('mcp-url'));if(!url)throw new Error('请输入有效的 HTTP 或 HTTPS 地址');config.url=url;
+      if(value('mcp-bearer-env'))config.bearer_token_env_var=value('mcp-bearer-env');
+      const headers=parseStringObject(value('mcp-headers'),'请求头'),envHeaders=parseStringObject(value('mcp-env-headers'),'环境变量请求头');
+      if(Object.keys(headers).length)config.http_headers=headers;if(Object.keys(envHeaders).length)config.env_http_headers=envHeaders;
+    }
+    await writeMcpConfig(name,config,before);toast(config.enabled?'MCP 已添加并启用':'MCP 已添加，当前停用');await renderMcp();
+  },'添加');
+}
+async function writeMcpConfig(name,value,before,key='') {
+  await rpc('config/batchWrite',{edits:[{keyPath:'mcp_servers.'+JSON.stringify(name)+(key?'.'+key:''),value,mergeStrategy:'replace'}],expectedVersion:before.layers?.find(layer=>layer.name?.type==='user'&&!layer.name?.profile)?.version,reloadUserConfig:true});
+  try{await rpc('config/mcpServer/reload',null);}catch(error){throw new Error('配置已保存，但重新加载未完成：'+nativeErrorMessage(error));}
+}
 async function renderMcp() {
-  const data=await paged('mcpServerStatus/list', { limit:100 }); if(state.view!=='mcp')return;
-  const root=panelHeading('连接你的工具', '原生 MCP 服务器、工具、资源与 OAuth 登录。', 'mcp'); root.append(button('重新加载配置',async()=>{await rpc('config/mcpServer/reload',null);await renderMcp();})); const grid=el('div','card-grid'); grid.style.marginTop='20px';root.append(grid);
-  for(const server of data){const card=el('article','card');card.append(el('h3','',server.name),el('span','tag',server.authStatus || '已配置'),el('p','',Object.keys(server.tools||{}).length+' 个工具 · '+(server.resources||[]).length+' 个资源'));const actions=el('div','card-actions');actions.append(button('查看工具与资源',()=>showJSON(server.name,server)),button('OAuth 登录',async()=>{const result=await rpc('mcpServer/oauth/login',{name:server.name});showAuthResult(result);}));card.append(actions);grid.append(card);}
-  if(!data.length)grid.append(el('div','card subtle','尚未配置 MCP 服务器。可在设置中通过原生 config 接口配置。'));
+  const [data,result]=await Promise.all([paged('mcpServerStatus/list',{limit:100}),rpc('config/read',{includeLayers:true,cwd:state.selectedCwd})]);if(state.view!=='mcp')return;
+  const configs=result.config?.mcp_servers||{},names=new Set([...Object.keys(configs),...data.map(server=>server.name)]);
+  const root=panelHeading('连接你的工具','添加 stdio 或 HTTP MCP，启用后由 Codex 原生加载并在任务中使用。','mcp'),actions=el('div','card-actions');
+  actions.append(button('添加自定义 MCP',()=>customMcpDialog(names),'solid-button'),button('重新加载配置',async()=>{await rpc('config/mcpServer/reload',null);await renderMcp();}));root.append(actions);
+  const grid=el('div','card-grid management-grid');root.append(grid);
+  for(const name of names){
+    const config=configs[name],server=data.find(server=>server.name===name),enabled=config?.enabled!==false,card=el('article','card');card.dataset.mcpName=name;
+    card.append(el('h3','',name),el('span','tag',enabled?'已启用':'已停用'));
+    if(config)card.append(el('div','path',config.url?new URL(config.url).origin+' · HTTP':config.command+' · stdio'));
+    if(enabled){card.append(el('p','',server?({notStarted:'尚未连接',starting:'连接中',connected:'已连接',authenticationRequired:'需要认证',failed:'连接失败',cancelled:'连接已取消',disabled:'原生策略已停用'}[server.runtimeStatus]||'原生工具目录')+' · '+Object.keys(server.tools||{}).length+' 个工具 · '+(server.resources||[]).length+' 个资源':'正在等待原生连接状态'));if(server?.toolsError)card.append(el('p','panel-error',nativeErrorMessage(new Error(server.toolsError))));}
+    const controls=el('div','card-actions');if(config)controls.append(button(enabled?'停用':'启用',async()=>{const before=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});await writeMcpConfig(name,!enabled,before,'enabled');toast('MCP 已'+(enabled?'停用':'启用')+'，从下一次任务开始生效');await renderMcp();}));
+    if(server){controls.append(button('查看工具与资源',()=>showJSON(name,server)));if(enabled&&config?.url)controls.append(button('OAuth 登录',async()=>showAuthResult(await rpc('mcpServer/oauth/login',{name}))));}
+    card.append(controls);grid.append(card);
+  }
+  if(!names.size)grid.append(el('div','card subtle','还没有 MCP，点击上方按钮添加。'));
 }
 async function renderPlugins(){
   const [plugins,apps]=await Promise.allSettled([rpc('plugin/list',{cwds:[state.selectedCwd]}),paged('app/list',{limit:100})]);if(state.view!=='plugins')return;
@@ -300,12 +452,35 @@ async function renderAccount(){
   const limits=el('div','section-card');limits.append(el('h3','','用量与额度'),button('查询原生额度',async()=>{const result=await rpc('account/rateLimits/read',null);showJSON('用量与额度',result);}));root.append(limits);
 }
 function showAuthResult(result){openDialog('完成原生登录',root=>{root.append(el('pre','',pretty(redact(result))));for(const [key,value] of Object.entries(result)){const url=typeof value==='string' && safeURL(value);if(url && /url/i.test(key)){const link=el('a','small-button','打开登录页面');link.href=url;link.target='_blank';link.rel='noopener noreferrer';root.append(link);}}if(result.loginId)root.append(button('取消登录',async()=>{await rpc('account/login/cancel',{loginId:result.loginId});$('#dialog').close();}));},async()=>loadAccount(),'检查登录状态');}
+function renderMcpRequest(request,card,choices) {
+  const data=request.params||{},meta=data._meta||{},schema=data.requestedSchema||{},fields=[];
+  card.insertBefore(el('p','',data.message||data.description||'MCP 服务需要你的确认'),choices);
+  if(meta.tool_params)card.insertBefore(el('pre','',pretty(redact(meta.tool_params))),choices);
+  if(data.url&&safeURL(data.url)){const link=el('a','small-button','打开 MCP 授权页面');link.href=safeURL(data.url);link.target='_blank';link.rel='noopener noreferrer';card.insertBefore(link,choices);}
+  for(const [name,definition]of Object.entries(schema.properties||{})){
+    const group=el('div','form-field'),label=el('label','',definition.title||name);let input;
+    const options=definition.enum||definition.oneOf?.map(option=>option.const);
+    if(options){input=el('select','field-input');options.forEach((value,index)=>input.append(new Option(definition.enumNames?.[index]||definition.oneOf?.[index]?.title||String(value),String(value))));}
+    else if(definition.type==='array'){input=el('textarea','code-editor compact-editor');input.value=pretty(definition.default||[]);}
+    else{input=el('input','field-input');input.type=definition.type==='boolean'?'checkbox':['number','integer'].includes(definition.type)?'number':'text';if(input.type==='checkbox')input.checked=definition.default===true;else input.value=definition.default??'';if(input.type==='number')input.step=definition.type==='integer'?'1':'any';}
+    input.ariaLabel=definition.title||name;input.required=(schema.required||[]).includes(name)&&input.type!=='checkbox';
+    for(const [attribute,key]of [['min','minimum'],['max','maximum'],['minLength','minLength'],['maxLength','maxLength'],['pattern','pattern']])if(definition[key]!=null)input[attribute]=definition[key];
+    group.append(label,input);if(definition.description)group.append(el('p','subtle',definition.description));card.insertBefore(group,choices);fields.push({name,input,definition});
+  }
+  if(data.mode!=='openai/userVerification')choices.append(button(meta.codex_approval_kind==='mcp_tool_call'?'允许本次 MCP 调用':'确认并继续',()=>{
+    const content=[];
+    for(const {name,input,definition}of fields){if(!input.reportValidity())throw new Error('请检查 MCP 表单输入');if(!input.value&&!input.required&&input.type!=='checkbox')continue;let value=input.type==='checkbox'?input.checked:['number','integer'].includes(definition.type)?Number(input.value):definition.type==='array'?JSON.parse(input.value):input.value;if(definition.type==='array'&&(!Array.isArray(value)||value.some(v=>typeof v!=='string')))throw new Error('多选值必须是字符串 JSON 数组');content.push([name,value]);}
+    sendResponse(request.id,{action:'accept',content:Object.fromEntries(content)});
+  }));
+  choices.append(button('拒绝 MCP 请求',()=>sendResponse(request.id,{action:'decline',content:null})),button('取消 MCP 请求',()=>sendResponse(request.id,{action:'cancel',content:null,_meta:{codex_approval_cancellation_reason:'user'}})));
+}
 function renderRequests(){
   const root=$('#requests');root.replaceChildren();
   for(const request of state.requests.values()){
-    const p=request.params||{};const card=el('div','request-card');card.append(el('h3','',request.method.includes('requestApproval')?'Codex 请求你的审批':'Codex 需要你的回应'),el('pre','',pretty(redact(p))));const choices=el('div','choices');card.append(choices);
+    const p=request.params||{};if(p.threadId&&state.thread&&p.threadId!==state.thread.id)continue;const card=el('div','request-card');card.append(el('h3','',request.method.includes('requestApproval')?'Codex 请求你的审批':'Codex 需要你的回应'),el('pre','',pretty(redact(p))));const choices=el('div','choices');card.append(choices);
     const method=request.method;
-    if(method==='item/commandExecution/requestApproval'||method==='item/fileChange/requestApproval'){for(const [label,decision] of [['允许一次','accept'],['本会话允许','acceptForSession'],['拒绝','decline'],['拒绝并中断','cancel']])choices.append(button(label,()=>sendResponse(request.id,{decision})));}
+    if(method==='mcpServer/elicitation/request')renderMcpRequest(request,card,choices);
+    else if(method==='item/commandExecution/requestApproval'||method==='item/fileChange/requestApproval'){for(const [label,decision] of [['允许一次','accept'],['本会话允许','acceptForSession'],['拒绝','decline'],['拒绝并中断','cancel']])choices.append(button(label,()=>sendResponse(request.id,{decision})));}
     else if(method==='item/tool/requestUserInput'){
       const inputs=[];for(const question of p.questions||[]){const group=el('div','question');group.append(el('p','',question.question));if(question.options?.length){for(const [index,option]of question.options.entries()){const label=el('label'),input=el('input');input.type='radio';input.name='q-'+request.id+'-'+question.id;input.value=option.label;label.append(input,document.createTextNode(' '+option.label+(option.description?' · '+option.description:'')));group.append(label);}}const input=el('input','field-input');input.placeholder='输入你的回答';input.ariaLabel=question.question;group.append(input);inputs.push({id:question.id,input,group});card.insertBefore(group,choices);}choices.append(button('提交回答',()=>{const answers={};for(const question of inputs){const value=question.input.value||$('input:checked',question.group)?.value;if(!value)throw new Error('请回答所有问题');answers[question.id]={answers:[value]};}sendResponse(request.id,{answers});},'solid-button'));
     } else if(method==='item/permissions/requestApproval'){choices.append(button('授予本次权限',()=>sendResponse(request.id,{permissions:p.permissions||{},scope:'turn'})),button('拒绝',()=>sendResponse(request.id,{permissions:{},scope:'turn'})));}
@@ -317,14 +492,14 @@ function responseSample(request){const method=request.method;if(method.includes(
 function renderAttachments(){const root=$('#attachments');root.replaceChildren();state.attachments.forEach((a,index)=>{const chip=el('div','attachment');if(a.preview){const img=el('img');img.src=a.preview;img.alt=a.name;chip.append(img);}chip.append(el('span','',a.name),button('×',()=>{state.attachments.splice(index,1);renderAttachments();},''));root.append(chip);});}
 async function readAttachments(files){for(const file of Array.from(files)){if(file.size>16*1024*1024){toast(file.name+' 超过 16 MiB');continue;}if(file.type.startsWith('image/')||file.type.startsWith('audio/')){const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});state.attachments.push({name:file.name,preview:file.type.startsWith('image/')?url:null,input:{type:file.type.startsWith('image/')?'image':'audio',url}});}else{const text=await file.text();state.attachments.push({name:file.name,input:{type:'text',text:'文件 '+file.name+'\n'+text,text_elements:[]}});}}renderAttachments();}
 async function fileBrowser(path=state.selectedCwd){const data=await rpc('fs/readDirectory',{path});$('#file-panel').hidden=false;$('#file-path').textContent=path;$('#file-tree').replaceChildren(button('..',()=>fileBrowser(path.split('/').slice(0,-1).join('/')||'/'),'file-row'));$('#file-preview').hidden=true;for(const entry of data.entries||[]){const name=typeof entry==='string'?entry:entry.fileName||entry.name;const full=path.replace(/\/$/,'')+'/'+name;const isDirectory=entry.isDirectory||entry.type==='directory';const row=button('',async()=>{if(isDirectory)return fileBrowser(full);{const result=await rpc('fs/readFile',{path:full});const pre=$('#file-preview');pre.textContent=result.text||result.content||(result.dataBase64?new TextDecoder().decode(Uint8Array.from(atob(result.dataBase64),c=>c.charCodeAt(0))):pretty(result));pre.hidden=false;}},'file-row');row.append(icon(isDirectory?'folder':'file'),document.createTextNode(name));$('#file-tree').append(row);}}
-async function threadAction(action){const id=state.thread?.id;if(!id)return;switch(action){case'rename':return askText('重命名会话','会话名称',state.thread.name||'',async name=>{await rpc('thread/name/set',{threadId:id,name});state.thread.name=name;$('#page-title').textContent=name;await loadThreads();});case'fork':{const result=await rpc('thread/fork',{threadId:id});return openThread(result.thread.id);}case'compact':await rpc('thread/compact/start',{threadId:id});return toast('已请求原生上下文压缩');case'review':await rpc('review/start',{threadId:id,target:{type:'uncommittedChanges'}});return;case'revert':return rollbackThread(id);case'archive':case'unarchive':await rpc('thread/'+action,{threadId:id});resetChat();return loadThreads();case'export':{const result={thread:state.thread,turns:await paged('thread/turns/list',{threadId:id,itemsView:'full',sortDirection:'asc',limit:100})};const url=URL.createObjectURL(new Blob([pretty(result)],{type:'application/json'}));const link=el('a');link.href=url;link.download='codex-'+id+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;}}}
+async function threadAction(action){const id=state.thread?.id;if(!id)return;switch(action){case'delete':if(state.threadBusy)throw new Error('请先关闭使用此会话的其他页面，再执行永久删除');return openDialog('永久删除会话',root=>{root.append(el('p','','将永久删除“'+(state.thread.name||state.thread.preview||id)+'”的会话历史及其创建的子代理会话，无法撤销。'));if(state.activeTurns.has(id))root.append(el('p','','此会话中的当前任务会被停止。'));},async()=>{await rpc('thread/delete',{threadId:id});if(state.thread?.id===id)resetChat();await loadThreads();toast('会话历史已永久删除');},'永久删除');case'rename':return askText('重命名会话','会话名称',state.thread.name||'',async name=>{await rpc('thread/name/set',{threadId:id,name});state.thread.name=name;$('#page-title').textContent=name;await loadThreads();});case'fork':{const result=await rpc('thread/fork',{threadId:id});return openThread(result.thread.id);}case'compact':await rpc('thread/compact/start',{threadId:id});return toast('已请求原生上下文压缩');case'review':await rpc('review/start',{threadId:id,target:{type:'uncommittedChanges'}});return;case'revert':return rollbackThread(id);case'archive':case'unarchive':await rpc('thread/'+action,{threadId:id});resetChat();return loadThreads();case'export':{const result={thread:state.thread,turns:await paged('thread/turns/list',{threadId:id,itemsView:'full',sortDirection:'asc',limit:100})};const url=URL.createObjectURL(new Blob([pretty(result)],{type:'application/json'}));const link=el('a');link.href=url;link.download='codex-'+id+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;}}}
 function terminalFit(){if(!term||$('#terminal-panel').hidden)return;const node=$('#terminal');const cols=Math.max(20,Math.floor((node.clientWidth-28)/8));const rows=Math.max(5,Math.floor((node.clientHeight-22)/15));term.resize(cols,rows);if(termWS?.readyState===WebSocket.OPEN)termWS.send(JSON.stringify({cols,rows}));}
 function openTerminal(){ $('#terminal-panel').hidden=false;if(!term){if(!window.Terminal)return toast('本地 xterm.js 组件缺失');term=new Terminal({fontFamily:'ui-monospace, SFMono-Regular, Consolas, monospace',fontSize:12,lineHeight:1.15,cursorBlink:true,theme:{background:'#161b17',foreground:'#dae3d8'},scrollback:10000,allowProposedApi:false});term.open($('#terminal'));term.onData(data=>{if(termWS?.readyState===WebSocket.OPEN)termWS.send(JSON.stringify({data:btoa(String.fromCharCode(...new TextEncoder().encode(data)))}));});termResize=new ResizeObserver(terminalFit);termResize.observe($('#terminal'));}terminalFit();term.focus(); }
 function startTerminal(){openTerminal();if(!term)return;const args=JSON.parse($('#cli-args').value);if(!Array.isArray(args)||args.some(arg=>typeof arg!=='string'))throw new Error('CLI 参数必须为字符串数组');termWS?.close();term.reset();term.writeln('\x1b[90m启动本机原生 Codex CLI…\x1b[0m');const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws/terminal?'+new URLSearchParams({cwd:state.selectedCwd,args:JSON.stringify(args)}));termWS=ws;ws.onopen=terminalFit;ws.onmessage=event=>{if(termWS!==ws)return;const msg=JSON.parse(event.data);if(msg.data)term.write(Uint8Array.from(atob(msg.data),c=>c.charCodeAt(0)));if(msg.exit!=null)term.writeln('\r\n\x1b[90m进程退出：'+msg.exit+'\x1b[0m');if(msg.bridge==='error')term.writeln(msg.message);};ws.onclose=()=>{if(termWS===ws)term.writeln('\r\n\x1b[90m终端连接已关闭\x1b[0m');};term.focus();}
 function toggleTheme(){const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;localStorage.setItem('codex.theme',theme);}
 async function fetchJSON(path){const response=await fetch(path);if(!response.ok)throw new Error((await response.json()).error||'HTTP '+response.status);return response.json();}
 async function init(){
-  history.replaceState(null,'',location.pathname);document.documentElement.dataset.theme=localStorage.getItem('codex.theme')||'light';if(innerWidth<760)document.body.classList.add('sidebar-hidden');
+  const cleanURL=new URL(location.href);cleanURL.searchParams.delete('token');history.replaceState(null,'',cleanURL);state.threadLoading=!!threadRoute().id;updateSend();window.addEventListener('popstate',()=>restoreThreadRoute().catch(report));document.documentElement.dataset.theme=localStorage.getItem('codex.theme')||'light';if(innerWidth<760)document.body.classList.add('sidebar-hidden');
   $$('[data-view]').forEach(node=>node.onclick=()=>{if(node.id==='new-chat'){resetChat();}showView(node.dataset.view);});
   $('#collapse').onclick=()=>document.body.classList.add('sidebar-hidden');$('#show-sidebar').onclick=()=>document.body.classList.remove('sidebar-hidden');$('#theme-toggle').onclick=toggleTheme;
   $('#project-edit').onclick=()=>editProject().catch(report);$('#project-button').onclick=$('#project-edit').onclick;$('#cwd-button').onclick=$('#project-edit').onclick;
