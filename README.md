@@ -50,7 +50,7 @@ supports_websockets = false
 ## 原生能力入口
 
 - 会话：新建、恢复、搜索、分页、重命名、分叉、归档、永久删除、上下文压缩、历史回退、代码审查、JSON 导出。选中的会话保存在当前标签页 URL 中，刷新、书签及浏览器前进/后退可直接恢复；恢复失败会明确显示错误并阻止静默新建。同一会话被另一页面占用时显示只读历史，关闭占用页面后可重试继续。
-- 对话：输入框下方并排选择模型与思考强度，通过左下角“＋”添加图片或文本文件（支持多选、预览与移除）；流式回答、流式回答、推理摘要、工具执行、文件差异、计划、子代理事件、中断与执行中补充输入、图片和文本附件。每个任务的思考、过程说明、命令、文件更改及工具过程整体默认折叠，最终回答独立显示并可复制；人工确认继续直接显示。
+- 对话：输入框下方并排选择模型与思考强度，通过左下角“＋”添加图片或文本文件（支持多选、预览与移除）；流式回答、推理摘要、工具执行、文件差异、计划、子代理事件、中断与执行中补充输入、图片和文本附件。每个任务的思考、过程说明、命令、文件更改及工具过程整体默认折叠，最终回答独立显示并可复制；支持 Markdown 表格、列表、链接与代码块，宽表在回答内部横向滚动。人工确认继续直接显示。
 - 交互：命令与文件修改审批、权限请求、用户问题；任意服务端请求均保留自定义 JSON 响应入口；原生 Guardian 审核结果可显示并由用户确认被拒绝的具体操作。
 - 扩展：原生技能发现、启停、调用；从本机上传自定义 `SKILL.md` 或完整 Skill 文件夹；添加 stdio / Streamable HTTP MCP、启停、OAuth、工具与资源；插件和应用目录。
 - 设置：原生配置读取、按项写入、沙箱和审批策略、账户登录与额度。
@@ -62,6 +62,32 @@ RPC/CLI 能力来自 Codex 本身。账户套餐、外部服务、操作系统�
 不同会话可在同一个页面中同时执行：任务 A 开始后点击“新建会话”启动 B，再从侧栏切换查看。运行中的会话有动态圆点。刷新或关闭整个页面会断开该页面的原生进程并影响它运行中的任务；切换会话不会断开进程。同一会话不能由两个页面同时写入。多个会话使用相同工作目录时会操作同一批文件；需要分离文件修改时使用不同项目目录或工作树。
 
 “会话操作 → 永久删除会话”调用原生 `thread/delete`，确认后删除该会话及其创建的子代理会话历史，无法撤销。归档会话也可删除；当前任务会被停止。被其他页面占用时先关闭占用页面。其他会话引用等原生约束会原样返回错误，不会绕过。
+
+## 原生生图与图片显示
+
+在“技能”中找到 `imagegen`，点击“使用 ChatGPT 原生生图”。网页通过原生 `thread/start` 创建独立的 OpenAI 会话，并附带原生生图技能。当前默认辅助模型为 `gpt-5.6-luna`，原生扩展调用 `gpt-image-2`；新建普通对话仍使用原先默认模型（如 DeepSeek）。模型选择显示当前会话实际模型和提供方，不会用 Codex 品牌推断底层模型。
+
+当前 DeepSeek 提供方没有原生 `image_gen`。原生生图会话使用同一 `CODEX_HOME` 下有效的 ChatGPT 授权，不需要将 DeepSeek 密钥填作 OpenAI 密钥；需要登录时从网页账户页完成原生登录。独立测试访问会话会到期，长期使用应在该运行实例完成自己的原生登录。所有授权文件都留在原生配置目录，不进入 Git；原始账号授权文件未修改。
+
+支持上传图预览、原生生成图片、以及 Markdown 引用的服务器本地图片。图片可放大、下载，刷新后从原生历史恢复。生成图独立于折叠的执行过程显示；回答重复引用同一张图片时复用预览入口。服务器文件通过原生 `fs/readFile` 读取，没有新增任意文件下载接口。
+
+服务器直连 OpenAI 不通时，可以复用已配置的 HTTP 代理。以下仅为网络地址，不是模型配置；保留 DeepSeek 直连：
+
+```sh
+HTTP_PROXY=http://127.0.0.1:15236 \
+HTTPS_PROXY=http://127.0.0.1:15236 \
+ALL_PROXY=http://127.0.0.1:15236 \
+NO_PROXY=localhost,127.0.0.1,::1,api.deepseek.com,.deepseek.com \
+python3 web/start.py --deepseek --state-dir .local-state/acceptance --port 8765 --workspace /root/Codex/workspaces/acceptance
+```
+
+代理地址按实际服务器配置填写；不能仅凭转发端口判断它的出口是否经过本机 VPN。代理环境在服务启动时读取，变更后需在任务结束时重启服务。
+
+## 沙箱网络与模型身份
+
+“设置 → 沙箱网络访问”使用原生配置开关 `sandbox_workspace_write.network_access`；不会切换 `approval_policy` 或 `sandbox_mode`。开启后普通联网命令可在工作区沙箱内执行，工作区外的写入限制和原生危险操作审批仍保留。当前选中且可写的 workspace-write 会话会同步该网络设置。其他历史会话保留原生权限快照，若与全局设置不同，设置页显示“应用到当前会话”，只同步网络字段并保留其他权限。
+
+DeepSeek 生成目录的身份提示已经适配实际提供方，工具和权限指令保持完整。网页还通过原生 `turn/start.additionalContext` 提供实际提供方和模型 ID，避免旧会话继承的 OpenAI 身份提示导致错误自述。应以原生请求及会话设置为准确认底层模型。
 
 ## 自定义 Skill 与 MCP
 
@@ -134,6 +160,9 @@ node web/tests/thread_lifecycle_desktop.mjs
 
 python3 web/start.py --deepseek --state-dir .local-state/chat-ui-acceptance --port 8769 --workspace /绝对路径/独立测试工作区
 CODEX_WEB_URL=http://127.0.0.1:8769 node web/tests/chat_layout_desktop.mjs
+CODEX_WEB_URL=http://127.0.0.1:8769 node web/tests/render_network_desktop.mjs
+# 生图专项要求该独立配置目录有有效 ChatGPT 原生授权及到 OpenAI 的网络连接。
+CODEX_WEB_URL=http://127.0.0.1:8769 node web/tests/images_desktop.mjs
 ```
 
 并发和删除专项只会删除本次新建的测试会话，要求使用上述独立配置目录。
@@ -147,6 +176,7 @@ CODEX_WEB_URL=http://127.0.0.1:8769 node web/tests/chat_layout_desktop.mjs
 - [Codex 开源仓库](https://github.com/openai/codex)
 - [OpenAI app-server 文档](https://developers.openai.com/codex/app-server)
 - [DeepSeek 原生 Codex 集成说明](https://api-docs.deepseek.com/quick_start/agent_integrations/codex/)
+- Markdown：[Marked](https://marked.js.org/) 18.1.1（MIT）与 [DOMPurify](https://github.com/cure53/DOMPurify) 3.4.17（Apache-2.0 / MPL-2.0）；静态组件、许可证和 npm 完整性记录保存在 `web/public/vendor/`。
 - xterm.js 6.0.0 与官方 @xterm/addon-fit 0.11.0：MIT，许可证分别保存在 `web/public/vendor/XTERM-LICENSE` 和 `XTERM-FIT-LICENSE`。所有组件随页面本地提供，无需 CDN。
 
 本项目为独立 Web 界面，不是 OpenAI 官方桌面产品。

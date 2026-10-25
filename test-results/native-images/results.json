@@ -1,0 +1,148 @@
+{
+  "origin": "real desktop skill controls, native ChatGPT image_gen and DeepSeek; no fake image response or upstream modification",
+  "results": [
+    {
+      "name": "技能页创建 ChatGPT 原生生图会话，默认 DeepSeek 保持不变",
+      "status": "passed",
+      "evidence": {
+        "provider": "openai",
+        "model": "gpt-5.6-luna",
+        "nativeImageSkill": true,
+        "dailyModel": "deepseek-flash"
+      }
+    },
+    {
+      "name": "实际调用原生 image_gen，生成图片直接显示在折叠过程之外",
+      "status": "passed",
+      "evidence": {
+        "turnStatus": "completed",
+        "error": null,
+        "image": {
+          "id": "exec-adb894ff-ec2a-46e4-b1c9-2f0b1fa33e37",
+          "status": "completed",
+          "savedPath": "/root/Codex/.local-state/chat-ui-acceptance/generated_images/01a172ca-5ec0-7b42-8f6b-ef400507de6e/exec-adb894ff-ec2a-46e4-b1c9-2f0b1fa33e37.png",
+          "hasResult": true
+        },
+        "requests": []
+      }
+    },
+    {
+      "name": "生成图可查看大图并通过网页下载真实 PNG",
+      "status": "passed",
+      "evidence": {
+        "largePreview": true,
+        "downloadBytes": 1769219,
+        "pngSignature": true
+      }
+    },
+    {
+      "name": "服务器图片通过原生文件接口显示，刷新后图片与生图模型恢复",
+      "status": "passed",
+      "evidence": {
+        "nativeFileRead": true,
+        "absolutePathImage": true,
+        "restoredNativeImage": true,
+        "provider": "openai",
+        "model": "gpt-5.6-luna"
+      }
+    },
+    {
+      "name": "新对话恢复 DeepSeek，ChatGPT 授权不改变默认模型提供方",
+      "status": "passed",
+      "evidence": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "defaultProviderPreserved": true,
+        "requiresOpenaiAuth": false
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "gpt-5.6-luna",
+      "provider": "openai"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start"
+    },
+    {
+      "method": "fs/readFile"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume"
+    },
+    {
+      "method": "fs/readFile"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash",
+      "provider": "profile default"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    }
+  ],
+  "browserErrors": []
+}

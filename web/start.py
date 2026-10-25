@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Launch with existing Codex config, or an isolated native DeepSeek profile."""
 import argparse
+import copy
 import getpass
 import json
 import os
@@ -15,18 +16,36 @@ def deepseek_profile(state_dir):
     source = ROOT.parent / 'upstream' / 'codex-rs' / 'models-manager' / 'models.json'
     if not source.is_file():
         raise SystemExit('Missing upstream submodule. Run: git submodule update --init')
-    # Derive from the Apache-licensed source catalog. No provider prompt is copied.
+    # Derive capabilities from the Apache-licensed catalog, with the actual provider identity.
     catalog = json.loads(source.read_text())
-    model = next((m for m in catalog['models'] if m.get('slug') == 'gpt-6-sol'), catalog['models'][0]).copy()
+    model = copy.deepcopy(next((m for m in catalog['models'] if m.get('slug') == 'gpt-6-sol'), catalog['models'][0]))
     model.update(slug='deepseek-flash', display_name='DeepSeek Flash', description='DeepSeek native Responses API',
                  prefer_websockets=False, tool_mode=None, use_responses_lite=False, shell_type='shell_command',
                  context_window=1048576, max_context_window=1048576, default_reasoning_level='high',
                  supports_search_tool=False, web_search_tool_type='text',
                  experimental_supported_tools=[], default_service_tier=None, service_tiers=[],
                  supported_reasoning_levels=[{'effort':v,'description':v} for v in ['low','high','max']])
+    # The source catalog carries an OpenAI persona. Adapt only its identity in this
+    # generated third-party profile; keep all native tool/permission instructions.
+    messages = model.get('model_messages') or {}
+    template = messages.get('instructions_template')
+    if template:
+        _, separator, remainder = template.partition('. ')
+        messages['instructions_template'] = (
+            'You are Codex, an agent powered by DeepSeek (model ID: deepseek-flash). '
+            + (remainder if separator else template)
+        )
+        model['model_messages'] = messages
     state_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
     catalog_path = state_dir / 'models.json'
-    catalog_path.write_text(json.dumps({'models':[model]}, ensure_ascii=False))
+    # Preserve official metadata for the optional OpenAI image conversation.
+    # Hide it from the daily third-party picker; it is selected explicitly by skill UI.
+    image_model = next((copy.deepcopy(m) for m in catalog['models'] if m.get('slug') == 'gpt-5.6-luna'), None)
+    models = [model]
+    if image_model:
+        image_model['visibility'] = 'hide'
+        models.append(image_model)
+    catalog_path.write_text(json.dumps({'models': models}, ensure_ascii=False))
     config_path = state_dir / 'config.toml'
     if not config_path.exists():
         config_path.write_text('\n'.join([

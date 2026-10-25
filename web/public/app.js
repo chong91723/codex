@@ -6,7 +6,7 @@ const icon = name => { const node = document.createElementNS('http://www.w3.org/
 const pretty = value => JSON.stringify(value, null, 2);
 function configDiff(before,after,prefix=''){const edits=[];const object=value=>value&&typeof value==='object'&&!Array.isArray(value);for(const key of new Set([...Object.keys(before),...Object.keys(after)])){const segment=/^[A-Za-z0-9_-]+$/.test(key)?key:JSON.stringify(key);const path=prefix?prefix+'.'+segment:segment;if(!(key in after)){edits.push({keyPath:path,value:null,mergeStrategy:'replace'});continue;}if(object(before[key])&&object(after[key]))edits.push(...configDiff(before[key],after[key],path));else if(JSON.stringify(before[key])!==JSON.stringify(after[key]))edits.push({keyPath:path,value:after[key],mergeStrategy:'replace'});}return edits;}
 const safeURL = value => { try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : null; } catch { return null; } };
-const state = { ws: null, pending: new Map(), counter: 0, ready: false, view: 'chat', thread: null, threadArchived:false, threadBusy:false, attachmentLoads:0, turns: [], items: new Map(), live: new Map(), activeTurns: new Map(), threads: [], cursor: null, archived: false, attachments: [], events: [], requests: new Map(), models: [], status: null, schema: null, serverSchema: null, currentMethod: null, reconnect: null, selectedCwd: localStorage.getItem('codex.cwd') || '', listGeneration: 0, navigationGeneration:0, threadLoading:false, restoreError:false };
+const state = { ws: null, pending: new Map(), counter: 0, ready: false, view: 'chat', thread: null, threadArchived:false, threadBusy:false, attachmentLoads:0, threadSettings:new Map(), imageCache:new Map(), runtimeDefaults:null, turns: [], items: new Map(), live: new Map(), activeTurns: new Map(), threads: [], cursor: null, archived: false, attachments: [], events: [], requests: new Map(), models: [], status: null, schema: null, serverSchema: null, currentMethod: null, reconnect: null, selectedCwd: localStorage.getItem('codex.cwd') || '', listGeneration: 0, navigationGeneration:0, threadLoading:false, restoreError:false };
 let toastTimer, searchTimer, term, termWS, termResize, termFit, termResizeFrame;
 function toast(message) { $('#toast').textContent = message; $('#toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').hidden = true, 5500); }
 function nativeErrorMessage(error){const message=error?.message||String(error);if(/cf_chl_|challenge-platform/i.test(message))return '远端服务要求浏览器验证（HTTP 403）。请检查代理出口，或在官方服务完成验证后重试。';if(/<html/i.test(message))return '远端服务返回网页错误，请检查网络连接和登录状态。';return message;}
@@ -59,6 +59,7 @@ function currentEvent(params) { return !params.threadId || params.threadId === s
 function handleEvent(msg) {
   const p = msg.params || {}, method = msg.method;
   if (method === 'serverRequest/resolved') { state.requests.delete(String(p.requestId)); renderRequests(); }
+  if (method === 'thread/settings/updated') {state.threadSettings.set(p.threadId,p.threadSettings);if(p.threadId===state.thread?.id&&state.view==='settings')renderSettings().catch(report);}
   if (method === 'thread/started') loadThreads().catch(() => {});
   if (method === 'thread/deleted') {state.activeTurns.delete(p.threadId);if(state.thread?.id===p.threadId)resetChat();loadThreads().catch(()=>{});}
   if (method === 'account/updated' || method === 'account/login/completed') loadAccount().catch(() => {});
@@ -83,18 +84,68 @@ function scrollMessages() { const node = $('#conversation-scroll'); if (node.scr
 function renderTurnOutcome(turn) { if(!turn.error && turn.status!=='interrupted')return; const old=$$('[data-turn-outcome]').find(node=>node.dataset.turnOutcome===turn.id);if(old)old.remove();const node=el('div','panel-error message',turn.error?'原生执行失败：'+(turn.error.message||pretty(turn.error)):'任务已中断');node.dataset.turnOutcome=turn.id;$('#messages').append(node); }
 function guardianAssessment(p){const snake=value=>String(value).replace(/[A-Z]/g,char=>'_'+char.toLowerCase());const action=Object.fromEntries(Object.entries(p.action).map(([key,value])=>[snake(key),['type','source'].includes(key)?snake(value):value]));return{id:p.reviewId,turn_id:p.turnId,target_item_id:p.targetItemId,started_at_ms:p.startedAtMs,completed_at_ms:p.completedAtMs,status:snake(p.review.status),risk_level:p.review.riskLevel,user_authorization:p.review.userAuthorization,rationale:p.review.rationale,decision_source:p.decisionSource?snake(p.decisionSource):undefined,action};}
 function renderGuardianReview(p){let node=$$('[data-guardian-review]').find(node=>node.dataset.guardianReview===p.reviewId);if(!node){node=el('div','request-card');node.dataset.guardianReview=p.reviewId;$('#messages').append(node);}node.replaceChildren(el('h3','','原生自动审批 · '+p.review.status),el('p','',p.review.rationale||'正在评估此操作…'),el('pre','',pretty(redact(p.action))));if(p.review.status==='denied'){const confirm=button('确认允许此操作',async()=>{await rpc('thread/approveGuardianDeniedAction',{threadId:p.threadId,event:guardianAssessment(p)});confirm.disabled=true;confirm.textContent='已记录你的确认';toast('已记录对该操作的确认，可继续向 Codex 发送任务。');});node.append(confirm);}$('#welcome').hidden=true;scrollMessages();}
-// Escaping happens before the small Markdown renderer. Raw HTML never executes.
+// Markdown output is sanitized before insertion into the conversation.
+function modelProvider(){return state.threadSettings.get(state.thread?.id)?.modelProvider||state.runtimeDefaults?.model_provider||'openai';}
+function modelPreferenceKey(provider=modelProvider()){return provider===(state.runtimeDefaults?.model_provider||'openai')?'codex.model':'codex.model.'+provider;}
+function restoreDefaultModelChoice(){
+  if(!state.runtimeDefaults)return;
+  const provider=state.runtimeDefaults.model_provider||'openai';for(const option of $$('#model option')){if(option.dataset.provider&&option.dataset.provider!==provider)option.remove();else option.disabled=false;}
+  const saved=localStorage.getItem(modelPreferenceKey(provider));$('#model').value=$$('#model option').some(option=>option.value===saved)?saved:'';$('#model').title='模型提供方：'+provider;loadEfforts();
+}
+function selectThreadModel(threadId){
+  const settings=state.threadSettings.get(threadId);if(!settings?.model||!settings.modelProvider)return;
+  const provider=settings.modelProvider,defaultProvider=state.runtimeDefaults?.model_provider||'openai';
+  for(const option of $$('#model option'))option.disabled=(option.dataset.provider||defaultProvider)!==provider;
+  let option=$$('#model option').find(option=>option.value===settings.model&&(option.dataset.provider||defaultProvider)===provider);
+  if(!option){option=new Option((provider==='openai'?'ChatGPT · ':'')+settings.model,settings.model);option.dataset.provider=provider;$('#model').append(option);}
+  option.disabled=false;$('#model').value=settings.model;$('#model').title='模型提供方：'+provider;loadEfforts();
+}
+function imageMime(path){const extension=String(path).split(/[?#]/)[0].split('.').pop().toLowerCase();return {png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',gif:'image/gif',avif:'image/avif',svg:'image/svg+xml',bmp:'image/bmp'}[extension]||'image/png';}
+function localImagePath(source){
+  if(!source||/^(?:data:|blob:|https?:)/i.test(source))return null;
+  if(!/\.(png|jpe?g|webp|gif|avif|svg|bmp)(?:[?#]|$)/i.test(source))return null;
+  try{if(source.startsWith('sandbox:'))source=source.slice(8);return decodeURIComponent(new URL(source,'file://'+state.selectedCwd.replace(/\/$/,'')+'/').pathname);}catch{return null;}
+}
+function localImageData(path){
+  if(state.imageCache.has(path))return state.imageCache.get(path);
+  const promise=rpc('fs/readFile',{path}).then(result=>{if(!result.dataBase64)throw new Error('图片文件为空');if(result.dataBase64.length>24*1024*1024)throw new Error('图片过大，请从文件面板下载查看');return 'data:'+imageMime(path)+';base64,'+result.dataBase64;}).catch(error=>{state.imageCache.delete(path);throw error;});
+  if(state.imageCache.size>=32)state.imageCache.delete(state.imageCache.keys().next().value);state.imageCache.set(path,promise);return promise;
+}
+function imagePreview(source,name='图片',path=null){
+  openDialog(name,root=>{const image=el('img','image-preview');image.src=source;image.alt=name;root.append(image);const download=el('a','small-button','下载图片');download.href=source;download.download=path?.split('/').pop()||'codex-image.png';root.append(download);},async()=>{},'关闭');
+}
+function loadImageElement(image,source,path=null,deduplicate=false){
+  image.alt=image.alt||'图片';image.loading='lazy';image.classList.add('clickable-image');image.onclick=()=>imagePreview(image.src,image.alt,path);image.onerror=()=>{image.alt='图片无法加载';};
+  const present=url=>{const generated=deduplicate?[...state.items.values()].find(entry=>entry.item.type==='imageGeneration'&&entry.node.querySelector('img')?.src===url):null;if(generated){const show=button('查看已生成的图片',()=>imagePreview(url,'生成的图片',path||localImagePath(source)),'small-button generated-image-link');image.replaceWith(show);return;}image.src=url;image.alt='图片';image.onload=()=>{if(image.isConnected)scrollMessages();};};
+  const local=path||localImagePath(source);if(local){image.removeAttribute('src');image.alt='正在加载图片…';localImageData(local).then(present).catch(error=>{image.alt='图片加载失败：'+nativeErrorMessage(error);});}else if(/^(data:image\/|blob:)/i.test(source||''))present(source);
+}
+function renderGeneratedImage(item){
+  const figure=el('figure','message image-result');figure.dataset.generatedImage=item.id;const image=el('img');image.alt='Codex 生成的图片';
+  const path=item.savedPath||null,source=item.result?(item.result.startsWith('data:image/')?item.result:'data:image/png;base64,'+item.result):null;
+  if(source)loadImageElement(image,source);else if(path)loadImageElement(image,null,path);else{figure.append(el('p','subtle','图片附件：'+(item.fileId||'暂不可读取')));return figure;}
+  figure.append(image);const caption=el('figcaption');caption.append(el('span','subtle','Codex 原生生图'),button('查看大图',()=>imagePreview(image.src,'生成的图片',path)),button('下载图片',()=>{const link=el('a');link.href=image.src;link.download=path?.split('/').pop()||'codex-image.png';link.click();}));figure.append(caption);return figure;
+}
+async function startImageChat(skill){
+  // Custom providers intentionally hide OpenAI account status; native auth owns validation.
+  const model=localStorage.getItem(modelPreferenceKey('openai'))||((state.runtimeDefaults?.model_provider||'openai')==='openai'?state.runtimeDefaults?.model:null)||'gpt-5.6-luna';
+  const result=await rpc('thread/start',{cwd:state.selectedCwd,model,config:{model_provider:'openai'}});
+  resetChat();state.threadSettings.set(result.thread.id,{model:result.model,modelProvider:result.modelProvider,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread);
+  state.attachments.push({name:skill.name,input:{type:'skill',name:skill.name,path:skill.path}});renderAttachments();await showView('chat');loadThreads().catch(report);$('#prompt').focus();toast('已创建 ChatGPT 原生生图会话；新对话仍使用默认模型');
+}
 function markdown(text) {
-  const escape = value => String(value).replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
-  const blocks = [], safe = escape(text || '').replace(/```([^\n]*)\n?([\s\S]*?)```/g, (_, lang, code) => { blocks.push('<pre><code>' + code + '</code></pre>'); return '\u0000' + (blocks.length - 1) + '\u0000'; });
-  let html = safe.replace(/^### (.+)$/gm, '<h3>$1</h3>').replace(/^##? (.+)$/gm, '<h2>$1</h2>').replace(/`([^`\n]+)`/g, '<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
-  html = html.split(/\n\n+/).map(block => /^\u0000\d+\u0000$/.test(block) || /^<h/.test(block) ? block : '<p>' + block.replace(/\n/g, '<br>') + '</p>').join('');
-  html = html.replace(/\u0000(\d+)\u0000/g, (_, i) => blocks[Number(i)]);
-  const wrapper = el('div', 'markdown'); wrapper.innerHTML = html; return wrapper;
+  const wrapper=el('div','markdown');
+  if(!window.marked||!window.DOMPurify){wrapper.textContent=text||'';return wrapper;}
+  const html=marked.parse(text||'',{gfm:true,breaks:true});
+  wrapper.innerHTML=DOMPurify.sanitize(html,{USE_PROFILES:{html:true},FORBID_TAGS:['style','form','input','button','textarea','select','option'],FORBID_ATTR:['style','id','name']});
+  for(const table of wrapper.querySelectorAll('table')){const scroll=el('div','table-scroll');scroll.tabIndex=0;scroll.setAttribute('role','region');scroll.ariaLabel='表格，可横向滚动';table.before(scroll);scroll.append(table);}
+  for(const image of wrapper.querySelectorAll('img'))loadImageElement(image,image.getAttribute('src'),null,true);
+  for(const link of wrapper.querySelectorAll('a[href]')){link.target='_blank';link.rel='noopener noreferrer';}
+  return wrapper;
 }
 const toolNames = { reasoning:'思考过程', commandExecution:'执行命令', fileChange:'文件更改', mcpToolCall:'MCP 调用', dynamicToolCall:'工具调用', webSearch:'搜索网页', imageView:'查看图片', imageGeneration:'图像', collabAgentToolCall:'子代理', plan:'计划', contextCompaction:'压缩上下文', enteredReviewMode:'开始代码审查', exitedReviewMode:'审查结果' };
 function renderItem(item, done = false) {
-  if (item.type === 'userMessage') { const node = el('div', 'message user'); for (const content of item.content || []) { if (content.text) node.append(document.createTextNode(content.text)); else if (content.type?.toLowerCase().includes('image')) node.append(el('div', 'subtle', '[图片附件]')); else node.append(el('div', 'subtle', pretty(redact(content)))); } return node; }
+  if(item.type==='imageGeneration'&&['completed','succeeded'].includes(item.status))return renderGeneratedImage(item);
+  if (item.type === 'userMessage') { const node = el('div', 'message user'); for (const content of item.content || []) { if (content.text) node.append(document.createTextNode(content.text)); else if (content.type?.toLowerCase().includes('image')) {const source=content.url||content.imageUrl||content.path;if(source){const image=el('img','user-image');loadImageElement(image,source,content.path||null);node.append(image);}else node.append(el('div','subtle','[图片附件]'));} else node.append(el('div', 'subtle', pretty(redact(content)))); } return node; }
   if (item.type === 'agentMessage') { const node = el('div', 'message agent'); node.append(markdown(item.text || ''));if(item.phase==='final_answer'||!item.phase&&done){const actions=el('div','message-actions'),copy=button('',async()=>{await navigator.clipboard.writeText(item.text||'');toast('已复制回答');},'icon-button');copy.append(icon('copy'));copy.title=copy.ariaLabel='复制回答';actions.append(copy);node.append(actions);}return node; }
   const node = el('details', 'tool-item'); node.open = item.type === 'fileChange';
   const title = toolNames[item.type] || item.type || '原生事件'; const status = item.status || (done ? 'completed' : 'inProgress');
@@ -106,7 +157,7 @@ function renderItem(item, done = false) {
   node.append(body); return node;
 }
 function isActivity(item, turnId) {
-  if(item.type==='userMessage')return false;
+  if(item.type==='userMessage'||item.type==='imageGeneration'&&['completed','succeeded'].includes(item.status))return false;
   if(item.type!=='agentMessage')return true;
   if(item.phase==='final_answer')return false;
   if(item.phase==='commentary')return true;
@@ -205,8 +256,8 @@ function renderThreadList() {
 function setCwd(path) { state.selectedCwd = path; localStorage.setItem('codex.cwd', path); const name = path.split('/').filter(Boolean).pop() || path; $('#project-name').textContent = name; $('#breadcrumb').textContent = name; $('#cwd-label').textContent = path; }
 function threadRoute(){const params=new URLSearchParams(location.search);return {id:params.get('thread'),archived:params.get('archived')==='1'};}
 function setThreadRoute(id=null,archived=false,replace=false){const url=new URL(location.href);url.searchParams.delete('token');url.searchParams.delete('thread');url.searchParams.delete('archived');if(id){url.searchParams.set('thread',id);if(archived)url.searchParams.set('archived','1');}if(url.href!==location.href)history[replace?'replaceState':'pushState'](null,'',url);}
-function resetChat(route=true) {$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='询问任何问题'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false; $('#chat-toolbar').hidden = true; $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; $('#usage-label').textContent = '原生 Codex 运行时'; renderThreadList(); renderRequests(); updateSend(); }
-function adoptThread(thread,archived=false,busy=false) { if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请先取消归档以继续任务':'询问任何问题';$('#chat-toolbar').hidden=false;$('#thread-info').textContent=thread.id;$('#page-title').textContent=thread.name||thread.preview||'新会话';renderRequests();updateSend(); }
+function resetChat(route=true) {restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='询问任何问题'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false; $('#chat-toolbar').hidden = true; $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; $('#usage-label').textContent = '原生 Codex 运行时'; renderThreadList(); renderRequests(); updateSend(); }
+function adoptThread(thread,archived=false,busy=false) { if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请先取消归档以继续任务':'询问任何问题';$('#chat-toolbar').hidden=false;$('#thread-info').textContent=thread.id;$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend(); }
 async function restoreThreadRoute(){const route=threadRoute();if(route.id){state.archived=route.archived;$('#thread-list-label').textContent=route.archived?'归档会话':'最近会话';await openThread(route.id,{archived:route.archived,replace:true});loadThreads().catch(report);}else resetChat(false);}
 async function openThread(id,{archived=state.archived&&state.threads.some(thread=>thread.id===id),replace=false}={}) {
   const generation=++state.navigationGeneration;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
@@ -217,7 +268,7 @@ async function openThread(id,{archived=state.archived&&state.threads.some(thread
       try{result=await rpc(archived?'thread/read':'thread/resume',{threadId:id,...(archived?{includeTurns:false}:{})});break;}
       catch(error){if(archived||!/already has an active writer/i.test(error.message))throw error;if(generation!==state.navigationGeneration)return;if(attempt<3){await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));if(generation!==state.navigationGeneration)return;}else{result=await rpc('thread/read',{threadId:id,includeTurns:false});busy=true;}}
     }
-    if(generation!==state.navigationGeneration)return;adoptThread(result.thread,archived,busy);
+    if(generation!==state.navigationGeneration)return;if(result.model)state.threadSettings.set(id,{model:result.model,modelProvider:result.modelProvider,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread,archived,busy);
     await hydrateThread(result.thread,generation);
     if(generation!==state.navigationGeneration)return;if(busy){const notice=el('div','panel-error');notice.dataset.threadBusy='';notice.append(el('p','','此会话正在另一个页面中使用，当前显示历史记录。关闭该页面后，可重试继续会话。'),button('重试继续会话',()=>openThread(id,{archived,replace:true})));$('#messages').prepend(notice);}renderThreadList();
   } catch(error) {
@@ -236,7 +287,7 @@ async function hydrateThread(thread, generation=state.navigationGeneration) {
 async function ensureThread() {
   if (state.thread) return state.thread;
   const result = await rpc('thread/start', { cwd:state.selectedCwd, model:$('#model').value || null });
-  adoptThread(result.thread); loadThreads().catch(() => {}); return result.thread;
+  state.threadSettings.set(result.thread.id,{model:result.model,modelProvider:result.modelProvider,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread); loadThreads().catch(() => {}); return result.thread;
 }
 function updateSend() { const deletion=$('#thread-action option[value=delete]');if(deletion)deletion.disabled=state.threadBusy; const running = !state.threadBusy&&state.activeTurns.has(state.thread?.id); $('#send').disabled=state.threadLoading||state.restoreError||state.threadBusy||(!running&&(state.threadArchived||state.attachmentLoads>0)); $('#send').classList.toggle('running', running); $('#send').title = running ? '中断当前任务' : state.attachmentLoads>0?'正在读取附件':'发送'; $('#send').ariaLabel = running ? '中断当前任务' : '发送任务'; }
 async function submitPrompt() {
@@ -251,12 +302,25 @@ async function submitPrompt() {
   const thread = await ensureThread();
   const input = [{ type:'text', text, text_elements:[] }, ...state.attachments.map(a => a.input)];
   const running = state.activeTurns.get(thread.id);
-  const result = running ? await rpc('turn/steer', { threadId:thread.id, expectedTurnId:running, input }) : await rpc('turn/start', { threadId:thread.id, input, model:$('#model').value || null, effort:$('#effort').value || null });
+  const result = running ? await rpc('turn/steer', { threadId:thread.id, expectedTurnId:running, input }) : await rpc('turn/start', { threadId:thread.id, input, model:$('#model').value || null, effort:$('#effort').value || null, additionalContext:runtimeModelContext(thread.id) });
   if (result.turn) state.activeTurns.set(thread.id, result.turn.id);
   $('#prompt').value='';$('#prompt').style.height='auto'; state.attachments=[]; renderAttachments(); updateSend();
 }
-async function loadModels() { const result = await rpc('model/list', { includeHidden:false }); state.models = result.data || []; $('#model').replaceChildren(new Option('默认模型', '')); for (const model of state.models) $('#model').append(new Option(model.displayName || model.model, model.model)); const saved = localStorage.getItem('codex.model'); if (saved) { if (!state.models.some(m => m.model === saved)) $('#model').append(new Option(saved, saved)); $('#model').value = saved; } loadEfforts(); }
-function loadEfforts() { const model = state.models.find(m => m.model === $('#model').value); const enums = state.schema?.definitions?.ReasoningEffort?.enum || []; $('#effort').replaceChildren(new Option('默认推理', '')); for (const effort of model?.supportedReasoningEfforts || enums.map(reasoningEffort => ({ reasoningEffort }))) $('#effort').append(new Option(effort.reasoningEffort, effort.reasoningEffort)); const saved = localStorage.getItem('codex.effort'); if ($$('#effort option').some(x => x.value === saved)) $('#effort').value = saved; }
+function runtimeModelContext(threadId){
+  const settings=state.threadSettings.get(threadId)||{},model=$('#model').value||settings.model||state.runtimeDefaults?.model,provider=settings.modelProvider||state.runtimeDefaults?.model_provider;
+  if(!model||!provider)return undefined;
+  return {'codex-web-runtime':{kind:'application',value:'Runtime configuration facts: model provider = '+provider+'; active model ID for this turn = '+model+'. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model.'}};
+}
+async function loadModels() {
+  const [result,configuration]=await Promise.all([rpc('model/list',{includeHidden:true}),rpc('config/read',{includeLayers:false,cwd:state.selectedCwd})]);
+  state.runtimeDefaults=configuration.config;state.modelDetails=result.data||[];state.models=state.modelDetails.filter(model=>!model.hidden);
+  const model=configuration.config?.model||state.models.find(model=>model.isDefault)?.model;
+  $('#model').replaceChildren(new Option(model?'默认 · '+model:'默认模型',''));
+  $('#model').title='模型提供方：'+(configuration.config?.model_provider||'原生默认提供方');
+  for(const model of state.models){const option=new Option(model.displayName||model.model,model.model);option.dataset.provider=configuration.config?.model_provider||'openai';$('#model').append(option);}
+  const saved=localStorage.getItem('codex.model');if(saved){if(!state.models.some(model=>model.model===saved))$('#model').append(new Option(saved,saved));$('#model').value=saved;}loadEfforts();
+}
+function loadEfforts() { const model = (state.modelDetails||state.models).find(m => m.model === $('#model').value); const enums = state.schema?.definitions?.ReasoningEffort?.enum || []; $('#effort').replaceChildren(new Option('默认推理', '')); for (const effort of model?.supportedReasoningEfforts || enums.map(reasoningEffort => ({ reasoningEffort }))) $('#effort').append(new Option(effort.reasoningEffort, effort.reasoningEffort)); const saved = localStorage.getItem('codex.effort'); if ($$('#effort option').some(x => x.value === saved)) $('#effort').value = saved; }
 async function loadAccount() { const data = await rpc('account/read', { refreshToken:false }); state.account = data; $('#account-name').textContent = data.account?.email || (data.account?.type === 'apiKey' ? 'API 密钥账户' : '本地账户'); $('#account-status').textContent = data.account?.planType || data.account?.type || (data.requiresOpenaiAuth ? '需要登录' : '自定义模型提供方'); if (state.view === 'account') renderAccount(); }
 function showView(view) {
   state.view = view; $$('.main-nav .nav-button,.sidebar-footer .nav-button').forEach(node => node.classList.toggle('active', node.dataset.view === view));
@@ -342,6 +406,7 @@ async function renderSkills() {
     const enabled=skill.enabled!==false,card=el('article','card');card.dataset.skillPath=skill.path;
     card.append(el('h3','',skill.interface?.displayName||skill.name),el('span','tag',enabled?'已启用':'已停用'),el('p','',skill.shortDescription||skill.description),el('span','tag',skill.scope||'本地技能'),el('div','path',skill.path));
     const actions=el('div','card-actions'),use=button('在会话中使用',()=>{state.attachments.push({name:skill.name,input:{type:'skill',name:skill.name,path:skill.path}});renderAttachments();showView('chat');});use.disabled=!enabled;
+    if(skill.name==='imagegen'){const generate=button('使用 ChatGPT 原生生图',()=>startImageChat(skill),'solid-button');generate.disabled=!enabled;actions.append(generate);card.append(el('p','subtle','原生生图使用 ChatGPT 授权和 OpenAI 图像服务，会创建独立会话；日常默认模型保持原样。'));}
     actions.append(use,button(enabled?'停用':'启用',async()=>{await rpc('skills/config/write',{path:skill.path,enabled:!enabled});state.attachments=state.attachments.filter(a=>a.input?.path!==skill.path);renderAttachments();await renderSkills();}));card.append(actions);grid.append(card);
   }for(const error of group.errors||[])grid.append(el('div','panel-error',pretty(error)));}
   if(!grid.children.length)grid.append(el('div','card subtle','还没有技能，点击上方按钮导入。'));
@@ -401,22 +466,17 @@ async function renderMcp() {
   if(!names.size)grid.append(el('div','card subtle','还没有 MCP，点击上方按钮添加。'));
 }
 async function renderPlugins(){
-  const [plugins,apps]=await Promise.allSettled([rpc('plugin/list',{cwds:[state.selectedCwd]}),paged('app/list',{limit:100})]);if(state.view!=='plugins')return;
   const root=panelHeading('插件与应用','原生目录中的扩展。可用性由 Codex 配置、账户和服务决定。','grid');
-  const pluginSection=el('div','section-card');pluginSection.append(el('h3','','插件'));root.append(pluginSection);
-  if(plugins.status==='fulfilled'){
-    const grid=el('div','card-grid');pluginSection.append(grid);
-    for(const marketplace of plugins.value.marketplaces||[])for(const plugin of marketplace.plugins||[]){
-      const card=el('article','card');card.append(el('h3','',plugin.interface?.displayName||plugin.name),el('p','',plugin.interface?.shortDescription||plugin.interface?.longDescription||''),el('span','tag',plugin.installed?(plugin.enabled?'已安装':'已停用'):'可安装'),el('div','path',marketplace.name));
-      card.append(button('详情与原生操作',()=>{state.currentMethod=plugin.installed?'plugin/read':'plugin/install';showView('protocol');}),button('查看元数据',()=>showJSON(plugin.name,plugin)));grid.append(card);
-    }
-    if(!grid.children.length)pluginSection.append(el('p','subtle','当前账户没有可用插件目录。'));
-    for(const error of plugins.value.marketplaceLoadErrors||[])pluginSection.append(el('p','subtle',pretty(error)));
-  }else pluginSection.append(el('p','subtle',plugins.reason.message));
-  const appSection=el('div','section-card');appSection.append(el('h3','','应用'));root.append(appSection);
-  if(apps.status==='fulfilled'){
-    const grid=el('div','card-grid');appSection.append(grid);for(const app of apps.value){const card=el('article','card');card.append(el('h3','',app.name||app.id),el('p','',app.description||''),button('查看应用',()=>showJSON(app.name||app.id,app)));grid.append(card);}if(!grid.children.length)appSection.append(el('p','subtle','当前账户没有可用应用。'));
-  }else appSection.append(el('p','subtle',apps.reason.message));
+  const pluginSection=el('div','section-card'),appSection=el('div','section-card');
+  pluginSection.append(el('h3','','插件'),el('p','subtle','正在读取原生插件目录…'));appSection.append(el('h3','','应用'),el('p','subtle','正在连接原生应用服务…'));root.append(pluginSection,appSection);
+  rpc('plugin/list',{cwds:[state.selectedCwd]}).then(result=>{
+    if(!pluginSection.isConnected)return;pluginSection.replaceChildren(el('h3','','插件'));const grid=el('div','card-grid');pluginSection.append(grid);
+    for(const marketplace of result.marketplaces||[])for(const plugin of marketplace.plugins||[]){const card=el('article','card');card.append(el('h3','',plugin.interface?.displayName||plugin.name),el('p','',plugin.interface?.shortDescription||plugin.interface?.longDescription||''),el('span','tag',plugin.installed?(plugin.enabled?'已安装':'已停用'):'可安装'),el('div','path',marketplace.name));card.append(button('详情与原生操作',()=>{state.currentMethod=plugin.installed?'plugin/read':'plugin/install';showView('protocol');}),button('查看元数据',()=>showJSON(plugin.name,plugin)));grid.append(card);}
+    if(!grid.children.length)pluginSection.append(el('p','subtle','当前账户没有可用插件目录。'));for(const error of result.marketplaceLoadErrors||[])pluginSection.append(el('p','subtle',pretty(error)));
+  }).catch(error=>{if(pluginSection.isConnected)pluginSection.replaceChildren(el('h3','','插件'),el('p','subtle',nativeErrorMessage(error)));});
+  paged('app/list',{limit:100}).then(apps=>{
+    if(!appSection.isConnected)return;appSection.replaceChildren(el('h3','','应用'));const grid=el('div','card-grid');appSection.append(grid);for(const app of apps){const card=el('article','card');card.append(el('h3','',app.name||app.id),el('p','',app.description||''),button('查看应用',()=>showJSON(app.name||app.id,app)));grid.append(card);}if(!grid.children.length)appSection.append(el('p','subtle','当前账户没有可用应用。'));
+  }).catch(error=>{if(appSection.isConnected)appSection.replaceChildren(el('h3','','应用'),el('p','subtle',nativeErrorMessage(error)));});
   root.append(button('打开完整原生管理接口',()=>{state.currentMethod='plugin/list';showView('protocol');}));
 }
 function resolveSchema(schema, root=state.schema, seen=new Set()){if(!schema || typeof schema!=='object')return {};if(schema.$ref){const name=schema.$ref.split('/').pop();if(seen.has(name))return {};return resolveSchema(root.definitions?.[name],root,new Set([...seen,name]));}if(schema.allOf)return resolveSchema(schema.allOf[0],root,seen);return schema;}
@@ -439,8 +499,13 @@ async function renderSettings(){
   settingRow(appearance,'工作区目录',state.selectedCwd,button('更改',editProject));settingRow(appearance,'外观','跟随你的偏好，保存在当前浏览器。',button(document.documentElement.dataset.theme==='dark'?'深色':'浅色',()=>{toggleTheme();return renderSettings();}));
   const execution=el('div','section-card');execution.append(el('h3','','原生运行配置'));root.append(execution);
   for(const [label,key,values] of [['沙箱','sandbox_mode',['read-only','workspace-write','danger-full-access']],['审批策略','approval_policy',['untrusted','on-request','never']]]){const select=el('select');for(const value of values)select.append(new Option(value,value));select.value=typeof config[key]==='string'?config[key]:values[0];select.ariaLabel=label;select.onchange=async()=>{try{await rpc('config/value/write',{keyPath:key,value:select.value,mergeStrategy:'replace',expectedVersion:result.layers?.find(layer=>layer.name?.type==='user')?.version,reloadUserConfig:true});toast('原生配置已保存');renderSettings();}catch(error){report(error);}};settingRow(execution,label,'由 Codex 原生执行；部分配置从新会话开始生效。',select);}
+  const network=el('input');network.type='checkbox';network.ariaLabel='允许工作区沙箱访问网络';network.checked=config.sandbox_workspace_write?.network_access===true;
+  network.onchange=async()=>{const enabled=network.checked;network.disabled=true;try{await rpc('config/value/write',{keyPath:'sandbox_workspace_write.network_access',value:enabled,mergeStrategy:'replace',expectedVersion:result.layers?.find(layer=>layer.name?.type==='user')?.version,reloadUserConfig:true});const policy=state.threadSettings.get(state.thread?.id)?.sandboxPolicy;if(state.thread&&!state.threadBusy&&!state.threadArchived&&policy?.type==='workspaceWrite')await rpc('thread/settings/update',{threadId:state.thread.id,sandboxPolicy:{...policy,networkAccess:enabled}});toast('沙箱网络设置已保存，审批策略保持原样');await renderSettings();}catch(error){report(error);await renderSettings();}finally{network.disabled=false;}};
+  settingRow(execution,'沙箱网络访问','允许 workspace-write 沙箱内联网。保留文件边界和原生危险操作审批；新会话使用此设置。',network);
+  const currentPolicy=state.threadSettings.get(state.thread?.id)?.sandboxPolicy;
+  if(state.thread&&!state.threadBusy&&!state.threadArchived&&currentPolicy?.type==='workspaceWrite'&&currentPolicy.networkAccess!==network.checked)settingRow(execution,'当前会话的网络设置','历史会话保留原生权限快照，点击后仅同步网络设置，保留其他文件权限。',button('应用到当前会话',async()=>{await rpc('thread/settings/update',{threadId:state.thread.id,sandboxPolicy:{...currentPolicy,networkAccess:network.checked}});toast('已将网络设置应用到当前会话后续任务');await renderSettings();}));
   const planToggle=el('input');planToggle.type='checkbox';planToggle.ariaLabel='启用原生计划工具';planToggle.checked=result.layers?.find(layer=>layer.config?.tools?.update_plan?.enabled!==undefined)?.config.tools.update_plan.enabled===true;planToggle.onchange=async()=>{try{await rpc('config/value/write',{keyPath:'tools.update_plan.enabled',value:planToggle.checked,mergeStrategy:'replace',reloadUserConfig:true});toast('已保存，从新会话开始生效');await renderSettings();}catch(error){report(error);}};settingRow(execution,'原生计划工具','允许 Codex 使用 update_plan 展示任务步骤，从新会话开始生效。',planToggle);
-  settingRow(execution,'自定义模型','例如提供方配置中的模型名。模型是否可用以实际请求为准。',button('设置模型名',()=>askText('自定义模型','模型 ID', $('#model').value,async value=>{if(!$$('#model option').some(x=>x.value===value))$('#model').append(new Option(value,value));$('#model').value=value;localStorage.setItem('codex.model',value);loadEfforts();})));
+  settingRow(execution,'自定义模型','例如提供方配置中的模型名。模型是否可用以实际请求为准。',button('设置模型名',()=>askText('自定义模型','模型 ID', $('#model').value,async value=>{if(!$$('#model option').some(x=>x.value===value)){const option=new Option(value,value);option.dataset.provider=modelProvider();$('#model').append(option);}$('#model').value=value;localStorage.setItem(modelPreferenceKey(),value);loadEfforts();})));
   const advanced=el('div','section-card');advanced.append(el('h3','','高级配置'),el('p','subtle','使用 JSON 编辑用户配置层。仅保存修改的字段，并保留未修改的设置。'));const editor=el('textarea','code-editor');editor.ariaLabel='原生配置编辑器';const editable=result.layers?.find(layer=>layer.name?.type==='user'&&!layer.name?.profile)?.config||config;editor.value=pretty(redact(editable));advanced.append(editor,button('保存修改的配置项',async()=>{const next=JSON.parse(editor.value);if(!next||typeof next!=='object'||Array.isArray(next))throw new Error('请输入 JSON 配置对象');const edits=configDiff(redact(editable),next);if(!edits.length)return toast('没有配置变更');if(pretty(edits).includes('[已隐藏]'))throw new Error('请通过原生能力面板编辑含密钥的配置项');await rpc('config/batchWrite',{edits,expectedVersion:result.layers?.find(layer=>layer.name?.type==='user')?.version,reloadUserConfig:true});toast('配置已保存');await renderSettings();}));root.append(advanced);
   const about=el('div','section-card');about.append(el('h3','','源码与运行时'),el('pre','protocol-result',pretty(state.status)));if(state.status?.baseline?.sourceCommit)about.append(el('p','subtle','原生程序由此官方提交直接构建。启动时核对源码、程序校验值和完整协议；可通过官方更新脚本升级。'));root.append(about);
 }
@@ -538,7 +603,7 @@ async function init(){
   $$('[data-prompt]').forEach(node=>node.onclick=()=>{$('#prompt').value=node.dataset.prompt;$('#prompt').focus();});
   $('#thread-search').oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadThreads().catch(report),300);};$('#threads-more').onclick=()=>loadThreads(true).catch(report);
   $('#archive-toggle').onclick=()=>{state.archived=!state.archived;$('#thread-list-label').textContent=state.archived?'归档会话':'最近会话';loadThreads().catch(report);};
-  $('#model').onchange=()=>{localStorage.setItem('codex.model',$('#model').value);loadEfforts();};$('#effort').onchange=()=>localStorage.setItem('codex.effort',$('#effort').value);
+  $('#model').onchange=()=>{localStorage.setItem(modelPreferenceKey(),$('#model').value);loadEfforts();};$('#effort').onchange=()=>localStorage.setItem('codex.effort',$('#effort').value);
   $('#attach-button').onclick=()=>$('#file-input').click();$('#file-input').onchange=()=>{const files=Array.from($('#file-input').files);$('#file-input').value='';state.attachmentLoads++;updateSend();readAttachments(files).catch(report).finally(()=>{state.attachmentLoads--;updateSend();});};
   $('#thread-action').onchange=()=>{const action=$('#thread-action').value;$('#thread-action').value='';threadAction(action).catch(report);};
   $('#files-toggle').onclick=()=>{if(!$('#file-panel').hidden)$('#file-panel').hidden=true;else fileBrowser().catch(report);};$('#files-close').onclick=()=>$('#file-panel').hidden=true;

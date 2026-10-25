@@ -2,6 +2,30 @@
 
 验收日期：2026-10-25。官方源码基线：`970111f6cb62cc02fe36a82ea7d71b37a2889c97`。已重新获取官方 HEAD，确认仍为此提交。上游源码、未跟踪文件和忽略文件检查均干净；CLI、Code Mode Host、Linux bwrap 与 ripgrep 使用完整原生包布局。源码和执行程序导出的四组完整协议定义一致，共 176 个客户端方法。源码内版本号为 `0.0.0`，通过提交号和构建哈希标识实际版本，没有修改上游版本号。
 
+## 表格、模型身份、网络权限与原生生图（2026-10-25）
+
+本次修复并完成 27 次真实网页专项及回归检查，浏览器 JavaScript 错误为 0；另复查日常服务配置及用户报告的旧会话表格。没有修改上游 Codex 源码。
+
+- 8 项表格与模型/网络专项：真实流式 Markdown 表格、列对齐、转义竖线、行内格式、代码块、列表；历史恢复与宽表滚动；真实 HTML 样本清理；新旧会话正确识别实际模型；沙箱联网设置和真实天气查询；联网后工作区外写入仍被阻止。[记录](test-results/render-network/results.json)
+- 2 项历史权限复查：历史会话显式应用已保存的网络选择，只改变网络字段；开关修改、当前会话同步及刷新持久化。[记录](test-results/render-network/network-history.json)
+- 5 项原生生图流程：默认 DeepSeek 网页的技能入口创建 OpenAI 生图会话；实际调用官方 `image_gen` 生成 PNG；独立显示、放大与真实下载；绝对路径图片读取及刷新恢复；新对话恢复 DeepSeek。[记录](test-results/native-images/results.json)
+- 4 项图片显示复查：放大与下载、生成图重复引用去重、原生历史恢复、默认模型恢复，以及 DeepSeek 对话独立显示服务器本地图片。[记录](test-results/native-images/display-results.json)
+- 8 项已有交互回归：桌面窗口下标题与输入框、模型与思考强度、176 项原生入口、真实回答复制、图片/文本附件理解、CLI 中英文输入、终端缩放与底部边界、深浅主题。[记录](test-results/render-network/layout-regression.json)
+
+此前表格渲染器只处理标题、加粗和代码，缺少表格解析。改用本地 Marked 与 DOMPurify，支持完整 Markdown 展示并过滤可执行 HTML；宽表在回答内部滚动。用户报告的旧会话现显示 1 张 2 列、4 行数据的表格，仅读取历史，没有发送新模型任务或保存用户问题内容。[旧会话复查](test-results/render-network/existing-table.json)
+
+模型身份已从实际配置和会话记录核实：日常网页为 `deepseek` 提供方的 `deepseek-flash`，地址 `https://api.deepseek.com/`。此前适配目录沿用了官方 OpenAI 目录中的 GPT-6 身份提示，导致自我介绍错误；已只改生成目录中的身份句，并通过原生 application context 提供实际运行时模型信息。工具/权限指令保留完整，生图辅助模型保留官方完整元数据。
+
+用户明确同意沙箱访问网络后，已从日常网页设置开启 `sandbox_workspace_write.network_access=true`。`approval_policy=on-request`、`sandbox_mode=workspace-write` 保持不变。原来的天气查询因 DNS/网络隔离重试提权，自我介绍又触发官方文档联网查询；普通联网天气查询现在实测 0 次审批。高风险操作仍按原生策略判断，未自动批准用户请求。[日常配置回执](test-results/render-network/live-network.json)
+
+DeepSeek 提供方在官方源码中不会开放内置 `image_gen`。已使用现有独立 ChatGPT 访问会话完成生图，不需要 OPENAI_API_KEY；保留日常 DeepSeek 配置。生图会话由 `gpt-5.6-luna` 驱动，官方扩展调用 `gpt-image-2`，没有用代码绘图冒充模型生图。访问会话副本不包含原始刷新令牌；原始账号授权文件未修改。该访问会话到期后需通过网页原生账号登录续用。
+
+独立服务已验证 OpenAI 使用现有 `127.0.0.1:15236` HTTP 代理，DeepSeek 通过 NO_PROXY 保持直连；无法据此确认出口一定经过 Veee。日常服务的代理环境切换在用户明确确认任务已结束、允许重启后执行。重启后又从日常网页实际完成 OpenAI 与 DeepSeek 两次模型调用，两条通道均通过；默认模型仍为 DeepSeek，网络开启，审批策略和工作区沙箱保持原值。仅新建并通过网页删除本次测试会话，没有修改用户已有会话。[重启后验收](test-results/render-network/live-smoke.json)
+
+最后只读复查原生隐藏模型元数据：生图历史恢复为 `gpt-5.6-luna`，推理选项与官方完整模型元数据一致，日常选择列表仍只显示 DeepSeek，生成图片正常显示。[模型元数据复查](test-results/native-images/model-metadata.json)
+
+[表格截图](test-results/render-network/table.png) · [宽表滚动](test-results/render-network/wide-table.png) · [单张生成图显示](test-results/native-images/generated-image-single.png) · [大图预览](test-results/native-images/image-preview.png) · [DeepSeek 本地图片](test-results/native-images/local-image.png)。截图遮盖账号与会话列表。
+
 ## 新版对话界面与终端（2026-10-25）
 
 页面以个人 AI 对话为主，采用简洁侧栏、居中输入区、用户消息气泡与直接显示的回答。模型和思考强度并排放在输入框下方；移除与侧栏重复的工具菜单。左下角“＋”明确用于添加文件或图片，保留多选、图片预览及附件移除。技能、MCP、插件、项目、文件、设置、账户、原生终端和 176 项原生方法入口全部保留。
@@ -108,6 +132,8 @@ python3 web/scripts/create_test_fixtures.py --help
 node web/tests/desktop_acceptance.mjs
 # 新版布局、附件与终端专项使用独立 chat-ui-acceptance 配置。
 node web/tests/chat_layout_desktop.mjs
+node web/tests/render_network_desktop.mjs
+node web/tests/images_desktop.mjs
 # 以下三项使用 README 中的两个独立专项配置实例。
 node web/tests/custom_tools_desktop.mjs
 node web/tests/activity_desktop.mjs

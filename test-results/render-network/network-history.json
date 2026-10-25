@@ -1,0 +1,174 @@
+{
+  "origin": "actual desktop controls with source-built native Codex and live DeepSeek; no simulated responses",
+  "results": [
+    {
+      "name": "旧会话可显式应用已保存的网络设置，并保留其他权限",
+      "status": "passed",
+      "evidence": {
+        "networkAfterNativeResume": true,
+        "appliedViaNativeButton": true,
+        "otherPermissionsPreserved": true
+      }
+    },
+    {
+      "name": "网页启用网络保留文件边界与审批策略，当前会话也应用设置",
+      "status": "passed",
+      "evidence": {
+        "approvalPolicy": "on-request",
+        "sandboxMode": "workspace-write",
+        "globalNetwork": true,
+        "threadPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": true,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "persistsAfterRefresh": true
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/start"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "effort": "low",
+      "identityContext": {
+        "kind": "application",
+        "value": "Runtime configuration facts: model provider = deepseek; active model ID for this turn = deepseek-flash. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model."
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/settings/update"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/settings/update"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/settings/update"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/value/write",
+      "keyPath": "sandbox_workspace_write.network_access",
+      "value": false
+    },
+    {
+      "method": "thread/settings/update"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/value/write",
+      "keyPath": "sandbox_workspace_write.network_access",
+      "value": true
+    },
+    {
+      "method": "thread/settings/update"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume"
+    },
+    {
+      "method": "thread/list"
+    }
+  ],
+  "serverRequests": [],
+  "browserErrors": []
+}

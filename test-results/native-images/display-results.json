@@ -1,0 +1,127 @@
+{
+  "origin": "real desktop skill controls, native ChatGPT image_gen and DeepSeek; no fake image response or upstream modification",
+  "results": [
+    {
+      "name": "生成图可查看大图并通过网页下载真实 PNG",
+      "status": "passed",
+      "evidence": {
+        "largePreview": true,
+        "downloadBytes": 1769219,
+        "pngSignature": true
+      }
+    },
+    {
+      "name": "服务器图片通过原生文件接口显示，刷新后图片与生图模型恢复",
+      "status": "passed",
+      "evidence": {
+        "nativeFileRead": true,
+        "absolutePathImage": true,
+        "restoredNativeImage": true,
+        "provider": "openai",
+        "model": "gpt-5.6-luna"
+      }
+    },
+    {
+      "name": "新对话恢复 DeepSeek，ChatGPT 授权不改变默认模型提供方",
+      "status": "passed",
+      "evidence": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "defaultProviderPreserved": true,
+        "requiresOpenaiAuth": false
+      }
+    },
+    {
+      "name": "DeepSeek 对话可直接显示服务器本地图片",
+      "status": "passed",
+      "evidence": {
+        "provider": "deepseek",
+        "nativeFileRead": true,
+        "localImageVisible": true
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume"
+    },
+    {
+      "method": "fs/readFile"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume"
+    },
+    {
+      "method": "fs/readFile"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start",
+      "model": null,
+      "provider": "profile default"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start"
+    },
+    {
+      "method": "fs/readFile"
+    },
+    {
+      "method": "thread/list"
+    }
+  ],
+  "browserErrors": []
+}

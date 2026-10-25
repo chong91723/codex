@@ -1,0 +1,327 @@
+{
+  "origin": "actual desktop controls with source-built native Codex and live DeepSeek; no simulated responses",
+  "results": [
+    {
+      "name": "真实流式回复中的 Markdown 表格、对齐、行内格式及代码块",
+      "status": "passed",
+      "evidence": {
+        "headerCells": 3,
+        "bodyRows": 2,
+        "inlineCodeAndBold": true,
+        "alignedColumns": true,
+        "literalCodeBlock": true,
+        "streamed": true
+      }
+    },
+    {
+      "name": "旧会话刷新恢复表格，宽表只在回答内部横向滚动",
+      "status": "passed",
+      "evidence": {
+        "restoredFromNativeHistory": true,
+        "width": 744,
+        "contentWidth": 935,
+        "scrollLeft": 191,
+        "pageOverflow": false
+      }
+    },
+    {
+      "name": "真实回复中的 HTML 不执行脚本，危险链接被清理",
+      "status": "passed",
+      "evidence": {
+        "actualModelSample": true,
+        "noExecutableMarkup": true
+      }
+    },
+    {
+      "name": "模型身份由真实运行时信息确定，新会话不再自称 GPT-6",
+      "status": "passed",
+      "evidence": {
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "nativeApplicationContext": true,
+        "localOrNetworkCommandCount": 0,
+        "modelReply": "我是 **Codex**，一个可以与你协作完成开发任务的 AI 编程代理。当前实际驱动我的模型是 **DeepSeek Flash**（模型 ID：`deepseek-flash`）。\n\n我擅长：\n\n- 阅读、修改和调试代码\n- 在项目里搜索、分析并解决技术问题\n- 运行命令、执行测试、验证改动\n- 处理文件、整理文档和解释复杂概念\n- 从需求出发推进任务，并清楚汇报结果与风险\n\n我不仅能回答技术问题，也能直接在你的工作区里动手完成任务。",
+        "approvalRequests": 0
+      }
+    },
+    {
+      "name": "保留错误身份提示的历史会话也使用实际模型信息",
+      "status": "passed",
+      "evidence": {
+        "historicalBaseInstructionsRetained": true,
+        "runtimeFactsTakePrecedence": true,
+        "modelReply": "当前实际使用的模型提供方是 **deepseek**，模型 ID 是 **deepseek-flash**。",
+        "approvalRequests": 0
+      }
+    },
+    {
+      "name": "网页启用网络保留文件边界与审批策略，当前会话也应用设置",
+      "status": "passed",
+      "evidence": {
+        "approvalPolicy": "on-request",
+        "sandboxMode": "workspace-write",
+        "globalNetwork": true,
+        "threadPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": true,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "persistsAfterRefresh": true
+      }
+    },
+    {
+      "name": "普通联网天气查询真实执行且无审批弹窗",
+      "status": "passed",
+      "evidence": {
+        "realNetworkLookup": true,
+        "commandCount": 1,
+        "successfulCommandCount": 1,
+        "approvalRequests": 0,
+        "modelReply": "北京今天有雨，天气偏凉：\n\n- **当前（18:45）**：约 **10.6°C**，体感 **9.7°C**\n- **今日气温**：**9.8–13.4°C**\n- **天气**：小雨或毛毛雨，降水概率 **100%**\n- **湿度**：**83%**，风力较小\n\n傍晚外出建议带伞，穿防风外套并注意保暖。数据来自 Open-Meteo。"
+      }
+    },
+    {
+      "name": "联网后仍无法写入工作区之外的受保护测试路径",
+      "status": "passed",
+      "evidence": {
+        "exitCode": 2,
+        "outsideWriteBlocked": true,
+        "networkEnabled": true
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/start"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "effort": "low",
+      "identityContext": {
+        "kind": "application",
+        "value": "Runtime configuration facts: model provider = deepseek; active model ID for this turn = deepseek-flash. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model."
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "effort": "low",
+      "identityContext": {
+        "kind": "application",
+        "value": "Runtime configuration facts: model provider = deepseek; active model ID for this turn = deepseek-flash. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model."
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "effort": "low",
+      "identityContext": {
+        "kind": "application",
+        "value": "Runtime configuration facts: model provider = deepseek; active model ID for this turn = deepseek-flash. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model."
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "effort": "low",
+      "identityContext": {
+        "kind": "application",
+        "value": "Runtime configuration facts: model provider = deepseek; active model ID for this turn = deepseek-flash. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model."
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "effort": "low"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "effort": "low",
+      "identityContext": {
+        "kind": "application",
+        "value": "Runtime configuration facts: model provider = deepseek; active model ID for this turn = deepseek-flash. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model."
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/value/write",
+      "keyPath": "sandbox_workspace_write.network_access",
+      "value": false
+    },
+    {
+      "method": "thread/settings/update"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/value/write",
+      "keyPath": "sandbox_workspace_write.network_access",
+      "value": true
+    },
+    {
+      "method": "thread/settings/update"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "effort": "low",
+      "identityContext": {
+        "kind": "application",
+        "value": "Runtime configuration facts: model provider = deepseek; active model ID for this turn = deepseek-flash. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model."
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "command/exec"
+    }
+  ],
+  "serverRequests": [],
+  "browserErrors": []
+}
