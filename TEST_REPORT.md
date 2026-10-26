@@ -162,3 +162,20 @@ python3 web/tests/guardian_acceptance.py --output /tmp/browser-guardian.json
 ```
 
 账号脚本默认不会创建远端插件。不要在个人空间执行远端分享生命周期；重新验收现有测试插件使用 `private_share_recheck.py`，不会创建第二个资源。旧的直接协议检查和被替代的早期截图已移入忽略的本地归档，不作为网页验收证据。
+
+
+## 数据库与完整结果发布验收（2026-10-26）
+
+全部功能操作由真实桌面网页的管理、对话或原生能力面板按钮发起。独立发布实例使用 `database-release-acceptance`，与日常配置隔离，未修改 `upstream/`。
+
+- [核心流程](test-results/database-release/core.json)：11 项通过。四类数据库实际配置并读取，拒绝 MySQL 管理账号，批量与受控跨库查询通过，写入/文件/外部数据源查询拒绝，DeepSeek 实际查询并生成回答图表。
+- [完整结果](test-results/database-release/complete-results.json)：9 项通过。Sakila `payment` 共 16,044 行全部保存和导出；DuckDB 全量 COUNT/SUM 与原库一致（16,044、67,406.56）；10,000 字符文本、高精度小数、二进制和 NULL/空字符串区分保留；五类图表及 PNG 下载、刷新恢复、停用和断连限制通过。
+- [取消与继续](test-results/database-release/cancellation.json)：MySQL、PostgreSQL、ClickHouse 均从网页发起真实查询并点击停止，数据库侧确认任务结束，没有发布部分快照，同一会话继续回答通过。耗时分别约 0.9、0.6、0.4 秒。ClickHouse 25.8 所需三列只读权限经过用户明确授权后配置，未授予写权限。
+- [Elasticsearch 完整原生 JSON](test-results/database-release/elasticsearch.json)：三组聚合原生 JSON 完整下载，总额 620；跨未配置索引的文档引用被拒绝。搜索取消的连接关闭行为另经 HTTP 响应头前/响应体期间的传输测试；未以三条样例数据宣称测得长查询取消耗时。
+- [完整结果计算取消](test-results/database-release/analyze-cancellation.json)：网页启动 DuckDB 全量自连接计算，确认有实际 CPU 运算后点击停止，CPU 运算结束、没有部分结果，同会话继续通过。修复了流式读取器无法重复扫描的问题，使用可重复扫描的 Arrow 数据集。
+- [重复扫描回归](test-results/database-release/repeat-scan.json)：全量读取、精确聚合、自连接和完整导出 4 项通过。[跨库依赖](test-results/database-release/dependencies.json)：派生分析继承全部连接依赖，停用/版本变化后读取、分析和图表均拒绝。
+- HTTP/WebSocket 边界 11 项、只读与取消安全检查 8 项通过。上游源码干净，完整原生协议 176 个方法与构建程序一致。
+
+本次发布只包含数据库、结果存储、回答图表、上下文显示与相应安全检查。独立草稿中的同会话跨 DeepSeek/ChatGPT 历史迁移没有通过，未纳入此次发布；保留此前已发布的模型选择行为，不将其称为已修复。原生自动压缩已按源码确认存在，手动压缩网页验收此前通过；自动阈值触发尚未做专项网页实测。用户明确不执行的三项账号操作继续保持未验收。
+
+日常服务已在原端口 **8765** 部署并通过[上线网页验收](test-results/database-release/live.json)：从网页配置 Sakila 专用只读账号，DeepSeek 实际查询并调用图表工具，刷新后同一会话和图表恢复、上下文圆环正常。示例会话为“数据库上线验收 · Sakila 查询与图表”。部署前确认没有活动会话写入锁，保留原登录和 API 环境；页面和模型目录已在忽略的本地目录备份。

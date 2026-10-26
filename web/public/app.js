@@ -66,6 +66,7 @@ function handleEvent(msg) {
   if (method === 'account/updated' || method === 'account/login/completed') loadAccount().catch(() => {});
   if (method === 'turn/started') { state.activeTurns.set(p.threadId, p.turn.id);renderThreadList(); updateSend(); }
   if (method === 'turn/completed') { state.activeTurns.delete(p.threadId);renderThreadList(); updateSend(); if (currentEvent(p)) { if (p.turn.error) toast(p.turn.error.message || pretty(p.turn.error)); const turn={...p.turn,items:p.turn.items?.length?p.turn.items:[...state.items.values()].filter(entry=>entry.turnId===p.turn.id).map(entry=>entry.item)};renderTurnOutcome(turn); const index=state.turns.findIndex(item=>item.id===turn.id); if(index<0)state.turns.push(turn);else state.turns[index]=turn; refreshActivityGroups(turn.id); loadThreads().catch(() => {}); } }
+  if (method === 'thread/tokenUsage/updated') receiveContextUsage(p);
   if (!currentEvent(p)) return;
   if (method === 'item/autoApprovalReview/started' || method === 'item/autoApprovalReview/completed') renderGuardianReview(p);
   if (method === 'guardianWarning') toast(p.message);
@@ -76,7 +77,7 @@ function handleEvent(msg) {
   if (method === 'item/fileChange/outputDelta') appendDelta(p.itemId, p.delta, 'fileChange', p.turnId);
   if (method === 'turn/diff/updated') { state.lastDiff = p.diff; }
   if (method === 'turn/plan/updated') renderTurnPlan(p);
-  if (method === 'thread/tokenUsage/updated') { const usage = p.tokenUsage?.total || p.tokenUsage?.last || p.tokenUsage; if (usage) $('#usage-label').textContent = (usage.totalTokens || usage.inputTokens || 0).toLocaleString() + ' tokens'; }
+
   if (method === 'thread/realtime/error') toast(p.message||'实时连接失败');
   if (method === 'windowsSandbox/setupCompleted' && !p.success) toast(p.error||'Windows 沙箱设置未完成');
   if (method === 'error') toast(p.error?.message || p.message || '原生运行时返回错误');
@@ -96,6 +97,7 @@ function restoreDefaultModelChoice(){
 function selectThreadModel(threadId){
   const settings=state.threadSettings.get(threadId);if(!settings?.model||!settings.modelProvider)return;
   const provider=settings.modelProvider,defaultProvider=state.runtimeDefaults?.model_provider||'openai';
+
   for(const option of $$('#model option'))option.disabled=false;
   let option=$$('#model option').find(option=>option.value===settings.model&&(option.dataset.provider||defaultProvider)===provider);
   if(!option){option=new Option((provider==='openai'?'ChatGPT · ':'')+settings.model,settings.model);option.dataset.provider=provider;$('#model').append(option);}
@@ -144,6 +146,7 @@ function markdown(text) {
 }
 const toolNames = { reasoning:'思考过程', commandExecution:'执行命令', fileChange:'文件更改', mcpToolCall:'MCP 调用', dynamicToolCall:'工具调用', webSearch:'搜索网页', imageView:'查看图片', imageGeneration:'图像', collabAgentToolCall:'子代理', plan:'计划', contextCompaction:'压缩上下文', enteredReviewMode:'开始代码审查', exitedReviewMode:'审查结果' };
 function renderItem(item, done = false) {
+  const chart=databaseChart(item);if(chart)return renderDatabaseChart(chart);
   if(item.type==='imageGeneration'&&['completed','succeeded'].includes(item.status))return renderGeneratedImage(item);
   if (item.type === 'userMessage') { const node = el('div', 'message user'); for (const content of item.content || []) { if (content.text) node.append(document.createTextNode(content.text)); else if (content.type?.toLowerCase().includes('image')) {const source=content.url||content.imageUrl||content.path;if(source){const image=el('img','user-image');loadImageElement(image,source,content.path||null);node.append(image);}else node.append(el('div','subtle','[图片附件]'));} else node.append(el('div', 'subtle', pretty(redact(content)))); } return node; }
   if (item.type === 'agentMessage') { const node = el('div', 'message agent'); node.append(markdown(item.text || ''));if(item.phase==='final_answer'||!item.phase&&done){const actions=el('div','message-actions'),copy=button('',async()=>{await navigator.clipboard.writeText(item.text||'');toast('已复制回答');},'icon-button');copy.append(icon('copy'));copy.title=copy.ariaLabel='复制回答';actions.append(copy);node.append(actions);}return node; }
@@ -157,6 +160,7 @@ function renderItem(item, done = false) {
   node.append(body); return node;
 }
 function isActivity(item, turnId) {
+  if(databaseChart(item))return false;
   if(item.type==='userMessage'||item.type==='imageGeneration'&&['completed','succeeded'].includes(item.status))return false;
   if(item.type!=='agentMessage')return true;
   if(item.phase==='final_answer')return false;
@@ -256,8 +260,8 @@ function renderThreadList() {
 function setCwd(path) { state.selectedCwd = path; localStorage.setItem('codex.cwd', path); const name = path.split('/').filter(Boolean).pop() || path; $('#project-name').textContent = name; $('#breadcrumb').textContent = name; $('#cwd-label').textContent = path; }
 function threadRoute(){const params=new URLSearchParams(location.search);return {id:params.get('thread'),archived:params.get('archived')==='1'};}
 function setThreadRoute(id=null,archived=false,replace=false){const url=new URL(location.href);url.searchParams.delete('token');url.searchParams.delete('thread');url.searchParams.delete('archived');if(id){url.searchParams.set('thread',id);if(archived)url.searchParams.set('archived','1');}if(url.href!==location.href)history[replace?'replaceState':'pushState'](null,'',url);}
-function resetChat(route=true) {restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='询问任何问题'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false; $('#chat-toolbar').hidden = true; $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; $('#usage-label').textContent = '原生 Codex 运行时'; renderThreadList(); renderRequests(); updateSend(); }
-function adoptThread(thread,archived=false,busy=false) { if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请先取消归档以继续任务':'询问任何问题';$('#chat-toolbar').hidden=false;$('#thread-info').textContent=thread.id;$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend(); }
+function resetChat(route=true) {restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='询问任何问题'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false; $('#chat-toolbar').hidden = true; $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; renderContextUsage(); renderThreadList(); renderRequests(); updateSend(); }
+function adoptThread(thread,archived=false,busy=false) { if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请先取消归档以继续任务':'询问任何问题';$('#chat-toolbar').hidden=false;$('#thread-info').textContent=thread.id;$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); }
 async function restoreThreadRoute(){const route=threadRoute();if(route.id){state.archived=route.archived;$('#thread-list-label').textContent=route.archived?'归档会话':'最近会话';await openThread(route.id,{archived:route.archived,replace:true});loadThreads().catch(report);}else resetChat(false);}
 async function openThread(id,{archived=state.archived&&state.threads.some(thread=>thread.id===id),replace=false}={}) {
   const generation=++state.navigationGeneration;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
@@ -285,6 +289,7 @@ async function hydrateThread(thread, generation=state.navigationGeneration) {
   $('#welcome').hidden = turns.length > 0;$('#view-chat').classList.toggle('empty',turns.length===0); $('#chat-toolbar').hidden = false; $('#page-title').textContent = thread.name || thread.preview || '新会话'; $('#thread-info').textContent = thread.id; updateSend();
 }
 async function ensureThread() {
+
   if (state.thread) return state.thread;
   const provider=selectedModelProvider(),config=provider!==(state.runtimeDefaults?.model_provider||'openai')?{model_provider:provider}:undefined;
   const result = await rpc('thread/start', { cwd:state.selectedCwd, model:$('#model').value || null,config });
@@ -329,9 +334,9 @@ function showView(view) {
   $('#view-chat').hidden = view !== 'chat'; $('#view-panel').hidden = view === 'chat';
   if (window.innerWidth < 760) document.body.classList.add('sidebar-hidden');
   if (view === 'chat') { $('#page-title').textContent = state.thread?.name || state.thread?.preview || '新建会话'; $('#prompt').focus(); return; }
-  const title = {skills:'技能',mcp:'MCP 服务',plugins:'插件与应用',protocol:'原生能力',settings:'设置',account:'账户'}[view]; $('#page-title').textContent = title;
+  const title = {databases:'数据库',skills:'技能',mcp:'MCP 服务',plugins:'插件与应用',protocol:'原生能力',settings:'设置',account:'账户'}[view]; $('#page-title').textContent = title;
   $('#panel-content').replaceChildren(el('div', 'loading', '读取原生能力…'));
-  ({ skills:renderSkills, mcp:renderMcp, plugins:renderPlugins, protocol:renderProtocol, settings:renderSettings, account:renderAccount })[view]?.().catch(error => { if (state.view === view) panelError(error); });
+  ({ databases:renderDatabases, skills:renderSkills, mcp:renderMcp, plugins:renderPlugins, protocol:renderProtocol, settings:renderSettings, account:renderAccount })[view]?.().catch(error => { if (state.view === view) panelError(error); });
 }
 function panelError(error) { $('#panel-content').replaceChildren(el('div', 'panel-error', nativeErrorMessage(error)), button('重试', () => showView(state.view))); }
 function panelHeading(title, description, iconName) { const header = el('div', 'panel-heading'), text = el('div'); text.append(el('h1', '', title), el('p', '', description)); header.append(text, icon(iconName)); $('#panel-content').replaceChildren(header); return $('#panel-content'); }

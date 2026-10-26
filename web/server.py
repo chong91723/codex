@@ -225,6 +225,7 @@ class Settings:
             from scripts.verify_upstream import verify
             verify(native)
             self.provenance = json.loads((ROOT.parent / 'native' / 'provenance.json').read_text())
+        self.public_dir = Path(os.environ.get('CODEX_WEB_PUBLIC_DIR',ROOT / 'public')).resolve()
         self.workspace = Path(args.workspace).expanduser().resolve()
         self.workspace.mkdir(parents=True, exist_ok=True)
         self.bind, self.port = args.bind, args.port
@@ -283,35 +284,86 @@ class Handler(BaseHTTPRequestHandler):
     def reject(self, code, message):
         self.send_bytes(code, json.dumps({'error': message}).encode())
 
-    def do_GET(self):
+    def auth_reject(self,code,message):
+        self.reject(code,message)
+        return None
+
+    def authorize(self,bootstrap=False):
         settings = self.server.settings
         parsed = urlparse(self.path)
         host = self.headers.get('Host', '')
         hostname = urlparse('http://' + host).hostname
         if not settings.remote and hostname not in ('localhost', '127.0.0.1', '::1'):
-            return self.reject(403, 'Invalid Host')
+            return self.auth_reject(403, 'Invalid Host')
         origin = self.headers.get('Origin')
         if origin and urlparse(origin).netloc != host:
-            return self.reject(403, 'Cross-origin request rejected')
+            return self.auth_reject(403, 'Cross-origin request rejected')
         cookies = http.cookies.SimpleCookie()
         try:
             cookies.load(self.headers.get('Cookie', ''))
         except http.cookies.CookieError:
-            return self.reject(403, 'Invalid session')
+            return self.auth_reject(403, 'Invalid session')
         token = cookies.get('codex_web')
         authorized = bool(token and secrets.compare_digest(token.value, settings.token))
         query = parse_qs(parsed.query)
         supplied = query.get('token', [''])[0]
-        if not authorized and parsed.path == '/':
+        if not authorized and bootstrap and parsed.path == '/':
             if settings.remote and not secrets.compare_digest(supplied, settings.token):
-                return self.reject(401, 'Open /?token=YOUR_CODEX_WEB_TOKEN once to sign in')
+                return self.auth_reject(401, 'Open /?token=YOUR_CODEX_WEB_TOKEN once to sign in')
             authorized = True
             cookie = settings.token
         else:
             cookie = None
         if not authorized:
-            return self.reject(401, 'Open the home page to establish a local session')
+            return self.auth_reject(401, 'Open the home page to establish a local session')
+        return parsed,query,cookie
+
+    def do_POST(self):
+        authorized=self.authorize()
+        if authorized is None:return
+        parsed,query,cookie=authorized
+        if not parsed.path.startswith('/api/databases/'):
+            return self.reject(404,'Not found')
+        action=parsed.path.removeprefix('/api/databases/')
+        if action not in ('save','test','toggle','remove','schema','query','chart','result','analyze','read_chart','results','clear_result'):
+            return self.reject(404,'Unknown database operation')
+        if self.headers.get('Content-Type','').split(';')[0]!='application/json':
+            return self.reject(415,'JSON required')
         try:
+            size=int(self.headers.get('Content-Length','0'))
+            if not 0<size<=128*1024:return self.reject(413,'Invalid request size')
+            payload=json.loads(self.rfile.read(size))
+            if not isinstance(payload,dict):raise ValueError('JSON object required')
+            from database_bridge import manage_database
+            value=manage_database(action,payload)
+            return self.send_bytes(200,json.dumps(value,ensure_ascii=False).encode())
+        except (ValueError,KeyError) as error:self.reject(400,str(error))
+        except subprocess.TimeoutExpired:self.reject(504,'数据库请求超时，请缩小查询范围。')
+        except (BrokenPipeError,ConnectionResetError):pass
+        except Exception:self.reject(500,'数据库请求失败，请检查本机服务。')
+
+    def do_GET(self):
+        authorized=self.authorize(bootstrap=True)
+        if authorized is None:return
+        parsed,query,cookie=authorized
+        settings=self.server.settings
+        try:
+            if parsed.path.startswith('/api/databases/results/'):
+                import re
+                match=re.fullmatch(r'/api/databases/results/([0-9a-f]{32})\.(csv|parquet|json)',parsed.path)
+                if not match:return self.reject(404,'Result not found')
+                from database_bridge import manage_database
+                value=manage_database('export',{'resultId':match[1],'format':match[2]})
+                path=Path(value['path'])
+                self.send_response(200);self.send_header('Content-Type',value['mime']);self.send_header('Content-Length',str(path.stat().st_size));self.send_header('Content-Disposition','attachment; filename="'+value['filename']+'"');self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.end_headers()
+                with path.open('rb') as source:
+                    while chunk:=source.read(65536):self.wfile.write(chunk)
+                return
+            if parsed.path == '/api/databases':
+                from database_bridge import database_status,manage_database
+                status=database_status()
+                value=manage_database('list',{}) if status['ready'] else {'connections':[]}
+                return self.send_bytes(200,json.dumps({**status,**value},ensure_ascii=False).encode())
             if parsed.path == '/api/status':
                 return self.send_bytes(200, json.dumps(settings.status()).encode())
             if parsed.path.startswith('/api/schema/'):
@@ -354,8 +406,8 @@ class Handler(BaseHTTPRequestHandler):
                     ws.close()
                 return
             relative = 'index.html' if parsed.path == '/' else parsed.path.lstrip('/')
-            path = (ROOT / 'public' / relative).resolve()
-            if not path.is_relative_to(ROOT / 'public') or not path.is_file():
+            path = (getattr(settings,'public_dir',ROOT / 'public') / relative).resolve()
+            if not path.is_relative_to(getattr(settings,'public_dir',ROOT / 'public')) or not path.is_file():
                 return self.reject(404, 'Not found')
             mime = mimetypes.guess_type(path.name)[0] or 'application/octet-stream'
             return self.send_bytes(200, path.read_bytes(), mime, cookie)

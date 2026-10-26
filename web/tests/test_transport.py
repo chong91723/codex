@@ -8,6 +8,7 @@ import tempfile
 import threading
 import types
 import unittest
+from unittest.mock import patch
 import urllib.error
 import urllib.request
 
@@ -71,8 +72,8 @@ class HttpBoundaryTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.server.shutdown();cls.server.server_close();cls.temp.cleanup()
 
-    def request(self,path,headers=None):
-        request=urllib.request.Request(self.base+path,headers=headers or {})
+    def request(self,path,headers=None,data=None):
+        request=urllib.request.Request(self.base+path,headers=headers or {},data=data)
         try:return urllib.request.urlopen(request)
         except urllib.error.HTTPError as response:return response
 
@@ -90,6 +91,32 @@ class HttpBoundaryTests(unittest.TestCase):
     def test_schema_and_static_traversal_blocked(self):
         for path in ['/api/schema/../server.py','/../server.py','/%2e%2e/server.py']:
             with self.request(path,{'Cookie':'codex_web=local-test-token'})as response:self.assertEqual(response.status,404)
+
+    def test_database_post_and_download_require_same_origin_session(self):
+        for headers,expected in [({},401),({'Origin':'https://attacker.example','Cookie':'codex_web=local-test-token'},403)]:
+            with self.request('/api/databases/query',headers,b'{}') as response:self.assertEqual(response.status,expected)
+            with self.request('/api/databases/results/'+'a'*32+'.csv',headers) as response:self.assertEqual(response.status,expected)
+
+    def test_database_post_accepts_only_json_objects_and_bounded_bodies(self):
+        headers={'Cookie':'codex_web=local-test-token','Content-Type':'application/json'}
+        with self.request('/api/databases/query',{'Cookie':headers['Cookie']},b'{}') as response:self.assertEqual(response.status,415)
+        for payload,expected in [(b'[]',400),(b'{broken',400),(b'x'*(128*1024+1),413)]:
+            with self.request('/api/databases/query',headers,payload) as response:self.assertEqual(response.status,expected)
+        with patch('database_bridge.manage_database',return_value={'readOnly':True}) as manage:
+            with self.request('/api/databases/query',headers,b'{"id":"fixture","query":"SELECT 1"}') as response:
+                self.assertEqual(response.status,200);self.assertTrue(json.load(response)['readOnly'])
+            manage.assert_called_once_with('query',{'id':'fixture','query':'SELECT 1'})
+
+    def test_result_download_validates_identifier_and_sets_attachment_headers(self):
+        headers={'Cookie':'codex_web=local-test-token'}
+        with patch('database_bridge.manage_database') as manage:
+            for path in ['/api/databases/results/../server.py','/api/databases/results/'+('a'*31)+'.csv','/api/databases/results/'+('a'*32)+'.exe']:
+                with self.request(path,headers) as response:self.assertEqual(response.status,404)
+            manage.assert_not_called()
+        fixture=Path(self.temp.name)/'result.csv';fixture.write_bytes(b'column\nvalue\n')
+        with patch('database_bridge.manage_database',return_value={'path':str(fixture),'mime':'text/csv','filename':'result.csv'}):
+            with self.request('/api/databases/results/'+'a'*32+'.csv',headers) as response:
+                self.assertEqual(response.status,200);self.assertEqual(response.read(),fixture.read_bytes());self.assertIn('attachment;',response.headers['Content-Disposition']);self.assertEqual(response.headers['Cache-Control'],'no-store')
 
 
 if __name__=='__main__':unittest.main()

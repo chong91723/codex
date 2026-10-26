@@ -1,6 +1,6 @@
 # Codex Web Native
 
-基于 Codex 原生运行时的个人 AI 网页助手，页面与交互参考 ChatGPT 网页端。完整保留 Codex 的技能、MCP、文件、沙箱、审批、CLI 及全部原生协议入口。代理内核直接从最新 Codex 开源源码编译；Web 层只做界面与协议传输。上游源码以子模块保存在 `upstream/`，禁止在该目录修改源码。
+基于 Codex 原生运行时的个人 AI 网页助手，页面与交互参考 ChatGPT 网页端。完整保留 Codex 的技能、MCP、文件、沙箱、审批、CLI 及全部原生协议入口。代理内核直接从最新 Codex 开源源码编译；Web 层负责界面与原生协议传输；数据库查询和图表通过独立的只读 MCP 扩展接入。上游源码以子模块保存在 `upstream/`，禁止在该目录修改源码。
 
 ## 获取与运行
 
@@ -12,7 +12,7 @@ python3 web/scripts/build_native.py --jobs 2
 python3 web/start.py
 ```
 
-浏览器打开 <http://127.0.0.1:8765>。默认使用本机 Codex 配置和登录信息。Web 服务仅依赖 Python 3.11+ 标准库，不需要 Node、npm、前端打包或 CDN；可选浏览器验收需要 Playwright。
+浏览器打开 <http://127.0.0.1:8765>。默认使用本机 Codex 配置和登录信息。基础 Web 服务仅依赖 Python 3.11+ 标准库，不需要前端打包或 CDN。可选数据库功能使用独立 Python 环境和本机 Node.js 图表组件；浏览器验收使用 Playwright。
 
 当前原生构建脚本针对 Linux x86_64。编译需要 C/C++ 编译器、pkg-config、CMake，以及 OpenSSL、ALSA、DBus 和 libcap 开发头文件。构建脚本同时编译 CLI、code-mode host 和源码自带的 bwrap，再调用未修改的上游打包器组装标准目录及 ripgrep；不能只复制 CLI 单个可执行文件。若已安装 ripgrep，可传入 `--rg-bin /绝对路径/rg`。
 
@@ -100,6 +100,33 @@ DeepSeek 生成目录的身份提示已经适配实际提供方，工具和权�
 MCP 页面先显示配置与操作按钮，在后台读取轻量工具状态；同一连接下 30 秒内复用目录，点击“刷新连接状态”可主动更新。完整资源只在“查看工具与资源”时获取，慢连接不阻塞页面操作。
 
 MCP 要求用户确认时，网页显示原生确认请求，用户选择后才继续。添加自定义扩展不会改变现有审批策略或开放沙箱网络；凭据只保存在本机原生配置或环境中，不进入项目源码。
+
+## 数据库与回答图表
+
+安装独立扩展（不修改 Codex 上游源码）：
+
+```sh
+python3 web/scripts/install_databases.py --node /绝对路径/node --npm /绝对路径/npm
+# 下载依赖需要代理时可加 --proxy http://127.0.0.1:15236
+```
+
+组件固定版本保存在 `web/database/requirements.txt` 和 `chart-package-lock.json`。Python 适配器、DuckDB 和 Arrow 位于 `.toolchains/databases/`，`mcp-echarts@0.7.1` 及 Node 位于 `.toolchains/chart-mcp/`。ECharts 页面资源随项目提供，不使用外部图表云或对象存储。
+
+从侧栏“数据库 → 添加数据库”配置 MySQL、PostgreSQL、ClickHouse 或 Elasticsearch。保存后实际验证连接与只读权限；通过验证才注册原生 `codex_web_databases` MCP。密码保存在当前 `CODEX_HOME/web-databases/` 的私有配置中，不提供给模型、不进入 Git。编辑配置后必须重新验证，停用、删除、断连和配置版本变化都会阻止 Agent 使用连接或旧结果。
+
+所有连接永久只读，没有写入授权入口。MySQL 账号只允许 `SELECT`、`SHOW VIEW`、`USAGE`；PostgreSQL 不接受管理、建表或目标 schema 的写权限；ClickHouse 要求服务器设置 `readonly=1`；Elasticsearch 仅接受读取、索引元数据和指定的只读监控权限。SQL 同时经过语法树校验和数据库只读事务。支持 1–5 条只读 SELECT/CTE，整批先校验；同服务器跨库/schema 查询仅限已配置、启用且连通的范围。文件、外部数据源函数、锁定、DDL、写入与脚本不开放。
+
+连接后直接提问，例如：“查询 Sakila 中租借次数最多的 10 类电影，生成柱状图并说明结论。”Agent 使用原生 MCP 查询；柱状图、折线图、面积图、饼图和散点图直接显示在回答中，支持交互、查看查询及数据、PNG 下载和历史恢复。
+
+完整结果流式写入不可变 Parquet 快照。查询工具仅返回结果 ID、精确行数及字段，避免把全量明细挤进模型上下文。`read_result` 精确读取选定明细，`describe_result` 分页读取字段，`analyze_result` 使用 DuckDB 对完整快照计算并生成新的完整结果，`create_chart` 直接读取真实结果生成图表。原结果不会被摘要替换；网页“查询结果”支持分页查看、完整 CSV 导出和清理。Elasticsearch 聚合同时保存完整原生响应，可下载 JSON。高精度小数、长文本、二进制（base64）与 NULL 保留，超出单次上下文预算时拒绝过大的明细页，不截断单元格。
+
+单次完整读取最多 60 秒、1 GiB 逻辑数据，结果缓存最多 5 GiB；本地分析最多 30 秒。超过预算会明确失败并清理未完成结果，不把部分数据称为完整结果。图表过大时要求显式筛选或聚合，不自动抽样。超过 DuckDB 精确小数计算范围时要求回原数据库聚合，原始快照仍保留。
+
+网页停止任务时，扩展处理原生 MCP 的 `notifications/cancelled`：MySQL 仅取消该账号当前请求的查询，PostgreSQL 发出取消信号，ClickHouse 按随机 query_id 取消自己的查询，Elasticsearch 关闭搜索 HTTP 连接，本地 DuckDB 中断计算。不会向 Agent 暴露 KILL 管理语句。ClickHouse 25.8 取消自己查询还要求只读账号拥有 `SELECT(query_id,user,query) ON system.processes`；不需要授予 `KILL QUERY` 或写权限，服务器只读设置继续生效。部分数据库操作不保证瞬间终止，连接和服务端超时仍作为兜底。平台行为参考 [ClickHouse 文档](https://clickhouse.com/docs/reference/statements/kill) 和 [Elasticsearch 文档](https://www.elastic.co/guide/en/elasticsearch/reference/8.19/search-your-data.html#search-cancellation)。
+
+输入框模型与思考强度右侧的圆环使用原生 `last.totalTokens / modelContextWindow` 显示当前上下文占用，点击查看详情。累计用量单独显示，不作为占用百分比；没有统计时显示“—”。自动压缩继续由 Codex 原生运行时执行，压缩可能丢失模型历史细节，不能替代完整数据库快照。
+
+专项复验使用独立 `.local-state/database-release-acceptance` 配置、8770 端口及现有的四类只读测试库。设置 `CODEX_DATABASE_CREDENTIALS` 指向私有测试账号文件（不提交），按顺序运行 `database_desktop.mjs`、`database_results_desktop.mjs`、`database_cancellation_desktop.mjs`；后两项通过 `CODEX_DB_CONNECTION_IDS` 读取首项生成的 ID。`database_results_desktop.mjs` 的断连测试需要显式设置 `CODEX_TEST_ALLOW_CONTAINER_RESTART=1`，仅用于独立测试容器。取消测试的服务器脚本只观察从网页发起的查询状态，不从命令行发起功能测试。测试准备与运行时工具分离。
 
 ## 源码完整性与版本
 

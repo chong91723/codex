@@ -21,7 +21,7 @@ def deepseek_profile(state_dir):
     model = copy.deepcopy(next((m for m in catalog['models'] if m.get('slug') == 'gpt-6-sol'), catalog['models'][0]))
     model.update(slug='deepseek-flash', display_name='DeepSeek Flash', description='DeepSeek native Responses API',
                  prefer_websockets=False, tool_mode=None, use_responses_lite=False, shell_type='shell_command',
-                 context_window=1048576, max_context_window=1048576, default_reasoning_level='high',
+                 context_window=1048576, max_context_window=1048576, effective_context_window_percent=95, auto_compact_token_limit=None, default_reasoning_level='high',
                  supports_search_tool=False, web_search_tool_type='text',
                  experimental_supported_tools=[], default_service_tier=None, service_tiers=[],
                  supported_reasoning_levels=[{'effort':v,'description':v} for v in ['low','high','max']])
@@ -38,12 +38,16 @@ def deepseek_profile(state_dir):
         model['model_messages'] = messages
     state_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
     catalog_path = state_dir / 'models.json'
-    # Preserve official metadata for the optional OpenAI image conversation.
-    # Hide it from the daily third-party picker; it is selected explicitly by skill UI.
-    image_model = next((copy.deepcopy(m) for m in catalog['models'] if m.get('slug') == 'gpt-5.6-luna'), None)
-    models = [model]
+    # Third-party catalog plus the optional native ChatGPT image model.
+    model['input_modalities']=['text','image']
+    pro=copy.deepcopy(model)
+    pro.update(slug='deepseek-v4-pro',display_name='DeepSeek V4 Pro',description='DeepSeek native Responses API',input_modalities=['text'],supports_image_detail_original=False,priority=2)
+    if pro.get('model_messages',{}).get('instructions_template'):
+        pro['model_messages']['instructions_template']=pro['model_messages']['instructions_template'].replace('model ID: deepseek-flash','model ID: deepseek-v4-pro')
+    models=[model,pro]
+    image_model=next((copy.deepcopy(m) for m in catalog['models'] if m.get('slug')=='gpt-5.6-luna'),None)
     if image_model:
-        image_model['visibility'] = 'hide'
+        image_model['visibility']='hide'
         models.append(image_model)
     catalog_path.write_text(json.dumps({'models': models}, ensure_ascii=False))
     config_path = state_dir / 'config.toml'

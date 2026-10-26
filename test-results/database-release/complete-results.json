@@ -1,0 +1,95 @@
+{
+  "results": [
+    {
+      "name": "16,044 行完整查询，MCP 仅返回结果引用",
+      "status": "passed",
+      "evidence": {
+        "rowCount": 16044,
+        "mcpResultCharacters": 1476,
+        "lastId": 16049,
+        "complete": true
+      }
+    },
+    {
+      "name": "DuckDB 在完整快照精确计算，与原库查询一致",
+      "status": "passed",
+      "evidence": {
+        "rows": [
+          {
+            "row_count": 16044,
+            "total": "67406.56"
+          }
+        ],
+        "allRowsUsed": 16044
+      }
+    },
+    {
+      "name": "长文本、高精度数字、二进制和 NULL 全量保留",
+      "status": "passed",
+      "evidence": {
+        "longTextCharacters": 10000,
+        "decimalPreserved": true,
+        "binaryBase64": true,
+        "nullDistinctFromEmpty": true,
+        "oversizeMcpRejectedWithoutDataLoss": true
+      }
+    },
+    {
+      "name": "网页分页和完整 CSV 导出包含全部 16,044 行",
+      "status": "passed",
+      "evidence": {
+        "pages": true,
+        "exportedRows": 16044
+      }
+    },
+    {
+      "name": "结果分析禁止任意文件、网络和写操作",
+      "status": "passed",
+      "evidence": {
+        "blocked": 5
+      }
+    },
+    {
+      "name": "DeepSeek 使用结果引用生成五类交互图表，刷新可恢复",
+      "status": "passed",
+      "evidence": {
+        "types": [
+          "bar",
+          "line",
+          "area",
+          "pie",
+          "scatter"
+        ],
+        "nativeMcpOptionValidation": true,
+        "pngDownload": true,
+        "historyRestored": 5
+      }
+    },
+    {
+      "name": "停用立即阻止查询和模型读取历史结果，启用需重新验证",
+      "status": "passed",
+      "evidence": {
+        "disabledBlocked": true,
+        "revalidated": true
+      }
+    },
+    {
+      "name": "连接中断后拒绝 Agent 使用，恢复后网页验证通过",
+      "status": "passed",
+      "evidence": {
+        "offlineBlocked": true,
+        "recoveredViaWeb": true
+      }
+    },
+    {
+      "name": "圆环位于模型与思考配置右侧，使用原生当前值并隔离新对话",
+      "status": "passed",
+      "evidence": {
+        "placement": true,
+        "used": 62680,
+        "usableWindow": 996147
+      }
+    }
+  ],
+  "browserErrors": []
+}

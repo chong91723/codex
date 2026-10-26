@@ -1,0 +1,57 @@
+{
+  "results": [
+    {
+      "name": "16,044 行完整查询，MCP 仅返回结果引用",
+      "status": "passed",
+      "evidence": {
+        "rowCount": 16044,
+        "mcpResultCharacters": 1476,
+        "lastId": 16049,
+        "complete": true
+      }
+    },
+    {
+      "name": "DuckDB 在完整快照精确计算，与原库查询一致",
+      "status": "passed",
+      "evidence": {
+        "rows": [
+          {
+            "row_count": 16044,
+            "total": "67406.56"
+          }
+        ],
+        "allRowsUsed": 16044
+      }
+    },
+    {
+      "name": "DuckDB 完整快照可重复扫描，自连接结果正确",
+      "status": "passed",
+      "evidence": {
+        "reusableStream": true,
+        "rows": [
+          {
+            "payment_id": 1,
+            "same": 1
+          },
+          {
+            "payment_id": 2,
+            "same": 2
+          },
+          {
+            "payment_id": 3,
+            "same": 3
+          }
+        ]
+      }
+    },
+    {
+      "name": "网页分页和完整 CSV 导出包含全部 16,044 行",
+      "status": "passed",
+      "evidence": {
+        "pages": true,
+        "exportedRows": 16044
+      }
+    }
+  ],
+  "browserErrors": []
+}

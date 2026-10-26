@@ -13,7 +13,12 @@
   <script src="/vendor/addon-fit.js" defer></script>
   <script src="/vendor/marked.js" defer></script>
   <script src="/vendor/purify.min.js" defer></script>
+  <link rel="stylesheet" href="/databases.css">
+  <script src="/vendor/echarts.min.js" defer></script>
+  <link rel="stylesheet" href="/context.css">
   <script src="/app.js" defer></script>
+  <script src="/context.js" defer></script>
+  <script src="/databases.js" defer></script>
 </head>
 <body>
 <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -22,6 +27,7 @@
 <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-13-2 16"/></symbol>
 <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9H3Z"/></symbol>
 <symbol id="i-skill" viewBox="0 0 24 24"><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5Z"/></symbol>
+<symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/></symbol>
 <symbol id="i-mcp" viewBox="0 0 24 24"><path d="m8 15 7-7m-4-3 2-2a4 4 0 0 1 6 6l-2 2M7 13l-2 2a4 4 0 0 0 6 6l2-2m-5-3 8-8"/></symbol>
 <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
 <symbol id="i-settings" viewBox="0 0 24 24"><path d="m10 3-1 3-3 1-3 3 1 3-1 3 3 2 3 1 1 2h4l1-2 3-1 3-2-1-3 1-3-3-3-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/></symbol>
@@ -43,6 +49,7 @@
     <button class="nav-button primary-nav" data-view="chat" id="new-chat"><svg><use href="#i-plus"/></svg>新对话<kbd>⌘ K</kbd></button>
     <label class="thread-search"><svg><use href="#i-search"/></svg><input id="thread-search" placeholder="搜索会话" aria-label="搜索会话"></label>
     <button class="nav-button" data-view="skills"><svg><use href="#i-skill"/></svg>技能</button>
+    <button class="nav-button" data-view="databases"><svg><use href="#i-database"/></svg>数据库</button>
     <button class="nav-button" data-view="mcp"><svg><use href="#i-mcp"/></svg>MCP 服务</button>
     <button class="nav-button" data-view="plugins"><svg><use href="#i-grid"/></svg>插件与应用</button>
     <button class="nav-button" data-view="protocol"><svg><use href="#i-code"/></svg>原生能力</button>
@@ -62,7 +69,7 @@
       <div class="chat-toolbar" id="chat-toolbar" hidden><span class="subtle" id="thread-info"></span><select id="thread-action" aria-label="会话操作"><option value="">•••</option><option value="rename">重命名</option><option value="fork">分叉会话</option><option value="compact">压缩上下文</option><option value="review">审查未提交更改</option><option value="revert">回退用户任务</option><option value="archive">归档</option><option value="unarchive">取消归档</option><option value="export">导出会话</option><option value="delete">永久删除会话</option></select></div>
       <div class="conversation-scroll" id="conversation-scroll"><div class="welcome" id="welcome"><h1>今天有什么可以帮你？</h1></div><div class="messages" id="messages" aria-live="polite"></div></div>
       <div id="requests" class="requests" aria-live="assertive"></div>
-      <div class="composer-area"><div class="plan-summary" id="plan-summary" hidden></div><div class="composer"><div class="attachments" id="attachments"></div><textarea id="prompt" placeholder="询问任何问题" rows="1" aria-label="任务内容"></textarea><div class="composer-bottom"><div class="composer-options"><button class="icon-button" id="attach-button" title="添加文件或图片" aria-label="添加文件或图片"><svg><use href="#i-plus"/></svg></button><input type="file" id="file-input" multiple hidden><select id="model" aria-label="模型"><option value="">默认模型</option></select><select id="effort" aria-label="思考强度"><option value="">默认推理</option></select></div><button id="send" class="send-button" title="发送" aria-label="发送任务"><svg><use href="#i-arrow"/></svg></button></div></div><div class="composer-meta"><button id="cwd-button"><svg><use href="#i-folder"/></svg><span id="cwd-label">工作区</span><svg><use href="#i-down"/></svg></button><span id="usage-label">Codex 运行时</span><span>Enter 发送 · Shift Enter 换行</span></div></div>
+      <div class="composer-area"><div class="plan-summary" id="plan-summary" hidden></div><div class="composer"><div class="attachments" id="attachments"></div><textarea id="prompt" placeholder="询问任何问题" rows="1" aria-label="任务内容"></textarea><div class="composer-bottom"><div class="composer-options"><button class="icon-button" id="attach-button" title="添加文件或图片" aria-label="添加文件或图片"><svg><use href="#i-plus"/></svg></button><input type="file" id="file-input" multiple hidden><select id="model" aria-label="模型"><option value="">默认模型</option></select><select id="effort" aria-label="思考强度"><option value="">默认推理</option></select><button type="button" id="usage-label" class="context-meter" aria-label="查看上下文占用">上下文 · 待统计</button></div><button id="send" class="send-button" title="发送" aria-label="发送任务"><svg><use href="#i-arrow"/></svg></button></div></div><div class="composer-meta"><button id="cwd-button"><svg><use href="#i-folder"/></svg><span id="cwd-label">工作区</span><svg><use href="#i-down"/></svg></button><span>Enter 发送 · Shift Enter 换行</span></div></div>
       <div class="starter-suggestions" id="starter-suggestions"><button data-prompt="我想写一段文字，请先了解主题、读者和我希望表达的内容。"><svg><use href="#i-chat"/></svg>帮我写作</button><button data-prompt="我想分析一些资料，请先了解我的问题和手头的文件。"><svg><use href="#i-file"/></svg>分析资料</button><button data-prompt="我想研究一个问题，请先确认研究目标，再使用当前可用的工具寻找依据。"><svg><use href="#i-search"/></svg>研究问题</button><button data-prompt="先了解当前项目和我的目标，再协助我完成编程任务。"><svg><use href="#i-code"/></svg>编写代码</button></div>
     </section>
     <section class="content-view" id="view-panel" hidden><div id="panel-content"></div></section>
