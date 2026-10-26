@@ -1,0 +1,41 @@
+{
+  "model": "deepseek-flash",
+  "provider": "deepseek",
+  "nativeCoreChanged": false,
+  "firstRun": {
+    "report": "native-review-worker-flash-first-run.json",
+    "review": "passed",
+    "worker": "native parent turn completion timed out at 180 seconds; cleanup interrupted the owned parent",
+    "fixture": "git fixture with reproduced math_utils.py division-by-zero defect plus worker input",
+    "connection": "review followed by a fresh worker parent in the same browser/app-server connection",
+    "workerFailureStopConstraint": false,
+    "observedParentThreadId": "01a177bd-6bfc-7b80-9b4d-80265bb84f8a",
+    "observedAdditionalThreadId": "01a177bd-74a8-7ba3-93cb-3a5d7aabf18d",
+    "additionalThreadRelationship": "not captured through native child metadata or collab item before cleanup; turn notifications alone are insufficient to assert it is the spawned worker",
+    "diagnostic": "A separate read-only raw WebSocket thread/turns/list read of the owned native parent showed the parent describing an unrelated division-by-zero review as the worker result, then retrying follow-ups. This was not read from frontend state. Raw child result and spawn arguments were not captured.",
+    "classification": "unresolved combined-scenario model/protocol risk; not a confirmed cross-session data leak"
+  },
+  "isolatedRun": {
+    "report": "native-review-worker-flash-results.json",
+    "worker": "passed",
+    "fixture": "only worker_input.txt and owned explicit-Flash role TOML; no git/review defect",
+    "connection": "fresh browser process/context and app-server connection",
+    "workerFailureStopConstraint": true,
+    "parentThreadId": "01a177c2-922a-7072-9486-7601e2240904",
+    "childThreadId": "01a177c2-9c38-7461-a99f-f825760560df",
+    "nativeChildMetadata": {
+      "model": "deepseek-flash",
+      "modelProvider": "deepseek",
+      "agentRole": "worker"
+    },
+    "checks": [
+      "real native child read command exit 0 and unique file token",
+      "integer sum 51",
+      "parent uses actual returned result without executing commands",
+      "owned fixture hashes unchanged",
+      "owned parent and child removed"
+    ]
+  },
+  "interpretation": "Representative review and isolated worker paths are usable with explicit Flash configuration. Changed fixture/context/stop constraints mean the isolated success does not locate or resolve the original combined-scenario failure. No further model rerun was performed after the bounded isolated retest.",
+  "workspaceAndSourcePreservation": "Only owned temporary fixtures and threads were created/removed. No upstream source, native runtime, shared model config, or product code changed for this C27 check."
+}

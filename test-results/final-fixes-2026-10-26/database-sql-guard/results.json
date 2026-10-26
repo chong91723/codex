@@ -1,0 +1,55 @@
+{
+  "sqlglotVersion": "30.24.0",
+  "origin": "Real isolated Sakila MySQL8.4 via repository read-only Mysql adapter after validate_queries; no model invocation or MCP claim. No native/config/DB data writes.",
+  "unitTests": {
+    "passed": 13,
+    "failed": 0,
+    "path": "unit-tests.txt"
+  },
+  "records": [
+    {
+      "status": "passed",
+      "sql": "SELECT DATE_FORMAT(payment_date, '%Y-%m') AS month, COUNT(*) AS payment_count, SUM(CASE WHEN amount > 0 AND customer_id > 0 THEN amount ELSE 0 END) AS revenue FROM payment WHERE payment_date >= '2005-06-01' AND payment_date < '2005-09-01' GROUP BY DATE_FORMAT(payment_date, '%Y-%m') ORDER BY month",
+      "rows": [
+        {
+          "month": "2005-06",
+          "payment_count": 2311,
+          "revenue": "9629.89"
+        },
+        {
+          "month": "2005-07",
+          "payment_count": 6709,
+          "revenue": "28368.91"
+        },
+        {
+          "month": "2005-08",
+          "payment_count": 5686,
+          "revenue": "24070.14"
+        }
+      ]
+    },
+    {
+      "status": "passed",
+      "sql": "SELECT COUNT(*) AS payment_count FROM payment WHERE amount = 0 OR amount > 0",
+      "rows": [
+        {
+          "payment_count": 16044
+        }
+      ]
+    }
+  ],
+  "testDriverCorrection": "ClickHouse rendering adds redundant parentheses around NOT/IS; acceptance compares logical AST after removing parentheses, retaining boolean tree shape.",
+  "additionalConfirmedRootCause": "Normal DATE_FORMAT/TO_CHAR/formatDateTime use TimeToStr.args.format Literal, previously mistaken for Query export FORMAT. Query FORMAT Identifier and SETTINGS remain denied.",
+  "remainingVerification": "None for this targeted SQL regression: fresh browser/native/MCP/Flash chain executed both original queries and reads with no errors or fallback; broader Plan lifecycle has separate root evidence.",
+  "realBrowserNativeFlash": {
+    "passed": 3,
+    "failed": 0,
+    "model": "deepseek-flash",
+    "actualQueryCalls": 2,
+    "actualReadCalls": 2,
+    "browserErrors": 0,
+    "ownedThreadDeleted": true,
+    "report": "browser/results.json",
+    "screenshot": "browser/original-sql-native-flash.png"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "scope": "Real native app-server and DeepSeek for submission; explicit DOM fixtures only for scroll/layout; no fabricated successful native events",
+  "results": [
+    {
+      "name": "Flash 选择与后台实际配置一致，真实执行命令",
+      "status": "passed",
+      "evidence": {
+        "requestedModel": "deepseek-flash",
+        "nativeModel": "deepseek-flash",
+        "nativeProvider": "deepseek",
+        "actualCommandSucceeded": true
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a177ac-c3a0-7f31-8718-b15820600c8e",
+      "model": "deepseek-flash",
+      "inputText": "Run python3 -c \"print(13579 * 2468)\" with your shell tool, then report its result."
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    }
+  ],
+  "completed": [
+    [
+      "01a177ac-c468-7301-b534-f7790db4f928",
+      {
+        "threadId": "01a177ac-c3a0-7f31-8718-b15820600c8e",
+        "status": "completed"
+      }
+    ]
+  ],
+  "errors": []
+}

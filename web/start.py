@@ -21,10 +21,13 @@ def deepseek_profile(state_dir):
     model = copy.deepcopy(next((m for m in catalog['models'] if m.get('slug') == 'gpt-6-sol'), catalog['models'][0]))
     model.update(slug='deepseek-flash', display_name='DeepSeek Flash', description='DeepSeek native Responses API',
                  prefer_websockets=False, tool_mode=None, use_responses_lite=False, shell_type='shell_command',
+                 multi_agent_version='v1',
                  context_window=1048576, max_context_window=1048576, effective_context_window_percent=95, auto_compact_token_limit=734003, default_reasoning_level='high',
                  supports_search_tool=False, web_search_tool_type='text',
                  experimental_supported_tools=[], default_service_tier=None, service_tiers=[],
                  supported_reasoning_levels=[{'effort':v,'description':v} for v in ['low','high','max']])
+    # DeepSeek does not supply the encrypted_function_args discriminator needed
+    # by native multi-agent v2. Use the native plaintext v1 collaboration surface.
     # The source catalog carries an OpenAI persona. Adapt only its identity in this
     # generated third-party profile; keep all native tool/permission instructions.
     messages = model.get('model_messages') or {}
@@ -38,17 +41,13 @@ def deepseek_profile(state_dir):
         model['model_messages'] = messages
     state_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
     catalog_path = state_dir / 'models.json'
-    # Third-party catalog plus the optional native ChatGPT image model.
+    # Only the configured third-party models belong in this generated catalog.
     model['input_modalities']=['text','image']
     pro=copy.deepcopy(model)
     pro.update(slug='deepseek-v4-pro',display_name='DeepSeek V4 Pro',description='DeepSeek native Responses API',input_modalities=['text'],supports_image_detail_original=False,priority=2)
     if pro.get('model_messages',{}).get('instructions_template'):
         pro['model_messages']['instructions_template']=pro['model_messages']['instructions_template'].replace('model ID: deepseek-flash','model ID: deepseek-v4-pro')
     models=[model,pro]
-    image_model=next((copy.deepcopy(m) for m in catalog['models'] if m.get('slug')=='gpt-5.6-luna'),None)
-    if image_model:
-        image_model['visibility']='hide'
-        models.append(image_model)
     catalog_path.write_text(json.dumps({'models': models}, ensure_ascii=False))
     config_path = state_dir / 'config.toml'
     if not config_path.exists():
@@ -56,7 +55,11 @@ def deepseek_profile(state_dir):
             'model = "deepseek-flash"', 'model_provider = "deepseek"', 'model_reasoning_effort = "high"',
             'web_search = "disabled"', 'sandbox_mode = "workspace-write"', 'approval_policy = "on-request"',
             'tools.update_plan.enabled = true',
+            'features.image_generation = false', 'features.fast_mode = false', 'features.ultrafast_mode = false',
+            'feedback.enabled = false',
+            'memories.extract_model = "deepseek-flash"', 'memories.consolidation_model = "deepseek-flash"',
             'model_catalog_json = ' + json.dumps(str(catalog_path)),
+            '[[skills.config]]', 'path = ' + json.dumps(str(state_dir/'skills'/'.system'/'imagegen'/'SKILL.md')), 'enabled = false',
             '[model_providers.deepseek]', 'name = "DeepSeek"', 'base_url = "https://api.deepseek.com/"',
             'wire_api = "responses"', 'env_key = "DEEPSEEK_API_KEY"', 'requires_openai_auth = false',
             'supports_websockets = false', 'request_max_retries = 0', 'stream_max_retries = 0', '',

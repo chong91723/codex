@@ -1,0 +1,96 @@
+{
+  "status": "Default complete-window sampling formula verified; metadata/runtime mismatch guarded; real native pagination replay loss reproduced and fixed",
+  "formula": {
+    "numerator": "Native tokenUsage.last.totalTokens; last provider sampling input + output, or explicit native post-compaction estimate. Never total.totalTokens.",
+    "defaultObservedNumerator": 10534,
+    "lastInput": 10489,
+    "lastOutput": 45,
+    "cachedInputAlreadyIncluded": 10240,
+    "reasoningOutputAlreadyIncluded": 28,
+    "cumulativeUsageNotUsed": 20976,
+    "defaultDenominator": 1048576,
+    "nativeAvailableWindow": 996147,
+    "headroomPercent": 95,
+    "integerRule": "floor(1048576*95/100)=996147",
+    "displayedPercent": "1.0%",
+    "runtimeAvailableWindowPercent": 1.057474
+  },
+  "changes": {
+    "web/public/context.js": "Keep complete-window default only when metadata physical*effectivePercent validates against actual native available window. Otherwise use native available window; unknown metadata is not reversed or invented. Clarify recent-sampling snapshot and compaction/tail lag.",
+    "web/public/app.js": "Root fixes hydration to replay independent native usage/settings state rather than dropping usage behind later turn-page response."
+  },
+  "tests": {
+    "behavior": {
+      "file": "context-unit.txt",
+      "passed": 12,
+      "failed": 0
+    },
+    "realReadonlyReplay": {
+      "file": "context-readonly-results.json",
+      "passed": 4,
+      "failed": 0,
+      "browserErrors": [],
+      "newModelRequests": 0,
+      "configWrites": 0
+    },
+    "beforeFixPagination": "paginated-refresh-before-fix.json: actual native excludeTurns=true yields genuine usage replay, but UI snapshot null and hidden badge on open and reload",
+    "ordinaryBeforeFix": "refresh-before-fix.json: ordinary inline-history open/reload already worked; do not claim all refreshes were broken",
+    "screenshots": [
+      "context-normal-desktop.png",
+      "context-pagination-desktop.png"
+    ],
+    "hydrationBehavior": {
+      "file": "hydration-unit.txt",
+      "passed": 4,
+      "failed": 0
+    }
+  },
+  "scopeAndLimits": [
+    "No model workload, core changes or business workspaces used in this context audit. Existing independent completed Flash approval test session only.",
+    "Runtime override mismatch verified by behavior regression and pinned native source; no real thread window settings changed in this audit.",
+    "The provider advertises Flash 1M; exact 1048576 is this configured catalog value, not measured max-window acceptance in this audit.",
+    "last.totalTokens includes output, cached input remains within input and reasoning within output. It omits not-yet-sampled appended local messages/tools and may differ from native auto-compaction active-context estimate.",
+    "Native TUI remaining-percent helper also subtracts a 12000 fixed baseline; this Web full-window-used fraction is a different, explicitly stated metric.",
+    "Native tokenUsage event contains no model ID; frontend labels it using thread settings at receipt. Cross-model historical attribution has source-based uncertainty; all real model validation remains Flash."
+  ],
+  "primarySources": [
+    {
+      "path": "upstream/codex-rs/codex-api/src/sse/responses.rs:131",
+      "basis": "Provider usage copied without adding cache or reasoning subsets"
+    },
+    {
+      "path": "upstream/codex-rs/app-server-protocol/src/protocol/v2/thread.rs:2000",
+      "basis": "last vs total conversion and native modelContextWindow"
+    },
+    {
+      "path": "upstream/codex-rs/protocol/src/openai_models.rs:523",
+      "basis": "context_window or max_context_window; effective safety percentage"
+    },
+    {
+      "path": "upstream/codex-rs/models-manager/src/model_info.rs:19",
+      "basis": "Runtime config override clamps to model maximum"
+    },
+    {
+      "path": "upstream/codex-rs/core/src/context_manager/history.rs:939",
+      "basis": "Native compaction active tokens add unsampled local tail and possibly prior reasoning estimate"
+    },
+    {
+      "path": "upstream/codex-rs/core/src/session/mod.rs:5276",
+      "basis": "Post-compaction recomputation emits history estimate with zero input/output"
+    },
+    {
+      "path": "upstream/codex-rs/protocol/src/protocol.rs:2605",
+      "basis": "TUI remaining-percent helper subtracts 12000 baseline"
+    },
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "basis": "Official Flash model documentation advertises 1M context; does not by itself prove exact binary number"
+    }
+  ],
+  "declaredWindowEvidence": {
+    "source": "../../capability-audit-2026-10-26/deepseek-model-capabilities.json",
+    "kind": "Earlier same-day direct official GET /models response declares context_window=1048576; not a max-window stress test",
+    "model": "deepseek-flash",
+    "context_window": 1048576
+  }
+}

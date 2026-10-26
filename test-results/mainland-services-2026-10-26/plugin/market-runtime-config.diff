@@ -1,0 +1,33 @@
+diff --git a/external_plugins/playwright/.mcp.json b/external_plugins/playwright/.mcp.json
+index 1d3b450..0d01a8b 100644
+--- a/external_plugins/playwright/.mcp.json
++++ b/external_plugins/playwright/.mcp.json
+@@ -1,6 +1,27 @@
+ {
+   "playwright": {
+     "command": "npx",
+-    "args": ["@playwright/mcp@latest"]
++    "args": [
++      "--registry=https://registry.npmmirror.com",
++      "--cache=/tmp/codex-mainland-playwright-npm-cache",
++      "@playwright/mcp@0.0.83",
++      "--headless",
++      "--no-sandbox",
++      "--executable-path",
++      "/root/Codex/.toolchains/playwright-browsers/chromium-1248/chrome-linux64/chrome",
++      "--isolated",
++      "--image-responses",
++      "omit"
++    ],
++    "env": {
++      "npm_config_registry": "https://registry.npmmirror.com",
++      "npm_config_cache": "/tmp/codex-mainland-playwright-npm-cache",
++      "npm_config_update_notifier": "false",
++      "PLAYWRIGHT_MCP_HEADLESS": "1",
++      "PLAYWRIGHT_MCP_SANDBOX": "false",
++      "PLAYWRIGHT_MCP_EXECUTABLE_PATH": "/root/Codex/.toolchains/playwright-browsers/chromium-1248/chrome-linux64/chrome",
++      "PLAYWRIGHT_MCP_ISOLATED": "1",
++      "PLAYWRIGHT_MCP_IMAGE_RESPONSES": "omit"
++    }
+   }
+ }

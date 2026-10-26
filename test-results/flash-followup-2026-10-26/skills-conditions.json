@@ -1,0 +1,95 @@
+{
+  "sourceCommit": "970111f6cb62cc02fe36a82ea7d71b37a2889c97",
+  "validationModel": "deepseek-flash",
+  "conditions": [
+    {
+      "capability": "Guardian automatic approvals",
+      "status": "verified_real_allow_deny_and_confirmation",
+      "evidence": "skills-guardian-run/results.json",
+      "verified": [
+        "Native real approved/denied review events",
+        "Approved harmless printf actual exitCode 0",
+        "Denied controlled file absent",
+        "Manual confirmation persisted actual guardian.approved_action without reexecution"
+      ],
+      "modelEvidence": [
+        "Effective Flash model has auto_review_model_override=null",
+        "Effective catalog contains no OpenAI reviewer",
+        "Pinned ext/guardian-reviewer/src/model.rs selects parent when preferred reviewer absent and override null"
+      ],
+      "independentReviewerHttpBodyCapture": false
+    },
+    {
+      "capability": "Native memory dedicated tools",
+      "status": "verified_real_flash_note_read_search",
+      "evidence": "skills-memory-tools/results.json",
+      "verified": [
+        "memories.add_ad_hoc_note creates actual note",
+        "memories.read and memories.search return unique stored marker",
+        "thread/memory/read and memory/status actual RPC responses",
+        "Thread-only memory configuration leaves global defaults unchanged"
+      ]
+    },
+    {
+      "capability": "Automatic history memory extraction",
+      "status": "blocked_by_native_idle_requirement",
+      "source": "upstream/codex-rs/config/src/types.rs:432",
+      "reason": "min_rollout_idle_hours is clamped to 1..48; all fresh profile threads are younger than one hour",
+      "observations": [
+        "Real wake turn triggered native startup pipeline",
+        "Native consolidation worker completed with explicitly configured Flash and no eligible history",
+        "Empty native summary is readable; no stage1 row is claimed as success"
+      ],
+      "evidence": [
+        "skills-memory-run/memory-observed.json",
+        "skills-memory-release/memory-observed.json",
+        "skills-memory-tools/results.json"
+      ],
+      "impact": "Do not claim automatic extraction of eligible aged history verified; no native DB timestamps were edited"
+    },
+    {
+      "capability": "Memory model configuration",
+      "status": "source_verified_explicit_flash_path",
+      "sources": [
+        "upstream/codex-rs/config/src/types.rs:353",
+        "upstream/codex-rs/memories/write/src/phase1.rs:162",
+        "upstream/codex-rs/memories/write/src/phase2.rs:363",
+        "upstream/codex-rs/model-provider/src/provider.rs:98"
+      ],
+      "condition": "Set memories.extract_model and memories.consolidation_model to deepseek-flash before enabling; pinned provider defaults are OpenAI model IDs"
+    },
+    {
+      "capability": "Realtime voice",
+      "status": "not_verified_no_compatible_target_service",
+      "sources": [
+        "upstream/codex-rs/core/src/realtime_conversation.rs:112",
+        "upstream/codex-rs/core/src/realtime_conversation.rs:1593",
+        "test-results/capability-audit-2026-10-26/deepseek-model-capabilities.json"
+      ],
+      "reason": "Pinned default is gpt-realtime-1.5. Native URL/model overrides exist, but no permitted DeepSeek Flash realtime audio service/configuration was supplied or demonstrated. Existing authenticated Flash capability evidence advertises text/image input and text output. Merely replacing model field is not evidence of protocol compatibility.",
+      "action": "No realtime request sent; do not add a fake voice entry"
+    },
+    {
+      "capability": "openai-docs",
+      "status": "native_offline_binding_and_reference_verified_online_blocked",
+      "source": "upstream/codex-rs/skills/src/assets/samples/openai-docs/SKILL.md",
+      "evidence": "skills-run/results.json",
+      "reason": "Official online documentation access is outside current domestic-network boundary without approved local documentation service; builtin local references and menu binding retained"
+    },
+    {
+      "capability": "skill-installer",
+      "status": "native_offline_cli_verified_online_install_not_verified",
+      "evidence": "skills-run/results.json",
+      "reason": "GitHub online listing/download is outside target network and project scope excludes installing nonnative skills. Both unmodified native CLI --help commands really ran."
+    },
+    {
+      "capability": "Future plugin/extra-root skill discovery",
+      "status": "remaining_boundary",
+      "sources": [
+        "web/server.py:159",
+        "web/server.py:268"
+      ],
+      "reason": "Explicit structured skills/config enable are limited to four retained canonical builtin paths. Local plugin/MCP capabilities remain. Plugin installation and extra roots may write/discover future skill files; explicit input rejection is not an OS filesystem allowlist or universal ban on implicit instruction discovery. Existing managed configs have no enabled plugin entries; deleted cache skill files were not used by configured active plugins."
+    }
+  ]
+}

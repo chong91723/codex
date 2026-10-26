@@ -1,0 +1,111 @@
+{
+  "scope": "Actual DeepSeek, native shell, approval buttons, interrupt protocol, independent files, navigation and reconnect",
+  "results": [
+    {
+      "name": "定向终止 A 当前回合命令，B 会话继续运行并完成写入",
+      "status": "passed",
+      "evidence": {
+        "terminatedA": [
+          {
+            "itemId": "call_00_7QTy5K6ZKHwVWK2NLDOV8082",
+            "processId": "83061"
+          }
+        ],
+        "aNativeStatus": "interrupted",
+        "aProcessesRemaining": 0,
+        "aPostSleepWriteAbsent": true,
+        "bStillHadRunningNativeTerminal": true,
+        "bNativeStatus": "completed",
+        "bOutputFileCorrect": true
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17703-2043-7af3-9b83-4f9922244656",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17703-340f-7110-bb69-ad61bc06907a",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17703-2043-7af3-9b83-4f9922244656"
+    },
+    {
+      "method": "turn/interrupt",
+      "threadId": "01a17703-2043-7af3-9b83-4f9922244656",
+      "turnId": "01a17703-220d-7170-a303-811bc5cb5c09"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a17703-2043-7af3-9b83-4f9922244656"
+    },
+    {
+      "method": "thread/backgroundTerminals/terminate",
+      "threadId": "01a17703-2043-7af3-9b83-4f9922244656"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a17703-340f-7110-bb69-ad61bc06907a"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17703-340f-7110-bb69-ad61bc06907a"
+    },
+    {
+      "method": "thread/list"
+    }
+  ],
+  "completed": [
+    {
+      "threadId": "01a17703-2043-7af3-9b83-4f9922244656",
+      "status": "interrupted",
+      "error": null
+    },
+    {
+      "threadId": "01a17703-340f-7110-bb69-ad61bc06907a",
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "errors": []
+}

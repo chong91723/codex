@@ -1,0 +1,75 @@
+{
+  "scope": "Actual DeepSeek, native shell, approval buttons, interrupt protocol, independent files, navigation and reconnect",
+  "results": [
+    {
+      "name": "停止发送一次真实中断，命令进程退出且后续写入未执行",
+      "status": "passed",
+      "evidence": {
+        "nativeStatus": "interrupted",
+        "interruptRequests": 1,
+        "remainingProcesses": 0,
+        "postSleepWriteAbsent": true
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17700-d09b-7a82-be23-e7ce3c6fcb9c",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "turn/interrupt",
+      "threadId": "01a17700-d09b-7a82-be23-e7ce3c6fcb9c",
+      "turnId": "01a17700-d1aa-79a2-9945-a9453f79596d"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a17700-d09b-7a82-be23-e7ce3c6fcb9c"
+    },
+    {
+      "method": "thread/backgroundTerminals/terminate",
+      "threadId": "01a17700-d09b-7a82-be23-e7ce3c6fcb9c"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a17700-d09b-7a82-be23-e7ce3c6fcb9c"
+    }
+  ],
+  "completed": [
+    {
+      "threadId": "01a17700-d09b-7a82-be23-e7ce3c6fcb9c",
+      "status": "interrupted",
+      "error": null
+    }
+  ],
+  "errors": []
+}

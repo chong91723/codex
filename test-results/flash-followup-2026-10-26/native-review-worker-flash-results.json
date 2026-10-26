@@ -1,0 +1,150 @@
+{
+  "origin": "Actual native protocol Execute button; source-confirmed explicit Flash worker configuration; read-only model sessions",
+  "sourceEvidence": {
+    "reviewModel": "core/src/tasks/review.rs:124 uses config.review_model then parent model; cloned provider",
+    "childInheritance": "core/src/agent/child_config.rs:115/145 copies parent model/provider; agents.default_subagent_model is native config",
+    "workerOverride": "thread-local agents.worker.config_file points to owned audit-worker.toml explicitly selecting Flash; no shared config changed"
+  },
+  "model": "deepseek-flash",
+  "provider": "deepseek",
+  "defectReproduced": false,
+  "fixtureHashesBefore": {
+    "worker_input.txt": "c7833acc035b2c89f593bb4ad288c23a82bdd039ed0086a22f385b89f33a8c0c",
+    "audit-worker.toml": "a25396f63e8a9de29ad88fecb3ba2435b51f7521e5abf7c0390dfaf6e3b6bd33"
+  },
+  "results": [
+    {
+      "name": "单个原生worker读取真实文件，子线程身份为Flash且全程只读",
+      "status": "passed",
+      "evidence": {
+        "parentThreadId": "01a177c2-922a-7072-9486-7601e2240904",
+        "childThreadId": "01a177c2-9c38-7461-a99f-f825760560df",
+        "nativeChildMetadata": {
+          "model": "deepseek-flash",
+          "modelProvider": "deepseek",
+          "agentRole": "worker"
+        },
+        "nativeStartedActivityModels": [
+          "deepseek-flash"
+        ],
+        "actualWorkerReadCommandExitCode": 0,
+        "uniqueFileTokenRead": true,
+        "integerSum": 51,
+        "parentUsedNativeWorkerResult": true,
+        "parentDidNotReadFile": true,
+        "workspaceHashesUnchanged": true
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "entity": "ownedParentThread",
+      "id": "01a177c2-922a-7072-9486-7601e2240904",
+      "removed": true
+    },
+    {
+      "entity": "ownedWorker",
+      "id": "01a177c2-9c38-7461-a99f-f825760560df",
+      "removed": true,
+      "removedWithParent": true
+    },
+    {
+      "entity": "ownedGitFixture",
+      "removed": true
+    }
+  ],
+  "browserErrors": [],
+  "requests": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a177c2-922a-7072-9486-7601e2240904",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a177c2-922a-7072-9486-7601e2240904"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a177c2-9c38-7461-a99f-f825760560df"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a177c2-9c38-7461-a99f-f825760560df"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a177c2-922a-7072-9486-7601e2240904"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a177c2-9c38-7461-a99f-f825760560df"
+    }
+  ],
+  "events": [
+    {
+      "method": "turn/started",
+      "threadId": "01a177c2-922a-7072-9486-7601e2240904",
+      "turnId": "01a177c2-9326-7c63-bc41-866b51fd5752",
+      "status": "inProgress"
+    },
+    {
+      "method": "turn/started",
+      "threadId": "01a177c2-9c38-7461-a99f-f825760560df",
+      "turnId": "01a177c2-9c4f-73b1-9914-6842ecb07bad",
+      "status": "inProgress"
+    },
+    {
+      "method": "turn/completed",
+      "threadId": "01a177c2-9c38-7461-a99f-f825760560df",
+      "turnId": "01a177c2-9c4f-73b1-9914-6842ecb07bad",
+      "status": "completed"
+    },
+    {
+      "method": "turn/completed",
+      "threadId": "01a177c2-922a-7072-9486-7601e2240904",
+      "turnId": "01a177c2-9326-7c63-bc41-866b51fd5752",
+      "status": "completed"
+    }
+  ],
+  "runVariant": {
+    "workerOnly": true,
+    "newBrowserContext": true,
+    "fixtureKind": "two-file worker fixture without git/review defect",
+    "workerFailureStopConstraint": true
+  }
+}

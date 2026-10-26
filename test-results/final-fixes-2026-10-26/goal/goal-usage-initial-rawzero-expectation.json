@@ -1,0 +1,312 @@
+{
+  "scope": "Only deepseek-flash. Native goal counts remain unchanged; Web observation covers the parent thread only.",
+  "base": "http://127.0.0.1:18865",
+  "home": "/tmp/codex-web-final-fixes/home",
+  "workspace": "/tmp/codex-web-final-fixes/workspace",
+  "results": [
+    {
+      "name": "全新目标原生首回合漏计时，展示真实观测消耗并保留原生0及预算警示",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: The pinned upstream first-turn bug did not reproduce; do not claim this regression\n\n3908 !== 0\n\n    at file:///root/Codex/web/tests/goal_usage_flash_desktop.mjs:22:267\n    at async check (file:///root/Codex/web/tests/goal_usage_flash_desktop.mjs:16:49)\n    at async file:///root/Codex/web/tests/goal_usage_flash_desktop.mjs:22:2"
+    }
+  ],
+  "errors": [],
+  "cleanup": [
+    {
+      "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+      "deleted": true
+    }
+  ],
+  "sent": [
+    {
+      "method": "initialize",
+      "params": {
+        "clientInfo": {
+          "name": "codex_web_native",
+          "title": "Codex Web",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "experimentalApi": true
+        }
+      }
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "model/list",
+      "params": {
+        "includeHidden": true
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "skills/list",
+      "params": {
+        "cwds": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "forceReload": true
+      }
+    },
+    {
+      "method": "thread/start",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "model": "deepseek-flash",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        }
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/goal/get",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111"
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "low",
+            "developer_instructions": null
+          }
+        }
+      }
+    },
+    {
+      "method": "thread/goal/set",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+        "origin": "user",
+        "objective": "明确的短测试目标：只回复“FIRST_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+        "status": "active",
+        "tokenBudget": 200000
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/goal/get",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111"
+      }
+    },
+    {
+      "method": "thread/goal/clear",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+        "origin": "user"
+      }
+    },
+    {
+      "method": "thread/delete",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111"
+      }
+    }
+  ],
+  "received": [
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+        "turnId": null,
+        "goal": {
+          "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+          "objective": "明确的短测试目标：只回复“FIRST_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "active",
+          "tokenBudget": 200000,
+          "tokensUsed": 0,
+          "timeUsedSeconds": 0,
+          "createdAt": 1793015379,
+          "updatedAt": 1793015379
+        }
+      },
+      "emittedAtMs": 1793015379742
+    },
+    {
+      "method": "turn/started",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+        "turn": {
+          "id": "01a1780b-7726-7871-91a0-c3fe2e3df6e5",
+          "rootTurnId": "01a1780b-7726-7871-91a0-c3fe2e3df6e5",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "inProgress",
+          "error": null,
+          "startedAt": 1793015379,
+          "completedAt": null,
+          "durationMs": null
+        }
+      },
+      "emittedAtMs": 1793015379806
+    },
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+        "turnId": "01a1780b-7726-7871-91a0-c3fe2e3df6e5",
+        "goal": {
+          "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+          "objective": "明确的短测试目标：只回复“FIRST_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "active",
+          "tokenBudget": 200000,
+          "tokensUsed": 3908,
+          "timeUsedSeconds": 1,
+          "createdAt": 1793015379,
+          "updatedAt": 1793015381
+        }
+      },
+      "emittedAtMs": 1793015381199
+    },
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+        "turnId": "01a1780b-7726-7871-91a0-c3fe2e3df6e5",
+        "goal": {
+          "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+          "objective": "明确的短测试目标：只回复“FIRST_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "complete",
+          "tokenBudget": 200000,
+          "tokensUsed": 3908,
+          "timeUsedSeconds": 1,
+          "createdAt": 1793015379,
+          "updatedAt": 1793015381
+        }
+      },
+      "emittedAtMs": 1793015381214
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+        "turnId": "01a1780b-7726-7871-91a0-c3fe2e3df6e5",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 11844,
+            "inputTokens": 11777,
+            "cachedInputTokens": 7936,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 67,
+            "reasoningOutputTokens": 28
+          },
+          "last": {
+            "totalTokens": 11844,
+            "inputTokens": 11777,
+            "cachedInputTokens": 7936,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 67,
+            "reasoningOutputTokens": 28
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793015381287
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+        "turnId": "01a1780b-7726-7871-91a0-c3fe2e3df6e5",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 24255,
+            "inputTokens": 23834,
+            "cachedInputTokens": 19712,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 421,
+            "reasoningOutputTokens": 352
+          },
+          "last": {
+            "totalTokens": 12411,
+            "inputTokens": 12057,
+            "cachedInputTokens": 11776,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 354,
+            "reasoningOutputTokens": 324
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793015384652
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1780b-7453-72a0-8236-da4e7056f111",
+        "turn": {
+          "id": "01a1780b-7726-7871-91a0-c3fe2e3df6e5",
+          "rootTurnId": "01a1780b-7726-7871-91a0-c3fe2e3df6e5",
+          "items": [
+            {
+              "type": "agentMessage",
+              "id": "a89902e5-e3c1-42c2-8667-2048a89c5cd2",
+              "text": "FIRST_GOAL_USAGE_OK\n\n使用 3,908 / 200,000 个 token；耗时 1 秒。",
+              "phase": "final_answer",
+              "memoryCitation": null,
+              "delivery": null,
+              "questions": null
+            }
+          ],
+          "itemsView": "summary",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1793015379,
+          "completedAt": 1793015384,
+          "durationMs": 4888
+        }
+      },
+      "emittedAtMs": 1793015384679
+    }
+  ]
+}

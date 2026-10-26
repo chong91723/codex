@@ -1,0 +1,370 @@
+{
+  "base": "http://127.0.0.1:8789",
+  "source": "https://gitcode.com/xuguoliang3/claude-plugins-official.git",
+  "ref": "3d368d2972d9af8f52e96ae7d86d2686967af31f",
+  "note": "Third-party mainland-hosted mirror of the official Anthropic marketplace. Codex compatibility mode. Playwright plugin has no Skill/Apps/Hooks. No source modifications.",
+  "steps": [
+    {
+      "name": "real_remote_market_discovery_read",
+      "status": "passed",
+      "pluginCount": 202,
+      "marketplaceLoadErrors": []
+    },
+    {
+      "name": "native_install_no_chatgpt_auth",
+      "status": "passed"
+    },
+    {
+      "name": "actual_native_mcp_status",
+      "status": "observed"
+    }
+  ],
+  "rpc": [
+    {
+      "method": "initialize",
+      "params": {
+        "clientInfo": {
+          "name": "codex_web_native",
+          "title": "Codex Web",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "experimentalApi": true
+        }
+      }
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "model/list",
+      "params": {
+        "includeHidden": true
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-flash-final-audit/workspace"
+      }
+    },
+    {
+      "method": "marketplace/add",
+      "params": {
+        "source": "https://gitcode.com/xuguoliang3/claude-plugins-official.git",
+        "refName": "3d368d2972d9af8f52e96ae7d86d2686967af31f",
+        "sparsePaths": [
+          ".claude-plugin",
+          "external_plugins/playwright"
+        ]
+      }
+    },
+    {
+      "method": "plugin/list",
+      "params": {
+        "cwds": [
+          "/tmp/codex-web-flash-final-audit/workspace"
+        ],
+        "marketplaceKinds": [
+          "local"
+        ]
+      }
+    },
+    {
+      "method": "plugin/read",
+      "params": {
+        "marketplacePath": "/tmp/codex-web-flash-final-audit/home/.tmp/marketplaces/claude-plugins-official/.claude-plugin/marketplace.json",
+        "pluginName": "playwright"
+      }
+    },
+    {
+      "method": "plugin/list",
+      "params": {
+        "cwds": [
+          "/tmp/codex-web-flash-final-audit/workspace"
+        ]
+      }
+    },
+    {
+      "method": "plugin/install",
+      "params": {
+        "marketplacePath": "/tmp/codex-web-flash-final-audit/home/.tmp/marketplaces/claude-plugins-official/.claude-plugin/marketplace.json",
+        "pluginName": "playwright"
+      }
+    },
+    {
+      "method": "plugin/list",
+      "params": {
+        "cwds": [
+          "/tmp/codex-web-flash-final-audit/workspace"
+        ],
+        "marketplaceKinds": [
+          "local"
+        ]
+      }
+    },
+    {
+      "method": "plugin/read",
+      "params": {
+        "marketplacePath": "/tmp/codex-web-flash-final-audit/home/.tmp/marketplaces/claude-plugins-official/.claude-plugin/marketplace.json",
+        "pluginName": "playwright"
+      }
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "params": {
+        "limit": 100
+      }
+    }
+  ],
+  "workspace": "/tmp/codex-web-flash-final-audit/workspace",
+  "add": {
+    "marketplaceName": "claude-plugins-official",
+    "installedRoot": "/tmp/codex-web-flash-final-audit/home/.tmp/marketplaces/claude-plugins-official",
+    "alreadyAdded": false
+  },
+  "marketplacePath": "/tmp/codex-web-flash-final-audit/home/.tmp/marketplaces/claude-plugins-official/.claude-plugin/marketplace.json",
+  "plugin": {
+    "id": "playwright@claude-plugins-official",
+    "remotePluginId": null,
+    "version": null,
+    "localVersion": null,
+    "name": "playwright",
+    "shareContext": null,
+    "source": {
+      "type": "local",
+      "path": "/tmp/codex-web-flash-final-audit/home/.tmp/marketplaces/claude-plugins-official/external_plugins/playwright"
+    },
+    "installed": false,
+    "installedAt": null,
+    "enabled": false,
+    "installPolicy": "AVAILABLE",
+    "installPolicySource": null,
+    "mustShowInstallationInterstitial": null,
+    "authPolicy": "ON_INSTALL",
+    "availability": "AVAILABLE",
+    "disabledReason": null,
+    "eligiblePlanTypes": null,
+    "interface": {
+      "displayName": null,
+      "shortDescription": null,
+      "longDescription": null,
+      "developerName": null,
+      "category": "testing",
+      "capabilities": [],
+      "websiteUrl": null,
+      "privacyPolicyUrl": null,
+      "termsOfServiceUrl": null,
+      "defaultPrompt": null,
+      "brandColor": null,
+      "composerIcon": null,
+      "composerIconUrl": null,
+      "logo": null,
+      "logoDark": null,
+      "logoUrl": null,
+      "logoUrlDark": null,
+      "screenshots": [],
+      "screenshotUrls": []
+    },
+    "keywords": []
+  },
+  "readBefore": {
+    "plugin": {
+      "marketplaceName": "claude-plugins-official",
+      "marketplacePath": "/tmp/codex-web-flash-final-audit/home/.tmp/marketplaces/claude-plugins-official/.claude-plugin/marketplace.json",
+      "summary": {
+        "id": "playwright@claude-plugins-official",
+        "remotePluginId": null,
+        "version": null,
+        "localVersion": null,
+        "name": "playwright",
+        "shareContext": null,
+        "source": {
+          "type": "local",
+          "path": "/tmp/codex-web-flash-final-audit/home/.tmp/marketplaces/claude-plugins-official/external_plugins/playwright"
+        },
+        "installed": false,
+        "installedAt": null,
+        "enabled": false,
+        "installPolicy": "AVAILABLE",
+        "installPolicySource": null,
+        "mustShowInstallationInterstitial": null,
+        "authPolicy": "ON_INSTALL",
+        "availability": "AVAILABLE",
+        "disabledReason": null,
+        "eligiblePlanTypes": null,
+        "interface": {
+          "displayName": null,
+          "shortDescription": null,
+          "longDescription": null,
+          "developerName": null,
+          "category": "testing",
+          "capabilities": [],
+          "websiteUrl": null,
+          "privacyPolicyUrl": null,
+          "termsOfServiceUrl": null,
+          "defaultPrompt": null,
+          "brandColor": null,
+          "composerIcon": null,
+          "composerIconUrl": null,
+          "logo": null,
+          "logoDark": null,
+          "logoUrl": null,
+          "logoUrlDark": null,
+          "screenshots": [],
+          "screenshotUrls": []
+        },
+        "keywords": []
+      },
+      "shareUrl": null,
+      "description": "Browser automation and end-to-end testing MCP server by Microsoft. Enables Claude to interact with web pages, take screenshots, fill forms, click elements, and perform automated browser testing workflows.",
+      "skills": [],
+      "onboardingSkill": null,
+      "hooks": [],
+      "apps": [],
+      "appTemplates": [],
+      "mcpServers": [
+        "playwright"
+      ],
+      "scheduledTasks": null
+    }
+  },
+  "install": {
+    "authPolicy": "ON_INSTALL",
+    "appsNeedingAuth": []
+  },
+  "installed": {
+    "id": "playwright@claude-plugins-official",
+    "remotePluginId": null,
+    "version": null,
+    "localVersion": null,
+    "name": "playwright",
+    "shareContext": null,
+    "source": {
+      "type": "local",
+      "path": "/tmp/codex-web-flash-final-audit/home/.tmp/marketplaces/claude-plugins-official/external_plugins/playwright"
+    },
+    "installed": true,
+    "installedAt": null,
+    "enabled": true,
+    "installPolicy": "AVAILABLE",
+    "installPolicySource": null,
+    "mustShowInstallationInterstitial": null,
+    "authPolicy": "ON_INSTALL",
+    "availability": "AVAILABLE",
+    "disabledReason": null,
+    "eligiblePlanTypes": null,
+    "interface": {
+      "displayName": null,
+      "shortDescription": null,
+      "longDescription": null,
+      "developerName": null,
+      "category": "testing",
+      "capabilities": [],
+      "websiteUrl": null,
+      "privacyPolicyUrl": null,
+      "termsOfServiceUrl": null,
+      "defaultPrompt": null,
+      "brandColor": null,
+      "composerIcon": null,
+      "composerIconUrl": null,
+      "logo": null,
+      "logoDark": null,
+      "logoUrl": null,
+      "logoUrlDark": null,
+      "screenshots": [],
+      "screenshotUrls": []
+    },
+    "keywords": []
+  },
+  "readAfter": {
+    "plugin": {
+      "marketplaceName": "claude-plugins-official",
+      "marketplacePath": "/tmp/codex-web-flash-final-audit/home/.tmp/marketplaces/claude-plugins-official/.claude-plugin/marketplace.json",
+      "summary": {
+        "id": "playwright@claude-plugins-official",
+        "remotePluginId": null,
+        "version": null,
+        "localVersion": null,
+        "name": "playwright",
+        "shareContext": null,
+        "source": {
+          "type": "local",
+          "path": "/tmp/codex-web-flash-final-audit/home/.tmp/marketplaces/claude-plugins-official/external_plugins/playwright"
+        },
+        "installed": true,
+        "installedAt": null,
+        "enabled": true,
+        "installPolicy": "AVAILABLE",
+        "installPolicySource": null,
+        "mustShowInstallationInterstitial": null,
+        "authPolicy": "ON_INSTALL",
+        "availability": "AVAILABLE",
+        "disabledReason": null,
+        "eligiblePlanTypes": null,
+        "interface": {
+          "displayName": null,
+          "shortDescription": null,
+          "longDescription": null,
+          "developerName": null,
+          "category": "testing",
+          "capabilities": [],
+          "websiteUrl": null,
+          "privacyPolicyUrl": null,
+          "termsOfServiceUrl": null,
+          "defaultPrompt": null,
+          "brandColor": null,
+          "composerIcon": null,
+          "composerIconUrl": null,
+          "logo": null,
+          "logoDark": null,
+          "logoUrl": null,
+          "logoUrlDark": null,
+          "screenshots": [],
+          "screenshotUrls": []
+        },
+        "keywords": []
+      },
+      "shareUrl": null,
+      "description": "Browser automation and end-to-end testing MCP server by Microsoft. Enables Claude to interact with web pages, take screenshots, fill forms, click elements, and perform automated browser testing workflows.",
+      "skills": [],
+      "onboardingSkill": null,
+      "hooks": [],
+      "apps": [],
+      "appTemplates": [],
+      "mcpServers": [
+        "playwright"
+      ],
+      "scheduledTasks": null
+    }
+  },
+  "mcp": {
+    "data": [
+      {
+        "name": "playwright",
+        "runtimeStatus": null,
+        "pluginId": "playwright@claude-plugins-official",
+        "httpOrigin": null,
+        "serverInfo": null,
+        "serverCapabilities": null,
+        "toolListMeta": null,
+        "tools": {},
+        "toolsError": "MCP startup failed: No such file or directory (os error 2)",
+        "resources": [],
+        "resourceTemplates": [],
+        "authStatus": "unsupported"
+      }
+    ],
+    "nextCursor": null
+  }
+}

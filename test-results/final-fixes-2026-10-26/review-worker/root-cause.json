@@ -1,0 +1,160 @@
+{
+  "classification": "Confirmed generated model capability metadata and third-party native MAv2 task encoding incompatibility; not cross-session frontend routing.",
+  "nativeCoreChanged": false,
+  "model": "deepseek-flash",
+  "provider": "deepseek",
+  "reproduction": {
+    "sameBrowserConnection": true,
+    "freshWorkerParent": true,
+    "gitDefectAndWorkerInput": true,
+    "original180SecondTimeoutReproduced": true,
+    "parentThreadId": "01a17809-59fc-75a0-8239-c3234e333f8f",
+    "childThreadId": "01a17809-63cd-78a0-98f1-8f4ce1f9c26c",
+    "nativeChildParentThreadId": "01a17809-59fc-75a0-8239-c3234e333f8f",
+    "rawNativeSpawnResponseItem": {
+      "type": "function_call",
+      "status": "completed",
+      "id": "97650035-279e-4835-88bd-d371f23349f5",
+      "name": "spawn_agent",
+      "namespace": "collaboration",
+      "arguments": "{\"agent_type\": \"worker\", \"fork_turns\": \"none\", \"task_name\": \"readonly_worker\", \"message\": \"You are responsible only for reading worker_input.txt in the current working directory. You are not alone in the codebase; do not revert or change any files. Read the actual file using a native read-only command, return its token value and the exact integer sum of the comma-separated values. Do not spawn agents and do not modify any file.\"}",
+      "call_id": "call_00_ET_q8784ml5N0fB2EvrhPJG7494",
+      "internal_chat_message_metadata_passthrough": {
+        "turn_id": "01a17809-5afd-7552-aedd-011ddddf7c22"
+      }
+    },
+    "nativeChildNewTask": {
+      "type": "agent_message",
+      "id": "amsg_01a17809-649b-78b1-bf45-cdf3c2be8fca",
+      "author": "/root",
+      "recipient": "/root/readonly_worker",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Message Type: NEW_TASK\nTask name: /root/readonly_worker\nSender: /root\nPayload:\n"
+        },
+        {
+          "type": "encrypted_content",
+          "encrypted_content": "You are responsible only for reading worker_input.txt in the current working directory. You are not alone in the codebase; do not revert or change any files. Read the actual file using a native read-only command, return its token value and the exact integer sum of the comma-separated values. Do not spawn agents and do not modify any file."
+        }
+      ],
+      "internal_chat_message_metadata_passthrough": {
+        "turn_id": "01a17809-63f9-7412-b646-daa559db62f1",
+        "create_time": 1793015243.9318557,
+        "content_item_metadata": [
+          {
+            "provenance": {
+              "type": "tool",
+              "namespace": "collaboration"
+            }
+          },
+          {
+            "provenance": {
+              "type": "tool",
+              "namespace": "collaboration"
+            }
+          }
+        ]
+      }
+    },
+    "childNativeVersion": "v2",
+    "childPerformedUnrelatedReview": true,
+    "cleanup": [
+      {
+        "entity": "parent",
+        "id": "01a17809-2862-73a0-99aa-a3317ecd5c5a",
+        "removed": true
+      },
+      {
+        "entity": "parent",
+        "id": "01a17809-59fc-75a0-8239-c3234e333f8f",
+        "removed": true
+      },
+      {
+        "entity": "worker",
+        "id": "01a17809-63cd-78a0-98f1-8f4ce1f9c26c",
+        "removed": true,
+        "error": "thread not loaded: 01a17809-63cd-78a0-98f1-8f4ce1f9c26c"
+      },
+      {
+        "entity": "fixture",
+        "removed": true
+      }
+    ],
+    "report": "reproduce/combined-results.json",
+    "httpTrafficCapture": false,
+    "responseEvidenceKind": "Actual supported native rawResponseItem/completed notification plus owned thread rollout; not reconstructed HTTP bytes."
+  },
+  "rootCauses": [
+    {
+      "file": "web/start.py",
+      "detail": "DeepSeek generated catalog cloned gpt-6-sol and retained multi_agent_version=v2, although native MAv2 direct messages require an encrypted_function_args discriminator absent in actual Flash responses."
+    },
+    {
+      "file": "upstream/codex-rs/core/src/tools/router.rs:56",
+      "detail": "Direct collaboration spawn/send/followup is Plaintext only when encrypted_function_args is explicitly an empty list. Absence selects Direct."
+    },
+    {
+      "file": "upstream/codex-rs/core/src/tools/handlers/multi_agents_v2.rs:54",
+      "detail": "Direct calls wrap the message as AgentMessage::Encrypted; the plain Flash task was emitted as encrypted_content and not followed by child."
+    },
+    {
+      "file": "upstream/codex-rs/core/src/config/mod.rs:1685",
+      "detail": "Model catalog multi_agent_version wins over false V2 feature default. Native feature false alone does not select V1."
+    }
+  ],
+  "diagnosticControls": [
+    {
+      "report": "first/combined-results.json",
+      "outcome": "Test harness preflight error before actual worker: thread/turns/list unavailable for an unmaterialized empty thread; test corrected, not product bug."
+    },
+    {
+      "report": "code-mode/combined-results.json",
+      "outcome": "Official Flash Responses rejected native CodeMode custom tool exec; path not adopted."
+    },
+    {
+      "report": "v1/combined-results.json",
+      "outcome": "Only V2 feature false retained model catalog V2. Surface token/sum succeeded, but actual native child plaintext assertion failed; not compatible/pass."
+    },
+    {
+      "report": "v1-catalog/combined-results.json",
+      "outcome": "Per-thread catalog file override did not replace already initialized ModelsManager; actual native V2 persisted, so not counted V1 or fixed."
+    }
+  ],
+  "fixPlan": "Correct generated DeepSeek model catalog to explicit native v1; launch/reconnect app-server to load fixed catalog and validate fresh native V1 parents/children. Keep existing conversation history.",
+  "upgradeLimit": "A conversation records its protocol version on first activation. Existing V2 histories may retain V2; no supported external migration endpoint was found. Do not rewrite native rollout or silently disable delegation.",
+  "finalVerification": {
+    "status": "passed",
+    "report": "final/combined-results.json",
+    "service": "http://127.0.0.1:18866",
+    "realGeneratedCatalogUsed": true,
+    "perThreadCatalogOverride": false,
+    "nativeReview": "actual division by zero found; no worktree change",
+    "worker": {
+      "name": "native_worker_after_review_same_connection",
+      "status": "passed",
+      "parentThreadId": "01a17814-7c24-75e2-9504-216c818a6fde",
+      "childThreadId": "01a17814-8448-7cf1-b732-d912bf48dd74",
+      "spawn": {
+        "agent_type": "worker",
+        "fork_context": false,
+        "message": "You are responsible only for reading worker_input.txt in the current working directory. You are not alone in the codebase; do not revert or change any files. Read the actual file using a native read-only command, return its token value and the exact integer sum of the comma-separated values. Do not spawn agents and do not modify any file."
+      },
+      "actualChildRead": true,
+      "parentChildCorrelationVerified": true,
+      "workspaceUnchanged": true
+    },
+    "nativeParentVersion": "v1",
+    "nativeChildVersion": "v1",
+    "childMetadataParentIdMatched": true,
+    "childReceivedPlaintextTask": true,
+    "childModel": "deepseek-flash",
+    "childProvider": "deepseek",
+    "cleanupCompleted": true,
+    "browserErrors": 0,
+    "resultsPassed": 2,
+    "resultsFailed": 0
+  },
+  "resolution": "Fixed in Web-generated third-party model capability metadata. Native V1 is a retained upstream collaboration path; corrected launcher catalog plus new native connection selects V1 and real child receives plaintext. No provider/model switch, core changes, invented results, delay increase or prompt constraint workaround.",
+  "remaining": "Native V2 remains incompatible with Flash direct message encoding; pre-existing V2 histories do not automatically migrate. New compatible V1 conversation is required for delegation from such old histories. This is not an unresolved fresh-session review/worker timeout."
+}

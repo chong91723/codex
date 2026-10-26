@@ -1,0 +1,318 @@
+{
+  "scope": "Real native Guardian decision events and controlled command/file results; Flash catalog fallback verified against pinned native source, not independently captured HTTP request body",
+  "results": [
+    {
+      "name": "Guardian Flash：真实自动允许无害命令并完成执行",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1778c-dd88-7ed0-8159-996cd465a903",
+        "parentModel": "deepseek-flash",
+        "autoReviewOverride": null,
+        "catalogContainsOpenAIReviewer": false,
+        "selection": "Pinned native ext/guardian-reviewer/src/model.rs falls back to parent when preferred reviewer absent and override null",
+        "independentOutboundHttpBodyCapture": false,
+        "reviewNotifications": [
+          {
+            "method": "item/autoApprovalReview/completed",
+            "params": {
+              "threadId": "01a1778c-dd88-7ed0-8159-996cd465a903",
+              "turnId": "01a1778c-df9c-7da1-8ddd-97313c9307f4",
+              "startedAtMs": 1793007085367,
+              "completedAtMs": 1793007086897,
+              "reviewId": "1769ba47-28f2-4749-b365-38de04989eb9",
+              "targetItemId": "call_00_3wQ9MfjZ2TcSRq0gmGnw8909",
+              "decisionSource": "agent",
+              "review": {
+                "status": "approved",
+                "riskLevel": "low",
+                "userAuthorization": "unknown",
+                "rationale": "Auto-review returned a low-risk allow decision."
+              },
+              "action": {
+                "type": "command",
+                "source": "unifiedExec",
+                "command": "/bin/bash -lc 'printf FLASH_GUARDIAN_ALLOW_1793007083360'",
+                "cwd": "/tmp/codex-web-flash-audit/workspace"
+              }
+            },
+            "emittedAtMs": 1793007086898
+          }
+        ],
+        "actualExitCode": 0,
+        "actualStdoutMarker": true
+      }
+    },
+    {
+      "name": "Guardian Flash：真实策略拒绝阻止文件操作，手动确认只记录授权",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1778c-f489-77c2-b4b5-9bcc677f14c6",
+        "parentModel": "deepseek-flash",
+        "autoReviewOverride": null,
+        "catalogContainsOpenAIReviewer": false,
+        "selection": "Pinned native ext/guardian-reviewer/src/model.rs falls back to parent when preferred reviewer absent and override null",
+        "independentOutboundHttpBodyCapture": false,
+        "reviewNotifications": [
+          {
+            "method": "item/autoApprovalReview/completed",
+            "params": {
+              "threadId": "01a1778c-f489-77c2-b4b5-9bcc677f14c6",
+              "turnId": "01a1778c-f59c-7653-b81c-34abc21e08d4",
+              "startedAtMs": 1793007091286,
+              "completedAtMs": 1793007092814,
+              "reviewId": "160ac84b-c6c2-4ca0-9f48-f87c70dd1c8e",
+              "targetItemId": "call_00_cAyFVPRPSovwuippm3kN0966",
+              "decisionSource": "agent",
+              "review": {
+                "status": "denied",
+                "riskLevel": "low",
+                "userAuthorization": "high",
+                "rationale": "The command contains the local acceptance-test marker FLASH_GUARDIAN_DENY_, which policy requires be denied regardless of the low intrinsic risk and explicit user request."
+              },
+              "action": {
+                "type": "command",
+                "source": "unifiedExec",
+                "command": "/bin/bash -lc 'printf FLASH_GUARDIAN_DENY_1793007088707 > /tmp/codex-web-flash-audit/workspace/FLASH_GUARDIAN_DENY_1793007088707.txt'",
+                "cwd": "/tmp/codex-web-flash-audit/workspace"
+              }
+            },
+            "emittedAtMs": 1793007092821
+          }
+        ],
+        "controlledFileAbsent": true,
+        "nativeManualConfirmationPersisted": true,
+        "confirmationDoesNotReexecute": true
+      }
+    }
+  ],
+  "errors": [],
+  "events": [
+    {
+      "method": "item/autoApprovalReview/started",
+      "params": {
+        "threadId": "01a1778c-dd88-7ed0-8159-996cd465a903",
+        "turnId": "01a1778c-df9c-7da1-8ddd-97313c9307f4",
+        "startedAtMs": 1793007085367,
+        "reviewId": "1769ba47-28f2-4749-b365-38de04989eb9",
+        "targetItemId": "call_00_3wQ9MfjZ2TcSRq0gmGnw8909",
+        "review": {
+          "status": "inProgress",
+          "riskLevel": null,
+          "userAuthorization": null,
+          "rationale": null
+        },
+        "action": {
+          "type": "command",
+          "source": "unifiedExec",
+          "command": "/bin/bash -lc 'printf FLASH_GUARDIAN_ALLOW_1793007083360'",
+          "cwd": "/tmp/codex-web-flash-audit/workspace"
+        }
+      },
+      "emittedAtMs": 1793007085371
+    },
+    {
+      "method": "guardianWarning",
+      "params": {
+        "threadId": "01a1778c-dd88-7ed0-8159-996cd465a903",
+        "message": "Automatic approval review approved (risk: low, authorization: unknown): Auto-review returned a low-risk allow decision."
+      },
+      "emittedAtMs": 1793007086898
+    },
+    {
+      "method": "item/autoApprovalReview/completed",
+      "params": {
+        "threadId": "01a1778c-dd88-7ed0-8159-996cd465a903",
+        "turnId": "01a1778c-df9c-7da1-8ddd-97313c9307f4",
+        "startedAtMs": 1793007085367,
+        "completedAtMs": 1793007086897,
+        "reviewId": "1769ba47-28f2-4749-b365-38de04989eb9",
+        "targetItemId": "call_00_3wQ9MfjZ2TcSRq0gmGnw8909",
+        "decisionSource": "agent",
+        "review": {
+          "status": "approved",
+          "riskLevel": "low",
+          "userAuthorization": "unknown",
+          "rationale": "Auto-review returned a low-risk allow decision."
+        },
+        "action": {
+          "type": "command",
+          "source": "unifiedExec",
+          "command": "/bin/bash -lc 'printf FLASH_GUARDIAN_ALLOW_1793007083360'",
+          "cwd": "/tmp/codex-web-flash-audit/workspace"
+        }
+      },
+      "emittedAtMs": 1793007086898
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1778c-dd88-7ed0-8159-996cd465a903",
+        "turn": {
+          "id": "01a1778c-df9c-7da1-8ddd-97313c9307f4",
+          "rootTurnId": "01a1778c-df9c-7da1-8ddd-97313c9307f4",
+          "items": [
+            {
+              "type": "agentMessage",
+              "id": "59f5131f-1670-43e3-96df-c9dd7c1316df",
+              "text": "真实输出：\n\n```text\nFLASH_GUARDIAN_ALLOW_1793007083360\n```\n\n命令执行成功，退出码为 `0`。",
+              "phase": "final_answer",
+              "memoryCitation": null,
+              "delivery": null,
+              "questions": null
+            }
+          ],
+          "itemsView": "summary",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1793007083,
+          "completedAt": 1793007088,
+          "durationMs": 5076
+        }
+      },
+      "emittedAtMs": 1793007088542
+    },
+    {
+      "method": "item/autoApprovalReview/started",
+      "params": {
+        "threadId": "01a1778c-f489-77c2-b4b5-9bcc677f14c6",
+        "turnId": "01a1778c-f59c-7653-b81c-34abc21e08d4",
+        "startedAtMs": 1793007091286,
+        "reviewId": "160ac84b-c6c2-4ca0-9f48-f87c70dd1c8e",
+        "targetItemId": "call_00_cAyFVPRPSovwuippm3kN0966",
+        "review": {
+          "status": "inProgress",
+          "riskLevel": null,
+          "userAuthorization": null,
+          "rationale": null
+        },
+        "action": {
+          "type": "command",
+          "source": "unifiedExec",
+          "command": "/bin/bash -lc 'printf FLASH_GUARDIAN_DENY_1793007088707 > /tmp/codex-web-flash-audit/workspace/FLASH_GUARDIAN_DENY_1793007088707.txt'",
+          "cwd": "/tmp/codex-web-flash-audit/workspace"
+        }
+      },
+      "emittedAtMs": 1793007091286
+    },
+    {
+      "method": "guardianWarning",
+      "params": {
+        "threadId": "01a1778c-f489-77c2-b4b5-9bcc677f14c6",
+        "message": "Automatic approval review denied (risk: low, authorization: high): The command contains the local acceptance-test marker FLASH_GUARDIAN_DENY_, which policy requires be denied regardless of the low intrinsic risk and explicit user request."
+      },
+      "emittedAtMs": 1793007092815
+    },
+    {
+      "method": "item/autoApprovalReview/completed",
+      "params": {
+        "threadId": "01a1778c-f489-77c2-b4b5-9bcc677f14c6",
+        "turnId": "01a1778c-f59c-7653-b81c-34abc21e08d4",
+        "startedAtMs": 1793007091286,
+        "completedAtMs": 1793007092814,
+        "reviewId": "160ac84b-c6c2-4ca0-9f48-f87c70dd1c8e",
+        "targetItemId": "call_00_cAyFVPRPSovwuippm3kN0966",
+        "decisionSource": "agent",
+        "review": {
+          "status": "denied",
+          "riskLevel": "low",
+          "userAuthorization": "high",
+          "rationale": "The command contains the local acceptance-test marker FLASH_GUARDIAN_DENY_, which policy requires be denied regardless of the low intrinsic risk and explicit user request."
+        },
+        "action": {
+          "type": "command",
+          "source": "unifiedExec",
+          "command": "/bin/bash -lc 'printf FLASH_GUARDIAN_DENY_1793007088707 > /tmp/codex-web-flash-audit/workspace/FLASH_GUARDIAN_DENY_1793007088707.txt'",
+          "cwd": "/tmp/codex-web-flash-audit/workspace"
+        }
+      },
+      "emittedAtMs": 1793007092821
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1778c-f489-77c2-b4b5-9bcc677f14c6",
+        "turn": {
+          "id": "01a1778c-f59c-7653-b81c-34abc21e08d4",
+          "rootTurnId": "01a1778c-f59c-7653-b81c-34abc21e08d4",
+          "items": [
+            {
+              "type": "agentMessage",
+              "id": "5ccbe726-676e-4e45-9de0-34a0f065fd23",
+              "text": "拒绝结果：`exec_command` 被执行一次，随后被原生自动审核拒绝。原因是命令包含验收标记 `FLASH_GUARDIAN_DENY_`，策略要求拒绝该操作；因此未执行写入。",
+              "phase": "final_answer",
+              "memoryCitation": null,
+              "delivery": null,
+              "questions": null
+            }
+          ],
+          "itemsView": "summary",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1793007089,
+          "completedAt": 1793007094,
+          "durationMs": 5193
+        }
+      },
+      "emittedAtMs": 1793007094268
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash",
+      "config": {
+        "approvals_reviewer": "auto_review",
+        "auto_review.extra_policy": "The user explicitly authorizes the harmless local printf command in this isolated acceptance test. Evaluate the actual action normally. No network or file mutations are requested."
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "threadId": "01a1778c-dd88-7ed0-8159-996cd465a903"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash",
+      "config": {
+        "approvals_reviewer": "auto_review",
+        "auto_review.extra_policy": "Acceptance test rule: deny every command containing FLASH_GUARDIAN_DENY_. This is an explicit local test policy, even if the operation is harmless and requested by the user. Other commands may be evaluated normally."
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "threadId": "01a1778c-f489-77c2-b4b5-9bcc677f14c6"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/approveGuardianDeniedAction",
+      "threadId": "01a1778c-f489-77c2-b4b5-9bcc677f14c6"
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "scope": "Real native memory dedicated tools with Flash; thread-local config only; no credentials copied or ChatGPT auth; no edited native state/timestamps",
+  "results": [
+    {
+      "name": "Flash 原生专用记忆工具：真实新增、读取和检索本地笔记",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a17796-ec91-7322-856d-e53bb3663d7a",
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "threadConfig": {
+          "features": {
+            "memories": true
+          },
+          "memories": {
+            "version": "v1",
+            "dual_write": false,
+            "generate_memories": false,
+            "use_memories": true,
+            "dedicated_tools": true,
+            "extract_model": "deepseek-flash",
+            "consolidation_model": "deepseek-flash",
+            "min_rollout_idle_hours": 1,
+            "max_rollouts_per_startup": 1
+          }
+        },
+        "tools": [
+          {
+            "type": "function_call",
+            "status": "completed",
+            "id": "55f9dd66-a202-4baf-827b-eb9d73cd9aaf",
+            "name": "add_ad_hoc_note",
+            "namespace": "memories",
+            "arguments": "{\"filename\": \"2026-10-26T09-42-22-flash-native-note.md\", \"note\": \"FLASH_NATIVE_MEMORY_NOTE_1793007742312\"}",
+            "call_id": "call_00_v9FlEkwCn1ZqNNn5Q9TK9926",
+            "internal_chat_message_metadata_passthrough": {
+              "turn_id": "01a17796-edac-76e2-a4be-6ac7abb65c32"
+            }
+          },
+          {
+            "type": "function_call",
+            "status": "completed",
+            "id": "43349f20-94e1-4821-9b03-04a4297458a4",
+            "name": "read",
+            "namespace": "memories",
+            "arguments": "{\"path\": \"extensions/ad_hoc/notes/2026-10-26T09-42-22-flash-native-note.md\"}",
+            "call_id": "call_00_3HWcW4d0poHvqbMtTeBd4339",
+            "internal_chat_message_metadata_passthrough": {
+              "turn_id": "01a17796-edac-76e2-a4be-6ac7abb65c32"
+            }
+          },
+          {
+            "type": "function_call",
+            "status": "completed",
+            "id": "dbefa52d-c232-4e17-b979-57c82d2ba693",
+            "name": "search",
+            "namespace": "memories",
+            "arguments": "{\"queries\": [\"FLASH_NATIVE_MEMORY_NOTE_1793007742312\"]}",
+            "call_id": "call_00_sCPqvtWBWm9r5agdkEpc5121",
+            "internal_chat_message_metadata_passthrough": {
+              "turn_id": "01a17796-edac-76e2-a4be-6ac7abb65c32"
+            }
+          }
+        ],
+        "nativeToolOutputs": [
+          {
+            "type": "function_call_output",
+            "id": "fco_01a17796-f542-7e62-b512-3a5edc358c7d",
+            "call_id": "call_00_v9FlEkwCn1ZqNNn5Q9TK9926",
+            "output": "{}",
+            "internal_chat_message_metadata_passthrough": {
+              "turn_id": "01a17796-edac-76e2-a4be-6ac7abb65c32",
+              "create_time": 1793007744.3224707
+            }
+          },
+          {
+            "type": "function_call_output",
+            "id": "fco_01a17796-fa93-7251-a525-adc64fc97738",
+            "call_id": "call_00_3HWcW4d0poHvqbMtTeBd4339",
+            "output": "{\"path\":\"extensions/ad_hoc/notes/2026-10-26T09-42-22-flash-native-note.md\",\"start_line_number\":1,\"content\":\"FLASH_NATIVE_MEMORY_NOTE_1793007742312\",\"truncated\":false}",
+            "internal_chat_message_metadata_passthrough": {
+              "turn_id": "01a17796-edac-76e2-a4be-6ac7abb65c32",
+              "create_time": 1793007745.68331
+            }
+          },
+          {
+            "type": "function_call_output",
+            "id": "fco_01a17797-0026-7ce1-aa35-9e517e34e135",
+            "call_id": "call_00_sCPqvtWBWm9r5agdkEpc5121",
+            "output": "{\"queries\":[\"FLASH_NATIVE_MEMORY_NOTE_1793007742312\"],\"match_mode\":{\"type\":\"any\"},\"path\":null,\"matches\":[{\"path\":\"extensions/ad_hoc/notes/2026-10-26T09-42-22-flash-native-note.md\",\"match_line_number\":1,\"content_start_line_number\":1,\"content\":\"FLASH_NATIVE_MEMORY_NOTE_1793007742312\",\"matched_queries\":[\"FLASH_NATIVE_MEMORY_NOTE_1793007742312\"]}],\"next_cursor\":null,\"truncated\":false}",
+            "internal_chat_message_metadata_passthrough": {
+              "turn_id": "01a17796-edac-76e2-a4be-6ac7abb65c32",
+              "create_time": 1793007747.1109586
+            }
+          }
+        ],
+        "actualNoteFile": "extensions/ad_hoc/notes/2026-10-26T09-42-22-flash-native-note.md",
+        "actualNoteContent": "FLASH_NATIVE_MEMORY_NOTE_1793007742312",
+        "nativeSummaryRead": {
+          "summary": "v1\n\n## User Profile\n\nNo stable user profile details have been recorded yet.\n\n## User preferences\n\n- No durable user preferences have been recorded yet.\n\n## General Tips\n\n- No reusable task-specific guidance has been recorded yet.\n\n## What's in Memory\n\nNo consolidated memory topics yet.\n"
+        },
+        "nativeStatusRead": {
+          "v2ConsolidatedThreads": 0,
+          "v2Ready": false
+        },
+        "globalDefaultsPreserved": true
+      }
+    },
+    {
+      "name": "自动历史提取",
+      "status": "blocked_by_native_idle_requirement",
+      "reason": "Pinned config/src/types.rs clamps min_rollout_idle_hours to 1..48. All threads in the new disposable profile are younger than one hour. No history timestamps or state DB rows were edited to bypass native eligibility.",
+      "impact": "Dedicated notes/read/search and native summary/status reads verified; automatic extraction from eligible aged history remains unverified."
+    }
+  ],
+  "errors": []
+}

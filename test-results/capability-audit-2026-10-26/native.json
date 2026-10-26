@@ -1,0 +1,293 @@
+{
+  "scope": "Actual DeepSeek, native shell, approval buttons, interrupt protocol, independent files, navigation and reconnect",
+  "results": [
+    {
+      "name": "拒绝真实审批后受控命令未写入文件",
+      "status": "passed",
+      "evidence": {
+        "nativeCommandStatuses": [
+          "declined"
+        ],
+        "fileCreated": false
+      }
+    },
+    {
+      "name": "允许真实审批后命令实际执行并创建正确文件",
+      "status": "passed",
+      "evidence": {
+        "nativeStatus": "completed",
+        "fileContentVerified": true
+      }
+    },
+    {
+      "name": "停止发送一次真实中断，命令进程退出且后续写入未执行",
+      "status": "passed",
+      "evidence": {
+        "nativeStatus": "interrupted",
+        "interruptRequests": 1,
+        "remainingProcesses": 0,
+        "postSleepWriteAbsent": true
+      }
+    },
+    {
+      "name": "两个工作目录并发，切换后消息与实际文件正确隔离",
+      "status": "passed",
+      "evidence": {
+        "twoNativeTasksActiveSimultaneously": true,
+        "independentWorkingDirectories": true,
+        "noTranscriptMixing": true
+      }
+    },
+    {
+      "name": "页面刷新和 WebSocket 重连恢复同一会话，未重复提交",
+      "status": "passed",
+      "evidence": {
+        "sameThread": true,
+        "draftPreserved": true,
+        "noAutomaticResubmission": true
+      }
+    },
+    {
+      "name": "执行中断线恢复以真实历史为准，不复发任务",
+      "status": "passed",
+      "evidence": {
+        "status": {
+          "type": "idle"
+        },
+        "turnStatus": "interrupted",
+        "active": false
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17748-8f96-7db1-9010-d6bdd821a6cf",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17748-a859-7c11-9316-73929b7a9c1a",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17748-bb10-7470-9d4b-9cc7c2cb108f",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "turn/interrupt",
+      "threadId": "01a17748-bb10-7470-9d4b-9cc7c2cb108f",
+      "turnId": "01a17748-bcb1-72e0-aac1-57de4158ebb9"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a17748-bb10-7470-9d4b-9cc7c2cb108f"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a17748-bb10-7470-9d4b-9cc7c2cb108f"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17748-ca8c-7a83-b0a2-100992bc7e11",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17748-d6a0-7483-89b1-c554a3bc3c29",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17748-ca8c-7a83-b0a2-100992bc7e11"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17748-d6a0-7483-89b1-c554a3bc3c29"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17748-d6a0-7483-89b1-c554a3bc3c29"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17748-d6a0-7483-89b1-c554a3bc3c29"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17749-a606-71d0-a319-7c5ad0838b69",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17749-a606-71d0-a319-7c5ad0838b69"
+    },
+    {
+      "method": "thread/list"
+    }
+  ],
+  "completed": [
+    {
+      "threadId": "01a17748-8f96-7db1-9010-d6bdd821a6cf",
+      "status": "completed",
+      "error": null
+    },
+    {
+      "threadId": "01a17748-a859-7c11-9316-73929b7a9c1a",
+      "status": "completed",
+      "error": null
+    },
+    {
+      "threadId": "01a17748-bb10-7470-9d4b-9cc7c2cb108f",
+      "status": "interrupted",
+      "error": null
+    },
+    {
+      "threadId": "01a17748-d6a0-7483-89b1-c554a3bc3c29",
+      "status": "completed",
+      "error": null
+    },
+    {
+      "threadId": "01a17748-ca8c-7a83-b0a2-100992bc7e11",
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "errors": []
+}

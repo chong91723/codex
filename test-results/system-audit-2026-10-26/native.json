@@ -1,0 +1,277 @@
+{
+  "scope": "Actual DeepSeek, native shell, approval buttons, interrupt protocol, independent files, navigation and reconnect",
+  "results": [
+    {
+      "name": "拒绝真实审批后受控命令未写入文件",
+      "status": "passed",
+      "evidence": {
+        "nativeCommandStatuses": [
+          "declined"
+        ],
+        "fileCreated": false
+      }
+    },
+    {
+      "name": "允许真实审批后命令实际执行并创建正确文件",
+      "status": "passed",
+      "evidence": {
+        "nativeStatus": "completed",
+        "fileContentVerified": true
+      }
+    },
+    {
+      "name": "停止发送一次真实中断，命令进程退出且后续写入未执行",
+      "status": "failed",
+      "error": "Expected values to be strictly equal:\n\n4 !== 0\n"
+    },
+    {
+      "name": "两个工作目录并发，切换后消息与实际文件正确隔离",
+      "status": "passed",
+      "evidence": {
+        "twoNativeTasksActiveSimultaneously": true,
+        "independentWorkingDirectories": true,
+        "noTranscriptMixing": true
+      }
+    },
+    {
+      "name": "页面刷新和 WebSocket 重连恢复同一会话，未重复提交",
+      "status": "passed",
+      "evidence": {
+        "sameThread": true,
+        "draftPreserved": true,
+        "noAutomaticResubmission": true
+      }
+    },
+    {
+      "name": "执行中断线恢复以真实历史为准，不复发任务",
+      "status": "passed",
+      "evidence": {
+        "status": {
+          "type": "idle"
+        },
+        "active": false
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a176e6-db96-79e2-8dea-126ddd06e17f",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a176e7-3f0c-7d30-8df5-d8e85d6d6a1e",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a176e7-62a4-7ad0-a9b9-18e74e26a255",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "turn/interrupt",
+      "threadId": "01a176e7-62a4-7ad0-a9b9-18e74e26a255",
+      "turnId": "01a176e7-64f4-7e33-a921-01093ecc6489"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a176e7-b44e-7891-8685-ba11fb9f7514",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a176e7-f1fc-7fa1-a8bf-538bd8fcf386",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a176e7-b44e-7891-8685-ba11fb9f7514"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a176e7-f1fc-7fa1-a8bf-538bd8fcf386"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a176e7-f1fc-7fa1-a8bf-538bd8fcf386"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a176e8-d3e6-7d52-9e8e-cb685eacaad0",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    }
+  ],
+  "completed": [
+    {
+      "threadId": "01a176e6-db96-79e2-8dea-126ddd06e17f",
+      "status": "completed",
+      "error": null
+    },
+    {
+      "threadId": "01a176e7-3f0c-7d30-8df5-d8e85d6d6a1e",
+      "status": "completed",
+      "error": null
+    },
+    {
+      "threadId": "01a176e7-62a4-7ad0-a9b9-18e74e26a255",
+      "status": "interrupted",
+      "error": null
+    },
+    {
+      "threadId": "01a176e7-f1fc-7fa1-a8bf-538bd8fcf386",
+      "status": "completed",
+      "error": null
+    },
+    {
+      "threadId": "01a176e7-b44e-7891-8685-ba11fb9f7514",
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "errors": []
+}

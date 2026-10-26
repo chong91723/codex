@@ -1,0 +1,207 @@
+{
+  "scope": "Only localhost OAuth/PKCE and deepseek-flash; no ChatGPT, external OAuth account, or custom test skill",
+  "base": "http://127.0.0.1:8785",
+  "workspace": "/tmp/codex-web-flash-audit/workspace",
+  "origin": "http://127.0.0.1:44283",
+  "name": "flash_oauth_1793009037298_1713464",
+  "results": [
+    {
+      "name": "/mcp 新增本机 HTTP 服务，真实状态要求 OAuth",
+      "status": "passed",
+      "evidence": {
+        "uniqueServer": "flash_oauth_1793009037298_1713464",
+        "url": "http://127.0.0.1:44283/mcp",
+        "nativeAuthenticationRequired": true,
+        "configuredViaComposerMenu": true
+      }
+    },
+    {
+      "name": "MCP OAuth 登录按钮→本机授权页→原生 PKCE 交换与工具目录",
+      "status": "passed",
+      "evidence": {
+        "nativePkceExchange": true,
+        "authorizationRedirects": 1,
+        "tokenExchanges": 1,
+        "closingIsNotCancellation": true,
+        "authStatus": "oAuth",
+        "toolListed": "echo",
+        "realResourceInventory": 0
+      }
+    },
+    {
+      "name": "Flash 真实调用已授权 HTTP MCP echo，工具结果和资源目录可核验",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a177aa-c3fb-77c0-9bb8-79294ea99423",
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "actualMcpTool": "echo",
+        "actualMarker": true,
+        "pkceExchanges": 1,
+        "toolCalls": 1,
+        "resourceInventoryRequests": 1,
+        "resourceContentsRead": false
+      }
+    },
+    {
+      "name": "原生 OAuth 超时：匹配 loginId，显示未完成而非取消成功",
+      "status": "passed",
+      "evidence": {
+        "nativeTimeout": true,
+        "loginIdMatched": true,
+        "success": false,
+        "actualError": "timed out waiting for OAuth callback",
+        "visibleMessage": "MCP 授权未完成：flash_oauth_1793009037298_1713464 · timed out waiting for OAuth callback\n×",
+        "authorizationUrlNotOpened": true,
+        "nativeCancelMethodAvailable": false
+      }
+    },
+    {
+      "name": "本机 HTTP 服务停止后真实工具请求明确失败，无假成功",
+      "status": "passed",
+      "evidence": {
+        "fixtureActuallyStopped": true,
+        "actualError": "tool call failed for `flash_oauth_1793009037298_1713464/echo`: Transport send error: Transport [codex_rmcp_client::tool_list_changes::ToolListChanges<rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<rmcp::transport::auth::AuthClient<codex_rmcp_client::http_client_adapter::StreamableHttpClientAdapter>>>>] error: Client error: HTTP request failed: http/request failed: error sending request for url (http://127.0.0.1:44283/mcp)",
+        "visibleError": "tool call failed for `flash_oauth_1793009037298_1713464/echo`: Transport send error: Transport [codex_rmcp_client::tool_list_changes::ToolListChanges<rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<rmcp::transport::auth::AuthClient<codex_rmcp_client::http_client_adapter::StreamableHttpClientAdapter>>>>] error: Client error: HTTP request failed: http/request failed: error sending request for url (http://127.0.0.1:44283/mcp)",
+        "successNotReported": true
+      }
+    },
+    {
+      "name": "删除本次 MCP 配置并确认模型、审批和其他服务保持原样",
+      "status": "passed",
+      "evidence": {
+        "deletedServer": "flash_oauth_1793009037298_1713464",
+        "unrelatedMcpPreserved": true,
+        "globalPolicyPreserved": true
+      }
+    }
+  ],
+  "errors": [],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/batchWrite"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServer/oauth/login",
+      "name": "flash_oauth_1793009037298_1713464"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a177aa-c3fb-77c0-9bb8-79294ea99423",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "mcpServer/oauth/login",
+      "name": "flash_oauth_1793009037298_1713464"
+    },
+    {
+      "method": "mcpServer/tool/call",
+      "threadId": "01a177aa-c3fb-77c0-9bb8-79294ea99423",
+      "server": "flash_oauth_1793009037298_1713464",
+      "tool": "echo"
+    },
+    {
+      "method": "config/value/write",
+      "keyPath": "mcp_servers.\"flash_oauth_1793009037298_1713464\""
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/read"
+    }
+  ],
+  "oauthEvents": [
+    {
+      "name": "flash_oauth_1793009037298_1713464",
+      "threadId": null,
+      "loginId": "01a177aa-be95-76e2-a37d-572d356072ed",
+      "success": true
+    },
+    {
+      "name": "flash_oauth_1793009037298_1713464",
+      "threadId": null,
+      "loginId": "01a177aa-d473-71c3-972a-41ce5dc7a1e5",
+      "success": false,
+      "error": "timed out waiting for OAuth callback"
+    }
+  ],
+  "fixtureStderr": "",
+  "fixtureStopped": true
+}

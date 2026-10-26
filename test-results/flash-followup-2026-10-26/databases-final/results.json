@@ -1,0 +1,109 @@
+{
+  "results": [
+    {
+      "name": "仅使用 Flash 验证，真实对话产生原生上下文比例",
+      "status": "passed",
+      "evidence": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "used": 12679,
+        "window": 1048576
+      }
+    },
+    {
+      "name": "MySQL 网页配置官方 Sakila，只读验证并注册原生 MCP",
+      "status": "failed",
+      "error": "locator.waitFor: Error: strict mode violation: locator('.db-card').filter({ has: getByRole('heading', { name: 'Sakila 示例', exact: true }) }) resolved to 2 elements:\n    1) <article class=\"db-card\" data-connection-id=\"6abf94a96895a19c85cf5931\">…</article> aka getByText('MySakila 示例MySQL已连接127.0.0.1:').first()\n    2) <article class=\"db-card\" data-connection-id=\"002ef997c5a4b52bb414af7f\">…</article> aka getByText('MySakila 示例MySQL已连接127.0.0.1:').nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('.db-card').filter({ has: getByRole('heading', { name: 'Sakila 示例', exact: true }) }) to be visible\u001b[22m\n"
+    },
+    {
+      "name": "MySQL 管理账号拒绝接入",
+      "status": "failed",
+      "error": "locator.waitFor: Error: strict mode violation: locator('.db-card').filter({ has: getByRole('heading', { name: '禁止写权限账号', exact: true }) }) resolved to 2 elements:\n    1) <article class=\"db-card\" data-connection-id=\"916de53faf4535c3412e4646\">…</article> aka getByText('My禁止写权限账号MySQL连接失败127.0.0.1:').first()\n    2) <article class=\"db-card\" data-connection-id=\"cfb8a793da0c405992834106\">…</article> aka getByText('My禁止写权限账号MySQL连接失败127.0.0.1:').nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('.db-card').filter({ has: getByRole('heading', { name: '禁止写权限账号', exact: true }) }) to be visible\u001b[22m\n"
+    },
+    {
+      "name": "postgresql 网页配置并实际读取",
+      "status": "failed",
+      "error": "locator.waitFor: Error: strict mode violation: locator('.db-card').filter({ has: getByRole('heading', { name: 'postgresql 只读示例', exact: true }) }) resolved to 2 elements:\n    1) <article class=\"db-card\" data-connection-id=\"6107f909588a289ba652c93e\">…</article> aka getByText('Pgpostgresql 只读示例PostgreSQL已连接127.0.0.1:15432 / analytics账号 codex_reader').first()\n    2) <article class=\"db-card\" data-connection-id=\"0f2dcb1c3c15dc14d151842f\">…</article> aka getByText('Pgpostgresql 只读示例PostgreSQL已连接127.0.0.1:15432 / analytics账号 codex_reader').nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('.db-card').filter({ has: getByRole('heading', { name: 'postgresql 只读示例', exact: true }) }) to be visible\u001b[22m\n"
+    },
+    {
+      "name": "clickhouse 网页配置并实际读取",
+      "status": "failed",
+      "error": "locator.waitFor: Error: strict mode violation: locator('.db-card').filter({ has: getByRole('heading', { name: 'clickhouse 只读示例', exact: true }) }) resolved to 2 elements:\n    1) <article class=\"db-card\" data-connection-id=\"8f4faee93c66dfa2146d483a\">…</article> aka getByText('Chclickhouse 只读示例ClickHouse已连接127.0.0.1:18123 / analytics账号 codex_reader').first()\n    2) <article class=\"db-card\" data-connection-id=\"1094c182d5af38a7a1a0227e\">…</article> aka getByText('Chclickhouse 只读示例ClickHouse已连接127.0.0.1:18123 / analytics账号 codex_reader').nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('.db-card').filter({ has: getByRole('heading', { name: 'clickhouse 只读示例', exact: true }) }) to be visible\u001b[22m\n"
+    },
+    {
+      "name": "elasticsearch 网页配置并实际读取",
+      "status": "failed",
+      "error": "locator.waitFor: Error: strict mode violation: locator('.db-card').filter({ has: getByRole('heading', { name: 'elasticsearch 只读示例', exact: true }) }) resolved to 2 elements:\n    1) <article class=\"db-card\" data-connection-id=\"7722c19ec45b06a38a10eaad\">…</article> aka getByText('Eselasticsearch 只读示例Elasticsearch已连接127.0.0.1:19200 / sales账号 codex_reader').first()\n    2) <article class=\"db-card\" data-connection-id=\"7af811011507803d1d78ee9d\">…</article> aka getByText('Eselasticsearch 只读示例Elasticsearch已连接127.0.0.1:19200 / sales账号 codex_reader').nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('.db-card').filter({ has: getByRole('heading', { name: 'elasticsearch 只读示例', exact: true }) }) to be visible\u001b[22m\n"
+    },
+    {
+      "name": "原生 MCP 实际只读批量查询与表结构",
+      "status": "failed",
+      "error": "Schema failed"
+    },
+    {
+      "name": "跨库只允许已配置、连通并启用的数据库",
+      "status": "failed",
+      "error": "{\"content\":[{\"type\":\"text\",\"text\":\"'connection_id'\"}],\"isError\":true}"
+    },
+    {
+      "name": "写入、混合批次、文件读取、外部表函数均拒绝",
+      "status": "failed",
+      "error": "No structured tool result: {\"content\":[{\"type\":\"text\",\"text\":\"'connection_id'\"}],\"isError\":true}"
+    },
+    {
+      "name": "DeepSeek 实际查询并调用 ECharts MCP，在回答内生成图表",
+      "status": "passed",
+      "evidence": {
+        "provider": "deepseek",
+        "chart": true
+      }
+    },
+    {
+      "name": "上下文跨会话隔离，刷新原生重放统计",
+      "status": "passed",
+      "evidence": {
+        "restored": true,
+        "isolated": true
+      }
+    }
+  ],
+  "errors": [],
+  "methods": [
+    "initialize",
+    "initialized",
+    "thread/list",
+    "model/list",
+    "config/read",
+    "thread/start",
+    "thread/list",
+    "turn/start",
+    "thread/list",
+    "thread/list",
+    "config/read",
+    "config/read",
+    "config/read",
+    "config/read",
+    "mcpServer/tool/call",
+    "mcpServer/tool/call",
+    "config/read",
+    "mcpServer/tool/call",
+    "mcpServer/tool/call",
+    "mcpServer/tool/call",
+    "mcpServer/tool/call",
+    "mcpServer/tool/call",
+    "mcpServer/tool/call",
+    "mcpServer/tool/call",
+    "thread/start",
+    "thread/list",
+    "turn/start",
+    "thread/list",
+    "thread/list",
+    "initialize",
+    "initialized",
+    "thread/list",
+    "model/list",
+    "config/read",
+    "thread/resume",
+    "thread/list"
+  ]
+}

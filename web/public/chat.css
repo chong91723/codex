@@ -14,7 +14,7 @@ button,input,textarea,select{font-family:inherit}
 .topbar{height:66px;padding:0 25px;border-bottom:0;gap:16px}.topbar-left{gap:12px}.topbar-right{gap:6px}.topbar-right .icon-button{height:34px;width:34px}.topbar-left #breadcrumb,.topbar-left .slash{display:none}.topbar-left #page-title{font-size:12px;font-weight:400;color:var(--muted);max-width:250px}.topbar .connection{font-size:10px;margin-right:8px}.connection.online i{background:#739a7a}
 .assistant-picker{display:flex;align-items:center;gap:8px;flex-shrink:0}.assistant-name{font-size:21px;font-weight:550;letter-spacing:-.7px}
 .chat-view{position:relative;min-width:0}.chat-toolbar{position:absolute;top:0;right:25px;z-index:2;width:auto;padding:0;margin:0;background:transparent;border:0;min-height:32px}.chat-toolbar #thread-info{display:none}.chat-toolbar select{font-size:13px;border:0;background:var(--bg);border-radius:7px;padding:5px 8px;max-width:125px;cursor:pointer}
-.conversation-scroll{scrollbar-width:thin;scroll-behavior:smooth}.messages{max-width:800px;width:calc(100% - 64px);padding:32px 0 20px;margin:0 auto}
+.conversation-scroll{scrollbar-width:thin;scroll-behavior:auto}.messages{max-width:800px;width:calc(100% - 64px);padding:32px 0 20px;margin:0 auto}
 .message{font-size:15px;line-height:1.8;margin-bottom:30px}.message.user{max-width:80%;width:fit-content;margin-left:auto;margin-bottom:26px;padding:12px 20px;background:#f4f4f4;border-radius:24px;white-space:pre-wrap;font-size:15px;line-height:1.75}.message.agent{font-size:15px;line-height:1.85;padding:0;background:transparent}.message.agent::before{display:none}.message.agent>.markdown>p:first-child{margin-top:0}.message.agent>.markdown>p:last-child{margin-bottom:0}.markdown p{margin:13px 0}.markdown pre{border-radius:12px;font-size:12px;padding:15px 18px;line-height:1.75}.markdown code{font-size:.88em}.markdown h2{font-size:20px;margin:25px 0 12px}.markdown h3{font-size:17px;margin:20px 0 10px}
 html[data-theme=dark] .message.user{background:#303030}
 .message-actions{display:flex;align-items:center;gap:3px;margin-top:12px}.message-actions .icon-button{height:27px;width:27px;color:var(--muted)}.message-actions svg{height:16px;width:16px}
@@ -46,3 +46,34 @@ html[data-theme=dark] .message.user{background:#303030}
 
 /* Skill discovery is grouped, translated and independent of filesystem paths. */
 .skills-toolbar{display:flex;align-items:center;gap:14px;margin-bottom:16px}.skills-toolbar input{max-width:440px;flex:1}.skills-toolbar .solid-button{margin-left:auto;white-space:nowrap}.skill-count{margin:0 0 20px;font-size:12px}.skill-groups{display:grid;gap:24px}.skill-group{border-bottom:1px solid var(--border);padding-bottom:20px}.skill-group>summary{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:550;cursor:pointer;list-style:none;padding:5px 0}.skill-group>summary:before{content:'›';color:var(--muted);font-size:22px;width:14px;line-height:1;transform-origin:center}.skill-group[open]>summary:before{transform:rotate(90deg)}.skill-group>summary::-webkit-details-marker{display:none}.skill-group>summary .tag{margin-left:auto;font-size:11px;font-weight:400}.skill-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}.skill-card{display:flex;flex-direction:column;gap:14px;padding:20px;min-height:186px}.skill-card-heading{display:flex;align-items:flex-start;gap:14px;justify-content:space-between}.skill-card-heading h3{margin:0;line-height:1.6;overflow-wrap:anywhere}.skill-card-heading .tag{white-space:nowrap;font-size:10px;flex-shrink:0}.skill-card .skill-description{margin:0;line-height:1.9;color:var(--muted)}.skill-card-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding-top:4px}.skill-card-footer .subtle{font-size:11px}.skill-card-footer button{font-size:12px;border:1px solid var(--border);border-radius:8px;padding:6px 14px}.skill-card .enabled-tag{background:var(--soft);color:var(--accent)}.skill-original{font-size:11px;color:var(--muted)}.skill-original summary{cursor:pointer}.skill-original p{overflow-wrap:anywhere}.mcp-discovery-status{font-size:12px;margin:18px 0}.mcp-card{display:flex;flex-direction:column;gap:12px}.mcp-card p{margin:0;overflow-wrap:anywhere}.mcp-card .card-actions{margin-top:auto}.mcp-grid{margin-top:15px}
+
+/* Preserve reading position during streaming; actions never cover the composer. */
+.jump-latest{align-self:center;flex-shrink:0;margin:4px 0;border:1px solid var(--border);background:var(--surface)}
+.composer-status{font-size:11px;line-height:1.6;color:var(--muted);margin:6px 7px 0;min-height:0}
+.composer-status:empty{display:none}
+#send[aria-busy=true]{opacity:.65}
+
+.panel-error,.toast{overflow-wrap:anywhere;min-width:0}
+
+/* Diagnostics stay readable without covering the task input or send controls. */
+.toast{top:78px;right:24px;bottom:auto;left:auto;transform:none;width:min(420px,calc(100vw - 48px));max-width:none;display:flex;align-items:flex-start;gap:12px}
+.toast-message{min-width:0;max-height:220px;overflow:auto;flex:1}
+.toast-close{font-size:20px;line-height:1;padding:2px 4px;flex-shrink:0;color:inherit;border-radius:4px}
+
+/* The / menu follows the desktop reference and stays anchored to the composer. */
+.composer{position:relative}
+.command-menu{position:absolute;z-index:30;bottom:calc(100% + 8px);left:-1px;width:calc(100% + 2px);overflow-y:auto;overscroll-behavior:contain;padding:6px;border:1px solid var(--border);border-radius:18px;background:var(--surface);box-shadow:0 3px 14px #00000008;scroll-behavior:auto;scrollbar-width:thin}
+.command-option{display:flex;align-items:center;width:100%;gap:8px;min-height:29px;padding:5px 8px;border:0;border-radius:10px;text-align:left;color:var(--ink);background:transparent;cursor:pointer;font-size:12px}
+.command-option[aria-selected="true"],.command-option:hover{background:var(--hover)}
+.command-option svg{height:15px;width:15px;flex-shrink:0;color:var(--muted)}
+.command-title{flex-shrink:0;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:1.5}.command-description{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:1.5;color:var(--muted)}
+.command-scope{margin-left:auto;padding-left:8px;color:var(--muted);white-space:nowrap;font-size:11px}.command-section{padding:10px 8px 5px;font-size:12px;color:var(--muted)}.command-notice{padding:8px;font-size:12px;color:var(--muted);margin:0}
+
+/* Keep a new conversation's composer low enough to expose the desktop / list. */
+.chat-view.empty{justify-content:flex-start;padding-bottom:0}
+.chat-view.empty .conversation-scroll{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.chat-view.empty .composer-area{margin:0 auto 12px;padding-top:12px}
+.chat-view.empty .starter-suggestions{width:100%}
+.chat-view.command-menu-open .starter-suggestions{visibility:hidden}
+
+.skill-mention{display:inline-block;padding:2px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px}

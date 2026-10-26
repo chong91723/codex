@@ -1,0 +1,31 @@
+[
+  {
+    "id": "R-002",
+    "status": "unlocated",
+    "manifestation": "Review succeeds, then fresh worker parent on same app-server connection still running at the test 180-second deadline and describes prior review content as worker output.",
+    "impact": "Combined workflow may delay or answer the wrong task.",
+    "limits": "No original spawn arguments/child raw output; not confirmed cross-session leak. Isolated worker success does not resolve original combination.",
+    "evidence": "../flash-followup-2026-10-26/native-review-worker-evidence-summary.json"
+  },
+  {
+    "id": "U-001",
+    "status": "upstream-limit-with-web-mitigation",
+    "manifestation": "Native unarchived list omits some empty-preview forks despite readable inherited history.",
+    "impact": "Previously unseen old forks can be absent from sidebar/search. Web-seen IDs now persist across reload and archive operations.",
+    "evidence": "../flash-followup-2026-10-26/fork-native-backend.json"
+  },
+  {
+    "id": "U-003",
+    "status": "upstream-limit",
+    "manifestation": "A short goal on a brand-new thread may complete with tokensUsed=0 because native first-turn token baseline is absent.",
+    "impact": "Goal consumption and remaining budget may be understated; zero is not zero actual usage or free execution. Not a strict cost limit and distinct from context usage.",
+    "evidence": "../flash-followup-2026-10-26/menu-goal-release/menu-results.json"
+  },
+  {
+    "id": "R-003",
+    "status": "observed-model-instruction-risk",
+    "manifestation": "Flash ran /bin/bash -lc true once before the successful browser plugin workflow despite a prompt restricting execution to MCP.",
+    "impact": "Only-MCP instruction-following acceptance failed; successful plugin calls do not erase it. Not a permission bypass.",
+    "evidence": "plugin/results.json"
+  }
+]

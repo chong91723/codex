@@ -5,6 +5,10 @@ from sqlglot import exp
 MAX_ROWS=500
 SAFE_FUNCTIONS=set('COUNT SUM AVG MIN MAX ROUND ABS CEIL FLOOR LENGTH CHAR_LENGTH LOWER UPPER CONCAT CONCAT_WS SUBSTRING TRIM LTRIM RTRIM COALESCE IF IFNULL NULLIF DATE YEAR MONTH DAY DAY_OF_MONTH DATE_FORMAT TIME_TO_STR DATE_TRUNC TIMESTAMP_TRUNC TS_OR_DS_TO_TIMESTAMP CAST TRY_CAST EXTRACT STRFTIME TO_CHAR DATE_PART NOW CURRENT_DATE CURRENT_TIMESTAMP CURRENT_DATABASE CURRENT_SCHEMA DATABASE JSON_EXTRACT JSON_EXTRACT_SCALAR GREATEST LEAST COUNT_IF STDDEV STDDEV_POP VARIANCE ROW_NUMBER RANK DENSE_RANK LAG LEAD FIRST_VALUE LAST_VALUE PERCENTILE_CONT PERCENTILE_DISC MEDIAN REGEXP_LIKE REGEXP_REPLACE REPLACE LEFT RIGHT SPLIT_PART POSITION MOD POW POWER SQRT LOG LN EXP TO_DATE TO_TIMESTAMP TIMESTAMP_DIFF DATE_DIFF DATE_ADD DATE_SUB TIMESTAMP_ADD TIMESTAMP_SUB TO_START_OF_MONTH TO_START_OF_DAY TO_YEAR TO_MONTH TO_DATE_FORMAT TO_STRING TO_INT64 TO_FLOAT64'.split())
 FORBIDDEN=set('Insert Update Delete Create Drop Alter Command Copy Into Merge Transaction Commit Rollback Set Use Execute Grant Revoke Lock Attach Detach Export Pragma LoadData Cache Uncache PropertyEQ SessionParameter Parameter'.split())
+# sqlglot 30.24 represents these SQL syntax nodes as Func subclasses.
+# Exempt only their exact structural types from function-name checks; the walk
+# below still validates every child, including CASE conditions/results.
+SQL_SYNTAX_FUNCTION_TYPES=(exp.And,exp.Or,exp.Case)
 
 class ReadOnlyError(ValueError):
     pass
@@ -26,9 +30,12 @@ def validate_query(query,connection,enforce_limit=False):
     if len(nodes)>5000:
         raise ReadOnlyError('查询结构过于复杂。')
     for node in nodes:
-        if type(node).__name__ in FORBIDDEN or any(node.args.get(key) for key in ('into','locks','settings','format')):
+        # Query FORMAT is an export clause; TimeToStr and other allowed
+        # functions use a format argument for an ordinary date/string pattern.
+        if (type(node).__name__ in FORBIDDEN or any(node.args.get(key) for key in ('into','locks','settings'))
+                or isinstance(node,exp.Query) and node.args.get('format')):
             raise ReadOnlyError('只读查询禁止写入、锁定、导出和修改会话设置。')
-        if isinstance(node,exp.Func):
+        if isinstance(node,exp.Func) and type(node) not in SQL_SYNTAX_FUNCTION_TYPES:
             name=node.name.upper() if isinstance(node,exp.Anonymous) else node.sql_name().upper()
             if name not in SAFE_FUNCTIONS:
                 raise ReadOnlyError('不允许可能产生副作用或访问外部数据的函数：'+name)

@@ -1,0 +1,71 @@
+Codex
+个人助手
+新对话
+⌘ K
+技能
+数据库
+MCP 服务
+插件与应用
+原生能力
+项目
+workspace
+最近会话
+这是一个独立验收目标。每次开始或继续都先用 exec_command 执行命令 python3 -c "import time; from pathlib import Path; Path('menu-goal-started-1793006582648-1672246.txt').write_text('FLASH_MENU_GOAL_WAIT_1793006582648-1672246'); time.sleep(45); Path('menu-goal-tail-1793006582648-1672246.txt').write_text('FLASH_MENU_GOAL_WAIT_1793006582648-1672246')"，sandbox_permissions="use_default"，yield_time_ms=1000，省略 justification 和 prefix_rule。使用 write_stdin 等待真实结束，不要提前报告完成。只允许创建上述两个测试文件，不访问网络。完成等待后读取当前工作目录，然后明确报告并保持目标 active；用户会手动暂停或移除它，勿自行创建或完成其他目标。
+请为当前独立验收目录制定一个极简计划：创建一个文本文件并核对内容。现在只研究和提出计划，不执行修改，不提问。必须用原生 proposed_plan 格式给出最终计划。
+Run python3 -c "import time; from pathlib import Path; Path('scope.txt').write_text('SCOPE_B'); print('SCOPE_B_START',flush=True); time.sleep(30); print('SCOPE_B_DONE')" with your shell tool. Wait for completion, then reply SCOPE_B_FINISHED.
+$openai-docs 当前禁止访问国际公网，且没有本地官方文档服务。本次只验收已安装原生技能的离线参考链，不要求最新产品事实。请实际读取本地 /tmp/codex-web-flash-audit/home/skills/.system/openai-docs/references/codex-self-knowledge.md，概括本地技能发现与配置说明的查阅路径，并明确这仅依据随源码安装的本地参考，官方在线检索本轮未验证。用户网络约束优先于技能的在线检索步骤；不要查询网页、下载内容或创建文件。使用原生命令工具读取，sandbox_permissions="use_default"，省略 justification/prefix_rule。
+Run python3 -c "import time; from pathlib import Path; Path('scope.txt').write_text('SCOPE_A'); print('SCOPE_A_START',flush=True); time.sleep(45); print('SCOPE_A_DONE')" with your shell tool. Wait for completion, then reply SCOPE_A_FINISHED.
+Run exactly python3 -c "import time; from pathlib import Path; Path('stop-started.txt').write_text('STOP_AUDIT_1793006664654'); print('STOP_AUDIT_1793006664654',flush=True); time.sleep(60); Path('stop-should-not-exist.txt').write_text('STOP_AUDIT_1793006664654')" using your shell tool. Wait for the real command to finish before replying.
+Reply exactly AUDIT_RETRY_OK. Do not use tools.
+Run exactly python3 -c "from pathlib import Path; Path('approval-allowed.txt').write_text('APPROVAL_ALLOWED_OK')" using your shell tool once. Then report completion.
+Run python3 -c "print(13579 * 2468)" with your shell tool, then report its result.
+Reply exactly BACKGROUND_A. Do not use tools.
+$skill-installer 本项目仅保留 Codex 源码自带技能，不允许安装其他技能，网络仅允许 DeepSeek 官方 API 和国内公网。这里只检查本地安装器入口，请实际执行 python3 /tmp/codex-web-flash-audit/home/skills/.system/skill-installer/scripts/list-skills.py --help 及 python3 /tmp/codex-web-flash-audit/home/skills/.system/skill-installer/scripts/install-skill-from-github.py --help，确认参数入口可运行。不要联网、列取 GitHub 目录或安装任何技能。明确说明本轮没有验证 GitHub 在线列表和安装流程。使用原生命令工具，sandbox_permissions="use_default"，省略 justification/prefix_rule。
+Run exactly python3 -c "from pathlib import Path; Path('approval-denied.txt').write_text('DENIED_SHOULD_NOT_RUN')" using your shell tool once. If approval is denied, do not retry or use another method; just report the denial.
+只回复 UNASSIGNED_CHAT_C，不使用工具。
+Reply exactly AUDIT_ONCE. Do not use tools.
+只回复 PROJECT_SOURCE_B，不使用工具。
+只回复 DRAFT_SOURCE_A，不使用工具。
+$skill-creator 对已经安装的原生技能做一次离线结构验收，不创建、安装或修改任何技能。请实际运行 python3 /tmp/codex-web-flash-audit/home/skills/.system/skill-creator/scripts/quick_validate.py，分别验证 /tmp/codex-web-flash-audit/home/skills/.system/skill-creator、/tmp/codex-web-flash-audit/home/skills/.system/skill-installer、/tmp/codex-web-flash-audit/home/skills/.system/openai-docs、/tmp/codex-web-flash-audit/home/skills/.system/review-agent 四个目录。运行原生命令工具，sandbox_permissions="use_default"，省略 justification/prefix_rule。依据真实标准输出报告，不联网。
+Generate a file named AGENTS.md that serves as a contributor guide for this repository. Before writing, check whether AGENTS.md already exists in the current working directory. If it does, do not overwrite or modify it. Your goal is to produce a clear, concise, and well-structured document with descriptive headings and actionable explanations for each section. Follow the outline below, but adapt as needed — add sections if relevant, and omit those that do not apply to this project. Document Requirements - Title the document "Repository Guidelines". - Use Markdown headings (#, ##, etc.) for structure. - Keep the document concise. 200-400 words is optimal. - Keep explanations short, direct, and specific to this repository. - Provide examples where helpful (commands, directory paths, naming patterns). - Maintain a professional, instructional tone. Recommended Sections Project Structure & Module Organization - Outline the project structure, including where the source code, tests, and assets are located. Build, Test, and Development Commands - List key commands for building, testing, and running locally (e.g., npm test, make build). - Briefly explain what each command does. Coding Style & Naming Conventions - Specify indentation rules, language-specific style preferences, and naming patterns. - Include any formatting or linting tools used. Testing Guidelines - Identify testing frameworks and coverage requirements. - State test naming conventions and how to run tests. Commit & Pull Request Guidelines - Summarize commit message conventions found in the project’s Git history. - Outline pull request requirements (descriptions, linked issues, screenshots, etc.). (Optional) Add other sections if relevant, such as Security & Configuration Tips, Architecture Overview, or Agent-Specific Instructions.
+$review-agent 请只读审查 /tmp/codex-web-flash-audit/workspace/native-review-case-1793006590545 这个独立 git 仓库的未提交变更。函数契约是返回第一个严格大于零的值。检查真实 git diff 和相关代码，指出新引入、可复现的缺陷及具体触发输入；不要修改文件、创建提交、联网或委派。使用原生命令工具读取，sandbox_permissions="use_default"，省略 justification/prefix_rule。
+设置
+源码 970111f
+C
+DeepSeek
+模型服务连接
+Codex
+新会话
+原生已连接
+◐
+•••
+重命名
+分叉会话
+压缩上下文
+审查未提交更改
+回退用户任务
+归档
+取消归档
+导出会话
+永久删除会话
+执行已中断
+1 条过程说明 · 1 次思考 · 1 条命令
+
+任务已中断
+
+已确认原生后台终端中没有本轮命令。
+
+原生执行失败：{"error":{"message":"No tool output found for tool call call_00_94ZXKc9h1zicurDweT045983. (request_id: 8a0b6c24-1b3e-4eee-8ee8-8f4363c6cd9e)","type":"invalid_request_error","param":null,"code":"invalid_request_error"}}
+
+目标 · 等待处理 · 这是一个独立验收目标。每次开始或继续都先用 exec_command 执行命令 python3 -c "import time; from pathlib import Path; Path('menu-goal-started-1793006582648-1672246.txt').write_text('FLASH_MENU_GOAL_WAIT_1793006582648-1672246'); time.sleep(45); Path('menu-goal-tail-1793006582648-1672246.txt').write_text('FLASH_MENU_GOAL_WAIT_1793006582648-1672246')"，sandbox_permissions="use_default"，yield_time_ms=1000，省略 justification 和 prefix_rule。使用 write_stdin 等待真实结束，不要提前报告完成。只允许创建上述两个测试文件，不访问网络。完成等待后读取当前工作目录，然后明确报告并保持目标 active；用户会手动暂停或移除它，勿自行创建或完成其他目标。
+4,290 tokens / 30,000
+默认 · deepseek-flash
+DeepSeek V4 Pro
+DeepSeek Flash
+默认推理
+low
+high
+max
+1.2%
+/tmp/codex-web-flash-audit/workspace
+默认模式

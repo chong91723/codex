@@ -1,0 +1,381 @@
+{
+  "origin": "Real browser protocol Execute button; persistent owned test forks and temporary file, no direct SQL or model calls",
+  "parentId": "01a17785-59d2-7811-a866-512fbe131f2d",
+  "ownedThreadIds": [
+    "01a177a7-0950-7a02-afb7-326f96ec07f4",
+    "01a177a7-0c77-7813-a664-97b76630c60c"
+  ],
+  "ownedSectionIds": [
+    "01a177a7-2532-7f61-9158-928f52fa976b",
+    "01a177a7-2607-7f91-8345-f4bd4d7695ac"
+  ],
+  "explicitModelStartRpcs": 0,
+  "nativeTurnStartsObserved": [],
+  "results": [
+    {
+      "name": "原生队列新增、分页、更新、重排、线程隔离与删除",
+      "status": "passed",
+      "evidence": {
+        "actualNativeQueueCRUD": true,
+        "pagination": true,
+        "reordering": true,
+        "separateThreadUnaffected": true,
+        "persistsAcrossNativeReconnect": true,
+        "queueStart": "not tested; no model request on keyless instance"
+      }
+    },
+    {
+      "name": "原生会话分组CRUD、分组内顺序与移动",
+      "status": "passed",
+      "evidence": {
+        "sectionsCreatedRenamedDeleted": true,
+        "appearanceReadBack": true,
+        "paginatedListing": true,
+        "actualSectionOrderVerified": true,
+        "moveBetweenAndOutOfSections": true
+      }
+    },
+    {
+      "name": "原生附件关联、幂等身份、所有者归档过滤与移除",
+      "status": "passed",
+      "evidence": {
+        "realTemporaryFileReadBack": true,
+        "attachmentMetadataCRUD": true,
+        "idempotentAddPreservesOriginal": true,
+        "ownersPaginated": true,
+        "archiveFilterUsesNativeState": true,
+        "chatImageUpload": "separate capability, not claimed by this metadata test"
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "entity": "ownedThread",
+      "id": "01a177a7-0950-7a02-afb7-326f96ec07f4",
+      "removed": true
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a177a7-0c77-7813-a664-97b76630c60c",
+      "removed": true
+    },
+    {
+      "entity": "ownedSection",
+      "id": "01a177a7-2532-7f61-9158-928f52fa976b",
+      "removed": true,
+      "alreadyRemoved": true
+    },
+    {
+      "entity": "ownedSection",
+      "id": "01a177a7-2607-7f91-8345-f4bd4d7695ac",
+      "removed": true,
+      "alreadyRemoved": true
+    },
+    {
+      "entity": "ownedTemporaryFile",
+      "removed": true
+    },
+    {
+      "entity": "originalParent",
+      "id": "01a17785-59d2-7811-a866-512fbe131f2d",
+      "preserved": true
+    }
+  ],
+  "browserErrors": [],
+  "requests": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17785-59d2-7811-a866-512fbe131f2d"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17785-59d2-7811-a866-512fbe131f2d"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a177a7-0c77-7813-a664-97b76630c60c"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a177a7-0c77-7813-a664-97b76630c60c"
+    },
+    {
+      "method": "thread/loaded/list"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/add",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/add",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177a7-0c77-7813-a664-97b76630c60c"
+    },
+    {
+      "method": "thread/queue/update",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/reorder",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a177a7-0c77-7813-a664-97b76630c60c"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/delete",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/delete",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "threadSection/create"
+    },
+    {
+      "method": "threadSection/create"
+    },
+    {
+      "method": "threadSection/update"
+    },
+    {
+      "method": "threadSection/list"
+    },
+    {
+      "method": "threadSection/list"
+    },
+    {
+      "method": "threadSection/list"
+    },
+    {
+      "method": "thread/section/move",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/section/move",
+      "threadId": "01a177a7-0c77-7813-a664-97b76630c60c"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/section/move",
+      "threadId": "01a177a7-0c77-7813-a664-97b76630c60c"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/section/move",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/section/move",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/section/move",
+      "threadId": "01a177a7-0c77-7813-a664-97b76630c60c"
+    },
+    {
+      "method": "threadSection/delete"
+    },
+    {
+      "method": "threadSection/delete"
+    },
+    {
+      "method": "threadSection/list"
+    },
+    {
+      "method": "fs/writeFile"
+    },
+    {
+      "method": "fs/readFile"
+    },
+    {
+      "method": "thread/attachment/add",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/attachment/add",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/attachment/add",
+      "threadId": "01a177a7-0c77-7813-a664-97b76630c60c"
+    },
+    {
+      "method": "thread/attachment/list",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/attachmentOwner/list"
+    },
+    {
+      "method": "thread/attachmentOwner/list"
+    },
+    {
+      "method": "thread/archive",
+      "threadId": "01a177a7-0c77-7813-a664-97b76630c60c"
+    },
+    {
+      "method": "thread/attachmentOwner/list"
+    },
+    {
+      "method": "thread/attachmentOwner/list"
+    },
+    {
+      "method": "thread/attachmentOwner/list"
+    },
+    {
+      "method": "thread/attachment/remove",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/attachment/remove",
+      "threadId": "01a177a7-0c77-7813-a664-97b76630c60c"
+    },
+    {
+      "method": "thread/attachment/list",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/attachmentOwner/list"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a177a7-0950-7a02-afb7-326f96ec07f4"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a177a7-0c77-7813-a664-97b76630c60c"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "threadSection/delete"
+    },
+    {
+      "method": "threadSection/delete"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17785-59d2-7811-a866-512fbe131f2d"
+    }
+  ]
+}

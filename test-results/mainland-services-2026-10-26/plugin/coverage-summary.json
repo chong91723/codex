@@ -1,0 +1,135 @@
+{
+  "remoteSource": {
+    "url": "https://gitcode.com/xuguoliang3/claude-plugins-official.git",
+    "type": "Third-party mainland-hosted mirror, not official Anthropic hosting",
+    "revision": "3d368d2972d9af8f52e96ae7d86d2686967af31f",
+    "evidence": "first-run-8789.json",
+    "discoveryReadInstall": "passed",
+    "originalRuntime": "failed: npx missing in original 8789 PATH; configured cache alone was later overwritten and default Chrome missing in 8790"
+  },
+  "localConfiguredWorkflow": {
+    "source": "Pinned real mirror package via native-supported local marketplace",
+    "runtimeDifference": "Only selected plugin .mcp.json args/env; original manifest/catalog and package implementation unchanged",
+    "evidence": "results.json",
+    "actualCalls": [
+      {
+        "server": "playwright",
+        "tool": "browser_navigate",
+        "status": "completed",
+        "pluginId": "playwright@claude-plugins-official"
+      },
+      {
+        "server": "playwright",
+        "tool": "browser_snapshot",
+        "status": "completed",
+        "pluginId": "playwright@claude-plugins-official"
+      },
+      {
+        "server": "playwright",
+        "tool": "browser_click",
+        "status": "completed",
+        "pluginId": "playwright@claude-plugins-official"
+      },
+      {
+        "server": "playwright",
+        "tool": "browser_snapshot",
+        "status": "completed",
+        "pluginId": "playwright@claude-plugins-official"
+      }
+    ],
+    "functionalStatus": "passed",
+    "model": "deepseek-flash",
+    "modelProvider": "deepseek",
+    "fixtureRequests": 2,
+    "expectedMarker": "MAINLAND_PLUGIN_1793014152305_OK",
+    "title": "大陆插件验收",
+    "onlyMcpInstruction": "failed: model ran /bin/bash -lc true before correct MCP calls; no file/network operation from this command",
+    "noFurtherModelRetries": true
+  },
+  "originalFailures": [
+    "first-run-8789.json",
+    "test-driver-home-field-first-run.json",
+    "env-only-browser-missing-first-run.json",
+    "cache-args-overwritten-first-run.json",
+    "git-snapshot-runtime-reset-first-run.json",
+    "local-configured-final-raw.json"
+  ],
+  "runtimeConfigEvidence": [
+    "original.mcp.json",
+    "configured.mcp.json",
+    "original.plugin.json",
+    "market-runtime-config.diff"
+  ],
+  "packageMetadata": [
+    {
+      "name": "@playwright/mcp",
+      "version": "0.0.83",
+      "resolved": "https://registry.npmmirror.com/@playwright/mcp/-/mcp-0.0.83.tgz",
+      "integrity": "sha512-oNcl+Ae2/IAjhfPeP46BfIkSakfmprY+aOtkv5MjrQ4lPav4/yNtPhL0iq8SlIM90oApWgBDUxaNKvktazUKOg=="
+    },
+    {
+      "name": "@playwright/mcp",
+      "version": "0.0.83",
+      "resolved": "https://registry.npmmirror.com/@playwright/mcp/-/mcp-0.0.83.tgz",
+      "integrity": "sha512-oNcl+Ae2/IAjhfPeP46BfIkSakfmprY+aOtkv5MjrQ4lPav4/yNtPhL0iq8SlIM90oApWgBDUxaNKvktazUKOg=="
+    }
+  ],
+  "skills": {
+    "nonNativeSkillEnabled": false,
+    "sourcePackageHasSkill": false,
+    "hostGlobalCodexTouched": false
+  },
+  "cleanup": {
+    "nativeUninstalled": true,
+    "nativeMarketRemoved": true,
+    "originalSourceMcpRestored": true,
+    "sourceDiffEmptyBeforeRemoval": true,
+    "clones": [
+      {
+        "path": "/tmp/codex-mainland-plugins-EchoBird",
+        "verifiedRemote": "https://gitcode.com/edison7009/EchoBird.git",
+        "skillFilesBeforeRemoval": 0,
+        "removed": true
+      },
+      {
+        "path": "/tmp/codex-mainland-plugins-anthropic",
+        "verifiedRemote": "https://gitcode.com/xuguoliang3/claude-plugins-official.git",
+        "skillFilesBeforeRemoval": 0,
+        "removed": true
+      }
+    ],
+    "profiles": [
+      {
+        "home": "/tmp/codex-web-flash-final-audit/home",
+        "selectedPluginCacheExists": false,
+        "selectedRemoteMarketExists": false,
+        "pluginSkillFiles": 0
+      },
+      {
+        "home": "/tmp/codex-web-mainland-plugin/home",
+        "selectedPluginCacheExists": false,
+        "selectedRemoteMarketExists": false,
+        "pluginSkillFiles": 0
+      }
+    ],
+    "temporaryNpmCache": {
+      "path": "/tmp/codex-mainland-playwright-npm-cache",
+      "dependencySkillFilesBeforeRemoval": 6,
+      "removed": true,
+      "note": "Dependency packages include six unrelated SKILL.md files; the whole audit-owned npm cache was removed after shutdown. They were never installed as Codex Skills or enabled."
+    }
+  },
+  "remainingConditions": [
+    "Representative plugin browser runtime is local; its package was fetched through a real mainland mirror. This does not certify all plugins or remote SaaS backends.",
+    "Native remote Git snapshot/cache cannot be used as persistent edited runtime config; use the supported local source path for this configuration.",
+    "Only-MCP prompt adherence failed once despite successful actual plugin work; this is a model instruction-following risk, not a permission bypass."
+  ],
+  "replayScript": "web/tests/mainland_plugin_desktop.mjs",
+  "replayValidation": "web/tests/mainland_plugin_desktop.mjs was parameterized after the actual audit and syntax checked only; not run against the model. Actual flow evidence comes from actual-execution-driver.mjs.txt and raw reports.",
+  "executionDriver": "actual-execution-driver.mjs.txt (the actual one-off driver that produced raw final events; archived as non-executable text)",
+  "validation": {
+    "replayNodeSyntax": "passed",
+    "gitDiffCheck": "passed",
+    "newEvidenceCredentialPatternFiles": 0
+  }
+}

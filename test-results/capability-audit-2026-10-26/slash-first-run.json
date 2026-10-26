@@ -1,0 +1,216 @@
+{
+  "scope": "Real native skills and DeepSeek execution; one delayed real native response for navigation race",
+  "results": [
+    {
+      "name": "输入框 / 菜单：上沿全宽、命令分组、无顶部功能按钮",
+      "status": "failed",
+      "error": "The expression evaluated to a falsy value:\n\n  assert(Math.abs(menu.x-composer.x)<2&&Math.abs(menu.width-composer.width)<2)\n"
+    },
+    {
+      "name": "点击选择只填入命令，发送后打开真实状态；键盘与中文组合输入",
+      "status": "failed",
+      "error": "Expected values to be strictly equal:\n\n'/mcp' !== '/status'\n"
+    },
+    {
+      "name": "/model 与 /reasoning 沿用实际控件，下一任务使用指定 Pro",
+      "status": "passed",
+      "evidence": {
+        "realModel": "deepseek-v4-pro",
+        "provider": "deepseek",
+        "effort": "low"
+      }
+    },
+    {
+      "name": "原生目录安装的 Skill 出现在菜单，停用后旧选择不能执行",
+      "status": "passed",
+      "evidence": {
+        "installedSkillListed": true,
+        "sourceVisible": true,
+        "selectionRetained": true,
+        "disabledSelectionBlocked": true
+      }
+    },
+    {
+      "name": "选择 Skill 后发送实际原生 skill 输入，脚本命令真实成功",
+      "status": "passed",
+      "evidence": {
+        "nativeStructuredSkillInput": true,
+        "actualScriptExitCode": 0,
+        "actualMarker": true,
+        "provider": "deepseek"
+      }
+    },
+    {
+      "name": "技能目录晚到时，离开输入框不会重开菜单或覆盖草稿",
+      "status": "passed",
+      "evidence": {
+        "realNativeResponseDelayed": true,
+        "noStalePopover": true,
+        "draftPreserved": true
+      }
+    }
+  ],
+  "errors": [],
+  "sent": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-v4-pro"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-v4-pro",
+      "threadId": "01a17740-a32c-7343-bdc3-a934f9ff2f36",
+      "input": [
+        {
+          "type": "text"
+        }
+      ],
+      "collaborationMode": {
+        "mode": "default",
+        "settings": {
+          "model": "deepseek-v4-pro",
+          "reasoning_effort": "low",
+          "developer_instructions": null
+        }
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "fs/createDirectory"
+    },
+    {
+      "method": "fs/createDirectory"
+    },
+    {
+      "method": "fs/writeFile"
+    },
+    {
+      "method": "fs/createDirectory"
+    },
+    {
+      "method": "fs/writeFile"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/config/write"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/config/write"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/config/write"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "threadId": "01a17740-b34e-7cd1-9cff-80233c0129ec",
+      "input": [
+        {
+          "type": "text"
+        },
+        {
+          "type": "skill",
+          "name": "slash-native-1793002084932",
+          "path": "/tmp/codex-web-capability-audit/home/skills/slash-native-1793002084932/SKILL.md"
+        }
+      ],
+      "collaborationMode": {
+        "mode": "default",
+        "settings": {
+          "model": "deepseek-flash",
+          "reasoning_effort": "low",
+          "developer_instructions": null
+        }
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "config/read"
+    }
+  ]
+}

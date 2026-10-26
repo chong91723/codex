@@ -1,0 +1,63 @@
+{
+  "results": [
+    {
+      "name": "Pro 原生联网搜索：仅使用已允许的 DeepSeek 官方 Responses",
+      "status": "passed",
+      "evidence": {
+        "model": "deepseek-v4-pro",
+        "provider": "deepseek",
+        "webSearchItems": [
+          {
+            "id": "call_00_TwgD9NmJgrveTgAtnZFp2690",
+            "action": {
+              "type": "search",
+              "query": null,
+              "queries": [
+                "site:gov.cn 人工智能 产业 政策",
+                "ws_call_id=call_00_TwgD9NmJgrveTgAtnZFp2690"
+              ]
+            }
+          }
+        ],
+        "configuration": "per-test-thread web_search=live; application default unchanged",
+        "network": "Native model endpoint remains api.deepseek.com; provider-side dependencies need separate evidence"
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-v4-pro"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1772c-223c-7533-9d23-b8de28af2f92",
+      "model": "deepseek-v4-pro"
+    },
+    {
+      "method": "thread/list"
+    }
+  ],
+  "errors": []
+}

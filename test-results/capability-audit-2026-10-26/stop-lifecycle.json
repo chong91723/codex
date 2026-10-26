@@ -1,0 +1,312 @@
+{
+  "scope": "Real DeepSeek/native process ownership; one explicitly marked failed-delivery injection",
+  "results": [
+    {
+      "name": "停止 A 只回收本轮命令，保留同线程旧后台任务和并发 B",
+      "status": "passed",
+      "evidence": {
+        "aStop": {
+          "status": "completed",
+          "turnId": "01a1772d-c2ab-7420-93a4-14ae81f0b9c4",
+          "terminated": [
+            "80029"
+          ]
+        },
+        "oldTerminalPreserved": true,
+        "bCompleted": true,
+        "hostProcessCountA": 0,
+        "tailWriteAbsent": true
+      }
+    },
+    {
+      "name": "原生回收接口返回错误时明确失败，切换会话后仅重试原任务",
+      "status": "passed",
+      "evidence": {
+        "failureVisible": true,
+        "realProcessAliveAfterUndeliveredTerminate": true,
+        "retry": {
+          "status": "completed",
+          "turnId": "01a1772e-417d-7c53-8e74-992e2a964580",
+          "terminated": [
+            "72649"
+          ]
+        },
+        "switchPreservedOwnership": true
+      }
+    },
+    {
+      "name": "目标暂停入口调用同一原生回收流程",
+      "status": "passed",
+      "evidence": {
+        "goalPauseUsesNativeTermination": true,
+        "stop": {
+          "status": "completed",
+          "turnId": "01a1772e-5934-7173-981d-18b4870993dd",
+          "terminated": [
+            "75333"
+          ]
+        }
+      }
+    },
+    {
+      "name": "停止回收等待中切换会话，晚到结果仍只处理原会话",
+      "status": "passed",
+      "evidence": {
+        "realResponseDelayed": true,
+        "stoppingButtonDisabled": true,
+        "aReclaimed": true,
+        "bNavigationAndDraftPreserved": true
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1772d-ad15-7191-8310-9c3b67cc15a3",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772d-ad15-7191-8310-9c3b67cc15a3"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1772d-ad15-7191-8310-9c3b67cc15a3",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1772d-cdef-7911-bb01-7fe4c7c930f7",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a1772d-ad15-7191-8310-9c3b67cc15a3"
+    },
+    {
+      "method": "turn/interrupt",
+      "threadId": "01a1772d-ad15-7191-8310-9c3b67cc15a3",
+      "turnId": "01a1772d-c2ab-7420-93a4-14ae81f0b9c4"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772d-ad15-7191-8310-9c3b67cc15a3"
+    },
+    {
+      "method": "thread/backgroundTerminals/terminate",
+      "threadId": "01a1772d-ad15-7191-8310-9c3b67cc15a3"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772d-ad15-7191-8310-9c3b67cc15a3"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772d-ad15-7191-8310-9c3b67cc15a3"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772d-cdef-7911-bb01-7fe4c7c930f7"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a1772d-cdef-7911-bb01-7fe4c7c930f7"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/terminate",
+      "threadId": "01a1772d-ad15-7191-8310-9c3b67cc15a3"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1772e-4020-7a40-8b9a-d600cb807e68",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "turn/interrupt",
+      "threadId": "01a1772e-4020-7a40-8b9a-d600cb807e68",
+      "turnId": "01a1772e-417d-7c53-8e74-992e2a964580"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772e-4020-7a40-8b9a-d600cb807e68"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1772e-4cf0-7522-bf1f-28c914c1d8d2",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a1772e-4020-7a40-8b9a-d600cb807e68"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772e-4020-7a40-8b9a-d600cb807e68"
+    },
+    {
+      "method": "thread/backgroundTerminals/terminate",
+      "threadId": "01a1772e-4020-7a40-8b9a-d600cb807e68"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772e-4020-7a40-8b9a-d600cb807e68"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/goal/set",
+      "threadId": "01a1772e-564e-7243-82e9-d1ec1eb88cff"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1772e-564e-7243-82e9-d1ec1eb88cff",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/goal/get",
+      "threadId": "01a1772e-564e-7243-82e9-d1ec1eb88cff"
+    },
+    {
+      "method": "thread/goal/set",
+      "threadId": "01a1772e-564e-7243-82e9-d1ec1eb88cff"
+    },
+    {
+      "method": "turn/interrupt",
+      "threadId": "01a1772e-564e-7243-82e9-d1ec1eb88cff",
+      "turnId": "01a1772e-5934-7173-981d-18b4870993dd"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772e-564e-7243-82e9-d1ec1eb88cff"
+    },
+    {
+      "method": "thread/backgroundTerminals/terminate",
+      "threadId": "01a1772e-564e-7243-82e9-d1ec1eb88cff"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772e-564e-7243-82e9-d1ec1eb88cff"
+    },
+    {
+      "method": "thread/goal/clear",
+      "threadId": "01a1772e-564e-7243-82e9-d1ec1eb88cff"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1772e-70d6-71a3-bbb1-ccd6db6cb413",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "turn/interrupt",
+      "threadId": "01a1772e-70d6-71a3-bbb1-ccd6db6cb413",
+      "turnId": "01a1772e-7457-7763-8980-fd9cf3a09b4c"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772e-70d6-71a3-bbb1-ccd6db6cb413"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1772e-861e-75a1-9331-5f2f47d6c51b",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/terminate",
+      "threadId": "01a1772e-70d6-71a3-bbb1-ccd6db6cb413"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a1772e-70d6-71a3-bbb1-ccd6db6cb413"
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,86 @@
+{
+  "scope": "Only localhost OAuth/PKCE and deepseek-flash; no ChatGPT, external OAuth account, or custom test skill",
+  "base": "http://127.0.0.1:8785",
+  "workspace": "/tmp/codex-web-flash-audit/workspace",
+  "origin": "http://127.0.0.1:43293",
+  "name": "flash_oauth_1793008661616_1706866",
+  "results": [
+    {
+      "name": "/mcp 新增本机 HTTP 服务，真实状态要求 OAuth",
+      "status": "failed",
+      "error": "page.waitForFunction: Timeout 60000ms exceeded.\n    at /root/Codex/web/tests/flash_oauth_mcp_desktop.mjs:51:37\n    at async check (/root/Codex/web/tests/flash_oauth_mcp_desktop.mjs:30:86)\n    at async file:///root/Codex/web/tests/flash_oauth_mcp_desktop.mjs:47:2"
+    },
+    {
+      "name": "MCP OAuth 登录按钮→本机授权页→原生 PKCE 交换与工具目录",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: showAuthResult is not defined\n×\n    at file:///root/Codex/web/tests/flash_oauth_mcp_desktop.mjs:62:3\n    at async check (file:///root/Codex/web/tests/flash_oauth_mcp_desktop.mjs:30:86)\n    at async file:///root/Codex/web/tests/flash_oauth_mcp_desktop.mjs:58:2"
+    },
+    {
+      "name": "删除本次 MCP 配置并确认模型、审批和其他服务保持原样",
+      "status": "passed",
+      "evidence": {
+        "deletedServer": "flash_oauth_1793008661616_1706866",
+        "unrelatedMcpPreserved": true,
+        "globalPolicyPreserved": true
+      }
+    }
+  ],
+  "errors": [],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/batchWrite"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "config/value/write",
+      "keyPath": "mcp_servers.\"flash_oauth_1793008661616_1706866\""
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/read"
+    }
+  ],
+  "oauthEvents": [],
+  "fixtureStderr": "",
+  "fixtureStopped": true
+}

@@ -1,0 +1,564 @@
+{
+  "scope": "Only real deepseek-flash; native manual/automatic compaction and marker continuation",
+  "base": "http://127.0.0.1:8785",
+  "workspace": "/tmp/codex-web-flash-audit/workspace",
+  "home": "/tmp/codex-web-flash-audit/home",
+  "originalThreshold": null,
+  "thresholdChanged": false,
+  "results": [
+    {
+      "name": "Flash 自动压缩：隔离配置临时阈值，真实事件和标记续聊",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "model": "deepseek-flash",
+        "testThreshold": 20000,
+        "originalThreshold": null,
+        "maximumNativeUsage": 31554,
+        "after": 27493,
+        "nativeAutomaticCompaction": true,
+        "manualRequest": false,
+        "markerRetained": true
+      }
+    },
+    {
+      "name": "恢复测试阈值并原生读取确认",
+      "status": "passed",
+      "evidence": {
+        "restoredThreshold": null
+      }
+    }
+  ],
+  "errors": [],
+  "sent": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/value/write",
+      "keyPath": "model_auto_compact_token_limit",
+      "value": 20000
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "config/value/write",
+      "keyPath": "model_auto_compact_token_limit",
+      "value": null
+    },
+    {
+      "method": "config/read"
+    }
+  ],
+  "events": [
+    {
+      "method": "turn/started",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turn": {
+          "id": "01a1778c-5beb-7cb1-9c9b-13b67da5b918",
+          "rootTurnId": "01a1778c-5beb-7cb1-9c9b-13b67da5b918",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "inProgress",
+          "error": null,
+          "startedAt": 1793007049,
+          "completedAt": null,
+          "durationMs": null
+        }
+      },
+      "emittedAtMs": 1793007049840
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-5beb-7cb1-9c9b-13b67da5b918",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 31554,
+            "inputTokens": 31515,
+            "cachedInputTokens": 10368,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 39,
+            "reasoningOutputTokens": 37
+          },
+          "last": {
+            "totalTokens": 31554,
+            "inputTokens": 31515,
+            "cachedInputTokens": 10368,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 39,
+            "reasoningOutputTokens": 37
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007052132
+    },
+    {
+      "method": "item/started",
+      "params": {
+        "item": {
+          "type": "contextCompaction",
+          "id": "01a1778c-6586-78a0-a8b3-2b9fdbf9c72e"
+        },
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-5beb-7cb1-9c9b-13b67da5b918",
+        "startedAtMs": 1793007052166
+      },
+      "emittedAtMs": 1793007052179
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-5beb-7cb1-9c9b-13b67da5b918",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 31554,
+            "inputTokens": 31515,
+            "cachedInputTokens": 10368,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 39,
+            "reasoningOutputTokens": 37
+          },
+          "last": {
+            "totalTokens": 31554,
+            "inputTokens": 31515,
+            "cachedInputTokens": 10368,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 39,
+            "reasoningOutputTokens": 37
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007053067
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-5beb-7cb1-9c9b-13b67da5b918",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 59218,
+            "inputTokens": 58892,
+            "cachedInputTokens": 16384,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 326,
+            "reasoningOutputTokens": 204
+          },
+          "last": {
+            "totalTokens": 27664,
+            "inputTokens": 27377,
+            "cachedInputTokens": 6016,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 287,
+            "reasoningOutputTokens": 167
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007055715
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-5beb-7cb1-9c9b-13b67da5b918",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 59218,
+            "inputTokens": 58892,
+            "cachedInputTokens": 16384,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 326,
+            "reasoningOutputTokens": 204
+          },
+          "last": {
+            "totalTokens": 27493,
+            "inputTokens": 0,
+            "cachedInputTokens": 0,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 0,
+            "reasoningOutputTokens": 0
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007055754
+    },
+    {
+      "method": "item/completed",
+      "params": {
+        "item": {
+          "type": "contextCompaction",
+          "id": "01a1778c-6586-78a0-a8b3-2b9fdbf9c72e"
+        },
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-5beb-7cb1-9c9b-13b67da5b918",
+        "completedAtMs": 1793007055753
+      },
+      "emittedAtMs": 1793007055760
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turn": {
+          "id": "01a1778c-5beb-7cb1-9c9b-13b67da5b918",
+          "rootTurnId": "01a1778c-5beb-7cb1-9c9b-13b67da5b918",
+          "items": [
+            {
+              "type": "agentMessage",
+              "id": "7674d702-e757-4995-b2c6-a01c75360d6f",
+              "text": "收到",
+              "phase": "final_answer",
+              "memoryCitation": null,
+              "delivery": null,
+              "questions": null
+            }
+          ],
+          "itemsView": "summary",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1793007049,
+          "completedAt": 1793007055,
+          "durationMs": 6057
+        }
+      },
+      "emittedAtMs": 1793007055793
+    },
+    {
+      "method": "turn/started",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turn": {
+          "id": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+          "rootTurnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "inProgress",
+          "error": null,
+          "startedAt": 1793007055,
+          "completedAt": null,
+          "durationMs": null
+        }
+      },
+      "emittedAtMs": 1793007055949
+    },
+    {
+      "method": "item/started",
+      "params": {
+        "item": {
+          "type": "contextCompaction",
+          "id": "01a1778c-7465-7c50-8f91-146c303202f0"
+        },
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+        "startedAtMs": 1793007055973
+      },
+      "emittedAtMs": 1793007055989
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 59218,
+            "inputTokens": 58892,
+            "cachedInputTokens": 16384,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 326,
+            "reasoningOutputTokens": 204
+          },
+          "last": {
+            "totalTokens": 27493,
+            "inputTokens": 0,
+            "cachedInputTokens": 0,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 0,
+            "reasoningOutputTokens": 0
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007056441
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 78944,
+            "inputTokens": 78268,
+            "cachedInputTokens": 22400,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 676,
+            "reasoningOutputTokens": 423
+          },
+          "last": {
+            "totalTokens": 19726,
+            "inputTokens": 19376,
+            "cachedInputTokens": 6016,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 350,
+            "reasoningOutputTokens": 219
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007059885
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 78944,
+            "inputTokens": 78268,
+            "cachedInputTokens": 22400,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 676,
+            "reasoningOutputTokens": 423
+          },
+          "last": {
+            "totalTokens": 27506,
+            "inputTokens": 0,
+            "cachedInputTokens": 0,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 0,
+            "reasoningOutputTokens": 0
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007059920
+    },
+    {
+      "method": "item/completed",
+      "params": {
+        "item": {
+          "type": "contextCompaction",
+          "id": "01a1778c-7465-7c50-8f91-146c303202f0"
+        },
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+        "completedAtMs": 1793007059919
+      },
+      "emittedAtMs": 1793007059926
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 102505,
+            "inputTokens": 101815,
+            "cachedInputTokens": 32768,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 690,
+            "reasoningOutputTokens": 423
+          },
+          "last": {
+            "totalTokens": 23561,
+            "inputTokens": 23547,
+            "cachedInputTokens": 10368,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 14,
+            "reasoningOutputTokens": 0
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007061378
+    },
+    {
+      "method": "item/started",
+      "params": {
+        "item": {
+          "type": "contextCompaction",
+          "id": "01a1778c-89ac-7e70-8d36-fc1fb4c0d173"
+        },
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+        "startedAtMs": 1793007061420
+      },
+      "emittedAtMs": 1793007061437
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 102505,
+            "inputTokens": 101815,
+            "cachedInputTokens": 32768,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 690,
+            "reasoningOutputTokens": 423
+          },
+          "last": {
+            "totalTokens": 23561,
+            "inputTokens": 23547,
+            "cachedInputTokens": 10368,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 14,
+            "reasoningOutputTokens": 0
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007062138
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 122243,
+            "inputTokens": 121236,
+            "cachedInputTokens": 45184,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 1007,
+            "reasoningOutputTokens": 605
+          },
+          "last": {
+            "totalTokens": 19738,
+            "inputTokens": 19421,
+            "cachedInputTokens": 12416,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 317,
+            "reasoningOutputTokens": 182
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007064592
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 122243,
+            "inputTokens": 121236,
+            "cachedInputTokens": 45184,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 1007,
+            "reasoningOutputTokens": 605
+          },
+          "last": {
+            "totalTokens": 27497,
+            "inputTokens": 0,
+            "cachedInputTokens": 0,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 0,
+            "reasoningOutputTokens": 0
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007064629
+    },
+    {
+      "method": "item/completed",
+      "params": {
+        "item": {
+          "type": "contextCompaction",
+          "id": "01a1778c-89ac-7e70-8d36-fc1fb4c0d173"
+        },
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+        "completedAtMs": 1793007064629
+      },
+      "emittedAtMs": 1793007064637
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+        "turn": {
+          "id": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+          "rootTurnId": "01a1778c-7417-71e3-b4a7-ece4faedf056",
+          "items": [
+            {
+              "type": "agentMessage",
+              "id": "3f172e07-936e-4c9f-ad27-40679ccf258c",
+              "text": "FLASH_AUTO_GINKGO_1793007049415",
+              "phase": "final_answer",
+              "memoryCitation": null,
+              "delivery": null,
+              "questions": null
+            }
+          ],
+          "itemsView": "summary",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1793007055,
+          "completedAt": 1793007064,
+          "durationMs": 8741
+        }
+      },
+      "emittedAtMs": 1793007064678
+    }
+  ]
+}

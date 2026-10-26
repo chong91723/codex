@@ -1,5 +1,67 @@
 # 实际验收报告
 
+## 最新批次：剩余问题修复、入口隐藏与卸载验收
+
+本批只用deepseek-flash。最终独立实例18866，CODEX_HOME和工作区在`/tmp/codex-web-final-fixes/`；未修改Codex源码、发行程序或代理循环。以下结果与历史原始失败分别保存，未把代码修改直接算测试通过。
+
+| 验证 | 真实结果 / 证据（final-fixes-2026-10-26/） |
+|---|---|
+| 完整Python/原生/传输 | 70/70通过，checks/python-final-database.txt；首次旧测试按目录名audit拦截已保留，改为显式独立目录精确匹配后重跑 |
+| 生成模型能力目录 | 两项回归包含于70项；实际重新初始化目录选V1，未改用户config主模型 |
+| 审查→委派原组合 | 2/2通过，review-worker/final/combined-results.json；真实父子V1/明文任务/唯一token/51/只读；原V2及其他失败对照均留证 |
+| 旧未见分叉 | 23项回归；修复前漏项复现、修复后同步骤5/5，forks/implementation-evidence.json；源数据库/历史未被补发现改写 |
+| 目标独立观测 | 16项行为回归+真实Flash6/6，goal/summary.json；原生0 vs观测1625、刷新去重、目标/会话隔离、未知与下界 |
+| 插件入口与卸载核查 | visibility与previous-test-cleanup各6/6，三个桌面尺寸；12项命令、隐藏入口/旧命令不误发、Playwright与测试MCP未安装 |
+| 相邻审批/停止/恢复 | 4/4通过，adjacent/results.json；拒绝未写文件、允许实际写入、原生interrupt+进程回收、刷新/断线不重复提交 |
+| 上下文占用核验/分页恢复 | context/summary.json：真实10534/1048576→1.0%，非累计20976；12项计算+4项事件顺序单测，普通/分页打开刷新4/4且0模型请求/配置写。真实分页前丢统计、修复后恢复；目录窗口不匹配保护由源码及单测验证 |
+| 计划批准与未发送草稿 | database-agent/approved-plan-unit.txt：7/7行为回归；真实数据库run1复现丢失、run2实际保留且不夹带；普通聊天相邻11/11，chat-after-plan-fix/results.json（含真实Flash错误重试和模型配置恢复） |
+| 同一提示多个数据库问题 | database-multiquestion/results.json：普通聊天一轮三个问题1/1通过；3条真实只读SQL合批、3次结果读取，逐项与独立SQL吻合，数据/全局配置不变，浏览器错误0；连接明确指定，首次别名歧义驱动失败保留 |
+| 真实复杂数据库Agent流程 | database-agent/run3/workflow-results.json：6/6、浏览器错误0；原生Plan仅查结构→编辑批准→首Q1完成→Q2待审批时真实interrupt且未执行→改门店1/活跃Top2继续→复用首结果+剩余查询→原生步骤与最终三问答案对应，独立SQL/数据指纹/配置哈希核对。此轮旧MCP误拒DATE_FORMAT一次，模型说明后以已固定月份常量恢复；不称每条SQL首次成功 |
+| SQL安全校验修复 | database-sql-guard/unit-tests.txt：13/13，已含在70项；sqlglot30.24.0真实Sakila适配器AND+CASE+DATE_FORMAT聚合与OR查询成功。危险函数/写入/锁定/导出/越权仍拒绝；最新进程前端→Flash→原生MCP→Sakila另3/3通过，browser/results.json：两条原SQL/结果均匹配独立基准，0错误/改写绕过，配置/数据不变 |
+| 计划模式恢复顺序 | mode-recovery/after/results.json：真实原生、零模型2/2；修复前晚到旧plan覆盖default已复现。顺序回归2/2，连草稿7/上下文4共13项，相邻unit日志；不修改源历史/全局配置 |
+| 语法、diff与桌面截图 | checks/static.json：63份JS/MJS、36份Python语法通过，git diff --check通过；本项目无打包/TypeScript。实际查看计划、最终结果及原SQL修复截图；run3首张完成截图保留历史滚动位置，另用零模型只读恢复拍最终三张表，不冒充新浏览器恢复瞬时步骤进度 |
+| 核心完整性 | checks/native-integrity.json：pristine=true，176方法完整Schema一致；构建/TypeScript不适用，语法检查另记 |
+
+边界：计划确认是原生计划模式中的用户交互，普通只读工具不是天然必须逐条审批；本次为测试线程显式配置query_database原生审批。停止是turn/interrupt，修改继续为携带历史的新回合，不是SQL事务断点。进度为真实模型步骤事件，不是数据库内部百分比。原生V2历史不能由公开接口迁移，委派需新会话；网页真实观测没有伪写原生预算或保证硬费用上限。代表性远端插件额外true的模型指令风险保留，测试资源已卸载。手机端和严格国际出口测试按用户要求不做。
+
+## 前一批次（历史）：Flash 与原生 Skill 范围调整后的实际复验
+
+本节为最新状态，后文 ChatGPT/Pro/反馈/自定义 Skill 记录均属于历史。最新用户范围仅使用 deepseek-flash 验证；ChatGPT 模型和强账号入口、反馈、快速、生图及非原生技能已从当前产品入口移除。上游源码及原生程序未修改。配置、文件和命令实验均在独立测试工作区完成。
+
+最终完整后端实例：`127.0.0.1:8789`，`CODEX_HOME=/tmp/codex-web-flash-final-audit/home`，工作区为其兄弟 `workspace`。通过标准启动器 getpass 使用已授权凭据，密钥未落盘，未复制 ChatGPT 授权；移除代理后直连官方 DeepSeek。此前实例8785用于增量流程，8787专用于四库，8788无模型密钥用于协议/存储。没有宿主出口防火墙，不能称所有生产依赖均已通过国际出口阻断。
+
+| 验证类型 | 实际结果与证据 |
+|---|---|
+| 必要Python与原生/传输 | 最终50/50，含真实浏览器原生与raw WebSocket范围检查；python-final.txt |
+| 13个保留的 / 命令 | 每个命令真实选中、发送并执行；14组有效用例通过，menu-coverage.json。完整阶段13/14中的初始化审批驱动缺口经增量3/3补验，不声称单次干净全跑 |
+| 聊天状态、草稿、滚动、中文输入、Flash实际模型及工具 | 11组通过，chat/results.json；负向用不存在模型触发真实错误，不验证其他可用模型，也不静默fallback |
+| 历史/连接/审批关联竞态 | 3组通过，connection/results.json |
+| 审批、停止、并发、刷新与断线 | 6组通过，native/results.json；最终完整版本另复测允许/拒绝/回收/刷新4组及Flash实际命令1组 |
+| 空预览分叉发现 | 6组通过，真实跨刷新、跨browsercontext、搜索、归档/恢复/删除和晚到响应；fork-browser-results.json |
+| 队列、分组、附件存储 | 3组通过，原生CRUD/分页/排序/刷新/隔离/归档过滤；native-storage-results.json。另2组Flash队列自动消费及忙碌拒绝→停止→手动启动真实通过，native-queue-flash-results.json |
+| 四个保留原生Skill | 来源/哈希与真实Flash调用5组通过，skills-run/results.json；不是测试额外自建marker Skill |
+| Guardian | 真实允许/拒绝/确认2组通过，skills-guardian-run/results.json。审核模型依据目录/显式配置/原生回退源码核实，不伪称抓取过独立HTTP请求体 |
+| 记忆 | 原生笔记新增/读/搜1组通过；自然一小时后另有6条真实stage1提取、v2合并及3583字符摘要原生读回，v2Ready=true，skills-memory-auto-final/results.json；此前时间条件阻塞报告保留 |
+| 手动/自动压缩 | 手动1组、自动及恢复2组通过，menu-compaction-*.json；临时阈值20,000，真实31,554→27,493、续聊标记正确、阈值已恢复；未消耗默认734,003阈值冒充实测 |
+| HTTP MCP/OAuth | 本机真实HTTP、PKCE、Flash工具、超时、断连6组通过，oauth-final/oauth-results.json；真实资源目录为空，不宣称资源内容或所有生产OAuth已验 |
+| 真实远端MCP | 24好玩公开匿名HTTP服务，原生8工具/1资源；Flash真实搜索及详情、启停及清理4项增量通过。HTTP429原始失败和恢复记录保留，不等同一轮全绿；mainland-services-2026-10-26/mcp/coverage-summary.json |
+| 真实远端来源插件包 | GitCode固定版本Playwright插件远程原生市场生命周期通过；Node/Chrome及Git缓存重置的原始失败保留。原生local市场配置副本下Flash实际4次浏览器工具调用、读取唯一标记/标题通过；额外true命令使仅MCP约束失败，不能标整轮通过。配置/卸载/清理分开记录，mainland-services-2026-10-26/plugin/coverage-summary.json |
+| 四库/跨库范围/只读/图表 | 有效11项通过，database-coverage.json，保留分组增量来源和失败记录；MySQL/PostgreSQL/ClickHouse/Elasticsearch均真实读取，Flash实际查询并出图 |
+| 原生Hooks | 线程级5项声明和原生哈希信任，真实SessionStart/UserPromptSubmit/PreToolUse/PostToolUse/Stop日志与文件通过；有效全局配置及config.toml哈希不变；hooks-current/hooks-results.json |
+| 原生审查/子代理 | review/start显式Flash发现真实缺陷；独立只读worker实际求和并核对child Flash身份。首轮审查后委派组合180秒超时未定位，未取得原始child结果，不能认定串线或称修复；见native-review-worker-evidence-summary.json |
+| 静态/构建/截图/源程序 | JS/Python语法和diff分别见static-checks.json；无前端打包/TypeScript，构建及类型检查不适用。实际浏览器截图不替代功能验证。源码pristine，176项完整Schema与原生相同，native-integrity.json |
+
+本批新增根因修复：目标暂停/移除必须先完成真实工具中断输出，再写目标状态，避免Flash拒绝调用/输出间插入用户消息；MCP授权helper误随账号清理删除，已恢复独立服务授权、原生完成/超时反馈。两项失败及修复后原步骤均保留，不吞错误或伪造工具结果。
+
+测试前置错误也保留：过时的“必须存在ChatGPT/只一个模型选项”断言、已配置参考库遗留导致的负向用例条件不成立、目录重名、Node路径缺失、初始化真实审批未被驱动处理，以及Hooks对象键顺序比较。修正测试条件后只按实际重跑结果更新有效覆盖，不把原失败直接改成通过。
+
+范围校验不是租户/命令/网络沙箱；从未被Web见过的旧隐藏fork仍不能全局发现；目标首回合tokensUsed可能0；官方在线文档、GitHub安装、尚未验收的实际远端扩展配置和平台组合仍未验证。严格国际出口阻断测试已按用户要求取消，未计为测试通过；已完成24好玩远端MCP和Playwright真实插件包代表验收；插件运行需本地配置副本，纯MCP约束仍失败，其他服务不泛化。实时语音缺可用Flash服务配置，启动明确拒绝。历史私有云测试插件没有新的清理成功证据，本轮不调用ChatGPT重试。
+
+本轮汇总、原始报告、失败和SHA-256索引在 [flash-followup-2026-10-26](test-results/flash-followup-2026-10-26/summary.json)。各组有重叠，不求和冒充一次全能力验收。
+
+## 以下为前轮历史验收记录
+
+
 验收日期：2026-10-25。官方源码基线：`970111f6cb62cc02fe36a82ea7d71b37a2889c97`。已重新获取官方 HEAD，确认仍为此提交。上游源码、未跟踪文件和忽略文件检查均干净；CLI、Code Mode Host、Linux bwrap 与 ripgrep 使用完整原生包布局。源码和执行程序导出的四组完整协议定义一致，共 176 个客户端方法。源码内版本号为 `0.0.0`，通过提交号和构建哈希标识实际版本，没有修改上游版本号。
 
 
@@ -196,3 +258,44 @@ python3 web/tests/guardian_acceptance.py --output /tmp/browser-guardian.json
 本次发布只包含数据库、结果存储、回答图表、上下文显示与相应安全检查。独立草稿中的同会话跨 DeepSeek/ChatGPT 历史迁移没有通过，未纳入此次发布；保留此前已发布的模型选择行为，不将其称为已修复。原生自动压缩已按源码确认存在，手动压缩网页验收此前通过；自动阈值触发尚未做专项网页实测。用户明确不执行的三项账号操作继续保持未验收。
 
 日常服务已在原端口 **8765** 部署并通过[上线网页验收](test-results/database-release/live.json)：从网页配置 Sakila 专用只读账号，DeepSeek 实际查询并调用图表工具，刷新后同一会话和图表恢复、上下文圆环正常。示例会话为“数据库上线验收 · Sakila 查询与图表”。部署前确认没有活动会话写入锁，保留原登录和 API 环境；页面和模型目录已在忽略的本地目录备份。
+
+
+## 2026-10-26 系统性稳定性复查
+
+本轮使用独立 `/tmp/codex-web-system-audit/` 配置、会话和工作目录，不复用业务工作区，也不使用 ChatGPT 登录。问题、根因、验收口径和可复跑命令见 [WEB_AUDIT.md](WEB_AUDIT.md)。新增 `chat_state_desktop.mjs`、`connection_state_desktop.mjs` 和 `native_flow_audit.mjs`。
+
+明确保留失败项：真实 `turn/interrupt` 协议和 `interrupted` 状态已确认，但 Python 命令在随后至少 15 秒内仍存活；不能将该项记为进程停止通过。停止后未创建尾部标记并不能代替进程已退出的验证。未修改原生运行时或通过关闭整个页面来伪造停止成功。
+
+最终结果：Python 22/22；聊天状态 10/10；连接/历史/审批隔离 3/3；桌面长提示及窗口专项 2/2；真实服务重启通过；原生流程 5/6，CW-009 未通过。上游源码干净，176 个方法及完整 schema 与原生一致。可追溯报告见 `test-results/system-audit-2026-10-26/summary.json`。手机端按用户要求不纳入本轮。
+
+CW-009 后续更正：锁定版本已有原生后台终端 list/terminate 接口，上一轮对可用接口的判断遗漏。新增单会话定向终止验证和并发 A/B 隔离验证均通过；没有修改产品停止流程或核心。默认停止回收集成仍待完成。报告：`background-termination-probe.json`、`background-termination-isolation.json`，位于本轮 system-audit 目录。
+
+
+## 2026-10-26 能力与范围核验、根因修复和输入框 / 菜单
+
+这是上述稳定性调查之后的新一批结果，保留此前失败。核心记录：[能力与范围](CAPABILITIES.md)、[问题清单](WEB_AUDIT.md)；可追溯汇总：[summary.json](test-results/capability-audit-2026-10-26/summary.json)。
+
+环境为全新的 `/tmp/codex-web-capability-audit/{home,workspace}`，8784 端口，未复制 ChatGPT auth.json；使用已授权的 DeepSeek 密钥，仅在进程环境中存在。清除代理后直接调用官方 API。没有施加宿主机出口防火墙，未验证任意外部扩展的供应商内部网络依赖。
+
+| 实际验证 | 本批结果 |
+|---|---|
+| Python 传输、安全、只读数据模块与原生集成 | 22/22；最终前端又重跑其中 3 项真实浏览器原生集成，3/3 |
+| 聊天状态、草稿、重复 Enter、流式快照、中文输入、滚动、Pro 命令、失败重试、窗口尺寸 | 11/11 |
+| 连接/历史竞态与审批跨连接隔离 | 3/3 |
+| 真实原生审批拒绝/允许、停止、并发目录、刷新和执行中断线 | 6/6；原 CW-009 在同一复现步骤中转为通过 |
+| 停止回收扩展 | 4/4：旧后台任务/并发 B 保留，失败与重试归属、目标暂停、回收中导航；新 /goal 入口又单独实测通过 |
+| Flash/Pro 能力工作流、入口范围、本地 Skill/MCP、计划确认执行、识图/图像拒绝、本地反馈、页面布局 | 核心 11/11；后续命令/项目/会话改动分组增量验收通过，明细分开保存 |
+| 输入框 / 命令与已安装 Skill 菜单 | 6/6；包括点击后发送、键盘/IME、Pro 模型实际生效、已停用 Skill 拒绝、真实 UserInput.skill + 脚本成功、目录晚到隔离；精确命令文本下改选 Skill 的键盘回归另 2/2 |
+| 原生项目 CRUD 和会话生命周期 | 新 / 入口下增量 3/3，包括本地反馈、项目与会话组；分叉继承/导出、归档后恢复、刷新与只删除本次分叉均真实执行 |
+| 长历史分页 | 65 个真实已存在的测试会话，跨页 65 个唯一 ID，无重复导航项 |
+| DeepSeek Pro 原生搜索 | 独立会话 web_search=live 实测通过，真实 webSearch 项及两个政府网站结果；应用默认 disabled 保留 |
+| 主要页面截图 | 6 页面 × 1024/1280/1440 宽度检查无整页横向溢出；/ 菜单另检查空态/历史、宽度对齐、标题间距、技能分组 |
+| 工程和核心完整性 | git diff --check、15 个 JS/MJS 语法、2 个 Python AST 通过；源码 pristine，完整 176 方法及 Schema 与原生相符 |
+
+没有前端打包或 TypeScript 项目，构建和类型检查记“不适用”；语法、截图、协议和真实模型检查没有互相替代。原生程序未重编译或修改。
+
+失败过程保留：能力首次 9/1 暴露保留附件与斜杠交互；菜单首次 4/2 暴露边框对齐与中文筛选问题，随后 5/1 暴露初始化 ready 过早导致菜单消失；生命周期首次 1/1 暴露取消归档定位与原生空预览过滤。修复后重跑相关步骤；U-001 原生列表限制仍单列未解决。未把跳过或范围排除计作模型能力通过。
+
+DeepSeek 快速档位/生图为用户确认的非必要项。实际直连 GET /models 已保存非敏感模态字段；官方文档不支持 service_tier，Flash/Pro 输出均 text，Flash 图像输入单独实测通过。没有转向 ChatGPT 或伪造快速/生图成功。历史授权、上游/发行内容及无关修改保留。
+
+当前仍是个人 Web 服务，不能将浏览器会话隔离或本轮 managed-terminal 回收当作多租户执行隔离。数据库真实四库、全部远端扩展、实时/记忆等条件项和严格出口环境未在此新实例全部实测；见能力表逐行状态。

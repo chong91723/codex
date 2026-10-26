@@ -1,0 +1,211 @@
+{
+  "origin": "Actual native protocol Execute button; tiny owned git defect fixture; source-confirmed explicit Flash reviewer and worker configuration; read-only model sessions",
+  "sourceEvidence": {
+    "reviewModel": "core/src/tasks/review.rs:124 uses config.review_model then parent model; cloned provider",
+    "childInheritance": "core/src/agent/child_config.rs:115/145 copies parent model/provider; agents.default_subagent_model is native config",
+    "workerOverride": "thread-local agents.worker.config_file points to owned audit-worker.toml explicitly selecting Flash; no shared config changed"
+  },
+  "model": "deepseek-flash",
+  "provider": "deepseek",
+  "defectReproduced": true,
+  "fixtureHashesBefore": {
+    "math_utils.py": "c05c4c8aaabfd4b630fb6061df8ec6fb2de0899c93cce2beae2cbed73155e5a9",
+    "worker_input.txt": "02b90e2bd4903bba876e5c788d66559118b64a3b44881eee2c23994bf4c5cec0",
+    "audit-worker.toml": "a25396f63e8a9de29ad88fecb3ba2435b51f7521e5abf7c0390dfaf6e3b6bd33"
+  },
+  "results": [
+    {
+      "name": "原生review/start以显式Flash发现真实除零缺陷且不修改工作区",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a177bd-2967-71e1-ad29-140e0d0d657e",
+        "turnId": "01a177bd-2ad2-73c0-a83e-32809d9231f0",
+        "explicitReviewModel": "deepseek-flash",
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "nativeReviewExitItem": true,
+        "actualDivisionByZeroFinding": true,
+        "worktreeHashesUnchanged": true
+      }
+    },
+    {
+      "name": "单个原生worker读取真实文件，子线程身份为Flash且全程只读",
+      "status": "failed",
+      "error": "Native turn completion timeout"
+    }
+  ],
+  "cleanup": [
+    {
+      "entity": "ownedParentThread",
+      "id": "01a177bd-2967-71e1-ad29-140e0d0d657e",
+      "removed": true
+    },
+    {
+      "entity": "ownedParentThread",
+      "id": "01a177bd-6bfc-7b80-9b4d-80265bb84f8a",
+      "removed": true
+    },
+    {
+      "entity": "ownedGitFixture",
+      "removed": true
+    }
+  ],
+  "browserErrors": [],
+  "requests": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "review/start",
+      "threadId": "01a177bd-2967-71e1-ad29-140e0d0d657e"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a177bd-2967-71e1-ad29-140e0d0d657e"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a177bd-2967-71e1-ad29-140e0d0d657e"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a177bd-6bfc-7b80-9b4d-80265bb84f8a",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a177bd-2967-71e1-ad29-140e0d0d657e"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a177bd-6bfc-7b80-9b4d-80265bb84f8a"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    }
+  ],
+  "events": [
+    {
+      "method": "turn/started",
+      "threadId": "01a177bd-2967-71e1-ad29-140e0d0d657e",
+      "turnId": "01a177bd-2b37-7771-af37-a8cc5a6eaab9",
+      "status": "inProgress"
+    },
+    {
+      "method": "turn/completed",
+      "threadId": "01a177bd-2967-71e1-ad29-140e0d0d657e",
+      "turnId": "01a177bd-2ad2-73c0-a83e-32809d9231f0",
+      "status": "completed"
+    },
+    {
+      "method": "turn/started",
+      "threadId": "01a177bd-6bfc-7b80-9b4d-80265bb84f8a",
+      "turnId": "01a177bd-6d09-7fb0-83da-31af01b4cad2",
+      "status": "inProgress"
+    },
+    {
+      "method": "turn/started",
+      "threadId": "01a177bd-74a8-7ba3-93cb-3a5d7aabf18d",
+      "turnId": "01a177bd-74c2-7122-bc8a-119e6cd1bea2",
+      "status": "inProgress"
+    },
+    {
+      "method": "turn/completed",
+      "threadId": "01a177bd-74a8-7ba3-93cb-3a5d7aabf18d",
+      "turnId": "01a177bd-74c2-7122-bc8a-119e6cd1bea2",
+      "status": "completed"
+    },
+    {
+      "method": "turn/started",
+      "threadId": "01a177bd-74a8-7ba3-93cb-3a5d7aabf18d",
+      "turnId": "01a177bd-bad0-7ac2-bcc7-f705c16c898d",
+      "status": "inProgress"
+    },
+    {
+      "method": "turn/completed",
+      "threadId": "01a177bd-74a8-7ba3-93cb-3a5d7aabf18d",
+      "turnId": "01a177bd-bad0-7ac2-bcc7-f705c16c898d",
+      "status": "completed"
+    },
+    {
+      "method": "turn/started",
+      "threadId": "01a177bd-74a8-7ba3-93cb-3a5d7aabf18d",
+      "turnId": "01a177bd-d968-7911-8e55-37047cf75183",
+      "status": "inProgress"
+    },
+    {
+      "method": "turn/completed",
+      "threadId": "01a177bd-74a8-7ba3-93cb-3a5d7aabf18d",
+      "turnId": "01a177bd-d968-7911-8e55-37047cf75183",
+      "status": "completed"
+    },
+    {
+      "method": "turn/started",
+      "threadId": "01a177bd-74a8-7ba3-93cb-3a5d7aabf18d",
+      "turnId": "01a177bd-f8ff-7560-a7da-050d67e41aaa",
+      "status": "inProgress"
+    },
+    {
+      "method": "turn/completed",
+      "threadId": "01a177bd-74a8-7ba3-93cb-3a5d7aabf18d",
+      "turnId": "01a177bd-f8ff-7560-a7da-050d67e41aaa",
+      "status": "completed"
+    },
+    {
+      "method": "turn/completed",
+      "threadId": "01a177bd-6bfc-7b80-9b4d-80265bb84f8a",
+      "turnId": "01a177bd-6d09-7fb0-83da-31af01b4cad2",
+      "status": "interrupted"
+    }
+  ]
+}

@@ -1,4 +1,8 @@
-"""Real native capability audit. Run against an isolated acceptance profile only.
+"""Legacy native audit helpers, retained for imported Audit users.
+
+The old broad account/marketplace/custom-skill run is outside the current Flash-only
+product scope and cannot run by default. Use the current Flash desktop acceptance
+scripts. Direct command/sandbox probes remain explicit, isolated opt-ins.
 
 No mocks are used. A success means the native method returned a result. Assertions
 validate file contents, history and model output where applicable. Errors and
@@ -391,6 +395,8 @@ class Audit:
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--url',default='http://127.0.0.1:8765');parser.add_argument('--output',type=Path,default=Path('/tmp/codex-native-acceptance.json'));parser.add_argument('--only-commands',action='store_true');parser.add_argument('--only-sandbox',action='store_true');parser.add_argument('--only-git-marketplace',action='store_true');args=parser.parse_args()
+    if not (args.only_commands or args.only_sandbox) or args.only_git_marketplace:
+        parser.error('The historical broad/account/marketplace audit is outside the current Flash-only scope. Run flash_menu_followup_desktop.mjs and native_builtin_skills_desktop.mjs against an isolated audit instance. Audit remains importable; only explicit --only-commands or --only-sandbox probes are available here.')
     audit=Audit(args.url,args.output)
     try:
         if args.only_git_marketplace:audit.git_marketplace()

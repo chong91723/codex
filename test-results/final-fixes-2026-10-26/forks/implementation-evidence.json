@@ -1,0 +1,74 @@
+{
+  "issue": "U-001",
+  "baseline": {
+    "sourceCommit": "970111f6cb62cc02fe36a82ea7d71b37a2889c97",
+    "stateFilename": "state_5.sqlite",
+    "unchangedCore": true
+  },
+  "sourceEvidence": [
+    {
+      "path": "upstream/codex-rs/app-server-protocol/src/protocol/v2/thread.rs",
+      "detail": "ThreadListParams has no includeEmptyPreview option; section/relation filters are scoped."
+    },
+    {
+      "path": "upstream/codex-rs/state/src/runtime/threads.rs",
+      "detail": "push_thread_filters_with_preview excludes empty preview from ordinary nonarchived lists; parent/ancestor use thread_spawn_edges, not ordinary fork lineage."
+    },
+    {
+      "path": "upstream/codex-rs/rollout/src/lib.rs",
+      "detail": "Default interactive sources and profile session directories."
+    },
+    {
+      "path": "upstream/codex-rs/protocol/src/protocol.rs",
+      "detail": "SessionMeta.id/forked_from_id/attached_thread confirm ordinary fork; inherited messages need not be read."
+    },
+    {
+      "path": "upstream/codex-rs/rollout/src/compression.rs",
+      "detail": "Native can transparently read .jsonl.zst; Web leaves compressed candidate identity/decompression to native thread/read."
+    }
+  ],
+  "implementation": {
+    "nativeWrites": false,
+    "query": "Current CODEX_HOME fixed-version SQLite opened mode=ro and query_only; empty-preview nonarchived interactive nonattached candidate IDs/path only.",
+    "plainMetadata": "Current profile sessions/archived_sessions realpath and inode checks, 2 MiB first SessionMeta line maximum, no message scan or contents returned.",
+    "compressedMetadata": "Existing bounded compressed path is candidate only; frontend must verify actual native forkedFromId and !ephemeral.",
+    "webOwnedIndex": "Observed hints remain a separate atomic profile-local index. Old candidates are not written to it by discovery.",
+    "failureBehavior": "Busy, corrupt, wrong schema, invalid/outside/symlink paths and timeout produce explicit errors. Native archive/delete file move race skips stale candidate. No silent result truncation.",
+    "performance": "Selective empty-preview metadata query with 10-second explicit budget and per-file inode/mtime/size header cache; no full rollout scan.",
+    "multiTenant": "Scope is current process CODEX_HOME, no host scans. Per-tenant CODEX_HOME/filesystem/process isolation still required; this is not authorization isolation."
+  },
+  "validation": {
+    "unitTests": {
+      "passed": 23,
+      "failed": 0,
+      "evidence": "unit-tests.txt"
+    },
+    "beforeFixBrowser": {
+      "url": "http://127.0.0.1:18865",
+      "status": "reproduced",
+      "passedSetupSteps": 2,
+      "expectedMissingDiscoveryFailure": 1,
+      "cleanupAllOwnedThreads": true,
+      "evidence": "before-fix/preexisting-fork-results.json"
+    },
+    "afterFixBrowser": {
+      "url": "http://127.0.0.1:18866",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "browserErrors": [],
+      "allOwnedThreadsRemoved": true,
+      "evidence": "after-fix/preexisting-fork-results.json",
+      "screenshot": "after-fix/preexisting-fork-open.png"
+    },
+    "static": {
+      "pythonAST": "passed for server.py/test_known_forks.py",
+      "nodeSyntax": "passed for preexisting_fork_desktop.mjs",
+      "diffCheck": "passed"
+    }
+  },
+  "limits": [
+    "Compressed candidate detection is covered by isolated fixtures; full native/browser workflow validates plain real forks. Native remains responsible for compressed contents and true fork identity.",
+    "10-second query budget errors explicitly for oversized/slow native stores; not an unbounded metadata scrape."
+  ]
+}

@@ -1,0 +1,297 @@
+{
+  "origin": "Real desktop chat setup, native protocol Execute buttons for queue APIs, actual stop button, native history/settings and filesystem reads; no credentials accessed",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "ownedThreadIds": [
+    "01a177b3-3e4f-78e1-b072-1b705a758072",
+    "01a177b3-5841-7380-bdc8-45471b996ccc"
+  ],
+  "results": [
+    {
+      "name": "loaded idle线程queue/add自动启动Flash，真实命令写入文件并完成",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a177b3-3e4f-78e1-b072-1b705a758072",
+        "queuedSubmissionId": "01a177b3-44af-7170-bd19-c107a0929a57",
+        "automaticTurnId": "01a177b3-44bc-7e82-b209-c773613fbefc",
+        "actualCommandExitCode": 0,
+        "actualFileMarkerReadBack": true,
+        "queueEmptyAfterNativeConsumption": true,
+        "settings": {
+          "model": "deepseek-flash",
+          "modelProvider": "deepseek",
+          "effort": "low"
+        }
+      }
+    },
+    {
+      "name": "忙碌时queue/start明确拒绝且保留消息；停止后手动start使用Flash完成",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc",
+        "queuedSubmissionId": "01a177b3-627a-7aa3-88d4-ea9bbfe0467b",
+        "busyNativeError": "thread already has an active or pending turn",
+        "busyStartRetainsMessage": true,
+        "interruptedHoldTurn": "01a177b3-5897-7683-913a-829718c20ad3",
+        "actualCommandCleanupConfirmed": true,
+        "manualQueueTurnId": "01a177b3-67d2-7ee0-ac40-1462f8dc3296",
+        "uniqueFlashReply": true,
+        "queueEmptyAfterStart": true,
+        "settings": {
+          "model": "deepseek-flash",
+          "modelProvider": "deepseek",
+          "effort": "low"
+        }
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "entity": "ownedThread",
+      "id": "01a177b3-3e4f-78e1-b072-1b705a758072",
+      "removed": true
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a177b3-5841-7380-bdc8-45471b996ccc",
+      "removed": true
+    },
+    {
+      "entity": "ownedTemporaryFile",
+      "filename": "queue-auto-1793009596921.txt",
+      "removed": true
+    },
+    {
+      "entity": "ownedTemporaryFile",
+      "filename": "queue-hold-1793009596921.txt",
+      "removed": true
+    },
+    {
+      "entity": "ownedTemporaryFile",
+      "filename": "queue-tail-1793009596921.txt",
+      "removed": true
+    }
+  ],
+  "browserErrors": [],
+  "requests": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a177b3-3e4f-78e1-b072-1b705a758072",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/queue/add",
+      "threadId": "01a177b3-3e4f-78e1-b072-1b705a758072"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a177b3-3e4f-78e1-b072-1b705a758072"
+    },
+    {
+      "method": "fs/readFile"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177b3-3e4f-78e1-b072-1b705a758072"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a177b3-3e4f-78e1-b072-1b705a758072"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "fs/readFile"
+    },
+    {
+      "method": "thread/queue/add",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/queue/start",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "turn/interrupt",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/backgroundTerminals/terminate",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/queue/start",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/queue/list",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "fs/readDirectory"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a177b3-3e4f-78e1-b072-1b705a758072"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "fs/remove"
+    },
+    {
+      "method": "fs/remove"
+    },
+    {
+      "method": "fs/remove"
+    }
+  ],
+  "nativeTurns": [
+    {
+      "event": "turn/started",
+      "threadId": "01a177b3-3e4f-78e1-b072-1b705a758072",
+      "turnId": "01a177b3-3ec8-7202-a211-37a906b2d446",
+      "status": "inProgress",
+      "error": null
+    },
+    {
+      "event": "turn/completed",
+      "threadId": "01a177b3-3e4f-78e1-b072-1b705a758072",
+      "turnId": "01a177b3-3ec8-7202-a211-37a906b2d446",
+      "status": "completed",
+      "error": null
+    },
+    {
+      "event": "turn/started",
+      "threadId": "01a177b3-3e4f-78e1-b072-1b705a758072",
+      "turnId": "01a177b3-44bc-7e82-b209-c773613fbefc",
+      "status": "inProgress",
+      "error": null
+    },
+    {
+      "event": "turn/completed",
+      "threadId": "01a177b3-3e4f-78e1-b072-1b705a758072",
+      "turnId": "01a177b3-44bc-7e82-b209-c773613fbefc",
+      "status": "completed",
+      "error": null
+    },
+    {
+      "event": "turn/started",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc",
+      "turnId": "01a177b3-5897-7683-913a-829718c20ad3",
+      "status": "inProgress",
+      "error": null
+    },
+    {
+      "event": "turn/completed",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc",
+      "turnId": "01a177b3-5897-7683-913a-829718c20ad3",
+      "status": "interrupted",
+      "error": null
+    },
+    {
+      "event": "turn/started",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc",
+      "turnId": "01a177b3-67d2-7ee0-ac40-1462f8dc3296",
+      "status": "inProgress",
+      "error": null
+    },
+    {
+      "event": "turn/completed",
+      "threadId": "01a177b3-5841-7380-bdc8-45471b996ccc",
+      "turnId": "01a177b3-67d2-7ee0-ac40-1462f8dc3296",
+      "status": "completed",
+      "error": null
+    }
+  ]
+}

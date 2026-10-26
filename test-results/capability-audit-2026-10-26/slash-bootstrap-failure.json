@@ -1,0 +1,228 @@
+{
+  "scope": "Real native skills and DeepSeek execution; one delayed real native response for navigation race",
+  "results": [
+    {
+      "name": "输入框 / 菜单：上沿全宽、命令分组、无顶部功能按钮",
+      "status": "failed",
+      "error": "Cannot read properties of null (reading 'x')"
+    },
+    {
+      "name": "点击选择只填入命令，发送后打开真实状态；键盘与中文组合输入",
+      "status": "passed",
+      "evidence": {
+        "selectionDoesNotExecute": true,
+        "sendOpensNativeStatus": true,
+        "keyboard": true,
+        "imeSafe": true,
+        "shiftEnterPreserved": true
+      }
+    },
+    {
+      "name": "/model 与 /reasoning 沿用实际控件，下一任务使用指定 Pro",
+      "status": "passed",
+      "evidence": {
+        "realModel": "deepseek-v4-pro",
+        "provider": "deepseek",
+        "effort": "low"
+      }
+    },
+    {
+      "name": "原生目录安装的 Skill 出现在菜单，停用后旧选择不能执行",
+      "status": "passed",
+      "evidence": {
+        "installedSkillListed": true,
+        "sourceVisible": true,
+        "selectionRetained": true,
+        "disabledSelectionBlocked": true
+      }
+    },
+    {
+      "name": "选择 Skill 后发送实际原生 skill 输入，脚本命令真实成功",
+      "status": "passed",
+      "evidence": {
+        "nativeStructuredSkillInput": true,
+        "actualScriptExitCode": 0,
+        "actualMarker": true,
+        "provider": "deepseek"
+      }
+    },
+    {
+      "name": "技能目录晚到时，离开输入框不会重开菜单或覆盖草稿",
+      "status": "passed",
+      "evidence": {
+        "realNativeResponseDelayed": true,
+        "noStalePopover": true,
+        "draftPreserved": true
+      }
+    }
+  ],
+  "errors": [],
+  "sent": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-v4-pro"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-v4-pro",
+      "threadId": "01a17744-43e3-7193-b008-879524fcea7e",
+      "input": [
+        {
+          "type": "text"
+        }
+      ],
+      "collaborationMode": {
+        "mode": "default",
+        "settings": {
+          "model": "deepseek-v4-pro",
+          "reasoning_effort": "low",
+          "developer_instructions": null
+        }
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "fs/createDirectory"
+    },
+    {
+      "method": "fs/createDirectory"
+    },
+    {
+      "method": "fs/writeFile"
+    },
+    {
+      "method": "fs/createDirectory"
+    },
+    {
+      "method": "fs/writeFile"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/config/write"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/config/write"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/config/write"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "threadId": "01a17744-5493-7ac2-abed-bcfc56270631",
+      "input": [
+        {
+          "type": "text"
+        },
+        {
+          "type": "skill",
+          "name": "slash-native-1793002322547",
+          "path": "/tmp/codex-web-capability-audit/home/skills/slash-native-1793002322547/SKILL.md"
+        }
+      ],
+      "collaborationMode": {
+        "mode": "default",
+        "settings": {
+          "model": "deepseek-flash",
+          "reasoning_effort": "low",
+          "developer_instructions": null
+        }
+      }
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "config/read"
+    }
+  ]
+}

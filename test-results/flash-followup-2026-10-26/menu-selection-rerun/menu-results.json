@@ -1,0 +1,567 @@
+{
+  "scope": "Only deepseek-flash. Real composer-menu paths and native backend. No custom test skills.",
+  "base": "http://127.0.0.1:8785",
+  "workspace": "/tmp/codex-web-flash-audit/workspace",
+  "home": "/tmp/codex-web-flash-audit/home",
+  "results": [
+    {
+      "name": "范围与菜单基础：只调用 Flash，无反馈/快速/生图或 ChatGPT 主动入口",
+      "status": "passed",
+      "evidence": {
+        "models": [
+          {
+            "value": ""
+          },
+          {
+            "value": "deepseek-v4-pro",
+            "provider": "deepseek"
+          },
+          {
+            "value": "deepseek-flash",
+            "provider": "deepseek"
+          }
+        ],
+        "commands": [
+          {
+            "id": "menu-mcp",
+            "text": "MCP显示 MCP 服务器状态"
+          },
+          {
+            "id": "menu-init",
+            "text": "初始化创建包含项目指令的 AGENTS.md 文件"
+          },
+          {
+            "id": "menu-projects",
+            "text": "在项目中使用为聊天选择或管理项目"
+          },
+          {
+            "id": "menu-reasoning",
+            "text": "推理选择下一次任务的思考强度"
+          },
+          {
+            "id": "menu-model",
+            "text": "模型选择下一次任务的模型"
+          },
+          {
+            "id": "menu-status",
+            "text": "状态显示聊天 ID、上下文用量和权限"
+          },
+          {
+            "id": "menu-goal",
+            "text": "目标设置要持续追求的目标"
+          },
+          {
+            "id": "menu-chat",
+            "text": "聊天新建不关联项目的会话"
+          },
+          {
+            "id": "menu-plan",
+            "text": "计划模式开启计划模式"
+          },
+          {
+            "id": "menu-skills",
+            "text": "技能管理导入、启用或停用技能"
+          },
+          {
+            "id": "menu-settings",
+            "text": "设置工作区、模型提供方和原生配置"
+          },
+          {
+            "id": "menu-native",
+            "text": "原生协议查看可用范围和完整定义"
+          },
+          {
+            "id": "menu-apps",
+            "text": "插件查看当前配置的本地插件"
+          },
+          {
+            "id": "menu-skill-0",
+            "text": "OpenAI 官方文档查询 Codex、模型、API、技能和设置的官方文档，帮助解决使用与配置问题。内置"
+          },
+          {
+            "id": "menu-skill-1",
+            "text": "代码审查检查代码改动，找出可复现的问题、潜在缺陷和需要修复的地方。内置"
+          },
+          {
+            "id": "menu-skill-2",
+            "text": "创建与改进技能把常用工作流程整理成技能，或改进现有技能的说明、脚本和资源。内置"
+          },
+          {
+            "id": "menu-skill-3",
+            "text": "安装技能从官方技能目录或 GitHub 仓库安装技能，包括指定的自定义仓库。内置"
+          }
+        ],
+        "selectionOnly": true,
+        "removedCommandsRejectedWithoutTurn": true,
+        "draftsRetained": true
+      }
+    },
+    {
+      "name": "/model、/reasoning、/status：选择、下一回合实际生效与后台一致",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1778b-ad71-79f1-9246-8638890edfb9",
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "effort": "low",
+        "readBackThreadId": "01a1778b-ad71-79f1-9246-8638890edfb9"
+      }
+    },
+    {
+      "name": "普通任务停止后续聊：Flash 中断工具历史的独立线程复验",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5",
+        "interruptedManagedProcessKilled": true,
+        "nextTurnCompleted": true,
+        "model": "deepseek-flash"
+      }
+    },
+    {
+      "name": "全套实际请求：未切换模型、未登录 ChatGPT、未执行反馈/快速/生图",
+      "status": "passed",
+      "evidence": {
+        "realExplicitTurns": 3,
+        "onlyModel": "deepseek-flash",
+        "browserErrors": [],
+        "disallowedRequests": 0
+      }
+    }
+  ],
+  "errors": [],
+  "sent": [
+    {
+      "id": 1,
+      "method": "initialize",
+      "params": {}
+    },
+    {
+      "method": "initialized",
+      "params": {}
+    },
+    {
+      "id": 2,
+      "method": "thread/list",
+      "params": {}
+    },
+    {
+      "id": 3,
+      "method": "model/list",
+      "params": {}
+    },
+    {
+      "id": 4,
+      "method": "config/read",
+      "params": {}
+    },
+    {
+      "id": 5,
+      "method": "skills/list",
+      "params": {}
+    },
+    {
+      "id": 6,
+      "method": "skills/list",
+      "params": {}
+    },
+    {
+      "id": 7,
+      "method": "skills/list",
+      "params": {}
+    },
+    {
+      "id": 8,
+      "method": "skills/list",
+      "params": {}
+    },
+    {
+      "id": 9,
+      "method": "skills/list",
+      "params": {}
+    },
+    {
+      "id": 10,
+      "method": "skills/list",
+      "params": {}
+    },
+    {
+      "id": 11,
+      "method": "skills/list",
+      "params": {}
+    },
+    {
+      "id": 12,
+      "method": "thread/start",
+      "params": {
+        "model": "deepseek-flash"
+      }
+    },
+    {
+      "id": 13,
+      "method": "thread/list",
+      "params": {}
+    },
+    {
+      "id": 14,
+      "method": "turn/start",
+      "params": {
+        "threadId": "01a1778b-ad71-79f1-9246-8638890edfb9",
+        "model": "deepseek-flash",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "low",
+            "developer_instructions": null
+          }
+        },
+        "input": [
+          {
+            "type": "text",
+            "text": "只回复 FLASH_MENU_MODEL_OK，不调用任何工具。"
+          }
+        ]
+      }
+    },
+    {
+      "id": 15,
+      "method": "thread/list",
+      "params": {}
+    },
+    {
+      "id": 16,
+      "method": "thread/list",
+      "params": {}
+    },
+    {
+      "id": 17,
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a1778b-ad71-79f1-9246-8638890edfb9"
+      }
+    },
+    {
+      "id": 18,
+      "method": "skills/list",
+      "params": {}
+    },
+    {
+      "id": 19,
+      "method": "thread/start",
+      "params": {
+        "model": "deepseek-flash"
+      }
+    },
+    {
+      "id": 20,
+      "method": "thread/list",
+      "params": {}
+    },
+    {
+      "id": 21,
+      "method": "turn/start",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5",
+        "model": "deepseek-flash",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "low",
+            "developer_instructions": null
+          }
+        },
+        "input": [
+          {
+            "type": "text",
+            "text": "只执行这个独立无害停止测试：用 exec_command 执行 python3 -c \"import time; from pathlib import Path; Path('menu-stop-continuation-1793007001396-1680450.txt').write_text('FLASH_STOP_CONTINUATION_1793007001396-1680450'); time.sleep(45); print('FLASH_STOP_CONTINUATION_1793007001396-1680450_FINISHED')\"，sandbox_permissions=\"use_default\"，yield_time_ms=1000，省略 justification 和 prefix_rule。必须使用 write_stdin 等待该进程真正结束，不要提前回复。"
+          }
+        ]
+      }
+    },
+    {
+      "id": 22,
+      "method": "thread/list",
+      "params": {}
+    },
+    {
+      "id": 23,
+      "method": "turn/interrupt",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5",
+        "turnId": "01a1778b-b60f-7e92-91da-df8697fd1d10"
+      }
+    },
+    {
+      "id": 24,
+      "method": "thread/list",
+      "params": {}
+    },
+    {
+      "id": 25,
+      "method": "thread/backgroundTerminals/list",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5"
+      }
+    },
+    {
+      "id": 26,
+      "method": "thread/backgroundTerminals/terminate",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5"
+      }
+    },
+    {
+      "id": 27,
+      "method": "thread/backgroundTerminals/list",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5"
+      }
+    },
+    {
+      "id": 28,
+      "method": "thread/backgroundTerminals/list",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5"
+      }
+    },
+    {
+      "id": 29,
+      "method": "turn/start",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5",
+        "model": "deepseek-flash",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "low",
+            "developer_instructions": null
+          }
+        },
+        "input": [
+          {
+            "type": "text",
+            "text": "只回复 FLASH_STOP_CONTINUATION_OK，不使用任何工具。"
+          }
+        ]
+      }
+    },
+    {
+      "id": 30,
+      "method": "thread/list",
+      "params": {}
+    }
+  ],
+  "received": [
+    {
+      "method": "turn/started",
+      "params": {
+        "threadId": "01a1778b-ad71-79f1-9246-8638890edfb9",
+        "turn": {
+          "id": "01a1778b-adee-7641-8ecc-ce65433da69e",
+          "rootTurnId": "01a1778b-adee-7641-8ecc-ce65433da69e",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "inProgress",
+          "error": null,
+          "startedAt": 1793007005,
+          "completedAt": null,
+          "durationMs": null
+        }
+      },
+      "emittedAtMs": 1793007005266
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778b-ad71-79f1-9246-8638890edfb9",
+        "turnId": "01a1778b-adee-7641-8ecc-ce65433da69e",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 10510,
+            "inputTokens": 10495,
+            "cachedInputTokens": 10240,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 15,
+            "reasoningOutputTokens": 6
+          },
+          "last": {
+            "totalTokens": 10510,
+            "inputTokens": 10495,
+            "cachedInputTokens": 10240,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 15,
+            "reasoningOutputTokens": 6
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007006466
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1778b-ad71-79f1-9246-8638890edfb9",
+        "turn": {
+          "id": "01a1778b-adee-7641-8ecc-ce65433da69e",
+          "rootTurnId": "01a1778b-adee-7641-8ecc-ce65433da69e",
+          "items": [
+            {
+              "type": "agentMessage",
+              "id": "a6dad6e4-709e-4b36-8e98-a374c228665c",
+              "text": "FLASH_MENU_MODEL_OK",
+              "phase": "final_answer",
+              "memoryCitation": null,
+              "delivery": null,
+              "questions": null
+            }
+          ],
+          "itemsView": "summary",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1793007005,
+          "completedAt": 1793007006,
+          "durationMs": 1300
+        }
+      },
+      "emittedAtMs": 1793007006499
+    },
+    {
+      "method": "turn/started",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5",
+        "turn": {
+          "id": "01a1778b-b60f-7e92-91da-df8697fd1d10",
+          "rootTurnId": "01a1778b-b60f-7e92-91da-df8697fd1d10",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "inProgress",
+          "error": null,
+          "startedAt": 1793007007,
+          "completedAt": null,
+          "durationMs": null
+        }
+      },
+      "emittedAtMs": 1793007007322
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5",
+        "turnId": "01a1778b-b60f-7e92-91da-df8697fd1d10",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 10847,
+            "inputTokens": 10619,
+            "cachedInputTokens": 10368,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 228,
+            "reasoningOutputTokens": 65
+          },
+          "last": {
+            "totalTokens": 10847,
+            "inputTokens": 10619,
+            "cachedInputTokens": 10368,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 228,
+            "reasoningOutputTokens": 65
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007009912
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5",
+        "turn": {
+          "id": "01a1778b-b60f-7e92-91da-df8697fd1d10",
+          "rootTurnId": "01a1778b-b60f-7e92-91da-df8697fd1d10",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "interrupted",
+          "error": null,
+          "startedAt": 1793007007,
+          "completedAt": 1793007009,
+          "durationMs": 2655
+        }
+      },
+      "emittedAtMs": 1793007009935
+    },
+    {
+      "method": "turn/started",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5",
+        "turn": {
+          "id": "01a1778b-c12e-73a2-94c9-04a5e5512e81",
+          "rootTurnId": "01a1778b-c12e-73a2-94c9-04a5e5512e81",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "inProgress",
+          "error": null,
+          "startedAt": 1793007010,
+          "completedAt": null,
+          "durationMs": null
+        }
+      },
+      "emittedAtMs": 1793007010161
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5",
+        "turnId": "01a1778b-c12e-73a2-94c9-04a5e5512e81",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 21795,
+            "inputTokens": 21557,
+            "cachedInputTokens": 21120,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 238,
+            "reasoningOutputTokens": 65
+          },
+          "last": {
+            "totalTokens": 10948,
+            "inputTokens": 10938,
+            "cachedInputTokens": 10752,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 10,
+            "reasoningOutputTokens": 0
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793007011513
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1778b-b5cb-78a2-b5df-289a2194b9e5",
+        "turn": {
+          "id": "01a1778b-c12e-73a2-94c9-04a5e5512e81",
+          "rootTurnId": "01a1778b-c12e-73a2-94c9-04a5e5512e81",
+          "items": [
+            {
+              "type": "agentMessage",
+              "id": "b3892c75-6b28-4a90-a422-8896f8cef111",
+              "text": "FLASH_STOP_CONTINUATION_OK",
+              "phase": "final_answer",
+              "memoryCitation": null,
+              "delivery": null,
+              "questions": null
+            }
+          ],
+          "itemsView": "summary",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1793007010,
+          "completedAt": 1793007011,
+          "durationMs": 1398
+        }
+      },
+      "emittedAtMs": 1793007011535
+    }
+  ]
+}

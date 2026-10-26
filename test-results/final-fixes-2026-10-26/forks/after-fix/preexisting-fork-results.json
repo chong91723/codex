@@ -1,0 +1,70 @@
+{
+  "model": "deepseek-flash",
+  "parentId": "01a17818-b49e-7831-a8e0-56bc91661906",
+  "childId": "01a17818-bc80-75c2-b870-c74a535d7606",
+  "origin": "Real Flash parent through browser; child fork created by separate unmodified native stdio, outside Web observer. Supplemental IDs confirmed by native thread/read.",
+  "records": [
+    {
+      "name": "真实Flash父会话建立可恢复历史",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a17818-b49e-7831-a8e0-56bc91661906",
+        "model": "deepseek-flash",
+        "realModelMarker": true
+      }
+    },
+    {
+      "name": "独立原生连接创建未被Web观察且默认列表遗漏的真实分叉",
+      "status": "passed",
+      "evidence": {
+        "childId": "01a17818-bc80-75c2-b870-c74a535d7606",
+        "previewEmpty": true,
+        "parentId": "01a17818-b49e-7831-a8e0-56bc91661906",
+        "nativeListOmitsFork": true,
+        "absentFromWebOwnedIndex": true
+      }
+    },
+    {
+      "name": "API只读发现旧分叉而不修改原生历史或Web已见索引",
+      "status": "passed",
+      "evidence": {
+        "discoveredWithoutObservedIndex": true,
+        "nativeChildAndParentFilesUnchanged": true,
+        "noSyntheticTurn": true
+      }
+    },
+    {
+      "name": "全新浏览器首次进入即可搜索、打开并恢复继承历史",
+      "status": "passed",
+      "evidence": {
+        "newContextNoSharedStorage": true,
+        "nameSearch": true,
+        "nativeHistoryRestored": true,
+        "refreshSameThread": true
+      }
+    },
+    {
+      "name": "旧分叉归档恢复删除保持一致，父历史未变",
+      "status": "passed",
+      "evidence": {
+        "archivedReadOnly": true,
+        "unarchiveSameId": true,
+        "permanentDeleteRemovesDiscovery": true,
+        "parentNativeHistoryUnchanged": true
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "entity": "ownedChild",
+      "id": "01a17818-bc80-75c2-b870-c74a535d7606",
+      "removed": true
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a17818-b49e-7831-a8e0-56bc91661906",
+      "removed": true
+    }
+  ],
+  "browserErrors": []
+}

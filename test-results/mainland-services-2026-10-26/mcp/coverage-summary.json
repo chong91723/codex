@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-26",
+  "endpoint": "https://mcp.24haowan.com/mcp",
+  "documentation": "https://mcp.24haowan.com/",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "effectivePassed": 4,
+  "effectiveFailed": 0,
+  "singleCleanRun": false,
+  "cases": [
+    {
+      "name": "/mcp 添加官方匿名远端，原生返回真实工具目录",
+      "status": "passed",
+      "evidence": {
+        "endpoint": "https://mcp.24haowan.com/mcp",
+        "documentation": "https://mcp.24haowan.com/",
+        "authRequired": false,
+        "nativeToolCount": 8,
+        "tools": [
+          "get_industry_benchmark",
+          "get_template",
+          "list_cases",
+          "get_case",
+          "get_player_behavior",
+          "list_industries",
+          "search_knowledge",
+          "search_templates"
+        ],
+        "configuredViaSlashMenu": true,
+        "authStatus": "unsupported",
+        "realResources": 1
+      },
+      "source": "first-run/results.json"
+    },
+    {
+      "name": "Flash 从真实远端搜索转盘模板并取详情，结果展示可核验",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a177eb-38f2-7771-99d8-208ec0d060fb",
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "realToolCalls": [
+          {
+            "tool": "search_templates",
+            "status": "completed",
+            "arguments": {
+              "query": "转盘",
+              "limit": 2
+            }
+          },
+          {
+            "tool": "get_template",
+            "status": "completed",
+            "arguments": {
+              "id": "336"
+            }
+          }
+        ],
+        "detailId": "336",
+        "noCommandOrFileFallback": true
+      },
+      "source": "first-run/results.json"
+    },
+    {
+      "name": "真实配置停用与重新启用，目录随原生状态恢复",
+      "status": "passed",
+      "evidence": {
+        "disabledConfigConfirmed": true,
+        "toolsHiddenWhileDisabled": true,
+        "reenabledConfigConfirmed": true,
+        "realRemoteDirectoryReturned": true
+      },
+      "source": "results.json"
+    },
+    {
+      "name": "清理唯一远端配置，保留已有模型/审批与其他服务",
+      "status": "passed",
+      "evidence": {
+        "removedUniqueServer": "mainland24_1793013308605_1755361",
+        "modelAndApprovalPreserved": true,
+        "unrelatedMcpPreserved": true
+      },
+      "source": "results.json"
+    }
+  ],
+  "observedAbnormalConditions": [
+    {
+      "source": "first-run/results.json",
+      "condition": "The driver asserted immediately after async MCP view re-entry before config/read finished. Native enabled=false was already confirmed. Driver now waits for the real enable button.",
+      "productBugConfirmed": false
+    },
+    {
+      "source": "failure-1.txt",
+      "condition": "Actual HTTP429 during native full discovery: published per-IP60/min limit. Visible full transport error includes server message. Subsequent real disable/reenable reconnected successfully.",
+      "productBugConfirmed": false
+    },
+    {
+      "source": "results.json",
+      "condition": "After the full-directory check failed, an open dialog blocked the next new-chat click. This is test-driver cascading failure; catch now closes the dialog. No second model request was sent in that run.",
+      "productBugConfirmed": false
+    }
+  ],
+  "notClaimed": [
+    "All remote MCP providers work",
+    "Every tool in this remote service was called",
+    "Remote service internal upstream dependencies independently audited",
+    "Strict international egress firewall validation",
+    "Remote Skills installation"
+  ],
+  "cleanup": "Both unique MCP keys removed; model/provider/approval/sandbox and other MCP definitions preserved; no account credentials needed or read",
+  "credentials": "No MCP credentials or ChatGPT account used; no secret data stored"
+}

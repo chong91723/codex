@@ -1,0 +1,65 @@
+Codex
+个人助手
+新对话
+⌘ K
+技能
+数据库
+MCP 服务
+本地插件
+原生能力
+项目
+workspace
+最近会话
+这是只读接入验收。请只调用 MCP server mainland24_1793013261526_1754667 的 search_templates（query="转盘",limit=2），再用搜索结果中的真实 id 调用同一服务 get_template 取一条详情。最终用中文简短列出实际返回的模板标题、id 和详情页链接。不要调用其他工具、命令、网页抓取或任何 Skill，不要创建/修改活动，不要安装内容；失败就如实报告。
+这是独立目录的原生Hooks验收。只用 exec_command（sandbox_permissions="use_default"，省略 justification 与 prefix_rule）执行 printf HOOK_FLASH_NATIVE_OK > hook-agent-result.txt，再用 cat 读取该文件。最后简短回复 HOOKS_COMPLETE。不要访问网络，不创建技能或其他代理。
+这是独立目录的原生Hooks验收。只用 exec_command（sandbox_permissions="use_default"，省略 justification 与 prefix_rule）执行 printf HOOK_FLASH_NATIVE_OK > hook-agent-result.txt，再用 cat 读取该文件。最后简短回复 HOOKS_COMPLETE。不要访问网络，不创建技能或其他代理。
+Run exactly python3 -c "import time; from pathlib import Path; Path('stop-started.txt').write_text('STOP_AUDIT_1793009181166'); print('STOP_AUDIT_1793009181166',flush=True); time.sleep(60); Path('stop-should-not-exist.txt').write_text('STOP_AUDIT_1793009181166')" using your shell tool. Wait for the real command to finish before replying.
+Run exactly python3 -c "from pathlib import Path; Path('approval-allowed.txt').write_text('APPROVAL_ALLOWED_OK')" using your shell tool once. Then report completion.
+Run python3 -c "print(13579 * 2468)" with your shell tool, then report its result.
+Run exactly python3 -c "from pathlib import Path; Path('approval-denied.txt').write_text('DENIED_SHOULD_NOT_RUN')" using your shell tool once. If approval is denied, do not retry or use another method; just report the denial.
+设置
+源码 970111f
+C
+DeepSeek
+模型服务连接
+Codex
+MCP 服务
+原生已连接
+◐
+MCP 服务
+
+连接外部工具。添加并启用后，Agent 可在对话中按需调用。
+
+添加自定义 MCP刷新连接状态重新加载配置
+
+连接状态已更新 · 完整资源按需读取
+
+mainland24_1793013308605_1755361
+已启用
+
+https://mcp.24haowan.com · HTTP
+
+工具目录已就绪 · 8 个工具
+
+停用
+查看工具与资源
+OAuth 登录
+mainland24_1793013308605_1755361
+{
+  "name": "mainland24_1793013308605_1755361",
+  "runtimeStatus": null,
+  "pluginId": null,
+  "httpOrigin": "https://mcp.24haowan.com",
+  "serverInfo": null,
+  "serverCapabilities": null,
+  "toolListMeta": null,
+  "tools": {},
+  "toolsError": "MCP startup failed: handshaking with MCP server failed: Send message error Transport [codex_rmcp_client::tool_list_changes::ToolListChanges<codex_rmcp_client::event_notification_transport::EventNotificationTransport<rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<codex_rmcp_client::http_client_adapter::StreamableHttpClientAdapter>>>>] error: unexpected server response: HTTP 429: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32000,\"message\":\"请求过于频繁，每分钟上限 60 次\"},\"id\":null}, when send initialize request: Send message error Transport [codex_rmcp_client::tool_list_changes::ToolListChanges<codex_rmcp_client::event_notification_transport::EventNotificationTransport<rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<codex_rmcp_client::http_client_adapter::StreamableHttpClientAdapter>>>>] error: unexpected server response: HTTP 429: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32000,\"message\":\"请求过于频繁，每分钟上限 60 次\"},\"id\":null}, when send initialize request",
+  "resources": [],
+  "resourceTemplates": [],
+  "authStatus": "unsupported"
+}
+取消
+关闭
+MCP 已添加并启用
+×

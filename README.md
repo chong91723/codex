@@ -1,6 +1,6 @@
 # Codex Web Native
 
-基于 Codex 原生运行时的个人 AI 网页助手，页面与交互参考 ChatGPT 网页端。完整保留 Codex 的技能、MCP、文件、沙箱、审批、CLI 及全部原生协议入口。代理内核直接从最新 Codex 开源源码编译；Web 层负责界面与原生协议传输；数据库查询和图表通过独立的只读 MCP 扩展接入。上游源码以子模块保存在 `upstream/`，禁止在该目录修改源码。
+基于 Codex 原生运行时的个人 AI 网页助手，沿用现有网页设计，并按用户提供的 Codex 桌面截图完善交互。保留 Codex 的技能、MCP、文件、沙箱、审批、CLI 和完整原生协议定义。当前验证统一使用 `deepseek-flash`，允许 DeepSeek 官方 API 与国内公网；不提供 ChatGPT 登录、订阅、反馈、快速模式或生图入口；各能力的具体条件见 [能力对照表](CAPABILITIES.md)。代理内核直接从锁定版本 Codex 开源源码编译；Web 层负责界面与原生协议传输；数据库查询和图表通过独立的只读 MCP 扩展接入。上游源码以子模块保存在 `upstream/`，禁止在该目录修改源码。
 
 ## 获取与运行
 
@@ -9,10 +9,12 @@ git clone --recurse-submodules --branch codex/web-native-desktop git@github.com:
 cd Codex
 # 安装 upstream/codex-rs/rust-toolchain.toml 指定的 Rust 版本。
 python3 web/scripts/build_native.py --jobs 2
-python3 web/start.py
+python3 web/start.py --deepseek
 ```
 
-浏览器打开 <http://127.0.0.1:8765>。默认使用本机 Codex 配置和登录信息。基础 Web 服务仅依赖 Python 3.11+ 标准库，不需要前端打包或 CDN。可选数据库功能使用独立 Python 环境和本机 Node.js 图表组件；浏览器验收使用 Playwright。
+浏览器打开 <http://127.0.0.1:8765>。沿用本机 Codex 配置；该配置须使用符合账号与网络范围的 provider，否则按下文使用 `--deepseek`。基础 Web 服务仅依赖 Python 3.11+ 标准库，不需要前端打包或 CDN。可选数据库功能使用独立 Python 环境和本机 Node.js 图表组件；浏览器验收使用 Playwright。
+
+MCP 和插件各自需要其声明的运行环境。例如以 `npx` 启动的插件需要 Node/npm 位于 Web 服务的启动 PATH 中；浏览器插件还需要可用浏览器及适合服务器的无头参数。原生 MCP 只继承部分环境变量，npm 源、缓存和浏览器参数应通过该插件支持的 MCP `env` 配置明确提供，不能假定 Web 进程环境会全部转交。不满足依赖时显示真实启动错误，不自动安装运行时或切换模型。 Git市场的本地快照和插件缓存可能被原生重新同步，不能依赖直接修改缓存来持久保存参数。本轮Playwright验证采用原生支持的本地市场配置副本，保留真实包的Manifest，仅配置MCP启动参数；具体条件与原始失败见 [远端扩展验收](test-results/mainland-services-2026-10-26/summary.json)。
 
 当前原生构建脚本针对 Linux x86_64。编译需要 C/C++ 编译器、pkg-config、CMake，以及 OpenSSL、ALSA、DBus 和 libcap 开发头文件。构建脚本同时编译 CLI、code-mode host 和源码自带的 bwrap，再调用未修改的上游打包器组装标准目录及 ripgrep；不能只复制 CLI 单个可执行文件。若已安装 ripgrep，可传入 `--rg-bin /绝对路径/rg`。
 
@@ -52,9 +54,9 @@ supports_websockets = false
 - 会话：新建、恢复、搜索、分页、重命名、分叉、归档、永久删除、上下文压缩、历史回退、代码审查、JSON 导出。选中的会话保存在当前标签页 URL 中，刷新、书签及浏览器前进/后退可直接恢复；恢复失败会明确显示错误并阻止静默新建。同一会话被另一页面占用时显示只读历史，关闭占用页面后可重试继续。
 - 对话：输入框下方并排选择模型与思考强度，通过左下角“＋”添加图片或文本文件（支持多选、预览与移除）；流式回答、推理摘要、工具执行、文件差异、计划、子代理事件、中断与执行中补充输入、图片和文本附件。每个任务的思考、过程说明、命令、文件更改及工具过程整体默认折叠，最终回答独立显示并可复制；支持 Markdown 表格、列表、链接与代码块，宽表在回答内部横向滚动。人工确认继续直接显示。
 - 交互：命令与文件修改审批、权限请求、用户问题；任意服务端请求均保留自定义 JSON 响应入口；原生 Guardian 审核结果可显示并由用户确认被拒绝的具体操作。
-- 扩展：原生技能发现、启停、调用；从本机上传自定义 `SKILL.md` 或完整 Skill 文件夹；添加 stdio / Streamable HTTP MCP、启停、OAuth、工具与资源；插件和应用目录。
-- 设置：原生配置读取、按项写入、沙箱和审批策略、账户登录与额度。
-- **原生能力面板**：启动时从实际源码编译的程序导出完整实验性 JSON Schema；全部客户端方法可选择、查看参数、生成必填参数模板并原样调用，所有事件可查看。未做专用界面的开源功能也通过此入口使用。
+- 扩展：仅保留锁定源码自带的 `openai-docs`、`review-agent`、`skill-creator`、`skill-installer`，支持发现、启停和原生调用；不提供额外 Skill 导入。保留 stdio / Streamable HTTP MCP、OAuth、工具与资源，以及原生本地插件协议（常规前端管理入口已隐藏）。云端 Apps、插件云分享和账号验证入口已移除。
+- 设置：原生配置读取、按项写入、沙箱和审批策略、第三方 provider 连接状态；不将 DeepSeek 密钥保存为 OpenAI 账户密钥。
+- **原生能力面板**：启动时从实际源码编译的程序导出完整实验性 JSON Schema；全部客户端方法可查看参数、生成模板；保留范围内方法可调用，排除项展示原因，所有事件可查看。未做专用界面的开源功能也通过此入口使用。
 - **底层命令能力**：原生 CLI、PTY 和同一源码编译的运行时完整保留；用户页面隐藏命令行入口和终端面板。Agent 仍可在对话中执行命令，过程按整轮折叠显示。
 
 RPC/CLI 能力来自 Codex 本身。账户套餐、外部服务、操作系统和模型是否支持某项功能，仍由原生程序决定；界面显示真实结果与错误。未实现闭源桌面专有功能或自建云调度服务。
@@ -63,25 +65,11 @@ RPC/CLI 能力来自 Codex 本身。账户套餐、外部服务、操作系统�
 
 “会话操作 → 永久删除会话”调用原生 `thread/delete`，确认后删除该会话及其创建的子代理会话历史，无法撤销。归档会话也可删除；当前任务会被停止。被其他页面占用时先关闭占用页面。其他会话引用等原生约束会原样返回错误，不会绕过。
 
-## 原生生图与图片显示
+## 图片与已移除功能
 
-在输入框下方的模型选择中选择 `ChatGPT · gpt-5.6-luna（支持生图）`，然后直接在对话中提出生图或图片编辑要求。网页通过原生 `thread/start` 创建独立的 OpenAI 会话；已启用的生图技能由 Agent 根据任务调用，不需要手动挂载。当前默认辅助模型为 `gpt-5.6-luna`，原生扩展调用 `gpt-image-2`；新建普通对话仍使用原先默认模型（如 DeepSeek）。模型选择显示当前会话实际模型和提供方，不会用 Codex 品牌推断底层模型。
+Flash 的图片输入、识图、图片预览及历史图片显示保留。本轮只使用 Flash 进行实际模型验收；已有 Pro 配置可以保留，不作为后续验证模型。不会自动切换模型。
 
-当前 DeepSeek 提供方没有原生 `image_gen`。原生生图会话使用同一 `CODEX_HOME` 下有效的 ChatGPT 授权，不需要将 DeepSeek 密钥填作 OpenAI 密钥；需要登录时从网页账户页完成原生登录。独立测试访问会话会到期，长期使用应在该运行实例完成自己的原生登录。所有授权文件都留在原生配置目录，不进入 Git；原始账号授权文件未修改。
-
-支持上传图预览、原生生成图片、以及 Markdown 引用的服务器本地图片。图片可放大、下载，刷新后从原生历史恢复。生成图独立于折叠的执行过程显示；回答重复引用同一张图片时复用预览入口。服务器文件通过原生 `fs/readFile` 读取，没有新增任意文件下载接口。
-
-服务器直连 OpenAI 不通时，可以复用已配置的 HTTP 代理。以下仅为网络地址，不是模型配置；保留 DeepSeek 直连：
-
-```sh
-HTTP_PROXY=http://127.0.0.1:15236 \
-HTTPS_PROXY=http://127.0.0.1:15236 \
-ALL_PROXY=http://127.0.0.1:15236 \
-NO_PROXY=localhost,127.0.0.1,::1,api.deepseek.com,.deepseek.com \
-python3 web/start.py --deepseek --state-dir .local-state/acceptance --port 8765 --workspace /root/Codex/workspaces/acceptance
-```
-
-代理地址按实际服务器配置填写；不能仅凭转发端口判断它的出口是否经过本机 VPN。代理环境在服务启动时读取，变更后需在任务结束时重启服务。
+反馈、快速模式和生图已从本项目操作入口移除，后端同样拒绝对应请求或重新启用配置。Web 启动的原生进程通过官方配置关闭相关功能；不修改原生程序或源码包中的能力定义。原有用户历史、授权文件不会被删除。
 
 ## 沙箱网络与模型身份
 
@@ -89,11 +77,11 @@ python3 web/start.py --deepseek --state-dir .local-state/acceptance --port 8765 
 
 DeepSeek 生成目录的身份提示已经适配实际提供方，工具和权限指令保持完整。网页还通过原生 `turn/start.additionalContext` 提供实际提供方和模型 ID，避免旧会话继承的 OpenAI 身份提示导致错误自述。应以原生请求及会话设置为准确认底层模型。
 
-## 自定义 Skill 与 MCP
+## 原生 Skill 与 MCP
 
-在“技能 → 导入自定义 Skill”中，选择浏览器所在电脑上的 `SKILL.md` 或以 `SKILL.md` 为根文件的完整文件夹。文件通过原生文件接口保存到当前运行实例的 `CODEX_HOME/skills/<目录名>/`，由 Codex 原生校验并加载。脚本与资源保留相对目录；不会执行导入的脚本。同名目录拒绝覆盖，无效 Skill 会清理本次新建目录。单个文件上限 16 MiB，总大小 64 MiB，最多 1000 个文件。
+技能页和输入框 `/` 仅展示上述四项保留的源码自带技能。用户选择后以原生 `UserInput.skill` 发送，发送前重新核对启用状态；后端核对名称和当前实例的真实原生技能路径。项目管理的非原生技能已清理，不操作宿主 Codex 桌面端的全局技能目录。
 
-导入后只需启用或停用。启用的技能由原生 Agent 根据任务发现和调用，用户可在对话中点名或提醒使用；网页不再提供手动挂载。停用状态写入原生 `skills/config/write`。技能页提供中文名称与用途说明，按常用、自定义、插件及文档模板分组；插件和模板默认收起，支持名称或用途搜索，不显示技能路径。pets 技能按用户要求从界面移除，并已在日常配置中停用。
+`openai-docs` 的原生本地参考已验证；在线查询官方文档仍需要对应网络。`skill-installer` 的原生离线帮助已验证，GitHub 在线安装未验证，也不属于本轮仅原生技能的验收范围。显示为已安装不代表其所有在线行为均符合当前网络条件。
 
 在“MCP 服务 → 添加自定义 MCP”中选择 stdio 或 HTTP。stdio 支持启动命令、JSON 参数数组、工作目录及环境变量；命令在服务器上运行。HTTP 支持服务 URL、Bearer Token 环境变量名、固定请求头及从环境变量读取请求头。需要 OAuth 的服务添加后可点击登录。服务添加及启停使用原生配置写入和 MCP 重载；停用后仍保留卡片及原配置，可重新启用。从下一次任务开始应用更新，正在执行的调用遵循原生运行时的处理。
 
@@ -120,17 +108,21 @@ python3 web/scripts/install_databases.py --node /绝对路径/node --npm /绝对
 
 完整结果流式写入不可变 Parquet 快照。查询工具仅返回结果 ID、精确行数及字段，避免把全量明细挤进模型上下文。`read_result` 精确读取选定明细，`describe_result` 分页读取字段，`analyze_result` 使用 DuckDB 对完整快照计算并生成新的完整结果，`create_chart` 直接读取真实结果生成图表。原结果不会被摘要替换；网页“查询结果”支持分页查看、完整 CSV 导出和清理。Elasticsearch 聚合同时保存完整原生响应，可下载 JSON。高精度小数、长文本、二进制（base64）与 NULL 保留，超出单次上下文预算时拒绝过大的明细页，不截断单元格。
 
+计划分析可先用 `/plan` 要求调查连接与字段、生成方案并等待确认；在计划卡编辑后确认执行。执行中点击停止会发送原生中断，之后可修改计划或补充新条件，在同一会话继续，已完成的结果可按结果 ID 复用。进度来自模型的原生步骤更新，不代表数据库内部执行百分比。原生计划模式允许只读调查，逐条 SQL 是否另需批准由 MCP 工具审批策略决定；这不是数据库事务暂停、回滚或持久任务调度。
+
 单次完整读取最多 60 秒、1 GiB 逻辑数据，结果缓存最多 5 GiB；本地分析最多 30 秒。超过预算会明确失败并清理未完成结果，不把部分数据称为完整结果。图表过大时要求显式筛选或聚合，不自动抽样。超过 DuckDB 精确小数计算范围时要求回原数据库聚合，原始快照仍保留。
 
 网页停止任务时，扩展处理原生 MCP 的 `notifications/cancelled`：MySQL 仅取消该账号当前请求的查询，PostgreSQL 发出取消信号，ClickHouse 按随机 query_id 取消自己的查询，Elasticsearch 关闭搜索 HTTP 连接，本地 DuckDB 中断计算。不会向 Agent 暴露 KILL 管理语句。ClickHouse 25.8 取消自己查询还要求只读账号拥有 `SELECT(query_id,user,query) ON system.processes`；不需要授予 `KILL QUERY` 或写权限，服务器只读设置继续生效。部分数据库操作不保证瞬间终止，连接和服务端超时仍作为兜底。平台行为参考 [ClickHouse 文档](https://clickhouse.com/docs/reference/statements/kill) 和 [Elasticsearch 文档](https://www.elastic.co/guide/en/elasticsearch/reference/8.19/search-your-data.html#search-cancellation)。
 
-输入框模型与思考强度右侧的圆环显示“当前保留上下文最近统计 ÷ 模型完整窗口”，新对话和没有原生统计时隐藏。分子使用原生 `last.totalTokens`，它包含最近完整请求中的保留历史和该次输出；不累加每次请求消耗，不扣除缓存输入，不重复添加推理输出。DeepSeek 分母为 1,048,576，保留给运行时的 5% 余量不从展示分母中扣除。生成中的未统计内容会标注待更新；原生接口没有逐 token 的精确活动上下文字段。压缩后显示原生估算（≈），工具定义等固定开销将在下一次完整请求中重新统计。累计消耗独立显示。
+输入框右侧圆环显示“最近一次原生采样总量 ÷ 已核实窗口”。分子使用 `last.totalTokens`，即最近采样的完整输入加输出，包含当时保留历史、指令、技能、工具定义与结果；不累加历史消耗、不扣缓存输入，也不重复添加已含在输出中的推理量。默认Flash完整窗口为1,048,576，原生95%可用窗口为996,147；目录与真实原生窗口核对一致时采用完整窗口，不一致则采用该次原生可用窗口并说明完整窗口未知，避免全局配置覆盖会话设置。
+
+这是最近采样快照，生成中和追加工具结果可能尚未计入，不能视为实时精确当前保留量；原生自动压缩检查还会计入部分本地尾部估算。压缩后原生估算标≈，下一次完整采样替换。累计消耗、缓存输入、推理输出、真实原生可用窗口与配置压缩阈值在详情分别显示。已补回历史分页恢复中独立的统计事件，刷新不因较晚的回合列表快照而丢失占用徽标。
 
 DeepSeek Flash/Pro 的独立模型目录设置 `auto_compact_token_limit = 734003`，按完整 1M 的 70% 自动压缩。网页创建、恢复 DeepSeek 会话时使用原生 `total` 范围并开启回合结束检查（`model_post_turn_compact_threshold_percent = 100`，由已达到 70% 的主阈值触发；不能把此值直接设为 70，否则会乘以原生 95% 可用窗口而提前压缩）。保留原生回合前、中、后检查与手动压缩入口，ChatGPT 不强制使用 DeepSeek 的阈值。压缩可能丢失历史细节，不能替代完整数据库快照。
 
-右上角“功能”提供初始化、计划模式、项目、状态、持续目标和反馈；模型与推理强度沿用原有控件。计划模式使用原生 `collaborationMode`，建议计划单独显示，支持编辑后确认，在原会话切换默认模式并执行；`update_plan` 清单显示已完成步数，支持折叠、停止与同一浏览器刷新恢复。清单进度来自模型事件，不是执行引擎的百分比，也不是每一步审批。`/plan /status /init /projects /goal /feedback /chat /fast` 可调用相同入口。
+在输入框内输入 `/`，菜单贴着输入框上沿展开，列出 MCP、初始化、项目、模型、推理、状态、目标、计划及已启用技能。名称或说明可筛选，方向键切换，Tab 或点击只填入，发送后才触发；Esc 关闭，中文组合输入与 Shift Enter 保留。右上角不再保留独立“功能”按钮。模型与推理命令沿用原有控件，下一次任务实际生效。计划模式使用原生 `collaborationMode`，建议计划单独显示，支持编辑后确认，在原会话切换默认模式并执行，保留输入框中尚未发送的文字、附件和技能；`update_plan` 清单显示已完成步数，支持折叠、停止与同一浏览器刷新恢复。清单进度来自模型事件，不是执行引擎的百分比，也不是每一步审批。`/mcp /init /projects /reasoning /model /status /goal /chat /plan /skills /settings /native` 调用对应入口。已移除命令不会被当作普通任务发给模型；输入保留并显示原因。
 
-ChatGPT 模型声明 `priority` 档位时显示快速入口，实际调用原生 `thread/settings/update`，可恢复标准档位；DeepSeek 不显示。项目使用原生项目存储，新聊天可以不关联项目，工具能力保留。持续目标由用户明确设置，支持暂停并停止、继续、移除和原生状态展示；目标预算口径为未缓存输入加输出，与上下文占用不同。原生新会话首个回合缺少统计基线时，短目标的 `tokensUsed` 可能为 0，不能视作没有消耗。反馈默认保存本地包，上传需用户主动明确点击；本次未上传。未发现开源画草图画布的对应实现，因此没有伪造此入口。
+DeepSeek 不展示快速档位；生图与快速模式均按本次非必要范围处理。项目使用原生项目存储，新聊天可以不关联项目，工具能力保留。持续目标由用户明确设置，支持暂停并停止、继续、移除和原生状态展示；目标预算口径为未缓存输入加输出，与上下文占用不同。原生新会话首个回合缺少统计基线时，短目标的 `tokensUsed` 可能为 0，不能视作没有消耗。反馈保存和上传均已移除。未发现开源画草图画布的对应实现，因此没有伪造此入口。
 
 专项复验使用独立 `.local-state/database-release-acceptance` 配置、8770 端口及现有的四类只读测试库。设置 `CODEX_DATABASE_CREDENTIALS` 指向私有测试账号文件（不提交），按顺序运行 `database_desktop.mjs`、`database_results_desktop.mjs`、`database_cancellation_desktop.mjs`；后两项通过 `CODEX_DB_CONNECTION_IDS` 读取首项生成的 ID。`database_results_desktop.mjs` 的断连测试需要显式设置 `CODEX_TEST_ALLOW_CONTAINER_RESTART=1`，仅用于独立测试容器。取消测试的服务器脚本只观察从网页发起的查询状态，不从命令行发起功能测试。测试准备与运行时工具分离。
 
@@ -178,34 +170,25 @@ python3 -m unittest discover -s web/tests -v
 python3 web/scripts/verify_upstream.py --native
 ```
 
-详细的真实验收记录见 [TEST_REPORT.md](TEST_REPORT.md)。服务器上的 ChatGPT 登录应使用原生账户页；远程浏览器可选择设备码登录。测试中的账号访问会话放在独立的忽略目录，未写入仓库。
-
-功能验收均由真实网页控件发起；无需 ChatGPT 登录的 DeepSeek 流程、HTTP MCP OAuth 及 Guardian 已实际验证。CLI 终端的历史验收记录保留；按当前产品要求隐藏终端后，相应 UI 用例标记不适用。当前技能、MCP、模型选择生图和桌面界面使用新的专项复查。账户云端条件限制和三项按用户要求跳过的操作见验收报告。
-
-新增专项可使用独立实例运行，避免影响日常会话：
+必要数据库依赖与 Playwright 使用项目已有工具链。可选真实原生/传输测试需要本机套接字权限；明确跳过不计通过。浏览器测试必须使用独立配置与测试工作区：
 
 ```sh
-python3 web/start.py --deepseek --state-dir .local-state/custom-tools-acceptance --port 8767 --workspace /绝对路径/测试工作区
-# 另一个终端设置 Playwright 环境变量后运行：
-node web/tests/custom_tools_desktop.mjs
-
-python3 web/start.py --deepseek --state-dir .local-state/activity-turn-acceptance --port 8768 --workspace /绝对路径/测试工作区
-node web/tests/activity_desktop.mjs
-node web/tests/thread_lifecycle_desktop.mjs
-
-python3 web/start.py --deepseek --state-dir .local-state/chat-ui-acceptance --port 8769 --workspace /绝对路径/独立测试工作区
-CODEX_WEB_URL=http://127.0.0.1:8769 node web/tests/chat_layout_desktop.mjs
-CODEX_WEB_URL=http://127.0.0.1:8769 node web/tests/render_network_desktop.mjs
-# 生图专项要求该独立配置目录有有效 ChatGPT 原生授权及到 OpenAI 的网络连接。
-CODEX_WEB_URL=http://127.0.0.1:8769 node web/tests/images_desktop.mjs
-node web/tests/skills_mcp_desktop.mjs
+python3 web/start.py --deepseek --state-dir /tmp/codex-web-flash-audit/home --port 8785 --workspace /tmp/codex-web-flash-audit/workspace
+# 另一终端配置 PLAYWRIGHT_MODULE、CHROMIUM_BIN，并使用可用 Node.js：
+CODEX_WEB_URL=http://127.0.0.1:8785 CODEX_TEST_WORKSPACE=/tmp/codex-web-flash-audit/workspace node web/tests/flash_menu_followup_desktop.mjs
+CODEX_WEB_URL=http://127.0.0.1:8785 CODEX_TEST_WORKSPACE=/tmp/codex-web-flash-audit/workspace node web/tests/native_builtin_skills_desktop.mjs
+CODEX_WEB_URL=http://127.0.0.1:8785 CODEX_TEST_HOME=/tmp/codex-web-flash-audit/home node web/tests/chat_state_desktop.mjs
+CODEX_WEB_URL=http://127.0.0.1:8785 node web/tests/connection_state_desktop.mjs
+CODEX_WEB_URL=http://127.0.0.1:8785 CODEX_TEST_HOME=/tmp/codex-web-flash-audit/home CODEX_TEST_WORKSPACE=/tmp/codex-web-flash-audit/workspace node web/tests/native_flow_audit.mjs
 ```
 
-并发和删除专项只会删除本次新建的测试会话，要求使用上述独立配置目录。
+新验收只调用 `deepseek-flash`。压缩专项 `flash_compaction_followup_desktop.mjs` 仅能在独立实例运行，会临时降低阈值并恢复；OAuth 专项 `flash_oauth_mcp_desktop.mjs` 仅启动本机测试服务。自动记忆专项 `native_memory_auto_flash_desktop.mjs` 需要已有自然闲置至少一小时的合格历史，无合格源明确退出，不把空跑算通过。数据库专项支持 `CODEX_TEST_HOME` 精确指定 `/tmp` 独立实例，凭据仍通过私有文件提供，不写入测试结果。
 
-可选浏览器检查：`PLAYWRIGHT_MODULE=/绝对路径/playwright/index.mjs CHROMIUM_BIN=/绝对路径/chromium node web/tests/browser.mjs`。启动 Web 服务后再运行；截图默认保存到 `/tmp/codex-web-screenshots/`。
+数据库 Agent 专项还需先配置并验证独立只读示例库，将 `CODEX_TEST_DB_CONNECTION_ID` 指向其真实连接 ID，同时设置 `CODEX_TEST_HOME`、`CODEX_TEST_WORKSPACE`、`CODEX_WEB_URL`。`database_agent_workflow_desktop.mjs` 验证 Sakila 的计划、修改批准、停止、修改条件继续与最终三问；`database_multiquestion_desktop.mjs` 验证普通聊天一次多问。脚本核对独立 SQL 基准和数据指纹，不能指向真实业务库作实验。
 
-界面中的“回退”仅调用原生历史回退接口，不撤销磁盘文件改动。原生能力面板和终端能执行本机操作，按本地开发工具方式使用。
+旧混合入口已转入本轮 Flash 验收；纯账号、生图、Pro 搜索源码保存在不可执行的 `web/tests/history/removed-services/`，历史结果不改写。无独立环境、零检查或检查失败均不能返回假成功。
+
+本轮能力、修复、逐项测试及剩余条件见 [CAPABILITIES.md](CAPABILITIES.md)、[WEB_AUDIT.md](WEB_AUDIT.md) 和 [TEST_REPORT.md](TEST_REPORT.md)。构建、语法、截图、协议和真实模型验证分别记录；项目没有前端打包或 TypeScript。
 
 ## 参考与许可
 
@@ -218,4 +201,15 @@ node web/tests/skills_mcp_desktop.mjs
 本项目为独立 Web 界面，不是 OpenAI 官方桌面产品。
 
 
-上下文与原生功能专项使用独立 `.local-state/ui-native-acceptance` 配置和测试工作目录，按顺序执行 `native_ui_desktop.mjs`、`compaction_desktop.mjs`、`goal_complete_desktop.mjs`。这些脚本检查实例身份，不允许直接指向日常配置；`compaction_desktop.mjs` 只在独立配置中临时调低阈值并恢复。ChatGPT 快速档位的真实响应测试需独立配置中有有效的 ChatGPT 登录。所有请求均经网页控件发起，本地反馈保存会测试，上传不会执行。
+## 2026-10-26 稳定性排查
+
+本轮会话草稿、提交事务、审批连接归属、流式历史恢复、运行会话列表与小窗口交互的修复、复现步骤及真实验证见 [WEB_AUDIT.md](WEB_AUDIT.md)。文本草稿按标签页和会话保存，附件在当前页面中按会话保留；重连不会自动重发任务。
+
+停止流程已补齐：仅调用 `turn/interrupt` 会中断回合，Agent 的可续接命令仍可能存活。后续核查已确认本版本原生 `thread/backgroundTerminals/list` 与 `terminate` 可以定向回收，单命令及并发隔离验证均通过，不需要修改 Codex 核心；默认停止按钮及目标暂停/移除已串联这一步，确认本轮 managed terminals 清空后展示结果，失败可重试。页面保留未确认退出提示，原始失败及后续验证见 `WEB_AUDIT.md`。
+
+
+## 当前桌面验收记录
+
+最新证据位于 `test-results/final-fixes-2026-10-26/`。当前保留十二个 / 命令；插件前端入口隐藏，刚才测试的Playwright与24好玩MCP已卸载。旧未见空预览分叉由本实例只读元数据补发现并经原生确认，目标真实观测与原生预算分列；审查后委派已在同组合复验通过。此前HTTP MCP/OAuth、四库与自动记忆结果保留，不默认运行历史Pro/ChatGPT或额外Skill。
+
+升级后通过 `python3 web/start.py --deepseek --state-dir 原DeepSeek配置目录` 重启，以重新生成正确的原生V1委派能力目录；随后刷新建立新原生连接。旧V2会话的委派版本无法自动迁移，需要新建会话，历史不删除。原生目标预算仍可能漏计，不能当硬费用上限；网页显示其与真实已观测消耗的差异。多租户未实现，严格国际出口测试已取消。

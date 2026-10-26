@@ -1,0 +1,519 @@
+{
+  "threadId": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+  "sourceRollout": "/tmp/codex-web-flash-audit/home/sessions/2026/10/26/rollout-2026-10-26T17-40-28-01a17795-2f4d-7ec1-9c54-33ca63d3dae6.jsonl",
+  "result": "passed with original goal objective; interrupt and real output precede goal mutations",
+  "evidence": {
+    "threadId": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+    "createdFromUi": true,
+    "firstTurn": "01a17795-330e-7260-9f70-ab5c553d2d08",
+    "resumedTurn": "01a17795-42a6-7c31-8896-f05194b88268",
+    "pauseKilledManagedCommand": true,
+    "hostProcessCount": 0,
+    "tailWriteAbsent": true,
+    "resumeStartedNewTurn": true,
+    "removedFromUi": true,
+    "finalGoal": null
+  },
+  "events": [
+    {
+      "timestamp": "2026-10-26T09:40:28.987Z",
+      "ordinal": 2,
+      "type": "response_item",
+      "payload": {
+        "type": "message",
+        "id": "msg_01a17795-32b1-7183-acae-e3ad2f25a764",
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "<codex_internal_context source=\"user_goal\">\nUser set the goal: [objective omitted; exceeds the evidence limit].\nUser set goal status: \"active\".\n</codex_internal_context>"
+          }
+        ],
+        "internal_chat_message_metadata_passthrough": {
+          "turn_id": "auto-compact-0",
+          "create_time": 1793007628.977043,
+          "content_item_kinds": [
+            "user.goal.omitted"
+          ],
+          "content_item_metadata": [
+            {
+              "provenance": {
+                "type": "harness",
+                "hook": false
+              }
+            }
+          ]
+        }
+      },
+      "metadata": {
+        "client_authored": false,
+        "user_input_order": 0
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:29.041Z",
+      "ordinal": 3,
+      "type": "event_msg",
+      "payload": {
+        "type": "thread_goal_updated",
+        "threadId": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+        "goal": {
+          "threadId": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+          "status": "active",
+          "tokenBudget": 30000,
+          "tokensUsed": 0,
+          "timeUsedSeconds": 0,
+          "createdAt": 1793007629,
+          "updatedAt": 1793007629
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:29.093Z",
+      "ordinal": 4,
+      "type": "event_msg",
+      "payload": {
+        "type": "task_started",
+        "turn_attribution": {
+          "turn_id": "01a17795-330e-7260-9f70-ab5c553d2d08",
+          "turn_trigger": "goal",
+          "parent_turn_id": null,
+          "initiating_agent_path": null,
+          "root_turn_id": "01a17795-330e-7260-9f70-ab5c553d2d08"
+        },
+        "turn_id": "01a17795-330e-7260-9f70-ab5c553d2d08",
+        "root_turn_id": "01a17795-330e-7260-9f70-ab5c553d2d08",
+        "started_at": 1793007629,
+        "model_context_window": 996147,
+        "collaboration_mode_kind": "default"
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:30.593Z",
+      "ordinal": 13,
+      "type": "event_msg",
+      "payload": {
+        "type": "item_completed",
+        "thread_id": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+        "turn_id": "01a17795-330e-7260-9f70-ab5c553d2d08",
+        "item": {
+          "type": "Reasoning",
+          "id": "5ce8e3a3-057f-4c4a-a9f7-1492db1d2d92",
+          "summary_text": [],
+          "raw_content": [
+            "We need execute exact command with yield 1000, no justification/prefix. Then write_stdin wait real ending. Then read cwd listing. Must only create two files. Need avoid any other file writes. Use exec command exactly. We need start commentary before tools."
+          ]
+        },
+        "started_at_ms": 1793007630207,
+        "completed_at_ms": 1793007630592
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:30.847Z",
+      "ordinal": 15,
+      "type": "event_msg",
+      "payload": {
+        "type": "item_completed",
+        "thread_id": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+        "turn_id": "01a17795-330e-7260-9f70-ab5c553d2d08",
+        "item": {
+          "type": "AgentMessage",
+          "id": "b6da1127-4d2b-4e5c-920b-1346875f328c",
+          "content": [
+            {
+              "type": "Text",
+              "text": "我会按要求启动这次带等待的验收命令，并通过同一进程会话等待其真实结束；随后读取当前工作目录并报告，保持目标为 active。"
+            }
+          ],
+          "phase": "commentary"
+        },
+        "started_at_ms": 1793007630606,
+        "completed_at_ms": 1793007630847
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:31.302Z",
+      "ordinal": 17,
+      "type": "response_item",
+      "payload": {
+        "type": "function_call",
+        "status": "completed",
+        "id": "91e737c0-ba5a-4cf2-b1da-998819488dda",
+        "name": "exec_command",
+        "arguments": "{\"cmd\": \"python3 -c \\\"import time; from pathlib import Path; Path('menu-goal-started-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743'); time.sleep(45); Path('menu-goal-tail-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743')\\\"\", \"sandbox_permissions\": \"use_default\", \"yield_time_ms\": 1000}",
+        "call_id": "call_00_6RpycWuAQGf5RDlr9HpP1962",
+        "internal_chat_message_metadata_passthrough": {
+          "turn_id": "01a17795-330e-7260-9f70-ab5c553d2d08"
+        }
+      },
+      "metadata": {
+        "client_authored": false,
+        "user_input_order": 2
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:31.936Z",
+      "ordinal": 19,
+      "type": "response_item",
+      "payload": {
+        "type": "function_call_output",
+        "id": "fco_01a17795-3e40-7813-be10-ff56ebd8fd05",
+        "call_id": "call_00_6RpycWuAQGf5RDlr9HpP1962",
+        "output": "Wall time: 0.6 seconds\naborted by user",
+        "internal_chat_message_metadata_passthrough": {
+          "turn_id": "01a17795-330e-7260-9f70-ab5c553d2d08",
+          "create_time": 1793007631.936146
+        }
+      },
+      "metadata": {
+        "client_authored": false,
+        "fallback_token_limit_override": 12000
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:31.994Z",
+      "ordinal": 22,
+      "type": "event_msg",
+      "payload": {
+        "type": "turn_aborted",
+        "root_turn_id": "01a17795-330e-7260-9f70-ab5c553d2d08",
+        "turn_id": "01a17795-330e-7260-9f70-ab5c553d2d08",
+        "reason": "interrupted",
+        "started_at": 1793007629,
+        "completed_at": 1793007631,
+        "duration_ms": 2900
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:32.115Z",
+      "ordinal": 23,
+      "type": "event_msg",
+      "payload": {
+        "type": "item_completed",
+        "thread_id": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+        "turn_id": "01a17795-330e-7260-9f70-ab5c553d2d08",
+        "item": {
+          "type": "CommandExecution",
+          "id": "call_00_6RpycWuAQGf5RDlr9HpP1962",
+          "process_id": "82167",
+          "command": [
+            "/bin/bash",
+            "-lc",
+            "python3 -c \"import time; from pathlib import Path; Path('menu-goal-started-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743'); time.sleep(45); Path('menu-goal-tail-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743')\""
+          ],
+          "cwd": "file:///tmp/codex-web-flash-audit/workspace",
+          "parsed_cmd": [
+            {
+              "type": "unknown",
+              "cmd": "python3 -c \"import time; from pathlib import Path; Path('menu-goal-started-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743'); time.sleep(45); Path('menu-goal-tail-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743')\""
+            }
+          ],
+          "source": "unified_exec_startup",
+          "status": "failed",
+          "aggregated_output": "",
+          "exit_code": -1,
+          "duration": {
+            "secs": 0,
+            "nanos": 570206249
+          }
+        },
+        "started_at_ms": 1793007631539,
+        "completed_at_ms": 1793007632114
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:32.280Z",
+      "ordinal": 25,
+      "type": "response_item",
+      "payload": {
+        "type": "message",
+        "id": "msg_01a17795-3f95-7b42-be0e-3222ff14044f",
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "<codex_internal_context source=\"user_goal\">\nUser set goal status: \"paused\".\n</codex_internal_context>"
+          }
+        ],
+        "internal_chat_message_metadata_passthrough": {
+          "turn_id": "auto-compact-1",
+          "create_time": 1793007632.2778144,
+          "content_item_kinds": [
+            "user.goal"
+          ],
+          "content_item_metadata": [
+            {
+              "provenance": {
+                "type": "harness",
+                "hook": false
+              }
+            }
+          ]
+        }
+      },
+      "metadata": {
+        "client_authored": false,
+        "user_input_order": 3
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:32.323Z",
+      "ordinal": 26,
+      "type": "event_msg",
+      "payload": {
+        "type": "thread_goal_updated",
+        "threadId": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+        "goal": {
+          "threadId": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+          "status": "paused",
+          "tokenBudget": 30000,
+          "tokensUsed": 1813,
+          "timeUsedSeconds": 3,
+          "createdAt": 1793007629,
+          "updatedAt": 1793007632
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:33.017Z",
+      "ordinal": 29,
+      "type": "response_item",
+      "payload": {
+        "type": "message",
+        "id": "msg_01a17795-4277-7001-abf1-c9f2a1a965f3",
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "<codex_internal_context source=\"user_goal\">\nUser set goal status: \"active\".\n</codex_internal_context>"
+          }
+        ],
+        "internal_chat_message_metadata_passthrough": {
+          "turn_id": "auto-compact-2",
+          "create_time": 1793007633.0157733,
+          "content_item_kinds": [
+            "user.goal"
+          ],
+          "content_item_metadata": [
+            {
+              "provenance": {
+                "type": "harness",
+                "hook": false
+              }
+            }
+          ]
+        }
+      },
+      "metadata": {
+        "client_authored": false,
+        "user_input_order": 4
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:33.040Z",
+      "ordinal": 30,
+      "type": "event_msg",
+      "payload": {
+        "type": "thread_goal_updated",
+        "threadId": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+        "goal": {
+          "threadId": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+          "status": "active",
+          "tokenBudget": 30000,
+          "tokensUsed": 1813,
+          "timeUsedSeconds": 3,
+          "createdAt": 1793007629,
+          "updatedAt": 1793007633
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:33.086Z",
+      "ordinal": 31,
+      "type": "event_msg",
+      "payload": {
+        "type": "task_started",
+        "turn_attribution": {
+          "turn_id": "01a17795-42a6-7c31-8896-f05194b88268",
+          "turn_trigger": "goal",
+          "parent_turn_id": null,
+          "initiating_agent_path": null,
+          "root_turn_id": "01a17795-42a6-7c31-8896-f05194b88268"
+        },
+        "turn_id": "01a17795-42a6-7c31-8896-f05194b88268",
+        "root_turn_id": "01a17795-42a6-7c31-8896-f05194b88268",
+        "started_at": 1793007633,
+        "model_context_window": 996147,
+        "collaboration_mode_kind": "default"
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:35.104Z",
+      "ordinal": 34,
+      "type": "event_msg",
+      "payload": {
+        "type": "item_completed",
+        "thread_id": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+        "turn_id": "01a17795-42a6-7c31-8896-f05194b88268",
+        "item": {
+          "type": "Reasoning",
+          "id": "8e1d1e3e-df56-4cbc-aad8-f5b1d2cccf70",
+          "summary_text": [],
+          "raw_content": [
+            "Now continuation must execute again per objective every start/continue. Previous was aborted by user and may process still background, but no session id because aborted. Objective says every start/continue first execute. Need exact command yield 1000. Then write_stdin wait. Since previous may have actually started, overwrites started file, no violation creating same two only. Command may need session id returned if still running. Let's run."
+          ]
+        },
+        "started_at_ms": 1793007634425,
+        "completed_at_ms": 1793007635103
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:35.348Z",
+      "ordinal": 36,
+      "type": "event_msg",
+      "payload": {
+        "type": "item_completed",
+        "thread_id": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+        "turn_id": "01a17795-42a6-7c31-8896-f05194b88268",
+        "item": {
+          "type": "AgentMessage",
+          "id": "06e1b782-26c0-418c-b227-95d730aca765",
+          "content": [
+            {
+              "type": "Text",
+              "text": "上一轮命令被用户中止，未取得可继续轮询的进程会话。我现在重新执行同一验收命令，并根据返回的会话句柄等待结束。"
+            }
+          ],
+          "phase": "commentary"
+        },
+        "started_at_ms": 1793007635118,
+        "completed_at_ms": 1793007635347
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:35.789Z",
+      "ordinal": 38,
+      "type": "response_item",
+      "payload": {
+        "type": "function_call",
+        "status": "completed",
+        "id": "3ac48aa3-86fe-45a1-8bb3-1bd78f314ae5",
+        "name": "exec_command",
+        "arguments": "{\"cmd\": \"python3 -c \\\"import time; from pathlib import Path; Path('menu-goal-started-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743'); time.sleep(45); Path('menu-goal-tail-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743')\\\"\", \"sandbox_permissions\": \"use_default\", \"yield_time_ms\": 1000}",
+        "call_id": "call_00_bp3oEMCbiNixQgR4eu7M3093",
+        "internal_chat_message_metadata_passthrough": {
+          "turn_id": "01a17795-42a6-7c31-8896-f05194b88268"
+        }
+      },
+      "metadata": {
+        "client_authored": false,
+        "user_input_order": 6
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:36.597Z",
+      "ordinal": 40,
+      "type": "response_item",
+      "payload": {
+        "type": "function_call_output",
+        "id": "fco_01a17795-5072-7d21-8e34-c9d9ce2c8751",
+        "call_id": "call_00_bp3oEMCbiNixQgR4eu7M3093",
+        "output": "Wall time: 0.8 seconds\naborted by user",
+        "internal_chat_message_metadata_passthrough": {
+          "turn_id": "01a17795-42a6-7c31-8896-f05194b88268",
+          "create_time": 1793007636.5948768
+        }
+      },
+      "metadata": {
+        "client_authored": false,
+        "fallback_token_limit_override": 12000
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:36.745Z",
+      "ordinal": 43,
+      "type": "event_msg",
+      "payload": {
+        "type": "turn_aborted",
+        "root_turn_id": "01a17795-42a6-7c31-8896-f05194b88268",
+        "turn_id": "01a17795-42a6-7c31-8896-f05194b88268",
+        "reason": "interrupted",
+        "started_at": 1793007633,
+        "completed_at": 1793007636,
+        "duration_ms": 3661
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:36.902Z",
+      "ordinal": 44,
+      "type": "event_msg",
+      "payload": {
+        "type": "item_completed",
+        "thread_id": "01a17795-2f4d-7ec1-9c54-33ca63d3dae6",
+        "turn_id": "01a17795-42a6-7c31-8896-f05194b88268",
+        "item": {
+          "type": "CommandExecution",
+          "id": "call_00_bp3oEMCbiNixQgR4eu7M3093",
+          "process_id": "55013",
+          "command": [
+            "/bin/bash",
+            "-lc",
+            "python3 -c \"import time; from pathlib import Path; Path('menu-goal-started-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743'); time.sleep(45); Path('menu-goal-tail-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743')\""
+          ],
+          "cwd": "file:///tmp/codex-web-flash-audit/workspace",
+          "parsed_cmd": [
+            {
+              "type": "unknown",
+              "cmd": "python3 -c \"import time; from pathlib import Path; Path('menu-goal-started-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743'); time.sleep(45); Path('menu-goal-tail-1793007625602-1689743.txt').write_text('FLASH_MENU_GOAL_WAIT_1793007625602-1689743')\""
+            }
+          ],
+          "source": "unified_exec_startup",
+          "status": "failed",
+          "aggregated_output": "",
+          "exit_code": -1,
+          "duration": {
+            "secs": 0,
+            "nanos": 901056077
+          }
+        },
+        "started_at_ms": 1793007635994,
+        "completed_at_ms": 1793007636900
+      }
+    },
+    {
+      "timestamp": "2026-10-26T09:40:36.935Z",
+      "ordinal": 46,
+      "type": "response_item",
+      "payload": {
+        "type": "message",
+        "id": "msg_01a17795-51c4-7bb2-9ec9-64a374176605",
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "<codex_internal_context source=\"user_goal\">\nUser cleared the goal.\n</codex_internal_context>"
+          }
+        ],
+        "internal_chat_message_metadata_passthrough": {
+          "turn_id": "auto-compact-3",
+          "create_time": 1793007636.932327,
+          "content_item_kinds": [
+            "user.goal"
+          ],
+          "content_item_metadata": [
+            {
+              "provenance": {
+                "type": "harness",
+                "hook": false
+              }
+            }
+          ]
+        }
+      },
+      "metadata": {
+        "client_authored": false,
+        "user_input_order": 7
+      }
+    }
+  ]
+}

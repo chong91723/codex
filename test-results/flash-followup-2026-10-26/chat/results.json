@@ -1,0 +1,303 @@
+{
+  "scope": "Real native app-server and DeepSeek for submission; explicit DOM fixtures only for scroll/layout; no fabricated successful native events",
+  "results": [
+    {
+      "name": "CW-001 连续 Enter 仅创建一个会话和一个真实任务",
+      "status": "passed",
+      "evidence": {
+        "threadStarts": 1,
+        "turnStarts": 1,
+        "nativeStatus": "completed"
+      }
+    },
+    {
+      "name": "CW-003 延迟确认保留新输入且不复活已结束的任务",
+      "status": "passed",
+      "evidence": {
+        "newInputPreserved": true,
+        "completedTurnStillIdle": true
+      }
+    },
+    {
+      "name": "CW-002 文本和附件按会话隔离，文本刷新后恢复",
+      "status": "passed",
+      "evidence": {
+        "textIsolation": true,
+        "attachmentIsolation": true,
+        "textSurvivesReload": true
+      }
+    },
+    {
+      "name": "CW-003 新会话创建的晚到响应不会切走当前会话或清空草稿",
+      "status": "passed",
+      "evidence": {
+        "lateResponseDoesNotNavigate": true,
+        "originalInputSent": true,
+        "newDraftUntouched": true
+      }
+    },
+    {
+      "name": "CW-002 附件读取期间切换会话，附件仍归属原会话",
+      "status": "passed",
+      "evidence": {
+        "fileReaderOwnershipPreserved": true
+      }
+    },
+    {
+      "name": "CW-004 历史阅读不被更新打断，可回到最新并恢复各会话位置",
+      "status": "passed",
+      "evidence": {
+        "presentationFixtureOnly": true,
+        "historyPositionPreserved": true,
+        "jumpToLatestWorks": true
+      }
+    },
+    {
+      "name": "键盘中文组合输入及 Shift Enter 不提交",
+      "status": "passed",
+      "evidence": {
+        "compositionNotSubmitted": true,
+        "shiftEnterNotSubmitted": true
+      }
+    },
+    {
+      "name": "Flash 选择与后台实际配置一致，真实执行命令",
+      "status": "passed",
+      "evidence": {
+        "requestedModel": "deepseek-flash",
+        "nativeModel": "deepseek-flash",
+        "nativeProvider": "deepseek",
+        "actualCommandSucceeded": true
+      }
+    },
+    {
+      "name": "CW-008 真实模型失败可重新编辑，显式重试后成功",
+      "status": "passed",
+      "evidence": {
+        "realProviderFailureVisible": true,
+        "taskRestored": true,
+        "explicitRetrySucceeded": true
+      }
+    },
+    {
+      "name": "桌面长错误提示不遮挡输入区，且可以立即关闭",
+      "status": "passed",
+      "evidence": {
+        "presentationOnly": true,
+        "composerUnobstructed": true,
+        "dismissible": true
+      }
+    },
+    {
+      "name": "小窗口与长内容无整页横向溢出，发送按钮始终可见",
+      "status": "passed",
+      "evidence": [
+        {
+          "width": 1024,
+          "height": 768
+        },
+        {
+          "width": 1280,
+          "height": 720
+        },
+        {
+          "width": 1440,
+          "height": 900
+        }
+      ]
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17786-0171-7bd3-b02f-7afd5f527a02",
+      "model": "deepseek-flash",
+      "inputText": "Reply exactly AUDIT_ONCE. Do not use tools."
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17786-0171-7bd3-b02f-7afd5f527a02",
+      "model": "deepseek-flash",
+      "inputText": "Reply exactly AUDIT_DRAFT. Do not use tools."
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17786-0171-7bd3-b02f-7afd5f527a02"
+    },
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17786-0171-7bd3-b02f-7afd5f527a02"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17786-31d0-73e3-8671-951e3ddb9f82",
+      "model": "deepseek-flash",
+      "inputText": "Reply exactly BACKGROUND_A. Do not use tools."
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17786-0171-7bd3-b02f-7afd5f527a02"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17786-0171-7bd3-b02f-7afd5f527a02"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17786-4619-74d1-8b5b-88b0bd629cad",
+      "model": "deepseek-flash",
+      "inputText": "Run python3 -c \"print(13579 * 2468)\" with your shell tool, then report its result."
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "audit-nonexistent-model"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17786-68ac-7670-b2e5-015ae355c649",
+      "model": "audit-nonexistent-model",
+      "inputText": "Reply exactly AUDIT_RETRY_OK. Do not use tools."
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17786-68ac-7670-b2e5-015ae355c649",
+      "model": "deepseek-flash",
+      "inputText": "Reply exactly AUDIT_RETRY_OK. Do not use tools."
+    },
+    {
+      "method": "thread/list"
+    }
+  ],
+  "completed": [
+    [
+      "01a17786-032a-7963-a959-e330df9dd551",
+      {
+        "threadId": "01a17786-0171-7bd3-b02f-7afd5f527a02",
+        "status": "completed"
+      }
+    ],
+    [
+      "01a17786-13d8-7660-abf8-bd2aaa036777",
+      {
+        "threadId": "01a17786-0171-7bd3-b02f-7afd5f527a02",
+        "status": "completed"
+      }
+    ],
+    [
+      "01a17786-3389-7583-8d82-1aff35793b10",
+      {
+        "threadId": "01a17786-31d0-73e3-8671-951e3ddb9f82",
+        "status": "completed"
+      }
+    ],
+    [
+      "01a17786-478b-76d0-b920-5d4340da9816",
+      {
+        "threadId": "01a17786-4619-74d1-8b5b-88b0bd629cad",
+        "status": "completed"
+      }
+    ],
+    [
+      "01a17786-6a32-7953-9562-fa3e7bda31f8",
+      {
+        "threadId": "01a17786-68ac-7670-b2e5-015ae355c649",
+        "status": "failed"
+      }
+    ],
+    [
+      "01a17786-7370-73d1-96ba-dbb76b3ec9ab",
+      {
+        "threadId": "01a17786-68ac-7670-b2e5-015ae355c649",
+        "status": "completed"
+      }
+    ]
+  ],
+  "errors": []
+}

@@ -1,0 +1,1201 @@
+{
+  "scope": "Only deepseek-flash. Native goal counts remain unchanged; Web observation covers the parent thread only.",
+  "base": "http://127.0.0.1:18865",
+  "home": "/tmp/codex-web-final-fixes/home",
+  "workspace": "/tmp/codex-web-final-fixes/workspace",
+  "results": [
+    {
+      "name": "全新目标展示真实观测消耗并保留原生计数及预算警示",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "nativeTokens": 0,
+        "webObservedTokens": 1625,
+        "exactPublicCounterFormula": true,
+        "mainModel": "deepseek-flash",
+        "rawLastCumulative": {
+          "totalTokens": 25044,
+          "inputTokens": 23847,
+          "cachedInputTokens": 23419,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 1197,
+          "reasoningOutputTokens": 1132
+        },
+        "warningShown": true
+      }
+    },
+    {
+      "name": "刷新恢复不重复记账、不新增目标回合，原生原始计数不变",
+      "status": "passed",
+      "evidence": {
+        "nativeTokens": 0,
+        "webObservedTokens": 1625,
+        "noNewTurn": true
+      }
+    },
+    {
+      "name": "目标完成后的普通真实Flash对话不计入旧目标消耗",
+      "status": "passed",
+      "evidence": {
+        "unchangedGoalUsage": 1625,
+        "ordinaryTurnId": "01a1780e-f298-7090-bc15-7904502ba14a",
+        "lastActualThreadTotal": {
+          "totalTokens": 38354,
+          "inputTokens": 37147,
+          "cachedInputTokens": 36475,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 1207,
+          "reasoningOutputTokens": 1132
+        }
+      }
+    },
+    {
+      "name": "移除后第二个目标从真实新基线统计，不继承旧目标或普通回合",
+      "status": "passed",
+      "evidence": {
+        "newGoalCreatedAt": 1793015610,
+        "nativeTokens": 1639,
+        "newGoalWebObservedTokens": 2181,
+        "exactDifference": 2181
+      }
+    },
+    {
+      "name": "另一真实会话不会继承当前目标观测",
+      "status": "passed",
+      "evidence": {
+        "otherThreadId": "01a1780f-106c-7481-87df-4a5fe660b371",
+        "noGoalInherited": true,
+        "parentGoalUsageUnchanged": true
+      }
+    },
+    {
+      "name": "没有本地观测历史的新浏览器明确显示未知，不用0冒充无费用",
+      "status": "passed",
+      "evidence": {
+        "nativeCountPreserved": 1639,
+        "webObservation": null,
+        "coverage": "incomplete, not zero"
+      }
+    }
+  ],
+  "errors": [],
+  "cleanup": [
+    {
+      "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+      "deleted": true
+    },
+    {
+      "threadId": "01a1780f-106c-7481-87df-4a5fe660b371",
+      "deleted": true
+    }
+  ],
+  "sent": [
+    {
+      "method": "initialize",
+      "params": {
+        "clientInfo": {
+          "name": "codex_web_native",
+          "title": "Codex Web",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "experimentalApi": true
+        }
+      }
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "model/list",
+      "params": {
+        "includeHidden": true
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "skills/list",
+      "params": {
+        "cwds": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "forceReload": true
+      }
+    },
+    {
+      "method": "thread/start",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "model": "deepseek-flash",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        }
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/goal/get",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0"
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "low",
+            "developer_instructions": null
+          }
+        }
+      }
+    },
+    {
+      "method": "thread/goal/set",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "origin": "user",
+        "objective": "明确的短测试目标：只回复“FIRST_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+        "status": "active",
+        "tokenBudget": 200000
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "skills/list",
+      "params": {
+        "cwds": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "forceReload": true
+      }
+    },
+    {
+      "method": "thread/goal/get",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0"
+      }
+    },
+    {
+      "method": "initialize",
+      "params": {
+        "clientInfo": {
+          "name": "codex_web_native",
+          "title": "Codex Web",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "experimentalApi": true
+        }
+      }
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "model/list",
+      "params": {
+        "includeHidden": true
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        }
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "turn/start",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "input": [
+          {
+            "type": "text",
+            "text": "只回复 ORDINARY_AFTER_GOAL_OK。不要使用任何工具，不要创建、修改或继续任何目标。",
+            "text_elements": []
+          }
+        ],
+        "model": "deepseek-flash",
+        "effort": "low",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "low",
+            "developer_instructions": null
+          }
+        },
+        "additionalContext": {
+          "codex-web-runtime": {
+            "kind": "application",
+            "value": "Runtime configuration facts: model provider = deepseek; active model ID for this turn = deepseek-flash. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model."
+          }
+        }
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "skills/list",
+      "params": {
+        "cwds": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "forceReload": true
+      }
+    },
+    {
+      "method": "thread/goal/get",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0"
+      }
+    },
+    {
+      "method": "thread/goal/clear",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "origin": "user"
+      }
+    },
+    {
+      "method": "skills/list",
+      "params": {
+        "cwds": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "forceReload": true
+      }
+    },
+    {
+      "method": "thread/goal/get",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "low",
+            "developer_instructions": null
+          }
+        }
+      }
+    },
+    {
+      "method": "thread/goal/set",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "origin": "user",
+        "objective": "明确的短测试目标：只回复“SECOND_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+        "status": "active",
+        "tokenBudget": 200000
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/start",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "model": "deepseek-flash",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        }
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "turn/start",
+      "params": {
+        "threadId": "01a1780f-106c-7481-87df-4a5fe660b371",
+        "input": [
+          {
+            "type": "text",
+            "text": "只回复 SEPARATE_THREAD_USAGE_OK。不要使用任何工具或创建目标。",
+            "text_elements": []
+          }
+        ],
+        "model": "deepseek-flash",
+        "effort": "low",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "low",
+            "developer_instructions": null
+          }
+        },
+        "additionalContext": {
+          "codex-web-runtime": {
+            "kind": "application",
+            "value": "Runtime configuration facts: model provider = deepseek; active model ID for this turn = deepseek-flash. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model."
+          }
+        }
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "initialize",
+      "params": {
+        "clientInfo": {
+          "name": "codex_web_native",
+          "title": "Codex Web",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "experimentalApi": true
+        }
+      }
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "model/list",
+      "params": {
+        "includeHidden": true
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        }
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "initialize",
+      "params": {
+        "clientInfo": {
+          "name": "codex_web_native",
+          "title": "Codex Web",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "experimentalApi": true
+        }
+      }
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "model/list",
+      "params": {
+        "includeHidden": true
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        }
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/goal/get",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0"
+      }
+    },
+    {
+      "method": "thread/goal/clear",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "origin": "user"
+      }
+    },
+    {
+      "method": "thread/delete",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0"
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/goal/get",
+      "params": {
+        "threadId": "01a1780f-106c-7481-87df-4a5fe660b371"
+      }
+    },
+    {
+      "method": "thread/delete",
+      "params": {
+        "threadId": "01a1780f-106c-7481-87df-4a5fe660b371"
+      }
+    }
+  ],
+  "received": [
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": null,
+        "goal": {
+          "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+          "objective": "明确的短测试目标：只回复“FIRST_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "active",
+          "tokenBudget": 200000,
+          "tokensUsed": 0,
+          "timeUsedSeconds": 0,
+          "createdAt": 1793015596,
+          "updatedAt": 1793015596
+        }
+      },
+      "emittedAtMs": 1793015596054
+    },
+    {
+      "method": "turn/started",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turn": {
+          "id": "01a1780e-c41c-7f00-85dd-7b157b049299",
+          "rootTurnId": "01a1780e-c41c-7f00-85dd-7b157b049299",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "inProgress",
+          "error": null,
+          "startedAt": 1793015596,
+          "completedAt": null,
+          "durationMs": null
+        }
+      },
+      "emittedAtMs": 1793015596104
+    },
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-c41c-7f00-85dd-7b157b049299",
+        "goal": {
+          "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+          "objective": "明确的短测试目标：只回复“FIRST_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "active",
+          "tokenBudget": 200000,
+          "tokensUsed": 0,
+          "timeUsedSeconds": 1,
+          "createdAt": 1793015596,
+          "updatedAt": 1793015597
+        }
+      },
+      "emittedAtMs": 1793015597663
+    },
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-c41c-7f00-85dd-7b157b049299",
+        "goal": {
+          "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+          "objective": "明确的短测试目标：只回复“FIRST_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "complete",
+          "tokenBudget": 200000,
+          "tokensUsed": 0,
+          "timeUsedSeconds": 1,
+          "createdAt": 1793015596,
+          "updatedAt": 1793015597
+        }
+      },
+      "emittedAtMs": 1793015597665
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-c41c-7f00-85dd-7b157b049299",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 11856,
+            "inputTokens": 11777,
+            "cachedInputTokens": 11643,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 79,
+            "reasoningOutputTokens": 40
+          },
+          "last": {
+            "totalTokens": 11856,
+            "inputTokens": 11777,
+            "cachedInputTokens": 11643,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 79,
+            "reasoningOutputTokens": 40
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793015597694
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-c41c-7f00-85dd-7b157b049299",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 25044,
+            "inputTokens": 23847,
+            "cachedInputTokens": 23419,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 1197,
+            "reasoningOutputTokens": 1132
+          },
+          "last": {
+            "totalTokens": 13188,
+            "inputTokens": 12070,
+            "cachedInputTokens": 11776,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 1118,
+            "reasoningOutputTokens": 1092
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793015606456
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turn": {
+          "id": "01a1780e-c41c-7f00-85dd-7b157b049299",
+          "rootTurnId": "01a1780e-c41c-7f00-85dd-7b157b049299",
+          "items": [
+            {
+              "type": "agentMessage",
+              "id": "cf575a3d-3fa8-4fb4-b24b-fa0d7657b089",
+              "text": "FIRST_GOAL_USAGE_OK\n\nToken 用量：0 / 200000，耗时 1 秒。",
+              "phase": "final_answer",
+              "memoryCitation": null,
+              "delivery": null,
+              "questions": null
+            }
+          ],
+          "itemsView": "summary",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1793015596,
+          "completedAt": 1793015606,
+          "durationMs": 10401
+        }
+      },
+      "emittedAtMs": 1793015606499
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-c41c-7f00-85dd-7b157b049299",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 25044,
+            "inputTokens": 23847,
+            "cachedInputTokens": 23419,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 1197,
+            "reasoningOutputTokens": 1132
+          },
+          "last": {
+            "totalTokens": 13188,
+            "inputTokens": 12070,
+            "cachedInputTokens": 11776,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 1118,
+            "reasoningOutputTokens": 1092
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793015607857
+    },
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": null,
+        "goal": {
+          "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+          "objective": "明确的短测试目标：只回复“FIRST_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "complete",
+          "tokenBudget": 200000,
+          "tokensUsed": 0,
+          "timeUsedSeconds": 1,
+          "createdAt": 1793015596,
+          "updatedAt": 1793015597
+        }
+      },
+      "emittedAtMs": 1793015607859
+    },
+    {
+      "method": "turn/started",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turn": {
+          "id": "01a1780e-f298-7090-bc15-7904502ba14a",
+          "rootTurnId": "01a1780e-f298-7090-bc15-7904502ba14a",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "inProgress",
+          "error": null,
+          "startedAt": 1793015607,
+          "completedAt": null,
+          "durationMs": null
+        }
+      },
+      "emittedAtMs": 1793015608001
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-f298-7090-bc15-7904502ba14a",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 38354,
+            "inputTokens": 37147,
+            "cachedInputTokens": 36475,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 1207,
+            "reasoningOutputTokens": 1132
+          },
+          "last": {
+            "totalTokens": 13310,
+            "inputTokens": 13300,
+            "cachedInputTokens": 13056,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 10,
+            "reasoningOutputTokens": 0
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793015609242
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turn": {
+          "id": "01a1780e-f298-7090-bc15-7904502ba14a",
+          "rootTurnId": "01a1780e-f298-7090-bc15-7904502ba14a",
+          "items": [
+            {
+              "type": "agentMessage",
+              "id": "090daff8-5fb8-4a76-a129-04aa9051389d",
+              "text": "ORDINARY_AFTER_GOAL_OK",
+              "phase": "final_answer",
+              "memoryCitation": null,
+              "delivery": null,
+              "questions": null
+            }
+          ],
+          "itemsView": "summary",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1793015607,
+          "completedAt": 1793015609,
+          "durationMs": 1267
+        }
+      },
+      "emittedAtMs": 1793015609265
+    },
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": null,
+        "goal": {
+          "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+          "objective": "明确的短测试目标：只回复“SECOND_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "active",
+          "tokenBudget": 200000,
+          "tokensUsed": 0,
+          "timeUsedSeconds": 0,
+          "createdAt": 1793015610,
+          "updatedAt": 1793015610
+        }
+      },
+      "emittedAtMs": 1793015610826
+    },
+    {
+      "method": "turn/started",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turn": {
+          "id": "01a1780e-fddd-7550-8f57-65aaa7995269",
+          "rootTurnId": "01a1780e-fddd-7550-8f57-65aaa7995269",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "inProgress",
+          "error": null,
+          "startedAt": 1793015610,
+          "completedAt": null,
+          "durationMs": null
+        }
+      },
+      "emittedAtMs": 1793015610947
+    },
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-fddd-7550-8f57-65aaa7995269",
+        "goal": {
+          "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+          "objective": "明确的短测试目标：只回复“SECOND_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "active",
+          "tokenBudget": 200000,
+          "tokensUsed": 1639,
+          "timeUsedSeconds": 1,
+          "createdAt": 1793015610,
+          "updatedAt": 1793015612
+        }
+      },
+      "emittedAtMs": 1793015612597
+    },
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-fddd-7550-8f57-65aaa7995269",
+        "goal": {
+          "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+          "objective": "明确的短测试目标：只回复“SECOND_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "complete",
+          "tokenBudget": 200000,
+          "tokensUsed": 1639,
+          "timeUsedSeconds": 1,
+          "createdAt": 1793015610,
+          "updatedAt": 1793015612
+        }
+      },
+      "emittedAtMs": 1793015612602
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-fddd-7550-8f57-65aaa7995269",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 53177,
+            "inputTokens": 51882,
+            "cachedInputTokens": 49659,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 1295,
+            "reasoningOutputTokens": 1181
+          },
+          "last": {
+            "totalTokens": 14823,
+            "inputTokens": 14735,
+            "cachedInputTokens": 13184,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 88,
+            "reasoningOutputTokens": 49
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793015612641
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-fddd-7550-8f57-65aaa7995269",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 68439,
+            "inputTokens": 66920,
+            "cachedInputTokens": 64379,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 1519,
+            "reasoningOutputTokens": 1378
+          },
+          "last": {
+            "totalTokens": 15262,
+            "inputTokens": 15038,
+            "cachedInputTokens": 14720,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 224,
+            "reasoningOutputTokens": 197
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793015615331
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turn": {
+          "id": "01a1780e-fddd-7550-8f57-65aaa7995269",
+          "rootTurnId": "01a1780e-fddd-7550-8f57-65aaa7995269",
+          "items": [
+            {
+              "type": "agentMessage",
+              "id": "15dac1c8-eee8-4a3f-a172-09e47b7fe282",
+              "text": "SECOND_GOAL_USAGE_OK\n\nToken 用量：1639 / 200000，耗时 1 秒。",
+              "phase": "final_answer",
+              "memoryCitation": null,
+              "delivery": null,
+              "questions": null
+            }
+          ],
+          "itemsView": "summary",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1793015610,
+          "completedAt": 1793015615,
+          "durationMs": 4442
+        }
+      },
+      "emittedAtMs": 1793015615356
+    },
+    {
+      "method": "turn/started",
+      "params": {
+        "threadId": "01a1780f-106c-7481-87df-4a5fe660b371",
+        "turn": {
+          "id": "01a1780f-10c6-70e2-b05a-947142c80337",
+          "rootTurnId": "01a1780f-10c6-70e2-b05a-947142c80337",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "inProgress",
+          "error": null,
+          "startedAt": 1793015615,
+          "completedAt": null,
+          "durationMs": null
+        }
+      },
+      "emittedAtMs": 1793015615744
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1780f-106c-7481-87df-4a5fe660b371",
+        "turnId": "01a1780f-10c6-70e2-b05a-947142c80337",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 10497,
+            "inputTokens": 10480,
+            "cachedInputTokens": 10240,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 17,
+            "reasoningOutputTokens": 8
+          },
+          "last": {
+            "totalTokens": 10497,
+            "inputTokens": 10480,
+            "cachedInputTokens": 10240,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 17,
+            "reasoningOutputTokens": 8
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793015617003
+    },
+    {
+      "method": "turn/completed",
+      "params": {
+        "threadId": "01a1780f-106c-7481-87df-4a5fe660b371",
+        "turn": {
+          "id": "01a1780f-10c6-70e2-b05a-947142c80337",
+          "rootTurnId": "01a1780f-10c6-70e2-b05a-947142c80337",
+          "items": [
+            {
+              "type": "agentMessage",
+              "id": "77666338-81f7-4d94-8e94-300774b083f0",
+              "text": "SEPARATE_THREAD_USAGE_OK",
+              "phase": "final_answer",
+              "memoryCitation": null,
+              "delivery": null,
+              "questions": null
+            }
+          ],
+          "itemsView": "summary",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1793015615,
+          "completedAt": 1793015617,
+          "durationMs": 1313
+        }
+      },
+      "emittedAtMs": 1793015617028
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-fddd-7550-8f57-65aaa7995269",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 68439,
+            "inputTokens": 66920,
+            "cachedInputTokens": 64379,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 1519,
+            "reasoningOutputTokens": 1378
+          },
+          "last": {
+            "totalTokens": 15262,
+            "inputTokens": 15038,
+            "cachedInputTokens": 14720,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 224,
+            "reasoningOutputTokens": 197
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793015617918
+    },
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": null,
+        "goal": {
+          "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+          "objective": "明确的短测试目标：只回复“SECOND_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "complete",
+          "tokenBudget": 200000,
+          "tokensUsed": 1639,
+          "timeUsedSeconds": 1,
+          "createdAt": 1793015610,
+          "updatedAt": 1793015612
+        }
+      },
+      "emittedAtMs": 1793015617920
+    },
+    {
+      "method": "thread/tokenUsage/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": "01a1780e-fddd-7550-8f57-65aaa7995269",
+        "tokenUsage": {
+          "total": {
+            "totalTokens": 68439,
+            "inputTokens": 66920,
+            "cachedInputTokens": 64379,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 1519,
+            "reasoningOutputTokens": 1378
+          },
+          "last": {
+            "totalTokens": 15262,
+            "inputTokens": 15038,
+            "cachedInputTokens": 14720,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 224,
+            "reasoningOutputTokens": 197
+          },
+          "modelContextWindow": 996147
+        }
+      },
+      "emittedAtMs": 1793015619700
+    },
+    {
+      "method": "thread/goal/updated",
+      "params": {
+        "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+        "turnId": null,
+        "goal": {
+          "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+          "objective": "明确的短测试目标：只回复“SECOND_GOAL_USAGE_OK”，并使用原生 update_goal 工具将此目标设为 complete。不要读写文件、运行命令、访问网络或委派子代理，不要创建另一个目标。",
+          "status": "complete",
+          "tokenBudget": 200000,
+          "tokensUsed": 1639,
+          "timeUsedSeconds": 1,
+          "createdAt": 1793015610,
+          "updatedAt": 1793015612
+        }
+      },
+      "emittedAtMs": 1793015619701
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+[
+  {
+    "turnId": "01a1784b-c04e-78e0-a7cf-cea4d5c98fef",
+    "itemId": "call_00_niS6aGVgSc3wKgVMRmNn0308",
+    "status": "completed",
+    "arguments": {
+      "connection_id": "9a98196c043a7d14103f6e1c",
+      "query": "SELECT\n    c.name AS category_name,\n    COUNT(r.rental_id) AS rental_count\nFROM rental AS r\nJOIN inventory AS i\n    ON i.inventory_id = r.inventory_id\nJOIN film_category AS fc\n    ON fc.film_id = i.film_id\nJOIN category AS c\n    ON c.category_id = fc.category_id\nWHERE r.rental_date >= '2005-07-01 00:00:00'\n  AND r.rental_date <  '2005-08-01 00:00:00'\nGROUP BY c.category_id, c.name\nORDER BY rental_count DESC, category_name ASC\nLIMIT 3;"
+    },
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"connectionId\": \"9a98196c043a7d14103f6e1c\", \"connectionName\": \"Sakila 示例 · 1793008203736-1701214\", \"engine\": \"mysql\", \"connectionVersion\": 1, \"connectionDependencies\": [{\"id\": \"9a98196c043a7d14103f6e1c\", \"version\": 1}], \"version\": 2, \"resultId\": \"4ffec3719e6c9a998b126705ef4bb363\", \"columns\": [{\"name\": \"category_name\", \"type\": \"string\", \"nativeType\": \"str\"}, {\"name\": \"rental_count\", \"type\": \"number\", \"nativeType\": \"int\"}], \"rowCount\": 3, \"storedBytes\": 2297, \"logicalBytes\": 51, \"sha256\": \"014bc86607c9232d232d44ce7468a97d0b87d27a941076e3390c283bbac8a617\", \"complete\": true, \"truncated\": false, \"storage\": \"parquet\", \"createdAt\": \"2026-10-26T12:59:59.400309+00:00\", \"elapsedMs\": 40, \"readOnly\": true}"
+        }
+      ],
+      "structuredContent": {
+        "connectionId": "9a98196c043a7d14103f6e1c",
+        "connectionName": "Sakila 示例 · 1793008203736-1701214",
+        "engine": "mysql",
+        "connectionVersion": 1,
+        "connectionDependencies": [
+          {
+            "id": "9a98196c043a7d14103f6e1c",
+            "version": 1
+          }
+        ],
+        "version": 2,
+        "resultId": "4ffec3719e6c9a998b126705ef4bb363",
+        "columns": [
+          {
+            "name": "category_name",
+            "type": "string",
+            "nativeType": "str"
+          },
+          {
+            "name": "rental_count",
+            "type": "number",
+            "nativeType": "int"
+          }
+        ],
+        "rowCount": 3,
+        "storedBytes": 2297,
+        "logicalBytes": 51,
+        "sha256": "014bc86607c9232d232d44ce7468a97d0b87d27a941076e3390c283bbac8a617",
+        "complete": true,
+        "truncated": false,
+        "storage": "parquet",
+        "createdAt": "2026-10-26T12:59:59.400309+00:00",
+        "elapsedMs": 40,
+        "readOnly": true
+      },
+      "_meta": null
+    },
+    "error": null
+  },
+  {
+    "turnId": "01a1784b-f3e0-7362-9e6f-96ee53145d31",
+    "itemId": "call_00_ET_B4RuEy1IrTVYOgvIJMSb5630",
+    "status": "completed",
+    "arguments": {
+      "connection_id": "9a98196c043a7d14103f6e1c",
+      "query": "SELECT\n    s.store_id,\n    SUM(p.amount) AS amount_total,\n    COUNT(p.payment_id) AS payment_count\nFROM payment AS p\nJOIN staff AS s\n    ON s.staff_id = p.staff_id\nWHERE p.payment_date >= '2005-07-01 00:00:00'\n  AND p.payment_date <  '2005-08-01 00:00:00'\n  AND s.store_id = 1\nGROUP BY s.store_id\nORDER BY s.store_id ASC;"
+    },
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"connectionId\": \"9a98196c043a7d14103f6e1c\", \"connectionName\": \"Sakila 示例 · 1793008203736-1701214\", \"engine\": \"mysql\", \"connectionVersion\": 1, \"connectionDependencies\": [{\"id\": \"9a98196c043a7d14103f6e1c\", \"version\": 1}], \"version\": 2, \"resultId\": \"5f0625e5212561a5346a4a31958fc30e\", \"columns\": [{\"name\": \"store_id\", \"type\": \"number\", \"nativeType\": \"int\"}, {\"name\": \"amount_total\", \"type\": \"number\", \"nativeType\": \"Decimal\", \"scale\": 2}, {\"name\": \"payment_count\", \"type\": \"number\", \"nativeType\": \"int\"}], \"rowCount\": 1, \"storedBytes\": 2354, \"logicalBytes\": 23, \"sha256\": \"4938c24ad592d30f13c0301304e461aa3d856abe94d74a05cfa450321b755779\", \"complete\": true, \"truncated\": false, \"storage\": \"parquet\", \"createdAt\": \"2026-10-26T13:00:16.965143+00:00\", \"elapsedMs\": 12, \"readOnly\": true}"
+        }
+      ],
+      "structuredContent": {
+        "connectionId": "9a98196c043a7d14103f6e1c",
+        "connectionName": "Sakila 示例 · 1793008203736-1701214",
+        "engine": "mysql",
+        "connectionVersion": 1,
+        "connectionDependencies": [
+          {
+            "id": "9a98196c043a7d14103f6e1c",
+            "version": 1
+          }
+        ],
+        "version": 2,
+        "resultId": "5f0625e5212561a5346a4a31958fc30e",
+        "columns": [
+          {
+            "name": "store_id",
+            "type": "number",
+            "nativeType": "int"
+          },
+          {
+            "name": "amount_total",
+            "type": "number",
+            "nativeType": "Decimal",
+            "scale": 2
+          },
+          {
+            "name": "payment_count",
+            "type": "number",
+            "nativeType": "int"
+          }
+        ],
+        "rowCount": 1,
+        "storedBytes": 2354,
+        "logicalBytes": 23,
+        "sha256": "4938c24ad592d30f13c0301304e461aa3d856abe94d74a05cfa450321b755779",
+        "complete": true,
+        "truncated": false,
+        "storage": "parquet",
+        "createdAt": "2026-10-26T13:00:16.965143+00:00",
+        "elapsedMs": 12,
+        "readOnly": true
+      },
+      "_meta": null
+    },
+    "error": null
+  },
+  {
+    "turnId": "01a1784b-f3e0-7362-9e6f-96ee53145d31",
+    "itemId": "call_00_ET_G1QNm9IARoCekdoJCQAy2688",
+    "status": "failed",
+    "arguments": {
+      "connection_id": "9a98196c043a7d14103f6e1c",
+      "query": "SELECT\n    DATE_FORMAT(p.payment_date, '%Y-%m') AS payment_month,\n    c.customer_id,\n    CONCAT(c.first_name, ' ', c.last_name) AS full_name,\n    SUM(p.amount) AS amount_total,\n    COUNT(p.payment_id) AS payment_count\nFROM payment AS p\nJOIN customer AS c\n    ON c.customer_id = p.customer_id\nWHERE p.payment_date >= '2005-07-01 00:00:00'\n  AND p.payment_date <  '2005-08-01 00:00:00'\n  AND c.active = 1\nGROUP BY\n    DATE_FORMAT(p.payment_date, '%Y-%m'),\n    c.customer_id,\n    c.first_name,\n    c.last_name\nORDER BY amount_total DESC, c.customer_id ASC\nLIMIT 2;"
+    },
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "只读查询禁止写入、锁定、导出和修改会话设置。"
+        }
+      ],
+      "structuredContent": null,
+      "_meta": null
+    },
+    "error": null
+  },
+  {
+    "turnId": "01a1784b-f3e0-7362-9e6f-96ee53145d31",
+    "itemId": "call_00_spxRXnA58liYBP4yoWGQ9080",
+    "status": "completed",
+    "arguments": {
+      "connection_id": "9a98196c043a7d14103f6e1c",
+      "query": "SELECT\n    '2005-07' AS payment_month,\n    c.customer_id,\n    CONCAT(c.first_name, ' ', c.last_name) AS full_name,\n    SUM(p.amount) AS amount_total,\n    COUNT(p.payment_id) AS payment_count\nFROM payment AS p\nJOIN customer AS c\n    ON c.customer_id = p.customer_id\nWHERE p.payment_date >= '2005-07-01 00:00:00'\n  AND p.payment_date <  '2005-08-01 00:00:00'\n  AND c.active = 1\nGROUP BY\n    c.customer_id,\n    c.first_name,\n    c.last_name\nORDER BY amount_total DESC, c.customer_id ASC\nLIMIT 2;"
+    },
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"connectionId\": \"9a98196c043a7d14103f6e1c\", \"connectionName\": \"Sakila 示例 · 1793008203736-1701214\", \"engine\": \"mysql\", \"connectionVersion\": 1, \"connectionDependencies\": [{\"id\": \"9a98196c043a7d14103f6e1c\", \"version\": 1}], \"version\": 2, \"resultId\": \"181644ad678556e00ed1eec45b1f54f9\", \"columns\": [{\"name\": \"payment_month\", \"type\": \"string\", \"nativeType\": \"str\"}, {\"name\": \"customer_id\", \"type\": \"number\", \"nativeType\": \"int\"}, {\"name\": \"full_name\", \"type\": \"string\", \"nativeType\": \"str\"}, {\"name\": \"amount_total\", \"type\": \"number\", \"nativeType\": \"Decimal\", \"scale\": 2}, {\"name\": \"payment_count\", \"type\": \"number\", \"nativeType\": \"int\"}], \"rowCount\": 2, \"storedBytes\": 3426, \"logicalBytes\": 92, \"sha256\": \"f723d669bb4e40d6a3f7ea7b092607433ae6bf5893cff28918a599a91b9faa5d\", \"complete\": true, \"truncated\": false, \"storage\": \"parquet\", \"createdAt\": \"2026-10-26T13:00:33.116595+00:00\", \"elapsedMs\": 32, \"readOnly\": true}"
+        }
+      ],
+      "structuredContent": {
+        "connectionId": "9a98196c043a7d14103f6e1c",
+        "connectionName": "Sakila 示例 · 1793008203736-1701214",
+        "engine": "mysql",
+        "connectionVersion": 1,
+        "connectionDependencies": [
+          {
+            "id": "9a98196c043a7d14103f6e1c",
+            "version": 1
+          }
+        ],
+        "version": 2,
+        "resultId": "181644ad678556e00ed1eec45b1f54f9",
+        "columns": [
+          {
+            "name": "payment_month",
+            "type": "string",
+            "nativeType": "str"
+          },
+          {
+            "name": "customer_id",
+            "type": "number",
+            "nativeType": "int"
+          },
+          {
+            "name": "full_name",
+            "type": "string",
+            "nativeType": "str"
+          },
+          {
+            "name": "amount_total",
+            "type": "number",
+            "nativeType": "Decimal",
+            "scale": 2
+          },
+          {
+            "name": "payment_count",
+            "type": "number",
+            "nativeType": "int"
+          }
+        ],
+        "rowCount": 2,
+        "storedBytes": 3426,
+        "logicalBytes": 92,
+        "sha256": "f723d669bb4e40d6a3f7ea7b092607433ae6bf5893cff28918a599a91b9faa5d",
+        "complete": true,
+        "truncated": false,
+        "storage": "parquet",
+        "createdAt": "2026-10-26T13:00:33.116595+00:00",
+        "elapsedMs": 32,
+        "readOnly": true
+      },
+      "_meta": null
+    },
+    "error": null
+  }
+]

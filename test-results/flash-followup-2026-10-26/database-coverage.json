@@ -1,0 +1,116 @@
+{
+  "results": [
+    {
+      "name": "仅使用 Flash 验证，真实对话产生原生上下文比例",
+      "status": "passed",
+      "evidence": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "used": 12662,
+        "window": 1048576
+      },
+      "sourceReport": "databases-cross-release/results.json"
+    },
+    {
+      "name": "MySQL 网页配置官方 Sakila，只读验证并注册原生 MCP",
+      "status": "passed",
+      "evidence": {
+        "connected": true,
+        "tools": 7
+      },
+      "sourceReport": "databases-release/results.json"
+    },
+    {
+      "name": "MySQL 管理账号拒绝接入",
+      "status": "passed",
+      "evidence": {
+        "writeAccountRejected": true
+      },
+      "sourceReport": "databases-release/results.json"
+    },
+    {
+      "name": "postgresql 网页配置并实际读取",
+      "status": "passed",
+      "evidence": {
+        "rows": 3,
+        "readOnly": true
+      },
+      "sourceReport": "databases-release/results.json"
+    },
+    {
+      "name": "clickhouse 网页配置并实际读取",
+      "status": "passed",
+      "evidence": {
+        "rows": 3,
+        "readOnly": true
+      },
+      "sourceReport": "databases-release/results.json"
+    },
+    {
+      "name": "elasticsearch 网页配置并实际读取",
+      "status": "passed",
+      "evidence": {
+        "rows": 3,
+        "readOnly": true
+      },
+      "sourceReport": "databases-release/results.json"
+    },
+    {
+      "name": "原生 MCP 实际只读批量查询与表结构",
+      "status": "passed",
+      "evidence": {
+        "filmCount": 1000,
+        "actorCount": 200,
+        "batch": 2
+      },
+      "sourceReport": "databases-release/results.json"
+    },
+    {
+      "name": "跨库只允许已配置、连通并启用的数据库",
+      "status": "passed",
+      "evidence": {
+        "unconfiguredRejected": true,
+        "admittedRows": 16
+      },
+      "sourceReport": "databases-cross-release/results.json"
+    },
+    {
+      "name": "写入、混合批次、文件读取、外部表函数均拒绝",
+      "status": "passed",
+      "evidence": {
+        "denied": 5,
+        "countUnchanged": 1000
+      },
+      "sourceReport": "databases-cross-release/results.json"
+    },
+    {
+      "name": "DeepSeek 实际查询并调用 ECharts MCP，在回答内生成图表",
+      "status": "passed",
+      "evidence": {
+        "provider": "deepseek",
+        "chart": true
+      },
+      "sourceReport": "databases-release/results.json"
+    },
+    {
+      "name": "上下文跨会话隔离，刷新原生重放统计",
+      "status": "passed",
+      "evidence": {
+        "restored": true,
+        "isolated": true
+      },
+      "sourceReport": "databases-release/results.json"
+    }
+  ],
+  "scope": "Incremental actual verification, not one clean run. Raw failed runs retained.",
+  "historicalRuns": [
+    "databases/results.json",
+    "databases-final/results.json",
+    "databases-release/results.json"
+  ],
+  "testCorrections": [
+    "Removed obsolete ChatGPT model precondition",
+    "Exact independent test CODEX_HOME and unique connection names",
+    "Disable old configured reference connections before unconfigured-database negative test"
+  ]
+}

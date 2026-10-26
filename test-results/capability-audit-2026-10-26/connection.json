@@ -1,0 +1,47 @@
+{
+  "scope": "Real native snapshots and approvals; only response delivery is gated",
+  "baseline": false,
+  "results": [
+    {
+      "name": "CW-006 历史快照晚到时保留真实完成事件和最终回答",
+      "status": "passed",
+      "evidence": {
+        "snapshot": {
+          "method": "thread/resume",
+          "status": "inProgress"
+        },
+        "nativeCompletedBeforeSnapshotApplied": true,
+        "finalAnswerRetained": true
+      }
+    },
+    {
+      "name": "CW-005 切到新会话时旧审批仅显示明确的会话入口",
+      "status": "passed",
+      "evidence": {
+        "otherThreadApprovalNotPresentedAsCurrent": true,
+        "navigationEntryVisible": true
+      }
+    },
+    {
+      "name": "CW-005 跨原生进程同编号审批，旧按钮不能允许新操作",
+      "status": "passed",
+      "evidence": {
+        "oldId": 0,
+        "newId": 0,
+        "staleResponseFrames": 0,
+        "newOperationNotExecuted": true
+      }
+    }
+  ],
+  "responses": [
+    {
+      "id": 0,
+      "decision": "decline"
+    },
+    {
+      "id": 0,
+      "decision": "decline"
+    }
+  ],
+  "errors": []
+}

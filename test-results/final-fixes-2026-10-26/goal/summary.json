@@ -1,0 +1,50 @@
+{
+  "issue": "U-003",
+  "status": "Web observability and misleading zero display fixed; upstream native budget accounting is not modified",
+  "implementation": [
+    "web/public/native-ui.js: GoalUsageTracker, real tokenUsage event ownership, goal summary/details, clear/new lifecycle"
+  ],
+  "tests": {
+    "unit": {
+      "path": "goal-usage-unit.txt",
+      "passed": 16,
+      "failed": 0
+    },
+    "realFlash": {
+      "path": "final/goal-usage-results.json",
+      "passed": 6,
+      "failed": 0,
+      "browserErrors": [],
+      "model": "deepseek-flash"
+    },
+    "desktopScreenshot": "final/goal-usage-desktop.png",
+    "syntax": "node --check web/public/native-ui.js passed",
+    "diffCheck": "git diff --check passed"
+  },
+  "realEvidence": {
+    "firstNativeBudgetCounter": 0,
+    "firstWebObservedTokens": 1625,
+    "secondNativeBudgetCounter": 1639,
+    "secondWebObservedTokens": 2181
+  },
+  "limits": [
+    "Native goal/set has no tokensUsed write parameter. Missing first-turn baseline and complete-before-final-response accounting require upstream correction; Web does not patch core or DB.",
+    "Observation uses parent-thread uncached input plus output only. Child-agent independent consumption and service pricing are excluded explicitly.",
+    "Missing browser history or baseline is unknown/lower bound; not zero. Storage/counter/gap errors remain diagnostic.",
+    "Goal budget still uses native accounting and cannot be represented as a strict financial cap."
+  ],
+  "history": [
+    "goal-usage-initial-rawzero-expectation.json: first test demanded raw native zero but received 3908; preserved failure. Later two browser suites passed and actually reproduced raw zero.",
+    "goal-usage-results.json: prior six checks passed before final gap/corruption hardening; final/ contains final-code six checks."
+  ],
+  "cleanup": [
+    {
+      "threadId": "01a1780e-c17d-7732-b8eb-ba5b6299c9e0",
+      "deleted": true
+    },
+    {
+      "threadId": "01a1780f-106c-7481-87df-4a5fe660b371",
+      "deleted": true
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "scope": "真实只读MySQL Sakila + deepseek-flash，原生计划、用户修改、审批、中断、新回合继续与三个业务问题。没有使用业务数据库、模拟结果或其他模型。",
+  "testSource": [
+    "web/tests/database_agent_workflow_desktop.mjs",
+    "web/tests/database_agent_baseline.py"
+  ],
+  "completedWorkflow": {
+    "path": "run3/workflow-results.json",
+    "operationChecksPassed": 6,
+    "operationChecksFailed": 0,
+    "browserErrors": [],
+    "model": "deepseek-flash",
+    "provider": "deepseek",
+    "threadId": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+    "phaseTurns": {
+      "planTurn": "01a1784b-0c82-78f1-8e79-1ec8f61319ff",
+      "executionTurn": "01a1784b-c04e-78e0-a7cf-cea4d5c98fef",
+      "continuationTurn": "01a1784b-f3e0-7362-9e6f-96ee53145d31"
+    }
+  },
+  "importantQualification": "6项操作验收通过不等于所有SQL首次无错误。run3的Q3先遇到旧MCP进程中DATE_FORMAT参数format被误判的真实校验错误；模型明确报告后以已固定月份常量作等价标签重新查询，实际数据与独立SQL一致。DATE_FORMAT原SQL修复须以root另行的新MCP增量验证为准，不能用这个替代查询宣称已修。",
+  "actualQueryAttempts": {
+    "path": "run3/query-attempts.json",
+    "completedNativeQueryItems": 4,
+    "successful": 3,
+    "failed": 1,
+    "failedCause": "Q3 DATE_FORMAT在旧MCP进程被format导出参数检查误杀，原始错误在events/result完整保留。",
+    "Q1RepeatedAfterStop": false,
+    "successfulResultIds": [
+      "4ffec3719e6c9a998b126705ef4bb363",
+      "5f0625e5212561a5346a4a31958fc30e",
+      "181644ad678556e00ed1eec45b1f54f9"
+    ]
+  },
+  "acceptance": [
+    "Plan阶段仅list_databases和describe_database，业务query_database=0，独立只读指纹未变。",
+    "原生request_user_input真实询问活跃客户口径；通过前端输入customer.active=1，随后得到可编辑原生计划。",
+    "用户把Top5改为Top3并确认，实际turn/start携带修改；未发送草稿仍在，未送给模型。",
+    "Q1真实完成且结果为3行；Q2真实审批待决时点击停止，确有turn/interrupt，回合最终interrupted，未获批Q2没有执行。",
+    "用户再次编辑剩余计划：门店限定收款员工store_id=1，活跃客户改Top2；同会话新回合执行，第二份草稿保留。",
+    "Q1复用原resultId，不重复query；Q2/Q3成功结果与独立pymysql只读事务固定SELECT逐项核对；实际SQL包含指定筛选。",
+    "继续回合5次原生update_plan事件，最终6个步骤completed；原run3实时DOM中6个completed步骤与原生最后计划一致。最终Q1/Q2/Q3三表所有指标吻合。"
+  ],
+  "referenceAnswers": {
+    "Q1": [
+      {
+        "category_name": "Sports",
+        "rental_count": 497
+      },
+      {
+        "category_name": "Animation",
+        "rental_count": 489
+      },
+      {
+        "category_name": "Action",
+        "rental_count": 464
+      }
+    ],
+    "Q2": [
+      {
+        "store_id": 1,
+        "payment_count": 3344,
+        "revenue": "13998.56"
+      }
+    ],
+    "Q3": [
+      {
+        "customer_id": 148,
+        "customer_name": "ELEANOR HUNT",
+        "payment_count": 22,
+        "total_amount": "100.78"
+      },
+      {
+        "customer_id": 470,
+        "customer_name": "GORDON ALLARD",
+        "payment_count": 17,
+        "total_amount": "96.83"
+      }
+    ]
+  },
+  "nativeUserClarifications": [
+    {
+      "phase": "planning",
+      "kind": "real-request-user-input",
+      "answers": [
+        {
+          "question": "Q3 的“活跃客户”按哪种口径筛选？",
+          "answer": "客户只取customer.active=1；客户Top5，收入并列按客户编号升序。分类Top5。"
+        }
+      ]
+    }
+  ],
+  "visualEvidence": {
+    "proposedPlan": "run3/native-proposed-plan.png",
+    "stoppedState": "run3/stopped-before-second-query.png",
+    "historyPositionPreserved": "run3/history-position-preserved-after-completion.png",
+    "actualFinalAnswer": "run3/actual-final-answer.png",
+    "readonlyScreenshotReceipt": "run3/final-answer-readback.json",
+    "notes": "原final-answer-and-progress命名过强，实际保留用户查看历史的位置，现改为history-position-preserved。最终回答图来自0新模型请求的只读新浏览器打开已完成会话，三张真实结果表可见；新context无原localStorage执行进度缓存，不宣称此截图复原瞬时进度。最终进度证明来自原run3实时DOM断言+原生events。"
+  },
+  "safetyAndCleanup": {
+    "databaseTransactions": "独立基准START TRANSACTION READ ONLY；Web数据库凭据原生权限校验及gateway保持只读。",
+    "aggregateFingerprintsUnchanged": true,
+    "globalConfigUnchanged": true,
+    "credentialValuesWrittenToEvidence": false,
+    "ownedThreadPreservedForAudit": true,
+    "ownedThreadStopped": true,
+    "credentialScan": {
+      "ownedConnectionPasswordMatches": 0,
+      "keyStylePatternMatches": 0,
+      "note": "Private credential value used for comparison stays in process memory; only match counts are recorded."
+    }
+  },
+  "limits": [
+    "本次明确要求先看连接字段再确认；不能推论原生Plan模式硬性禁止所有只读SQL。",
+    "每条query的原生审批是此测试线程局部approval_mode=prompt配置；与整体计划确认分开，不代表默认逐SQL审批。",
+    "停止为原生turn/interrupt；修改后依靠真实历史与结果ID开启新回合，不是数据库事务或逐语句调度器的持久化断点。",
+    "该代表性业务流程验证了三项关联分析，不是对任意复杂SQL、所有业务意图或任意模型输出的普遍保证。",
+    "第一次保留的draft哨兵在第二次确认前由测试用户显式替换成新哨兵；产品两次确认均保留当前草稿，不把未发送输入混入计划任务。"
+  ],
+  "history": [
+    {
+      "path": "first/workflow-results.json",
+      "classification": "测试driver在模式切换异步ACK前断言，0模型调用；修正为等待真实状态。"
+    },
+    {
+      "path": "run1/workflow-results.json",
+      "classification": "确认计划覆盖未发送草稿的真实产品Bug已复现；另因原请求没有唯一指定同库重复配置导致driver ID不匹配，属于测试前提歧义，未批准数据SQL。"
+    },
+    {
+      "path": "run2/workflow-results.json",
+      "classification": "草稿根因修复真实通过。合法多条件SELECT被sqlglot And继承Func误判为函数AND，已实际复现；模型诚实报告并停止，无伪造结果。"
+    },
+    {
+      "path": "run3/workflow-results.json",
+      "classification": "六项业务操作通过，含1次真实DATE_FORMAT校验失败及模型恢复，全部原始调用保留。"
+    }
+  ]
+}

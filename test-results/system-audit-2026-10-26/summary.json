@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-26",
+  "scope": "Desktop only; independent audit home/workspace; real DeepSeek Flash/Pro; no native source or binary changes",
+  "reports": {
+    "chat": {
+      "passed": 10,
+      "failed": 0,
+      "browserErrors": []
+    },
+    "connection": {
+      "passed": 3,
+      "failed": 0,
+      "browserErrors": []
+    },
+    "native": {
+      "passed": 5,
+      "failed": 1,
+      "browserErrors": []
+    },
+    "restart": {
+      "status": "passed",
+      "sameThread": true,
+      "draftPreserved": true,
+      "noResubmission": true
+    },
+    "desktop_layout": {
+      "passed": 2,
+      "failed": 0,
+      "browserErrors": []
+    }
+  },
+  "knownOpenIssues": [
+    "CW-009: default Web Stop only interrupts the turn; explicit native background-terminal cleanup is verified but not yet integrated into that default flow."
+  ],
+  "followUp": {
+    "finding": "The locked native runtime exposes thread/backgroundTerminals/list and terminate; modifying Codex core is not required for the reproduced resumable command case.",
+    "nativeTerminationProbe": "passed: targeted process exited and tail write was absent",
+    "concurrentIsolationProbe": "passed: terminate A only; B remained active and completed its file write",
+    "productionStopIntegration": "pending",
+    "multiTenantIsolation": "not implemented or verified"
+  }
+}

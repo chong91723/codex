@@ -1,0 +1,138 @@
+{
+  "date": "2026-10-26",
+  "repository": "/root/Codex",
+  "branch": "codex/web-native-desktop",
+  "model": "deepseek-flash",
+  "provider": "deepseek",
+  "baselineCommit": "f31cbabb1a6677d116df67cc6631be948973cd42",
+  "scope": "Existing Web integration only; upstream/native code and agent loop unchanged. Isolated profiles/workspaces and read-only sample databases. Counts are separate checks, not a universal capability score.",
+  "python": {
+    "passed": 70,
+    "failed": 0,
+    "path": "checks/python-final-database.txt"
+  },
+  "static": {
+    "javascriptFiles": 63,
+    "pythonFiles": 36,
+    "failures": [],
+    "diffCheck": "passed",
+    "buildAndTypecheck": "not applicable: plain JavaScript/Python project without bundler or TypeScript"
+  },
+  "browserRuns": [
+    {
+      "name": "review_then_delegate",
+      "path": "review-worker/final/combined-results.json",
+      "passed": 2,
+      "failed": 0,
+      "browserErrors": 0
+    },
+    {
+      "name": "previously_unseen_fork",
+      "path": "forks/after-fix/preexisting-fork-results.json",
+      "passed": 5,
+      "failed": 0,
+      "browserErrors": 0
+    },
+    {
+      "name": "goal_observation",
+      "path": "goal/final/goal-usage-results.json",
+      "passed": 6,
+      "failed": 0,
+      "browserErrors": 0
+    },
+    {
+      "name": "hidden_plugins",
+      "path": "visibility/results.json",
+      "passed": 6,
+      "failed": 0,
+      "browserErrors": 0
+    },
+    {
+      "name": "previous_test_extensions_removed",
+      "path": "previous-test-cleanup/results.json",
+      "passed": 6,
+      "failed": 0,
+      "browserErrors": 0
+    },
+    {
+      "name": "approval_stop_refresh",
+      "path": "adjacent/results.json",
+      "passed": 4,
+      "failed": 0,
+      "browserErrors": 0
+    },
+    {
+      "name": "context_readonly",
+      "path": "context/context-readonly-results.json",
+      "passed": 4,
+      "failed": 0,
+      "browserErrors": 0
+    },
+    {
+      "name": "chat_after_plan_fix",
+      "path": "chat-after-plan-fix/results.json",
+      "passed": 11,
+      "failed": 0,
+      "browserErrors": 0
+    },
+    {
+      "name": "multiquestion_database",
+      "path": "database-multiquestion/results.json",
+      "passed": 1,
+      "failed": 0,
+      "browserErrors": 0
+    },
+    {
+      "name": "database_plan_stop_edit_continue",
+      "path": "database-agent/run3/workflow-results.json",
+      "passed": 6,
+      "failed": 0,
+      "browserErrors": 0
+    },
+    {
+      "name": "database_original_sql_latest_mcp",
+      "path": "database-sql-guard/browser/results.json",
+      "passed": 3,
+      "failed": 0,
+      "browserErrors": 0
+    },
+    {
+      "name": "mode_recovery",
+      "path": "mode-recovery/after/results.json",
+      "passed": 2,
+      "failed": 0,
+      "browserErrors": 0
+    }
+  ],
+  "behaviorUnits": {
+    "goalObserver": 16,
+    "contextCalculation": 12,
+    "contextHydration": 4,
+    "approvedPlanSubmission": 7,
+    "modeRecovery": 2,
+    "sqlGuard": 13,
+    "note": "SQL guard and fork-discovery Python tests are included in the 70 tests; adjacent unit suites overlap."
+  },
+  "records": [
+    "../../CAPABILITIES.md",
+    "../../WEB_AUDIT.md",
+    "../../TEST_REPORT.md"
+  ],
+  "databaseEvidence": {
+    "workflow": "database-agent/summary.json",
+    "multipleQuestions": "database-multiquestion/results.json",
+    "latestNativeMcp": "database-sql-guard/browser/results.json",
+    "qualification": "Workflow run3 retains one DATE_FORMAT rejection in its old MCP followed by transparent equivalent month-label recovery. After the fix, a fresh native MCP executed original DATE_FORMAT/AND/CASE and OR SQL without error or rewriting."
+  },
+  "knownLimits": [
+    "Plan mode provides editable confirmation; per-SQL approval depends on native MCP policy. This test configured prompt for its own thread.",
+    "Stop sends turn/interrupt. Editing and continuing starts a new turn using history/result IDs, not a durable SQL transaction checkpoint.",
+    "Progress is model plan events, not database internal percentage; new browsers cannot reconstruct missing transient events.",
+    "Existing V2 history remains. Restart the DeepSeek launcher/native connection and use new threads for compatible V1 delegation; restart MCP processes for new validation code.",
+    "Web-observed goal usage does not repair native budget accounting or guarantee a hard cost cap.",
+    "Per-tenant process/filesystem/network isolation remains separate work.",
+    "Mobile and strict international-egress tests were cancelled by user. Representative services do not validate every production configuration."
+  ],
+  "publishCredentialScan": "checks/publish-scan.json",
+  "stagedDiffCheck": "passed"
+}

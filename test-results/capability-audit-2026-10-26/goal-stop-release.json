@@ -1,0 +1,91 @@
+{
+  "scope": "Real DeepSeek/native process ownership; one explicitly marked failed-delivery injection",
+  "results": [
+    {
+      "name": "目标暂停入口调用同一原生回收流程",
+      "status": "passed",
+      "evidence": {
+        "goalPauseUsesNativeTermination": true,
+        "stop": {
+          "status": "completed",
+          "turnId": "01a17757-3c79-7520-aa5d-ee4ab49bba00",
+          "terminated": [
+            "42238"
+          ]
+        }
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "account/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/goal/set",
+      "threadId": "01a17757-399d-7462-bade-3c7ba11c6632"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17757-399d-7462-bade-3c7ba11c6632",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "thread/goal/get",
+      "threadId": "01a17757-399d-7462-bade-3c7ba11c6632"
+    },
+    {
+      "method": "thread/goal/set",
+      "threadId": "01a17757-399d-7462-bade-3c7ba11c6632"
+    },
+    {
+      "method": "turn/interrupt",
+      "threadId": "01a17757-399d-7462-bade-3c7ba11c6632",
+      "turnId": "01a17757-3c79-7520-aa5d-ee4ab49bba00"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a17757-399d-7462-bade-3c7ba11c6632"
+    },
+    {
+      "method": "thread/backgroundTerminals/terminate",
+      "threadId": "01a17757-399d-7462-bade-3c7ba11c6632"
+    },
+    {
+      "method": "thread/backgroundTerminals/list",
+      "threadId": "01a17757-399d-7462-bade-3c7ba11c6632"
+    },
+    {
+      "method": "thread/goal/clear",
+      "threadId": "01a17757-399d-7462-bade-3c7ba11c6632"
+    }
+  ],
+  "errors": []
+}

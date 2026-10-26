@@ -1,0 +1,46 @@
+{
+  "model": "deepseek-flash",
+  "parentId": "01a17813-ec5d-7bc0-b9fe-56410afc615c",
+  "childId": "01a17813-f381-7503-a511-679832b228d9",
+  "origin": "Real Flash parent through browser; child fork created by separate unmodified native stdio, outside Web observer. Supplemental IDs confirmed by native thread/read.",
+  "records": [
+    {
+      "name": "真实Flash父会话建立可恢复历史",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a17813-ec5d-7bc0-b9fe-56410afc615c",
+        "model": "deepseek-flash",
+        "realModelMarker": true
+      }
+    },
+    {
+      "name": "独立原生连接创建未被Web观察且默认列表遗漏的真实分叉",
+      "status": "passed",
+      "evidence": {
+        "childId": "01a17813-f381-7503-a511-679832b228d9",
+        "previewEmpty": true,
+        "parentId": "01a17813-ec5d-7bc0-b9fe-56410afc615c",
+        "nativeListOmitsFork": true,
+        "absentFromWebOwnedIndex": true
+      }
+    },
+    {
+      "name": "API只读发现旧分叉而不修改原生历史或Web已见索引",
+      "status": "failed",
+      "error": "The expression evaluated to a falsy value:\n\n  assert(response.value.threadIds.includes(childId))\n"
+    }
+  ],
+  "cleanup": [
+    {
+      "entity": "ownedThread",
+      "id": "01a17813-f381-7503-a511-679832b228d9",
+      "removed": true
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a17813-ec5d-7bc0-b9fe-56410afc615c",
+      "removed": true
+    }
+  ],
+  "browserErrors": []
+}

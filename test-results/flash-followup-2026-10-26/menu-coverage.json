@@ -1,0 +1,336 @@
+{
+  "scope": "Only deepseek-flash was called. All 13 retained slash commands were selected from the composer and sent through the real UI. No custom test skills were created.",
+  "commands": [
+    "/mcp",
+    "/init",
+    "/projects",
+    "/reasoning",
+    "/model",
+    "/status",
+    "/goal",
+    "/chat",
+    "/plan",
+    "/skills",
+    "/settings",
+    "/native",
+    "/apps"
+  ],
+  "currentGroups": [
+    {
+      "name": "范围与菜单基础：只调用 Flash，无反馈/快速/生图或 ChatGPT 主动入口",
+      "status": "passed",
+      "evidence": {
+        "models": [
+          {
+            "value": ""
+          },
+          {
+            "value": "deepseek-v4-pro",
+            "provider": "deepseek"
+          },
+          {
+            "value": "deepseek-flash",
+            "provider": "deepseek"
+          }
+        ],
+        "commands": [
+          {
+            "id": "menu-mcp",
+            "text": "MCP显示 MCP 服务器状态"
+          },
+          {
+            "id": "menu-init",
+            "text": "初始化创建包含项目指令的 AGENTS.md 文件"
+          },
+          {
+            "id": "menu-projects",
+            "text": "在项目中使用为聊天选择或管理项目"
+          },
+          {
+            "id": "menu-reasoning",
+            "text": "推理选择下一次任务的思考强度"
+          },
+          {
+            "id": "menu-model",
+            "text": "模型选择下一次任务的模型"
+          },
+          {
+            "id": "menu-status",
+            "text": "状态显示聊天 ID、上下文用量和权限"
+          },
+          {
+            "id": "menu-goal",
+            "text": "目标设置要持续追求的目标"
+          },
+          {
+            "id": "menu-chat",
+            "text": "聊天新建不关联项目的会话"
+          },
+          {
+            "id": "menu-plan",
+            "text": "计划模式开启计划模式"
+          },
+          {
+            "id": "menu-skills",
+            "text": "技能管理导入、启用或停用技能"
+          },
+          {
+            "id": "menu-settings",
+            "text": "设置工作区、模型提供方和原生配置"
+          },
+          {
+            "id": "menu-native",
+            "text": "原生协议查看可用范围和完整定义"
+          },
+          {
+            "id": "menu-apps",
+            "text": "插件查看当前配置的本地插件"
+          },
+          {
+            "id": "menu-skill-0",
+            "text": "OpenAI 官方文档查询 Codex、模型、API、技能和设置的官方文档，帮助解决使用与配置问题。内置"
+          },
+          {
+            "id": "menu-skill-1",
+            "text": "代码审查检查代码改动，找出可复现的问题、潜在缺陷和需要修复的地方。内置"
+          },
+          {
+            "id": "menu-skill-2",
+            "text": "创建与改进技能把常用工作流程整理成技能，或改进现有技能的说明、脚本和资源。内置"
+          },
+          {
+            "id": "menu-skill-3",
+            "text": "安装技能从官方技能目录或 GitHub 仓库安装技能，包括指定的自定义仓库。内置"
+          }
+        ],
+        "selectionOnly": true,
+        "removedCommandsRejectedWithoutTurn": true,
+        "draftsRetained": true
+      },
+      "evidenceFile": "menu-final/menu-results.json"
+    },
+    {
+      "name": "/mcp：从新菜单发送，读取真实原生页面",
+      "status": "passed",
+      "evidence": {
+        "view": "mcp",
+        "actualRequest": "mcpServerStatus/list",
+        "text": "MCP 服务\n\n连接外部工具。添加并启用后，Agent 可在对话中按需调用。\n\n添加自定义 MCP刷新连接状态重新加载配置\n\n连接状态已更新 · 完整资源按需读取\n\n正在读取服务配置…"
+      },
+      "evidenceFile": "menu-final/menu-results.json"
+    },
+    {
+      "name": "/skills：从新菜单发送，读取真实原生页面",
+      "status": "passed",
+      "evidence": {
+        "view": "skills",
+        "actualRequest": "skills/list",
+        "text": "技能\n\n仅保留本版本 Codex 源码自带的技能。启用后可输入 / 选择，或在对话中说明任务。\n\n共 4 项 Codex 源码自带技能\n\nCodex 原生技能\n4 项\nOpenAI 官方文档\n已启用\n\n查询 Codex、模型、API、技能和设置的官方文档，帮助解决使用与配置问题。\n\n内置技能\n停用\n代码审查\n已启用\n\n检查代码改动，找出可复现的问题、潜在缺陷和需要修复的地方。\n\n内置技能\n停用\n创建与改进技能\n已启用\n\n把常用工作流程整理成技能，或改进现有技能的说明、脚本和资源。\n\n内置技能\n停用\n安装技能\n已启用\n\n从官方技能目录或 GitHub 仓库安装技能，包括指定的自定义仓库。\n\n内置技能\n停用"
+      },
+      "evidenceFile": "menu-final/menu-results.json"
+    },
+    {
+      "name": "/settings：从新菜单发送，读取真实原生页面",
+      "status": "passed",
+      "evidence": {
+        "view": "settings",
+        "actualRequest": "config/read",
+        "text": "按照你的方式工作\n\n设置写入 Codex 的配置，不修改上游源码。当前运行时保留原生权限与沙箱。\n\n工作区与外观\n工作区目录\n/tmp/codex-web-flash-audit/workspace\n更改\n外观\n跟随你的偏好，保存在当前浏览器。\n浅色\n原生运行配置\n沙箱\n由 Codex 原生执行；部分配置从新会话开始生效。\nread-only\nworkspace-write\ndanger-full-access\n审批策略\n由 Codex 原生执行；部分配置从新会话开始生效。\nuntrusted\non-request\nnever\n沙箱网络访问\n允许 workspace-write 沙箱内联网。保留文件边界和原生危险操作审批；新会话使用此设置。\n原生计划工具\n允许 Codex 使用 update_plan 展示任务步骤，从新会话开始生效。\n自定义模型\n例如提供方配置中的模型名。模型是否可用以实际请求为准。\n设置模型名\n高级配置\n\n使用 JSON 编辑用户配置层。仅保存修改的字段，并保留未修改的设置。\n\n保存修改的配置项\n源码与运行时\n{\n  \"version\": \"codex-cli 0.0.0\",\n  \"runtimePath\": \"/root/Codex/native/bin/codex\",\n  \"workspace\": \"/tmp/codex-web-flash-audit/workspace\",\n  \"baseline\": {\n    \"repository\": \"https://github.com/openai/codex.git\",\n    \"sourceCommit\": \"970111f6cb62cc02fe36a82ea7d71b37a2889c97\",\n    \"sourceTree\": \"e09c71b9069e689c9c997c766d0de8b7b288583f\",\n    \"sourceCommitDate\": \"2026-10-23T18:50:54+00:00\",\n    \"checkedOn\": \"2026-10-25\"\n  },\n  \"build\": {\n    \"sourceCommit\": \"970111f6cb62cc02fe36a82ea7d71b37a2889c97\",\n    \"sourceTree\": \"e09c71b9069e689c9c997c766d0de8b7b288583f\",\n    \"profile\": \"dev\",\n    \"layoutVersion\": 1,\n    \"builtAt\": \"2026-10-25T06:32:16.181625+00:00\",\n    \"sha256\": {\n      \"bin/codex\": \"3bc8aa3dd336f2f72c9d929cd613271519519aca2c44fcd8def3956287337374\",\n      \"bin/codex-code-mode-host\": \"cbb9d8e984af03d26b0cb8b77885e2d3523d8536829e06bfad6134e8794e38a4\",\n      \"codex-resources/bwrap\": \"8e1e6fd33aa6dc0a1fe0af8ad613eb51886ce738d761bd8ccd91ba0f700bde92\",\n      \"codex-path/rg\": \"e62198eb19b136b88c330af83647b5a962cb99b6b1f066758568f12de1974849\",\n      \"codex-package.json\": \"e08d0201e61bfb8cb6cd52e3fa45c7bbbef744e2b2db0d224081eaf067dcae61\"\n    }\n  },\n  \"transport\": \"stdio\",\n  \"pid\": 1671793,\n  \"modelWindows\": {\n    \"deepseek-flash\": {\n      \"contextWindow\": 1048576,\n      \"effectivePercent\": 95,\n      \"autoCompact"
+      },
+      "evidenceFile": "menu-final/menu-results.json"
+    },
+    {
+      "name": "/apps：从新菜单发送，读取真实原生页面",
+      "status": "passed",
+      "evidence": {
+        "view": "plugins",
+        "actualRequest": "plugin/list",
+        "text": "本地插件\n\n原生目录中的扩展；具体服务和网络依赖由配置决定。\n\n插件\n\n正在读取原生插件目录…\n\n打开完整原生管理接口"
+      },
+      "evidenceFile": "menu-final/menu-results.json"
+    },
+    {
+      "name": "/native：从新菜单打开协议并执行真实只读请求",
+      "status": "passed",
+      "evidence": {
+        "nativeDefinitions": 176,
+        "realConfigProvider": "deepseek",
+        "realConfigModel": "deepseek-flash"
+      },
+      "evidenceFile": "menu-final/menu-results.json"
+    },
+    {
+      "name": "/model、/reasoning、/status：选择、下一回合实际生效与后台一致",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a17797-8c43-75c3-b202-a4c45927fb24",
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "effort": "low",
+        "readBackThreadId": "01a17797-8c43-75c3-b202-a4c45927fb24"
+      },
+      "evidenceFile": "menu-final/menu-results.json"
+    },
+    {
+      "name": "/init：独立目录真实创建 AGENTS.md，再次初始化不覆盖",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1779d-19d3-71e2-8ddd-182ae43d3945",
+        "directory": "/tmp/codex-web-flash-audit/workspace/menu-init-1793008143235-1700206",
+        "createdBytes": 2482,
+        "sha256": "49641445a4d39636cdc33acd127ae8e2b34c99ef9753dcd246eb5bb5976951d0",
+        "secondInitializationKeptBytes": true
+      },
+      "evidenceFile": "menu-init-release/menu-results.json"
+    },
+    {
+      "name": "/projects 与 /chat：原生项目关联后新建无项目会话，其他会话草稿保留",
+      "status": "passed",
+      "evidence": {
+        "sourceThread": "01a1779b-51b2-7ac0-9cb9-732f85eb75d4",
+        "draftThread": "01a1779b-4a4f-7cd1-889e-f452d67da1d0",
+        "unassignedThread": "01a1779b-60de-7643-bb65-554350ad6709",
+        "projectId": "01a1779b-5d56-7cf0-89e5-cbaf3e94f754",
+        "nativeUnassigned": true,
+        "otherDraftPreserved": true,
+        "sourceHistoryPreserved": true
+      },
+      "evidenceFile": "menu-final/menu-results.json"
+    },
+    {
+      "name": "/plan：Flash 原生计划→修改确认→同会话真实文件与步骤结果",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1779d-be0e-7b21-9d75-d76a51c26eb4",
+        "model": "deepseek-flash",
+        "nativePlan": true,
+        "editedPlanExecuted": true,
+        "realFile": "menu-plan-1793008143235-1700206.txt",
+        "progressRestored": true
+      },
+      "evidenceFile": "menu-init-release/menu-results.json"
+    },
+    {
+      "name": "/goal：UI 创建→暂停并回收命令→继续→移除并停止",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1779b-bfe2-70e3-99e9-9a9a23fc0c6e",
+        "createdFromUi": true,
+        "firstTurn": "01a1779b-c371-7083-a018-aba90de58da2",
+        "resumedTurn": "01a1779b-d8ed-7da2-88af-cbd556d143fb",
+        "pauseKilledManagedCommand": true,
+        "hostProcessCount": 0,
+        "tailWriteAbsent": true,
+        "onlyExpectedGoalTurns": 2,
+        "duplicateContinueRejected": true,
+        "activeEditRejectedWithInputRetained": true,
+        "resumeStartedNewTurn": true,
+        "removedFromUi": true,
+        "finalGoal": null
+      },
+      "evidenceFile": "menu-final/menu-results.json"
+    },
+    {
+      "name": "/goal：UI 设置的明确短目标真实 complete，刷新保留后移除",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1779b-f097-79a3-8a4d-7ca23bd8f0a6",
+        "nativeComplete": true,
+        "completionPersistedAfterRefresh": true,
+        "removedFromUi": true,
+        "tokensUsed": 245,
+        "firstTurnAccountingBaselineMissing": false
+      },
+      "evidenceFile": "menu-final/menu-results.json"
+    },
+    {
+      "name": "普通任务停止后续聊：Flash 中断工具历史的独立线程复验",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1779c-1a07-74e2-b2a7-f8a60d3a090a",
+        "interruptedManagedProcessKilled": true,
+        "nextTurnCompleted": true,
+        "model": "deepseek-flash"
+      },
+      "evidenceFile": "menu-final/menu-results.json"
+    },
+    {
+      "name": "全套实际请求：未切换模型、未登录 ChatGPT、未执行反馈/快速/生图",
+      "status": "passed",
+      "evidence": {
+        "realExplicitTurns": 4,
+        "onlyModel": "deepseek-flash",
+        "browserErrors": [],
+        "disallowedRequests": 0
+      },
+      "evidenceFile": "menu-init-release/menu-results.json"
+    }
+  ],
+  "passed": 14,
+  "failed": 0,
+  "browserErrors": [],
+  "compaction": {
+    "manual": [
+      {
+        "name": "Flash 手动压缩：真实 compact 请求和事件，后续仍记住标记",
+        "status": "passed",
+        "evidence": {
+          "threadId": "01a17788-4b16-7ef3-bf38-f35b76681cf8",
+          "model": "deepseek-flash",
+          "nativeCompaction": true,
+          "before": 17551,
+          "after": 18379,
+          "estimatedAfter": true,
+          "markerRetained": true,
+          "historyRestored": true
+        }
+      }
+    ],
+    "automatic": [
+      {
+        "name": "Flash 自动压缩：隔离配置临时阈值，真实事件和标记续聊",
+        "status": "passed",
+        "evidence": {
+          "threadId": "01a1778c-5b3a-7d33-a607-1be0c2a07bc0",
+          "model": "deepseek-flash",
+          "testThreshold": 20000,
+          "originalThreshold": null,
+          "maximumNativeUsage": 31554,
+          "after": 27493,
+          "nativeAutomaticCompaction": true,
+          "manualRequest": false,
+          "markerRetained": true
+        }
+      },
+      {
+        "name": "恢复测试阈值并原生读取确认",
+        "status": "passed",
+        "evidence": {
+          "restoredThreshold": null
+        }
+      }
+    ],
+    "thresholdRestored": true
+  },
+  "historicalFailures": [
+    {
+      "file": "menu-first-run.json",
+      "description": "Two overstrict model-option assertions corrected; one real goal-pause/continue 400 reproduced and fixed in product."
+    },
+    {
+      "file": "menu-goal-failure.json",
+      "description": "Complete call/output existed, but user_goal paused message was inserted between call and output. Original provider error and native sequence retained."
+    },
+    {
+      "file": "menu-final/menu-results.json",
+      "description": "One init test-driver timeout while a legitimate bytecode cleanup approval waited; fixed driver uses actual approval UI and later init/plan passed."
+    }
+  ],
+  "fixedGoalSequence": "menu-goal-release-order.json",
+  "ordinaryStopContinuation": "menu-nongoal-continuation.json",
+  "limits": [
+    "The menu page checks do not mean all 176 native methods or all MCP/plugin configurations were executed.",
+    "Manual compaction verified native request/event/marker continuation and reload; it did not assert shrinking short recent user messages.",
+    "Auto test crossed a temporary 20,000-token threshold; production/default threshold was restored to null (not explicitly configured)."
+  ]
+}

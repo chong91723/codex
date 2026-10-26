@@ -1,0 +1,182 @@
+{
+  "scope": "Only deepseek-flash on task-owned read-only Sakila. Plan approval is separate from native per-query MCP approval. Stop means turn/interrupt; continuation is a new turn with real history, not durable SQL program-counter resume.",
+  "base": "http://127.0.0.1:18867",
+  "home": "/tmp/codex-web-flash-database-audit/home",
+  "workspace": "/tmp/codex-web-flash-database-audit/workspace",
+  "connectionId": "9a98196c043a7d14103f6e1c",
+  "threadId": "01a1783c-16ce-76d2-9519-a7f2fd35e9fb",
+  "phase": {},
+  "baseline": {
+    "connectionId": "9a98196c043a7d14103f6e1c",
+    "engine": "mysql",
+    "database": "sakila",
+    "readOnly": true,
+    "month": "2005-07",
+    "answers": {
+      "Q1": [
+        {
+          "category_name": "Sports",
+          "rental_count": 497
+        },
+        {
+          "category_name": "Animation",
+          "rental_count": 489
+        },
+        {
+          "category_name": "Action",
+          "rental_count": 464
+        }
+      ],
+      "Q2": [
+        {
+          "store_id": 1,
+          "payment_count": 3344,
+          "revenue": "13998.56"
+        }
+      ],
+      "Q3": [
+        {
+          "customer_id": 148,
+          "customer_name": "ELEANOR HUNT",
+          "payment_count": 22,
+          "total_amount": "100.78"
+        },
+        {
+          "customer_id": 470,
+          "customer_name": "GORDON ALLARD",
+          "payment_count": 17,
+          "total_amount": "96.83"
+        }
+      ]
+    },
+    "fixedReferenceSql": {
+      "Q1": "SELECT c.name AS category_name,COUNT(r.rental_id) AS rental_count\nFROM category c JOIN film_category fc ON fc.category_id=c.category_id\nJOIN inventory i ON i.film_id=fc.film_id JOIN rental r ON r.inventory_id=i.inventory_id\nWHERE r.rental_date>='2005-07-01' AND r.rental_date<'2005-08-01'\nGROUP BY c.category_id,c.name ORDER BY rental_count DESC,c.name ASC LIMIT 3",
+      "Q2": "SELECT s.store_id,COUNT(p.payment_id) AS payment_count,SUM(p.amount) AS revenue\nFROM payment p JOIN staff s ON s.staff_id=p.staff_id\nWHERE p.payment_date>='2005-07-01' AND p.payment_date<'2005-08-01' AND s.store_id=1\nGROUP BY s.store_id",
+      "Q3": "SELECT c.customer_id,CONCAT(c.first_name,' ',c.last_name) AS customer_name,\nCOUNT(p.payment_id) AS payment_count,SUM(p.amount) AS total_amount\nFROM customer c JOIN payment p ON p.customer_id=c.customer_id\nWHERE p.payment_date>='2005-07-01' AND p.payment_date<'2005-08-01' AND c.active=1\nGROUP BY c.customer_id,c.first_name,c.last_name\nORDER BY total_amount DESC,c.customer_id ASC LIMIT 2"
+    },
+    "fingerprints": {
+      "film": {
+        "n": 1000,
+        "id_sum": "500500"
+      },
+      "rental": {
+        "n": 16044,
+        "id_sum": "128759060"
+      },
+      "payment": {
+        "n": 16044,
+        "id_sum": "128744817",
+        "total_amount": "67406.56"
+      },
+      "customer": {
+        "n": 599,
+        "id_sum": "179700",
+        "active_count": "584"
+      }
+    }
+  },
+  "results": [
+    {
+      "name": "Workflow prerequisite or execution",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n'default' !== 'plan'\n\n    at file:///root/Codex/web/tests/database_agent_workflow_desktop.mjs:47:496\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at process.processImmediate (node:internal/timers:541:9)"
+    }
+  ],
+  "errors": [],
+  "approvals": [],
+  "sent": [
+    {
+      "id": 1,
+      "method": "initialize",
+      "params": {
+        "clientInfo": {
+          "name": "codex_web_native",
+          "title": "Codex Web",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "experimentalApi": true
+        }
+      }
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "id": 2,
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "id": 3,
+      "method": "model/list",
+      "params": {
+        "includeHidden": true
+      }
+    },
+    {
+      "id": 4,
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-flash-database-audit/workspace"
+      }
+    },
+    {
+      "id": 5,
+      "method": "thread/start",
+      "params": {
+        "cwd": "/tmp/codex-web-flash-database-audit/workspace",
+        "model": "deepseek-flash",
+        "config": {
+          "model_provider": "deepseek",
+          "mcp_servers.codex_web_databases.tools.query_database.approval_mode": "prompt",
+          "tools.update_plan.enabled": true
+        }
+      }
+    },
+    {
+      "id": 6,
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "id": 7,
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a1783c-16ce-76d2-9519-a7f2fd35e9fb",
+        "collaborationMode": {
+          "mode": "plan",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "low",
+            "developer_instructions": null
+          }
+        }
+      }
+    }
+  ],
+  "events": [],
+  "cleanup": [
+    {
+      "entity": "ownedThread",
+      "id": "01a1783c-16ce-76d2-9519-a7f2fd35e9fb",
+      "stopped": true,
+      "preservedForAudit": true
+    },
+    {
+      "entity": "globalConfig",
+      "unchanged": true
+    }
+  ]
+}
