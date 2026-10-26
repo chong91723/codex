@@ -1,0 +1,146 @@
+{
+  "origin": "Real native thread/start, inject_items (user-only storage fixture), fork, archive, unarchive and delete; UI interactions use actual browser controls. No simulated Agent answer or model request.",
+  "results": [
+    {
+      "name": "桌面会话列表显示文字归档入口和归档/删除说明",
+      "status": "passed",
+      "evidence": {
+        "recentAndArchivedVisible": true,
+        "reversibleArchiveExplained": true,
+        "permanentDeletePathExplained": true
+      }
+    },
+    {
+      "name": "通过原生存储API建立临时用户记录和两个分叉，无模型请求",
+      "status": "failed",
+      "error": "The expression evaluated to a falsy value:\n\n  assert(fs.readFileSync(fixturePath,'utf8').includes(marker))\n"
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "threadId": null
+    },
+    {
+      "method": "initialized",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "model/list",
+      "threadId": null
+    },
+    {
+      "method": "config/read",
+      "threadId": null
+    },
+    {
+      "method": "thread/start",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17868-ac8a-7960-91ce-429f68cd093a"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17868-ac8a-7960-91ce-429f68cd093a"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17868-ac8a-7960-91ce-429f68cd093a"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17868-ad6e-7393-af24-dfd7eb9d6a5f"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17868-ad6e-7393-af24-dfd7eb9d6a5f"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17868-ae8d-70d0-921e-b3cf14c56ea6"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17868-ad6e-7393-af24-dfd7eb9d6a5f"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17868-ae8d-70d0-921e-b3cf14c56ea6"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17868-ad6e-7393-af24-dfd7eb9d6a5f"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17868-ad6e-7393-af24-dfd7eb9d6a5f"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17868-ad6e-7393-af24-dfd7eb9d6a5f"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17868-ac8a-7960-91ce-429f68cd093a"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17868-ad6e-7393-af24-dfd7eb9d6a5f"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17868-ae8d-70d0-921e-b3cf14c56ea6"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17868-ae8d-70d0-921e-b3cf14c56ea6"
+    }
+  ],
+  "browserErrors": [],
+  "cleanup": [
+    {
+      "entity": "ownedThread",
+      "id": "01a17868-ac8a-7960-91ce-429f68cd093a",
+      "removed": false,
+      "error": "page.evaluate: Error: cannot delete thread 01a17868-ac8a-7960-91ce-429f68cd093a: forked history still references it\n    at ws.onmessage (http://127.0.0.1:18866/app.js:96:289)"
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a17868-ad6e-7393-af24-dfd7eb9d6a5f",
+      "removed": true,
+      "through": "test cleanup"
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a17868-ae8d-70d0-921e-b3cf14c56ea6",
+      "removed": true,
+      "through": "test cleanup"
+    }
+  ]
+}

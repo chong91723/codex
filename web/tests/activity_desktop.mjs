@@ -77,7 +77,7 @@ try{
     const original=await page.evaluate(()=>state.thread.id);await page.locator('#thread-action').selectOption('archive');await page.waitForFunction(()=>!state.thread,null,{timeout:15000});
     await page.locator('#archive-toggle').click();await page.locator('.thread-row').filter({hasText:name}).first().click();await page.waitForFunction(()=>state.threadArchived&&!state.threadLoading,null,{timeout:15000});
     expect(new URL(page.url()).searchParams.get('archived')==='1','Archived state absent from URL');await page.reload();await page.waitForFunction(id=>state.thread?.id===id&&state.threadArchived&&!state.threadLoading,original,{timeout:45000});
-    expect(await page.locator('#prompt').isDisabled()&&await page.locator('#send').isDisabled(),'Archived restore became writable');await page.locator('#thread-action').selectOption('unarchive');await page.waitForFunction(()=>!state.thread,null,{timeout:15000});return{archivedRouteRestored:true,readOnly:true};
+    expect(await page.locator('#prompt').isDisabled()&&await page.locator('#send').isDisabled(),'Archived restore became writable');await page.locator('#thread-action').selectOption('unarchive');await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,original,{timeout:45000});expect(!(await page.locator('#prompt').isDisabled()),'Unarchived conversation remained read-only');return{archivedRouteRestored:true,readOnly:true,unarchiveResumesSameConversation:true};
   });
   await check('无效会话链接显示恢复错误，禁止静默新建',async()=>{
     const url=new URL(page.url());url.searchParams.set('thread','00000000-0000-0000-0000-000000000000');await page.goto(url.href);await page.getByRole('button',{name:'重试恢复会话',exact:true}).waitFor({timeout:45000});

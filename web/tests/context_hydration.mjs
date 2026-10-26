@@ -19,21 +19,23 @@ function fixture(events=[],turns=[],options={}){
     const p=event.params;
     if(event.method==='thread/tokenUsage/updated')state.usage=p.tokenUsage;
     if(event.method==='thread/settings/updated')state.settings=p.threadSettings;
+    if(event.method==='turn/plan/updated')state.plan=p.plan;
     if(event.method==='item/completed')upsertItem(p.item,true,p.turnId);
     if(event.method==='turn/completed'){
       const index=state.turns.findIndex(turn=>turn.id===p.turn.id);
       if(index<0)state.turns.push(p.turn);else state.turns[index]=p.turn;
     }
   };
-  const paged=async(method,params,onPage)=>{
+  const rpc=async(method,params)=>{
     pageRequest={method,params};
     if(options.beforePages)await options.beforePages(state);
-    for(const sequence of options.pageSequences||[20]){const page={};state.responseSequence.set(page,sequence);onPage(page);}
-    return turns;
+    const page={data:[...turns].reverse(),nextCursor:null};
+    state.responseSequence.set(page,(options.pageSequences||[20]).at(-1));
+    return page;
   };
   const hydrate=vm.runInNewContext(implementation+'\nhydrateThread;',{
-    state,$:node,paged,upsertItem,renderTurnOutcome:turn=>outcomes.push(turn.id),handleEvent,
-    updateSend(){},restoreExecutionPlans(){},renderNativeMode(){},
+    state,$:node,rpc,upsertItem,renderTurnOutcome:turn=>outcomes.push(turn.id),handleEvent,
+    finishHistoryRender(){},renderHistoryMore(){},updateSend(){},restoreExecutionPlans(){},renderNativeMode(){},
   });
   return {state,thread,dom,replayed,outcomes,upserts,hydrate,request:()=>pageRequest};
 }
@@ -87,4 +89,21 @@ test('navigation generation change cancels an old hydration even when the same t
   assert.equal(f.state.hydration,newHydration,'Old completion must not clear the replacement hydration');
   assert.equal(f.dom.size,0,'Stale hydration must not touch visible DOM');
   assert.deepEqual(f.replayed,[]);
+});
+
+test('embedded native recent page renders chronologically without another history request',async()=>{
+  const latest={id:'newest',status:'completed',items:[]},previous={id:'previous',status:'completed',items:[]};
+  const f=fixture();
+  await f.hydrate(f.thread,7,10,{data:[latest,previous],nextCursor:'opaque-older'});
+  assert.equal(f.request(),undefined);
+  assert.deepEqual(Array.from(f.state.turns,t=>t.id),['previous','newest']);
+  assert.equal(f.state.historyPage.cursor,'opaque-older');
+  assert.equal(f.state.historyPage.loaded,2);
+});
+test('plan progress survives a later history snapshot that has no progress field',async()=>{
+  const progress=event('turn/plan/updated',8,{turnId:'turn-A',plan:[{step:'Read result',status:'inProgress'}]});
+  const f=fixture([progress],[],{pageSequences:[30]});
+  await f.hydrate(f.thread,7,10);
+  assert.deepEqual(f.replayed,[progress]);
+  assert.equal(f.state.plan,progress.params.plan);
 });

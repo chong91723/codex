@@ -1,0 +1,181 @@
+{
+  "origin": "Real native thread/start, inject_items (user-only storage fixture), fork, archive, unarchive and delete; UI interactions use actual browser controls. No simulated Agent answer or model request.",
+  "results": [
+    {
+      "name": "桌面会话列表显示文字归档入口和归档/删除说明",
+      "status": "passed",
+      "evidence": {
+        "recentAndArchivedVisible": true,
+        "reversibleArchiveExplained": true,
+        "permanentDeletePathExplained": true
+      }
+    },
+    {
+      "name": "通过原生存储API建立临时用户记录和两个分叉，无模型请求",
+      "status": "passed",
+      "evidence": {
+        "parent": "01a1786b-f8d9-7a01-9519-a385f9872815",
+        "first": "01a1786b-f9b3-7a23-acad-af352dd701b5",
+        "second": "01a1786b-fa3f-7060-932a-f1138aadba74",
+        "nativeUserRecordPersisted": true,
+        "zeroModelRequests": true
+      }
+    },
+    {
+      "name": "归档真实保留文件，已归档列表可见、只读且提供恢复按钮",
+      "status": "failed",
+      "error": "The expression evaluated to a falsy value:\n\n  assert((await page.locator('#toast').innerText()).includes('历史仍保留'))\n"
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "threadId": null
+    },
+    {
+      "method": "initialized",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "model/list",
+      "threadId": null
+    },
+    {
+      "method": "config/read",
+      "threadId": null
+    },
+    {
+      "method": "thread/start",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a1786b-f8d9-7a01-9519-a385f9872815"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a1786b-f8d9-7a01-9519-a385f9872815"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a1786b-f8d9-7a01-9519-a385f9872815"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a1786b-f9b3-7a23-acad-af352dd701b5"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a1786b-f9b3-7a23-acad-af352dd701b5"
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a1786b-fa3f-7060-932a-f1138aadba74"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a1786b-f9b3-7a23-acad-af352dd701b5"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a1786b-fa3f-7060-932a-f1138aadba74"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a1786b-f9b3-7a23-acad-af352dd701b5"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a1786b-fa3f-7060-932a-f1138aadba74"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a1786b-f9b3-7a23-acad-af352dd701b5"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a1786b-f9b3-7a23-acad-af352dd701b5"
+    },
+    {
+      "method": "thread/archive",
+      "threadId": "01a1786b-f9b3-7a23-acad-af352dd701b5"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a1786b-f9b3-7a23-acad-af352dd701b5"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a1786b-fa3f-7060-932a-f1138aadba74"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a1786b-fa3f-7060-932a-f1138aadba74"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a1786b-f9b3-7a23-acad-af352dd701b5"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a1786b-f9b3-7a23-acad-af352dd701b5"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a1786b-f8d9-7a01-9519-a385f9872815"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    }
+  ],
+  "browserErrors": [],
+  "cleanup": [
+    {
+      "entity": "ownedThread",
+      "id": "01a1786b-fa3f-7060-932a-f1138aadba74",
+      "removed": true,
+      "through": "test cleanup"
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a1786b-f9b3-7a23-acad-af352dd701b5",
+      "removed": true,
+      "through": "test cleanup"
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a1786b-f8d9-7a01-9519-a385f9872815",
+      "removed": true,
+      "through": "test cleanup"
+    }
+  ]
+}

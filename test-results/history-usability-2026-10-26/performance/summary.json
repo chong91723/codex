@@ -1,0 +1,169 @@
+{
+  "status": "verified_with_limits",
+  "scope": "Desktop, actual native 176 protocol, completed independent deepseek-flash histories. No model work or historical data edits during this audit.",
+  "findings": [
+    {
+      "id": "HISTORY-LOAD-1",
+      "kind": "confirmed design/performance risk",
+      "before": "Every normal selection requested native thread/resume with full history; empty turns led to ascending fetch-all pages. Each rendered item repeated activity grouping and read scroll layout.",
+      "after": "Native excludeTurns plus initialTurnsPage latest20 full, earlier turns fetched on explicit request, history render does not repeatedly read scroll layout.",
+      "validation": "6/6 real native browser pagination checks; limit1 sent as valid parameter to force multiple pages of an existing 3-turn/42-item test history.",
+      "limits": "No genuine >20-turn history was available. Small-history timing is noisy and is not evidence of a guaranteed speedup."
+    },
+    {
+      "id": "HISTORY-LOAD-2",
+      "kind": "confirmed normal browser startup delay fixed by supported ephemeral credential storage",
+      "observedBrowserInitializeMs": [
+        6727.7,
+        6594.69037,
+        9280.095268
+      ],
+      "observedBrowserReadyMs": [
+        7644.40874,
+        10018.284588,
+        10433.521357
+      ],
+      "safeEphemeralOnlyInitializeMs": [
+        243.776,
+        214.024
+      ],
+      "evidence": "Same existing CODEX_HOME and workspace, minimal environment with no credential variables, supported cli_auth_credentials_store=ephemeral. No account/model/cloud RPC, no token-refresh diagnostic category, normal process exit. Auth/config/history unchanged. Source startup calls cloud configuration before initialize and the persistent auth path can proactively refresh ChatGPT tokens.",
+      "limits": "No controlled persistent credential group was launched after automatic rejection. Previously observed normal-browser delays remain the original baseline. Minimal-environment ephemeral-only 214–244ms timings are a separate diagnostic; final ordinary browser initialize was 455–826ms. Timings were not a dedicated CPU-isolated benchmark.",
+      "normalBrowserAfterInitializeMs": [
+        455.30476,
+        825.5378100000007
+      ],
+      "normalBrowserAfterReadyAndSidebarMs": [
+        1731.2205589999999,
+        2649.075617
+      ],
+      "liveVerification": "The root task changed only top-level cli_auth_credentials_store in the existing profile to ephemeral, verifying semantic equality of all other configuration. Two subsequent normal 8765 browser connections, through the unchanged running server and its unchanged environment, confirmed DeepSeek Flash and ephemeral credential storage, without inference or thread mutations. Existing connections and user tasks were not stopped."
+    }
+  ],
+  "checks": {
+    "historyPagination": {
+      "passed": 6,
+      "failed": 0,
+      "browserErrors": 0,
+      "newModelRequests": 0,
+      "configurationWrites": 0,
+      "finalEvidence": "after-final/history-loading-results.json"
+    },
+    "ephemeralOnlyNativeStartup": {
+      "passed": 2,
+      "failed": 0,
+      "newModelRequests": 0,
+      "authConfigurationAndHistoryUnchanged": true
+    },
+    "liveNormalBrowserStartup": {
+      "passed": 2,
+      "failed": 0,
+      "browserErrors": 0,
+      "accountRequests": 0,
+      "newModelRequests": 0,
+      "threadMutations": 0
+    }
+  },
+  "artifacts": [
+    "probe.json",
+    "open-before.json",
+    "open-after.json",
+    "open-after-18867.json",
+    "native-long-before.json",
+    "auth-log-classifications.json",
+    "native-ephemeral-startup.json",
+    "after/history-loading-results.json",
+    "after-final/history-loading-results.json",
+    "live-config-update.json",
+    "live-browser-startup-after.json"
+  ],
+  "failedAttemptPreserved": "native-long-before.json records the failed native cross-profile fork of a paginated rollout. It was not used to manufacture native history or claim a passed long-history test.",
+  "default20SmallHistoryTiming": {
+    "open-before": [
+      {
+        "port": 18866,
+        "openMs": [
+          309.036,
+          299.057,
+          200.43,
+          92.045
+        ],
+        "turnCounts": [
+          2,
+          1,
+          1,
+          2
+        ]
+      },
+      {
+        "port": 18867,
+        "openMs": [
+          610.24,
+          411.673,
+          398.677,
+          216.262
+        ],
+        "turnCounts": [
+          3,
+          2,
+          2,
+          3
+        ]
+      }
+    ],
+    "open-after": [
+      {
+        "port": 18866,
+        "openMs": [
+          296.274,
+          285.537,
+          225.017,
+          107.553
+        ],
+        "turnCounts": [
+          2,
+          1,
+          1,
+          2
+        ]
+      },
+      {
+        "port": 18867,
+        "openMs": [],
+        "turnCounts": []
+      }
+    ],
+    "open-after-18867": [
+      {
+        "port": 18867,
+        "openMs": [
+          894.9,
+          450.524,
+          431.94,
+          224.773
+        ],
+        "turnCounts": [
+          3,
+          2,
+          2,
+          3
+        ]
+      }
+    ]
+  },
+  "harnessNotes": [
+    "The first after sampler observed an empty 18867 sidebar because native connection readiness now precedes asynchronous thread/list; a second sampler explicitly waited for native sidebar rows and recorded actual selections. This was a sampler precondition, not evidence that histories disappeared.",
+    "The retained pagination test waits for a real second sidebar thread before testing navigation."
+  ],
+  "dailyServiceObservation": {
+    "port": 8765,
+    "serverPid": 1441377,
+    "nativeChildPids": [
+      1845372
+    ],
+    "nativeChildDescendants": 8,
+    "currentTaskState": "Unverified; process and log metadata do not establish whether a task is executing. Original server/process not stopped or restarted by this audit.",
+    "configuration": "Only cli_auth_credentials_store=ephemeral was changed by the root task; see live-config-update.json. Server and existing native processes remain running.",
+    "originalServiceRestarted": false
+  }
+}

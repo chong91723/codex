@@ -22,7 +22,7 @@ async function inspect(mode,step){
 try{
  for(const mode of ['normal','pagination']){
   const context=await browser.newContext({viewport:{width:1440,height:1000}});page=await context.newPage();
-  if(mode==='pagination')await page.addInitScript(()=>{const nativeSend=WebSocket.prototype.send;WebSocket.prototype.send=function(data){let request;try{request=JSON.parse(data);}catch{}if(request?.method==='thread/resume'){request.params={...request.params,excludeTurns:true};data=JSON.stringify(request);}return nativeSend.call(this,data);};});
+  if(mode==='pagination')await page.addInitScript(()=>{const nativeSend=WebSocket.prototype.send;WebSocket.prototype.send=function(data){let request;try{request=JSON.parse(data);}catch{}if(request?.method==='thread/resume'){request.params={...request.params,excludeTurns:true};delete request.params.initialTurnsPage;data=JSON.stringify(request);}return nativeSend.call(this,data);};});
   page.on('pageerror',error=>errors.push(error.message));page.on('websocket',socket=>{socket.on('framesent',frame=>{try{const m=JSON.parse(String(frame.payload));if(m.method)sent.push({mode,id:m.id,method:m.method,threadId:m.params?.threadId,excludeTurns:m.params?.excludeTurns});}catch{}});socket.on('framereceived',frame=>{try{const m=JSON.parse(String(frame.payload));if(m.method==='thread/tokenUsage/updated')received.push({mode,...m});}catch{}});});
   for(const step of ['open','reload']){
    if(step==='open')await page.goto(base+'/?thread='+encodeURIComponent(threadId));else await page.reload();await ready(page);

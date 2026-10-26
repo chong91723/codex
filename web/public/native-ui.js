@@ -110,8 +110,8 @@ async function setNativeMode(mode){
   try{if(state.thread){const id=state.thread.id;await rpc('thread/settings/update',{threadId:id,collaborationMode:turnCollaborationMode(mode)});state.nativeModes.set(id,mode);}
   else state.draftMode=mode;}finally{state.nativeModePending=false;renderNativeMode();}
 }
-function resetNativeUI(){state.draftMode='default';renderNativeMode();renderGoalBanner();}
-function adoptNativeUI(thread){state.selectedProject=thread.projectId||null;renderNativeMode();renderGoalBanner();}
+function resetNativeUI(){state.draftMode='default';renderNativeMode();renderGoalBanner();renderExecutionProgressBanner();}
+function adoptNativeUI(thread){state.selectedProject=thread.projectId||null;renderNativeMode();renderGoalBanner();renderExecutionProgressBanner();}
 function nativeUIEvent(msg){
   const p=msg.params||{};
   if(msg.method==='thread/settings/updated'&&p.threadSettings?.collaborationMode)state.nativeModes.set(p.threadId,p.threadSettings.collaborationMode.mode);
@@ -119,9 +119,9 @@ function nativeUIEvent(msg){
   if(msg.method==='thread/goal/cleared'){state.nativeGoals.delete(p.threadId);goalUsageTracker.forget(p.threadId);}
   if(msg.method==='turn/started'){goalUsageFreshThreads.delete(p.threadId);goalUsageTracker.start(p.threadId,state.nativeGoals.get(p.threadId),p.turn?.id);}
   if(msg.method==='thread/tokenUsage/updated'){goalUsageTracker.receive(p.threadId,p.turnId,p.tokenUsage,state.nativeGoals.get(p.threadId));if(p.threadId===state.thread?.id)renderGoalBanner();}
-  if(msg.method==='thread/deleted'){goalUsageTracker.forget(p.threadId);goalUsageFreshThreads.delete(p.threadId);}
+  if(msg.method==='thread/deleted'){state.nativeModes.delete(p.threadId);state.nativeGoals.delete(p.threadId);goalUsageTracker.forget(p.threadId);goalUsageFreshThreads.delete(p.threadId);try{localStorage.removeItem(executionPlanKey(p.threadId));}catch(error){toast('会话已删除，但网页进度缓存未能清除：'+error.message);}}
   if(msg.method==='thread/project/updated'&&p.threadId===state.thread?.id){state.thread.projectId=p.projectId;state.selectedProject=p.projectId;}
-  if(['thread/settings/updated','turn/started','turn/completed','thread/goal/updated','thread/goal/cleared'].includes(msg.method))queueMicrotask(()=>{renderNativeMode();renderGoalBanner();if(msg.method==='turn/completed')restoreExecutionPlans();});
+  if(['thread/settings/updated','turn/started','turn/completed','thread/goal/updated','thread/goal/cleared'].includes(msg.method))queueMicrotask(()=>{renderNativeMode();renderGoalBanner();if(msg.method==='turn/completed')restoreExecutionPlans();renderExecutionProgressBanner();});
 }
 function nativeSlashActions(){return {'/plan':()=>setNativeMode(currentMode()==='plan'?'default':'plan'),'/status':showNativeStatus,'/init':initializeWorkspace,'/goal':showGoalDialog,'/projects':showProjects,'/chat':unassignedChat,'/model':()=>showComposerSetting('model'),'/reasoning':()=>showComposerSetting('effort')};}
 async function nativeSlashCommand(text){
@@ -222,10 +222,10 @@ function reviewPlan(item){
   if(state.activeTurns.has(state.thread?.id))throw new Error('请等待计划生成完成');
   openDialog('确认执行计划',root=>{root.append(el('p','','可以直接修改下方计划。确认后在当前会话切换至默认模式并开始执行；工具权限仍由原生审批策略控制。'));formField(root,'执行计划','approved-plan',{value:item.text||'',multiline:true,required:true});},async root=>{
     const plan=$('#approved-plan',root).value.trim();if(!plan)throw new Error('计划不能为空');
-    await setNativeMode('default');await submitPrompt({text:'我已确认以下计划，请按照这个版本执行。若需调整，请先说明。\n\n'+plan,preserveDraft:true});
+    await setNativeMode('default');await submitPrompt({text:'我已确认以下计划，请按照这个版本执行。若需调整，请先说明。开始执行前请使用原生 update_plan 建立任务清单，并按实际进展更新；完成后回答我的问题。\n\n'+plan,preserveDraft:true});
   },'确认并执行');
 }
-function executionPlanKey(){return 'codex.execution-plans.'+state.runtimeInfo?.codexHome+'.'+state.thread?.id;}
+function executionPlanKey(threadId=state.thread?.id){return 'codex.execution-plans.'+state.runtimeInfo?.codexHome+'.'+threadId;}
 function savedExecutionPlans(){try{return JSON.parse(localStorage.getItem(executionPlanKey())||'{}');}catch{return {};}}
 function rememberExecutionPlan(p){
   if(!state.thread||p.threadId&&p.threadId!==state.thread.id)return;
@@ -234,16 +234,61 @@ function rememberExecutionPlan(p){
   try{localStorage.setItem(executionPlanKey(),JSON.stringify(Object.fromEntries(Object.entries(plans).slice(-50))));}catch{}
   renderExecutionProgress(turnId,plans[turnId]);
 }
-function renderExecutionProgress(turnId,p){
-  if(!p.plan?.length)return;let node=$$('[data-execution-plan]').find(n=>n.dataset.executionPlan===turnId);
-  if(!node){node=el('details','message execution-progress');node.dataset.executionPlan=turnId;const group=$$('.activity-group').find(g=>g.dataset.turnId===turnId);if(group)group.before(node);else $('#messages').append(node);}
-  const turn=state.turns.find(t=>t.id===turnId),complete=p.plan.filter(s=>s.status==='completed').length,current=p.plan.find(s=>s.status==='inProgress');
-  const stopped=turn?.status==='interrupted';node.replaceChildren(el('summary','','执行计划 · '+complete+'/'+p.plan.length+' 已完成'+(stopped?' · 已停止':current?' · '+current.step:'')));
-  const list=el('div','progress-steps');if(p.explanation)list.append(el('p','subtle',p.explanation));
-  for(const step of p.plan)list.append(el('div','plan-step '+step.status,(step.status==='completed'?'✓ ':step.status==='inProgress'?'◉ ':'○ ')+step.step));
-  list.append(el('p','subtle','进度由 Codex 的原生 update_plan 事件报告。停止任务不会回滚已完成的操作。'));node.append(list);
+// BEGIN execution progress status. Counts are native steps, never elapsed-time estimates.
+function executionProgressStatus({plan,turn,active=false,interrupting=false,connected=true,request=null}){
+  const completed=plan.filter(step=>step.status==='completed').length,total=plan.length;
+  const current=plan.find(step=>step.status==='inProgress')?.step||null;
+  let status='unknown',label='状态待恢复';
+  if(turn?.status==='interrupted'){status='interrupted';label='已停止';}
+  else if(turn?.status==='failed'){status='failed';label='执行失败';}
+  else if(interrupting){status='stopping';label='正在停止';}
+  else if(active&&request){status=request.responded?'responded':'waiting';label=request.responded?'决定已发送，等待确认':request.method.includes('requestApproval')||request.params?._meta?.codex_approval_kind==='mcp_tool_call'?'等待审批':'等待你的回应';}
+  else if(!connected&&(active||turn?.status==='inProgress')){status='disconnected';label='连接已断开，状态待恢复';}
+  else if(active){status='running';label=completed===total?'步骤已完成，正在整理结果':'执行中';}
+  else if(turn?.status==='completed'){status=completed===total?'completed':'incomplete';label=completed===total?'已完成':'本轮已结束，计划未全部报告完成';}
+  return {completed,total,current,status,label};
 }
-function restoreExecutionPlans(){if(!state.thread)return;for(const [id,p]of Object.entries(savedExecutionPlans()))if(state.turns.some(t=>t.id===id)||state.activeTurns.get(state.thread.id)===id)renderExecutionProgress(id,p);}
+// END execution progress status.
+function executionProgressSnapshot(turnId,p){
+  const threadId=state.thread?.id,turn=state.turns.find(turn=>turn.id===turnId);
+  const active=state.activeTurns.get(threadId)===turnId;
+  const request=[...state.requests.values()].find(request=>request.params?.threadId===threadId&&(!request.params.turnId||request.params.turnId===turnId));
+  return executionProgressStatus({plan:p.plan,turn,active,interrupting:state.interrupting.has(turnId),connected:state.ready,request});
+}
+function fillExecutionProgress(node,turnId,p,banner=false){
+  const progress=executionProgressSnapshot(turnId,p),key=state.thread.id+'.'+turnId;
+  if(node.dataset.progressKey!==key){node.open=false;node.replaceChildren();node.dataset.progressKey=key;}
+  let summary=$('summary',node);
+  if(!summary){summary=el('summary','execution-progress-heading');summary.append(el('span','execution-progress-status'),el('strong','execution-progress-count'),el('span','execution-progress-current'),el('span','execution-progress-toggle','查看步骤'));node.append(summary,el('div','progress-steps'));}
+  node.dataset.progressStatus=progress.status;
+  const text=(selector,value)=>{const target=$(selector,node);if(target.textContent!==value)target.textContent=value;};
+  text('.execution-progress-status',progress.label);text('.execution-progress-count',progress.completed+'/'+progress.total+' 步已完成');
+  text('.execution-progress-current',progress.current?(progress.status==='interrupted'?'停止于：':'当前：')+progress.current:'');
+  const signature=JSON.stringify([p.explanation,p.plan]);
+  if(node.dataset.planSignature!==signature){
+    const list=$('.progress-steps',node);list.replaceChildren();
+    if(p.explanation)list.append(el('p','subtle',p.explanation));
+    for(const step of p.plan)list.append(el('div','plan-step '+step.status,(step.status==='completed'?'✓ ':step.status==='inProgress'?'◉ ':'○ ')+step.step));
+    list.append(el('p','execution-progress-note','按 Codex 原生 update_plan 报告的步骤计数，不代表用时百分比。停止后可修改要求并继续；已完成操作不会回滚。'));node.dataset.planSignature=signature;
+  }
+  node.setAttribute('aria-label',(banner?'当前任务进度':'执行计划')+' · '+progress.label+' · '+progress.completed+'/'+progress.total+' 步已完成');
+}
+function renderExecutionProgress(turnId,p,updateBanner=true){
+  if(!p.plan?.length){$$('[data-execution-plan]').find(node=>node.dataset.executionPlan===turnId)?.remove();if(updateBanner)renderExecutionProgressBanner();return;}let node=$$('[data-execution-plan]').find(node=>node.dataset.executionPlan===turnId);
+  if(!node){node=el('details','message execution-progress');node.dataset.executionPlan=turnId;const group=$$('.activity-group').find(group=>group.dataset.turnId===turnId);if(group)group.before(node);else $('#messages').append(node);}
+  fillExecutionProgress(node,turnId,p);if(updateBanner)renderExecutionProgressBanner();
+}
+function renderExecutionProgressBanner(){
+  let node=$('#execution-progress-banner');
+  if(!node){node=el('details','execution-progress execution-progress-banner');node.id='execution-progress-banner';node.hidden=true;$('#plan-summary').before(node);}
+  const threadId=state.thread?.id,turnId=state.activeTurns.get(threadId)||state.turns.at(-1)?.id;
+  const p=threadId&&!state.threadLoading&&!state.restoreError?savedExecutionPlans()[turnId]:null;
+  const visible=!!(turnId&&p?.plan?.length);
+  // The current plan has one visible home; earlier plans remain in history.
+  for(const card of $$('[data-execution-plan]'))card.hidden=visible&&card.dataset.executionPlan===turnId;
+  node.hidden=!visible;if(visible)fillExecutionProgress(node,turnId,p,true);
+}
+function restoreExecutionPlans(){if(!state.thread){renderExecutionProgressBanner();return;}for(const [id,p]of Object.entries(savedExecutionPlans()))if(state.turns.some(turn=>turn.id===id)||state.activeTurns.get(state.thread.id)===id)renderExecutionProgress(id,p,false);renderExecutionProgressBanner();}
 function renderGoalBanner(){
   let node=$('#goal-banner');if(!node){node=el('div','goal-banner');node.id='goal-banner';$('#plan-summary').before(node);}
   const goal=state.nativeGoals.get(state.thread?.id);node.hidden=!goal;node.replaceChildren();if(!goal)return;

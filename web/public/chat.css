@@ -77,3 +77,24 @@ html[data-theme=dark] .message.user{background:#303030}
 .chat-view.command-menu-open .starter-suggestions{visibility:hidden}
 
 .skill-mention{display:inline-block;padding:2px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px}
+
+/* Native plan progress stays discoverable while the user reads the conversation. */
+.message.execution-progress,.composer-area>.execution-progress-banner{border:1px solid var(--border);border-radius:12px;padding:0;background:var(--surface);font-size:12px;line-height:1.6}
+.execution-progress>.execution-progress-heading{display:flex;font-size:12px;color:var(--ink);align-items:center;gap:8px;flex-wrap:wrap;padding:10px 13px;cursor:pointer;list-style:none}
+.execution-progress-heading::-webkit-details-marker{display:none}
+.execution-progress-status{font-weight:550}.execution-progress-count{font-size:11px;font-weight:400;color:var(--muted);white-space:nowrap}
+.execution-progress-current{flex-basis:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px;order:2}
+.execution-progress-current:empty{display:none}.execution-progress-toggle{margin-left:auto;font-size:11px;color:var(--muted)}
+.execution-progress-toggle::after{content:'⌄';display:inline-block;margin-left:6px}.execution-progress[open] .execution-progress-toggle::after{transform:rotate(180deg)}
+.execution-progress .progress-steps{padding:0 13px 10px;border-top:1px solid var(--border);max-height:220px;overflow:auto;overscroll-behavior:contain}
+.execution-progress .progress-steps .plan-step{display:block;overflow-wrap:anywhere;padding:3px 0;line-height:1.7}
+.execution-progress .plan-step.inProgress{font-weight:550;color:var(--ink)}.execution-progress-note{margin:10px 0 0;font-size:10px;color:var(--muted)}
+.composer-area>.execution-progress-banner{flex-shrink:0;margin:0 0 9px}.execution-progress-banner .execution-progress-heading{padding:8px 12px}
+.execution-progress[data-progress-status=running] .execution-progress-status::before{content:'';display:inline-block;vertical-align:middle;width:6px;height:6px;margin-right:7px;border-radius:50%;background:var(--ink);animation:pulse 1.5s infinite}
+.execution-progress[data-progress-status=waiting],.execution-progress[data-progress-status=responded]{border-color:#b49a63}
+.execution-progress[data-progress-status=failed]{border-color:#b66a5780}.execution-progress[data-progress-status=failed] .execution-progress-status{color:#ad6754}
+
+/* Discoverable archive scope and reversible history management. */
+.sidebar-history-tabs{display:flex;gap:4px;margin:22px 4px 4px;padding:3px;border-radius:10px;background:var(--hover);flex-shrink:0}.sidebar-history-tabs button{display:flex;align-items:center;justify-content:center;gap:5px;flex:1;padding:7px 4px;border-radius:7px;font-size:12px;color:var(--muted)}.sidebar-history-tabs button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px #0000000a}.sidebar-history-tabs svg{width:14px;height:14px}.sidebar-history-caption{display:flex;align-items:center;justify-content:space-between;margin:2px 12px 5px;font-size:10px;color:var(--muted);flex-shrink:0}.sidebar-history-caption button{padding:4px;border-radius:4px;font-size:10px;color:var(--muted);text-decoration:underline;text-underline-offset:2px}.sidebar-history-help{font-size:11px;line-height:1.7;color:var(--muted);margin:4px 12px 9px;flex-shrink:0}.thread-archive-status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px;white-space:nowrap}.thread-archive-status button{padding:5px 7px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--ink);font-size:11px}.chat-toolbar #thread-action{max-width:150px}
+
+.history-pagination{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 22px;padding:8px 0;font-size:11px;color:var(--muted)}.history-pagination button{font-size:11px;padding:6px 10px}.history-pagination .subtle{margin:0}

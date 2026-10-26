@@ -1,0 +1,383 @@
+{
+  "origin": "Real native storage API and browser controls. User-only fixtures plus a read-only fork of completed real Flash history from an earlier independent audit. No simulated Agent answer or new model request.",
+  "results": [
+    {
+      "name": "桌面会话列表显示文字归档入口和归档/删除说明",
+      "status": "passed",
+      "evidence": {
+        "recentAndArchivedVisible": true,
+        "reversibleArchiveExplained": true,
+        "permanentDeletePathExplained": true
+      }
+    },
+    {
+      "name": "通过原生存储API建立临时用户记录和两个分叉，无模型请求",
+      "status": "passed",
+      "evidence": {
+        "parent": "01a17887-c92b-74e0-9383-c6d3808a16d4",
+        "first": "01a17887-ca27-7432-82ba-ff1bd44895f7",
+        "second": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7",
+        "nativeUserRecordPersisted": true,
+        "zeroModelRequests": true
+      }
+    },
+    {
+      "name": "归档真实保留文件，已归档列表可见、只读且提供恢复按钮",
+      "status": "passed",
+      "evidence": {
+        "nativeArchivedPath": true,
+        "userRecordPreserved": true,
+        "readOnly": true,
+        "restoreControlVisible": true,
+        "permanentDeleteStillAvailable": true
+      }
+    },
+    {
+      "name": "归档路由刷新和搜索准确，1024桌面入口未被遮挡",
+      "status": "passed",
+      "evidence": {
+        "archivedRouteRefresh": true,
+        "scopeAndSearchPreserved": true,
+        "width": 1024,
+        "restoreHitTargetVisible": true
+      }
+    },
+    {
+      "name": "恢复同一会话和记录，可继续输入；恢复后刷新列表一致",
+      "status": "passed",
+      "evidence": {
+        "sameThreadId": "01a17887-ca27-7432-82ba-ff1bd44895f7",
+        "originalUserRecordPreserved": true,
+        "recentListSelected": true,
+        "inputEnabled": true,
+        "refreshConsistent": true
+      }
+    },
+    {
+      "name": "归档列表响应迟到不会覆盖用户随后选择的最近列表",
+      "status": "failed",
+      "error": "Expected values to be strictly equal:\n\n0 !== 1\n"
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "threadId": null
+    },
+    {
+      "method": "initialized",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "model/list",
+      "threadId": null
+    },
+    {
+      "method": "config/read",
+      "threadId": null
+    },
+    {
+      "method": "thread/start",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17887-c92b-74e0-9383-c6d3808a16d4"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17887-c92b-74e0-9383-c6d3808a16d4"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17887-c92b-74e0-9383-c6d3808a16d4"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/archive",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "initialize",
+      "threadId": null
+    },
+    {
+      "method": "initialized",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "model/list",
+      "threadId": null
+    },
+    {
+      "method": "config/read",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/unarchive",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "initialize",
+      "threadId": null
+    },
+    {
+      "method": "initialized",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "model/list",
+      "threadId": null
+    },
+    {
+      "method": "config/read",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17887-ca27-7432-82ba-ff1bd44895f7"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17887-c92b-74e0-9383-c6d3808a16d4"
+    }
+  ],
+  "browserErrors": [],
+  "cleanup": [
+    {
+      "entity": "ownedThread",
+      "id": "01a17887-cab6-72f3-bab8-75aa0a5a6bf7",
+      "removed": true,
+      "through": "test cleanup"
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a17887-ca27-7432-82ba-ff1bd44895f7",
+      "removed": true,
+      "through": "test cleanup"
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a17887-c92b-74e0-9383-c6d3808a16d4",
+      "removed": true,
+      "through": "test cleanup"
+    }
+  ]
+}

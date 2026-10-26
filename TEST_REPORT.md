@@ -1,6 +1,23 @@
 # 实际验收报告
 
-## 最新批次：剩余问题修复、入口隐藏与卸载验收
+## 最新批次：历史、归档删除及进度可见性
+
+证据目录：`test-results/history-usability-2026-10-26/`。仅deepseek-flash，未改原生内核。日常实例8765只检查启动和元数据，不恢复或执行用户任务；完整新后端18868使用独立配置和工作区。
+
+| 验证 | 实际结果 |
+|---|---|
+| 日常启动前后 | performance/summary.json：原initialize6.59–9.28秒，正常浏览器新连接455/826ms；页面与40条会话列表1.73/2.65秒（原7.64–10.43秒）。只改原生ephemeral配置，私有备份、授权文件/历史和其他配置保留，旧连接未终止 |
+| 最近页与更早历史 | performance/after-final/history-loading-results.json：6/6，真实原生3回合42item样本合法limit1，顺序/去重/锚点/晚到导航/刷新通过，0模型/配置写；不存在>20样本压力验收，原生与前端耗时分开保存 |
+| 归档与真正删除 | archive/summary.json：11/11，1440/1024；真实归档、恢复、取消/拒绝/成功删除、草稿隔离、刷新、搜索、范围竞态，以及真实原生非法参数失败/重试。0模型，另真实Flash历史归档/刷新/恢复全文一致，源SHA不变，临时历史全部清理 |
+| 进度真实模型工作流 | progress/flash-final-backend/results.json：3/3，实际Flash计划→编辑批准→原生update_plan→真实只读文件/计算17+23+41=81，执行1/3、完成3/3；专属线程和文件清理，全局配置不变 |
+| 进度界面与状态 | progress/ui-final-backend/results.json：12/12合成通知UI测试；progress单测13/13。明确与真实模型结果分开，覆盖审批/中断/失败/断线/缓存恢复/焦点/历史滚动/小桌面宽度 |
+| 状态相邻回归 | behavior-units.txt：上下文恢复6、模式顺序2、批准草稿7、目标16、上下文计算12、进度状态13逐组通过；上下文真实只读普通与轻量恢复4/4、0模型，context/context-readonly-results.json |
+| 语法及核心完整性 | static.json：68份JS/MJS、36份Python语法与diff通过；native-integrity.json：pristine=true，176方法完整Schema一致。无前端打包/TypeScript，构建及类型检查不适用。桌面真实截图已查看，截图不替代功能验证 |
+| 完整Python与传输 | python.txt：72/72，含真实原生浏览器、raw WebSocket范围、SQL校验及新ephemeral配置保护 |
+
+持久认证A/B对照因可能触发账号刷新被自动审批拒绝，未执行。改用受支持ephemeral且不读取持久登录态的路径，随后日常正常浏览器同路径复验支持修复效果。性能小样本及合成事件覆盖不推论任意长历史/任意任务均可见进度。
+
+## 前一批次（历史）：剩余问题修复、入口隐藏与卸载验收
 
 本批只用deepseek-flash。最终独立实例18866，CODEX_HOME和工作区在`/tmp/codex-web-final-fixes/`；未修改Codex源码、发行程序或代理循环。以下结果与历史原始失败分别保存，未把代码修改直接算测试通过。
 

@@ -1,0 +1,154 @@
+{
+  "scope": "Desktop execution-progress discoverability only; native runtime unchanged. UI event-order tests are synthetic and kept separate from real DeepSeek Flash execution.",
+  "changes": [
+    "Current native update_plan step count and current step remain visible above the composer, outside collapsed activity. Expand to see the real checklist.",
+    "Waiting approval/response, stopping/interrupted, failed/disconnected, incomplete terminal turn and actual completion use distinct native-derived statuses.",
+    "No plan means no invented step count; no elapsed-time percentage. A new turn cannot reuse the last turn's progress.",
+    "Current progress has one visible home; earlier turns retain their history cards. Updates preserve expanded state, summary focus and history scroll.",
+    "Plan confirmation requests native update_plan updates, without implementing a new agent loop or guaranteeing model obedience.",
+    "Permanent native deletion clears the corresponding local progress text.",
+    "Existing home/thread-scoped cache retained; buffered progress events must survive history hydration (app hook owned by root)."
+  ],
+  "verification": {
+    "unitStatusLogic": {
+      "passed": 13,
+      "failed": 0,
+      "evidence": "unit.txt"
+    },
+    "uiSyntheticNotifications": {
+      "passed": 12,
+      "failed": 0,
+      "javascriptErrors": [],
+      "evidence": "ui/results.json",
+      "dimensions": [
+        1440,
+        1280,
+        1024
+      ]
+    },
+    "realDeepSeekFlash": {
+      "passed": 3,
+      "failed": 0,
+      "javascriptErrors": [],
+      "evidence": "flash/results.json",
+      "model": "deepseek-flash",
+      "actualStepsDuringCommand": "1/3",
+      "finalSteps": "3/3",
+      "numbers": [
+        17,
+        23,
+        41
+      ],
+      "independentlyExpectedSum": 81,
+      "cleanup": [
+        {
+          "entity": "ownedTestThread",
+          "id": "01a17871-afdf-7a20-b3d5-8e1eb539d322",
+          "deleted": true
+        },
+        {
+          "entity": "ownedFixture",
+          "deleted": true
+        },
+        {
+          "entity": "globalConfig",
+          "unchanged": true
+        }
+      ]
+    }
+  },
+  "screenshots": {
+    "executingCompact": "flash/actual-executing-compact.png",
+    "executingExpanded": "flash/actual-executing-expanded.png",
+    "completed": "flash/actual-completed.png"
+  },
+  "preservedEarlierRuns": [
+    {
+      "path": "flash-first-layout",
+      "result": "Real native workflow 3/3; before removing duplicate current progress cards and tightening CSS spacing."
+    },
+    {
+      "path": "flash-plan-metadata-guard",
+      "result": "Test assertion rejected pwd/rg --files during Plan. Actual native Plan permits read-only metadata investigation; no content read or business execution occurred. Test boundary corrected; not a product bug."
+    },
+    {
+      "path": "flash-python-version-guard",
+      "result": "Same overstrict test classification rejected python3 --version metadata; test corrected without treating it as business execution."
+    },
+    {
+      "path": "flash-short-command-race",
+      "result": "Screenshot waiter caught an instant cat command that ended before inspection, then the test cleaned up. Waiter now requires the bounded 12-second command; not a native execution failure."
+    },
+    {
+      "path": "ui-before-hooks",
+      "result": "Waiting-approval UI assertion failed before app renderRequests hook was integrated; final UI suite passes."
+    },
+    {
+      "path": "ui-config-read-guard",
+      "result": "11 UI assertions passed; final safety assertion incorrectly treated config/read as mutation. Narrowed to actual writes; no native mutation."
+    },
+    {
+      "path": "ui-before-deletion-cleanup",
+      "result": "11 UI assertions passed; final suite adds deletion-cache cleanup as the 12th assertion."
+    }
+  ],
+  "limits": [
+    "Native Plan allows read-only investigation and is not a hard security approval gate. Tool execution permissions still use native approval policies.",
+    "Progress is native reported step state, not a guaranteed execution-time estimate or durable workflow program counter.",
+    "A model can omit or revise update_plan; the frontend does not invent progress.",
+    "Refresh restoration uses already observed browser-local native plan snapshots and genuine incoming events. No cross-browser server-side progress reconstruction was added.",
+    "Only desktop sizes are included."
+  ],
+  "changedProductFiles": [
+    "web/public/native-ui.js",
+    "web/public/chat.css"
+  ],
+  "testFiles": [
+    "web/tests/execution_progress.mjs",
+    "web/tests/execution_progress_desktop.mjs",
+    "web/tests/execution_progress_flash_desktop.mjs"
+  ],
+  "finalBackendValidation": {
+    "base": "http://127.0.0.1:18868",
+    "home": "/tmp/codex-web-history-usability/home",
+    "workspace": "/tmp/codex-web-history-usability/workspace",
+    "reason": "Rerun after root enabled ephemeral CLI credential storage and native deleted-thread mode/goal cache cleanup. No product change by this validation agent.",
+    "unitStatusLogic": {
+      "passed": 13,
+      "failed": 0,
+      "rerun": true
+    },
+    "syntheticUI": {
+      "passed": 12,
+      "failed": 0,
+      "javascriptErrors": 0,
+      "evidence": "ui-final-backend/results.json"
+    },
+    "realDeepSeekFlash": {
+      "passed": 3,
+      "failed": 0,
+      "javascriptErrors": 0,
+      "evidence": "flash-final-backend/results.json",
+      "cleanup": [
+        {
+          "entity": "ownedTestThread",
+          "id": "01a1787d-1c30-7540-af1b-e212b5d68426",
+          "deleted": true
+        },
+        {
+          "entity": "ownedFixture",
+          "deleted": true
+        },
+        {
+          "entity": "globalConfig",
+          "unchanged": true
+        }
+      ]
+    },
+    "screenshots": {
+      "executingCompact": "flash-final-backend/actual-executing-compact.png",
+      "executingExpanded": "flash-final-backend/actual-executing-expanded.png",
+      "completed": "flash-final-backend/actual-completed.png"
+    }
+  }
+}

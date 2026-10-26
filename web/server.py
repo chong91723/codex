@@ -354,6 +354,7 @@ class KnownForksObserver:
 # Supported native configuration, applied only to this Web-launched process.
 # Never mutate the binary, the user's login files, or existing profile contents.
 WEB_NATIVE_OVERRIDES = (
+    'cli_auth_credentials_store="ephemeral"',
     'features.image_generation=false',
     'features.fast_mode=false',
     'features.ultrafast_mode=false',
@@ -398,6 +399,8 @@ def config_scope_reason(value, path=()):
         return 'OpenAI/ChatGPT 模型已移除；请显式选择已配置的第三方模型。'
     if key == 'model_provider' and value in ('openai', 'chatgpt'):
         return 'OpenAI/ChatGPT provider 已移除；请使用 --deepseek 或显式配置第三方 provider。'
+    if key == 'cli_auth_credentials_store' and value != 'ephemeral':
+        return '本项目不读取 ChatGPT 持久登录；账号凭据存储固定为 ephemeral。MCP 服务授权使用独立配置。'
     if key == 'service_tier' and value not in ('default', ''):
         return '快速模式已移除，不能设置优先服务档位。'
     if key in ('chatgpt_base_url', 'forced_chatgpt_workspace_id') or key == 'forced_login_method' and value == 'chatgpt':

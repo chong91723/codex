@@ -57,7 +57,9 @@
   </nav>
   <div class="sidebar-section"><span>项目</span><button class="icon-button" id="project-edit" aria-label="选择项目"><svg><use href="#i-plus"/></svg></button></div>
   <button class="project-button" id="project-button"><svg><use href="#i-folder"/></svg><span id="project-name">工作区</span><svg class="tiny"><use href="#i-down"/></svg></button>
-  <div class="sidebar-section"><span id="thread-list-label">最近会话</span><button class="icon-button" id="archive-toggle" aria-label="查看归档"><svg><use href="#i-archive"/></svg></button></div>
+  <div class="sidebar-history-tabs" role="group" aria-label="会话列表范围"><button id="recent-toggle" type="button" aria-pressed="true">最近会话</button><button id="archive-toggle" type="button" aria-pressed="false"><svg><use href="#i-archive"/></svg>已归档</button></div>
+  <div class="sidebar-history-caption"><span id="thread-list-label" class="subtle">最近会话</span><button id="history-help" type="button" title="归档保留历史，可恢复；永久删除无法撤销" aria-label="了解归档和永久删除">说明</button></div>
+  <p id="archive-list-help" class="sidebar-history-help" hidden>归档保留全部历史。打开会话后可恢复，或在「会话操作」中永久删除。</p>
   <div class="thread-list" id="thread-list"><div class="subtle empty-small">正在连接原生运行时…</div></div>
   <button id="threads-more" class="text-button" hidden>加载更多</button>
   <footer class="sidebar-footer"><button class="nav-button" data-view="settings"><svg><use href="#i-settings"/></svg>设置<span id="runtime-pill" class="version-pill">本地</span></button><button class="account-button" data-view="account"><span class="avatar">C</span><span><strong id="account-name">模型服务</strong><small id="account-status">通过环境变量配置</small></span><svg><use href="#i-down"/></svg></button></footer>
@@ -67,7 +69,7 @@
   <div class="error-banner" id="connection-error" hidden></div>
   <div class="workspace-body">
     <section class="chat-view empty" id="view-chat">
-      <div class="chat-toolbar" id="chat-toolbar" hidden><span class="subtle" id="thread-info"></span><select id="thread-action" aria-label="会话操作"><option value="">•••</option><option value="rename">重命名</option><option value="fork">分叉会话</option><option value="compact">压缩上下文</option><option value="review">审查未提交更改</option><option value="revert">回退用户任务</option><option value="archive">归档</option><option value="unarchive">取消归档</option><option value="export">导出会话</option><option value="delete">永久删除会话</option></select></div>
+      <div class="chat-toolbar" id="chat-toolbar" hidden><span class="subtle" id="thread-info"></span><span id="thread-archive-status" class="thread-archive-status" hidden>已归档 · 历史已保留<button id="thread-restore" type="button">恢复会话</button></span><select id="thread-action" aria-label="会话操作"><option value="">会话操作</option><option value="rename">重命名</option><option value="fork">分叉会话</option><option value="compact">压缩上下文</option><option value="review">审查未提交更改</option><option value="revert">回退用户任务</option><option value="archive">归档（保留历史）</option><option value="unarchive">恢复到最近会话</option><option value="export">导出会话</option><option value="delete">永久删除历史…</option></select></div>
       <div class="conversation-scroll" id="conversation-scroll"><div class="welcome" id="welcome"><h1>今天有什么可以帮你？</h1><div class="starter-suggestions" id="starter-suggestions"><button data-prompt="我想写一段文字，请先了解主题、读者和我希望表达的内容。"><svg><use href="#i-chat"/></svg>帮我写作</button><button data-prompt="我想分析一些资料，请先了解我的问题和手头的文件。"><svg><use href="#i-file"/></svg>分析资料</button><button data-prompt="我想研究一个问题，请先确认研究目标，再使用当前可用的工具寻找依据。"><svg><use href="#i-search"/></svg>研究问题</button><button data-prompt="先了解当前项目和我的目标，再协助我完成编程任务。"><svg><use href="#i-code"/></svg>编写代码</button></div></div><div class="messages" id="messages" aria-live="polite"></div></div>
       <button id="jump-latest" class="small-button jump-latest" type="button" hidden>回到最新消息 ↓</button>
       <div id="requests" class="requests" aria-live="assertive"></div>

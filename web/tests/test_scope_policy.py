@@ -52,6 +52,20 @@ class ScopePolicyTests(unittest.TestCase):
         for method in ['remoteControl/disable', 'remoteControl/status/read', 'plugin/list', 'plugin/read', 'plugin/install', 'mcpServerStatus/list', 'skills/list']:
             self.assertIsNone(self.reason(method))
 
+    def test_native_process_ignores_persistent_chatgpt_auth_without_touching_mcp_oauth(self):
+        self.assertIn('cli_auth_credentials_store="ephemeral"', WEB_NATIVE_OVERRIDES)
+        self.assertIsNone(config_scope_reason('ephemeral', ('cli_auth_credentials_store',)))
+        self.assertIsNone(config_scope_reason(None, ('cli_auth_credentials_store',)))
+        self.assertIsNone(config_scope_reason('file', ('mcp_oauth_credentials_store',)))
+        self.assertIsNone(config_scope_reason({'mcp_servers': {'owned': {'cli_auth_credentials_store': 'file'}}}))
+
+    def test_native_config_cannot_reenable_persistent_chatgpt_auth(self):
+        for value in ('file', 'keyring', 'auto'):
+            with self.subTest(value=value):
+                self.assertTrue(self.reason('config/value/write', {'keyPath': 'cli_auth_credentials_store', 'value': value, 'mergeStrategy': 'replace'}))
+                self.assertTrue(self.reason('thread/start', {'config': {'cli_auth_credentials_store': value}}))
+        self.assertIsNone(self.reason('config/value/write', {'keyPath': 'mcp_oauth_credentials_store', 'value': 'file', 'mergeStrategy': 'replace'}))
+
     def test_approval_response_not_mistaken_for_a_client_request(self):
         self.assertIsNone(self.policy.reason({'id': 'approval-1', 'result': {'decision': 'decline'}}))
 

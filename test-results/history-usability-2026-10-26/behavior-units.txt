@@ -1,0 +1,108 @@
+context_hydration.mjs
+✔ usage before the final turns page survives resume without embedded turns (14.341848ms)
+✔ snapshot-covered deltas are not replayed; full terminal items and turns remain idempotent (2.34356ms)
+✔ settings use the resume snapshot boundary rather than the later turn-page boundary (5.059819ms)
+✔ navigation generation change cancels an old hydration even when the same thread is selected again (4.86924ms)
+✔ embedded native recent page renders chronologically without another history request (2.079184ms)
+✔ plan progress survives a later history snapshot that has no progress field (1.950429ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 62.822666
+
+mode_recovery.mjs
+✔ late native resume reply cannot overwrite a newer navigation mode cache (6.93066ms)
+✔ a real later settings event replay keeps priority over the successful resume snapshot (1.998218ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 24.316818
+
+approved_plan_submission.mjs
+✔ approved-plan submission sends only approved text and preserves unsent text, attachments and skills (10.381111ms)
+✔ ordinary submission still sends selected skill and attachment, then clears sent text and attachment (3.977243ms)
+✔ delayed approved-task acknowledgement cannot overwrite text or attachments entered meanwhile (4.454067ms)
+✔ ordinary delayed acknowledgement keeps later edits and newly added attachments (2.189978ms)
+✔ repeated confirmation while pending produces exactly one protocol request (2.442686ms)
+✔ approved-task transport rejection preserves the original draft sentinel, attachments and skills (3.875053ms)
+✔ ordinary transport rejection also retains its original input and attachment for retry (5.738528ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 54.380901
+
+goal_usage_observer.mjs
+✔ first goal real usage is visible even when native budget counter stays zero; cached and reasoning output are not double counted (3.142137ms)
+✔ cumulative snapshots replace checkpoints; repeated snapshots cannot double count (0.514525ms)
+✔ reload replay keeps the observed total; the next real usage delta is counted once (1.072037ms)
+✔ paused ordinary turns are excluded; resumed goal continues from the later cumulative baseline (0.511636ms)
+✔ final statistics still count when update_goal complete preceded the final response (0.40606ms)
+✔ existing goals without a baseline are unknown, then report only the confirmed lower bound (0.44574ms)
+✔ an existing session with real pre-goal usage has an exact local baseline (0.717614ms)
+✔ threads and profile namespaces cannot mix usage (0.854822ms)
+✔ goal clear removes old accounting even when the replacement shares the native seconds timestamp (0.542945ms)
+✔ a different goal creation timestamp cannot inherit old usage (0.518198ms)
+✔ regressing native counters cannot inflate usage and mark coverage incomplete (3.385228ms)
+✔ malformed and estimate-only counters do not invent paid usage (0.271627ms)
+✔ storage failure is diagnostic and in-memory real accounting remains usable (0.519001ms)
+✔ failed goal set cancels the prepared zero baseline rather than applying it to a later unknown goal (0.224846ms)
+✔ missing goal turn events after a connection gap mark coverage incomplete without attributing unknown usage (3.011903ms)
+✔ corrupt browser history is diagnosed and never becomes an invented zero baseline (0.426456ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 35.710218
+
+context_sampling.mjs
+✔ default Flash keeps complete-window denominator when native headroom matches catalog exactly (3.247274ms)
+✔ thread runtime window override cannot be overwritten by global catalog metadata (0.285328ms)
+✔ a changed safety percentage is not silently assumed to be 95 percent (0.254497ms)
+✔ unknown model metadata uses only the actual native available window (0.202203ms)
+✔ unknown native window cannot be replaced with an unverified global full window (0.201499ms)
+✔ cumulative billing total is not the numerator (0.2116ms)
+✔ cached input and reasoning output are already in provider total and never added or subtracted (0.206486ms)
+✔ native post-compaction history estimate remains explicitly approximate (0.184299ms)
+✔ running status is distinct from the last completed sample (0.314658ms)
+✔ missing and negative sample counters produce no invented usage (0.508846ms)
+✔ zero is accepted only as an explicitly reported last sample (0.301039ms)
+✔ unknown safety metadata does not authorize reverse calculation of full context (0.290154ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18.620572
+
+execution_progress.mjs
+PASS running
+PASS interrupted native turn
+PASS failed native turn
+PASS interrupt still pending
+PASS tool approval
+PASS MCP approval
+PASS user question
+PASS response awaits native resolution
+PASS disconnected
+PASS incomplete native completion
+PASS all steps while final answer streams
+PASS actual complete
+PASS no restored turn status
+{"passed":13,"failed":0,"scope":"Unit status logic only; steps are native update_plan values."}

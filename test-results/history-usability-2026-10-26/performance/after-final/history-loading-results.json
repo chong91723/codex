@@ -1,0 +1,306 @@
+{
+  "scope": "Existing independent deepseek-flash historical turns only; valid limit=1 native requests, no mock responses, model calls, or history/config writes. Not a >20-turn volume test.",
+  "base": "http://127.0.0.1:18867",
+  "home": "/tmp/codex-web-flash-database-audit/home",
+  "target": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+  "results": [
+    {
+      "name": "Latest page is visible without fetching the full history",
+      "status": "passed",
+      "ms": 567.7947079999999,
+      "evidence": {
+        "openMs": 506.7321499999998,
+        "totalReferenceTurns": 3,
+        "initialRenderedTurns": 1,
+        "requests": [
+          {
+            "method": "thread/resume",
+            "id": 7,
+            "threadId": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+            "excludeTurns": true,
+            "initialLimit": 1,
+            "hasCursor": false,
+            "start": 2393.108601,
+            "ms": 362.3512060000003,
+            "bytes": 30370,
+            "returnedTurns": 0,
+            "initialTurns": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "Prepending a genuine older page preserves the visible message position",
+      "status": "passed",
+      "ms": 116.81198499999982,
+      "evidence": {
+        "anchorItem": "01a1784b-f45f-7202-a595-0ccb19e06639",
+        "positionDeltaPx": -0.65625,
+        "scrollBefore": 0,
+        "scrollAfter": 3401
+      }
+    },
+    {
+      "name": "All requested native pages retain order and do not duplicate turns or items",
+      "status": "passed",
+      "ms": 107.31020599999965,
+      "evidence": {
+        "turns": 3,
+        "items": 42,
+        "hasOlderButton": false
+      }
+    },
+    {
+      "name": "Late old-page response cannot overwrite the newly selected conversation",
+      "status": "passed",
+      "ms": 679.4882849999999,
+      "evidence": {
+        "delayedRequest": 11,
+        "selectedThread": "01a17841-34d8-7df2-a205-05dff65a2f00",
+        "visibleTurns": 1
+      }
+    },
+    {
+      "name": "Refresh restores only the latest genuine page without resubmitting work",
+      "status": "passed",
+      "ms": 1302.8160340000004,
+      "evidence": {
+        "restoredThread": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+        "visibleTurns": 1
+      }
+    },
+    {
+      "name": "Audit does not create model work, alter configuration, or emit browser errors",
+      "status": "passed",
+      "ms": 0.4208050000006551,
+      "evidence": {
+        "newModelRequests": 0,
+        "configurationWrites": 0,
+        "browserErrors": 0
+      }
+    }
+  ],
+  "errors": [],
+  "wire": [
+    {
+      "method": "initialize",
+      "id": 1,
+      "hasCursor": false,
+      "start": 1764.096998,
+      "ms": 199.71070600000007,
+      "bytes": 221
+    },
+    {
+      "method": "initialized",
+      "hasCursor": false,
+      "start": 1963.919869
+    },
+    {
+      "method": "thread/list",
+      "id": 2,
+      "limit": 40,
+      "hasCursor": false,
+      "start": 1963.968241,
+      "ms": 177.12069299999985,
+      "bytes": 15581,
+      "pageTurns": 9
+    },
+    {
+      "method": "model/list",
+      "id": 3,
+      "hasCursor": false,
+      "start": 1964.032791,
+      "ms": 68.62606099999994,
+      "bytes": 1414,
+      "pageTurns": 2
+    },
+    {
+      "method": "config/read",
+      "id": 4,
+      "hasCursor": false,
+      "start": 1964.06452,
+      "ms": 106.22737400000005,
+      "bytes": 11720
+    },
+    {
+      "method": "thread/turns/list",
+      "id": 5,
+      "threadId": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+      "limit": 100,
+      "hasCursor": false,
+      "start": 2107.246103,
+      "ms": 98.47347600000012,
+      "bytes": 102285,
+      "pageTurns": 3
+    },
+    {
+      "method": "thread/turns/list",
+      "id": 6,
+      "threadId": "01a17841-34d8-7df2-a205-05dff65a2f00",
+      "limit": 100,
+      "hasCursor": false,
+      "start": 2212.394377,
+      "ms": 35.839494999999715,
+      "bytes": 107259,
+      "pageTurns": 2
+    },
+    {
+      "method": "thread/resume",
+      "id": 7,
+      "threadId": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+      "excludeTurns": true,
+      "initialLimit": 1,
+      "hasCursor": false,
+      "start": 2393.108601,
+      "ms": 362.3512060000003,
+      "bytes": 30370,
+      "returnedTurns": 0,
+      "initialTurns": 1
+    },
+    {
+      "method": "thread/turns/list",
+      "id": 8,
+      "threadId": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+      "limit": 1,
+      "hasCursor": true,
+      "start": 2900.582389,
+      "ms": 27.823793000000023,
+      "bytes": 12379,
+      "pageTurns": 1
+    },
+    {
+      "method": "thread/turns/list",
+      "id": 9,
+      "threadId": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+      "limit": 1,
+      "hasCursor": true,
+      "start": 2965.624107,
+      "ms": 62.45107599999983,
+      "bytes": 65018,
+      "pageTurns": 1
+    },
+    {
+      "method": "thread/resume",
+      "id": 10,
+      "threadId": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+      "excludeTurns": true,
+      "initialLimit": 1,
+      "hasCursor": false,
+      "start": 3071.614588,
+      "ms": 59.130073000000266,
+      "bytes": 30371,
+      "returnedTurns": 0,
+      "initialTurns": 1
+    },
+    {
+      "method": "thread/resume",
+      "id": 12,
+      "threadId": "01a17841-34d8-7df2-a205-05dff65a2f00",
+      "excludeTurns": true,
+      "initialLimit": 1,
+      "hasCursor": false,
+      "start": 3224.876348,
+      "ms": 256.79567700000007,
+      "bytes": 25365,
+      "returnedTurns": 0,
+      "initialTurns": 1
+    },
+    {
+      "method": "thread/turns/list",
+      "id": 11,
+      "threadId": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+      "limit": 1,
+      "hasCursor": true,
+      "start": 3681.369063,
+      "ms": 11.706433999999717,
+      "bytes": 12380,
+      "pageTurns": 1
+    },
+    {
+      "method": "thread/resume",
+      "id": 13,
+      "threadId": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+      "excludeTurns": true,
+      "initialLimit": 1,
+      "hasCursor": false,
+      "start": 3757.683231,
+      "ms": 67.16356600000017,
+      "bytes": 30371,
+      "returnedTurns": 0,
+      "initialTurns": 1
+    },
+    {
+      "method": "initialize",
+      "id": 1,
+      "hasCursor": false,
+      "start": 4229.998456,
+      "ms": 177.078485,
+      "bytes": 221
+    },
+    {
+      "method": "initialized",
+      "hasCursor": false,
+      "start": 4407.134414
+    },
+    {
+      "method": "thread/list",
+      "id": 2,
+      "limit": 40,
+      "hasCursor": false,
+      "start": 4407.17644,
+      "ms": 184.39892299999974,
+      "bytes": 15581,
+      "pageTurns": 9
+    },
+    {
+      "method": "model/list",
+      "id": 3,
+      "hasCursor": false,
+      "start": 4407.20766,
+      "ms": 29.489512999999533,
+      "bytes": 1414,
+      "pageTurns": 2
+    },
+    {
+      "method": "config/read",
+      "id": 4,
+      "hasCursor": false,
+      "start": 4407.227885,
+      "ms": 106.01980899999944,
+      "bytes": 11720
+    },
+    {
+      "method": "thread/read",
+      "id": 5,
+      "threadId": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+      "hasCursor": false,
+      "start": 4513.356563,
+      "ms": 33.249533000000156,
+      "bytes": 2411,
+      "returnedTurns": 0
+    },
+    {
+      "method": "thread/resume",
+      "id": 6,
+      "threadId": "01a1784b-08a0-71a3-9e4e-0f258d84d1da",
+      "excludeTurns": true,
+      "initialLimit": 1,
+      "hasCursor": false,
+      "start": 4546.66026,
+      "ms": 380.6054920000006,
+      "bytes": 30370,
+      "returnedTurns": 0,
+      "initialTurns": 1
+    },
+    {
+      "method": "thread/list",
+      "id": 7,
+      "limit": 40,
+      "hasCursor": false,
+      "start": 4928.230275,
+      "ms": 243.5532460000004,
+      "bytes": 15732,
+      "pageTurns": 9
+    }
+  ]
+}

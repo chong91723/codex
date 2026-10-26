@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-26",
+  "baselineCommit": "6fdcc20b0740e6f9b62de5a6b5e291fbdea0625e",
+  "branch": "codex/web-native-desktop",
+  "model": "deepseek-flash",
+  "python": {
+    "passed": 72,
+    "failed": 0,
+    "path": "python.txt"
+  },
+  "behaviorUnits": {
+    "contextHydration": 6,
+    "modeRecovery": 2,
+    "approvedPlanDraft": 7,
+    "goalObserver": 16,
+    "contextCalculation": 12,
+    "executionProgress": 13,
+    "path": "behavior-units.txt"
+  },
+  "browserGroups": [
+    {
+      "name": "history",
+      "path": "performance/after-final/history-loading-results.json",
+      "passed": 6,
+      "failed": 0,
+      "scope": "real native, supported limit=1 over three genuine turns"
+    },
+    {
+      "name": "archive",
+      "path": "archive/results.json",
+      "passed": 11,
+      "failed": 0,
+      "scope": "real native lifecycle and actual prior Flash history; zero new model calls"
+    },
+    {
+      "name": "progressReal",
+      "path": "progress/flash-final-backend/results.json",
+      "passed": 3,
+      "failed": 0,
+      "scope": "real Flash and tools on new backend18868"
+    },
+    {
+      "name": "progressUI",
+      "path": "progress/ui-final-backend/results.json",
+      "passed": 12,
+      "failed": 0,
+      "scope": "synthetic native notifications, separate from real model checks"
+    },
+    {
+      "name": "context",
+      "path": "context/context-readonly-results.json",
+      "passed": 4,
+      "failed": 0,
+      "scope": "real native read-only replay and refresh"
+    }
+  ],
+  "static": {
+    "javascriptFiles": 68,
+    "pythonFiles": 36,
+    "failures": [],
+    "diffCheck": "passed",
+    "buildAndTypecheck": "not applicable: plain JavaScript/Python, no bundler or TypeScript"
+  },
+  "integrity": {
+    "sourceCommit": "970111f6cb62cc02fe36a82ea7d71b37a2889c97",
+    "pristine": true,
+    "sourceMethodCount": 176,
+    "nativeMethodCount": 176,
+    "fullSchemasMatch": true,
+    "missing": [],
+    "extra": []
+  },
+  "liveStartup": {
+    "path": "performance/live-browser-startup-after.json",
+    "beforeNativeInitializeSeconds": [
+      6.59,
+      9.28
+    ],
+    "afterNativeInitializeMs": [
+      455,
+      826
+    ],
+    "beforePageAndListReadySeconds": [
+      7.64,
+      10.43
+    ],
+    "afterPageAndListReadySeconds": [
+      1.73,
+      2.65
+    ],
+    "note": "Observed ranges from separately recorded runs. Initialization, page readiness and history rendering are different metrics."
+  },
+  "liveConfiguration": "performance/live-config-update.json",
+  "fixes": [
+    "Native ephemeral auth skips old persistent ChatGPT refresh without deleting authorization data or changing provider API credentials. Web config guards prevent reenabling it; MCP OAuth storage is independent.",
+    "Native initialTurnsPage gives latest20 full turns. Explicit older pages preserve order, live DOM and reading position; sidebar enrichment no longer blocks selected history.",
+    "Visible Recent/Archived controls, reversible archive and explicit permanent deletion with browser draft cleanup. List errors are retryable; cancellation/rejection retain drafts.",
+    "Composer-adjacent count/current-step banner uses native update_plan. Waiting, stopping, failure, completion, replay and real model execution are checked."
+  ],
+  "limits": [
+    "No genuine >20-turn volume fixture was available. Three genuine independent turns used supported limit=1 requests; no fabricated responses or universal speedup claim.",
+    "Daily startup was tested without restoring/executing user tasks. Existing daily connections/processes were kept. Profile ephemeral setting applies to new connections; complete new backend verified on18868.",
+    "Plan mode allows read-only investigation. Progress counts native model steps, not database/time percentage or a security gate.",
+    "New browsers cannot reconstruct missing transient native progress without received/cached events.",
+    "Persistent-auth A/B was rejected by automatic review and not executed. Safe ephemeral-only and subsequent normal browser tests passed.",
+    "Multi-tenant security and mobile behavior remain outside this work."
+  ],
+  "records": [
+    "../../WEB_AUDIT.md",
+    "../../CAPABILITIES.md",
+    "../../TEST_REPORT.md"
+  ]
+}
