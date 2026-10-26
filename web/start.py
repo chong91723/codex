@@ -21,7 +21,7 @@ def deepseek_profile(state_dir):
     model = copy.deepcopy(next((m for m in catalog['models'] if m.get('slug') == 'gpt-6-sol'), catalog['models'][0]))
     model.update(slug='deepseek-flash', display_name='DeepSeek Flash', description='DeepSeek native Responses API',
                  prefer_websockets=False, tool_mode=None, use_responses_lite=False, shell_type='shell_command',
-                 context_window=1048576, max_context_window=1048576, effective_context_window_percent=95, auto_compact_token_limit=None, default_reasoning_level='high',
+                 context_window=1048576, max_context_window=1048576, effective_context_window_percent=95, auto_compact_token_limit=734003, default_reasoning_level='high',
                  supports_search_tool=False, web_search_tool_type='text',
                  experimental_supported_tools=[], default_service_tier=None, service_tiers=[],
                  supported_reasoning_levels=[{'effort':v,'description':v} for v in ['low','high','max']])

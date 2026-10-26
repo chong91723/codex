@@ -124,7 +124,13 @@ python3 web/scripts/install_databases.py --node /绝对路径/node --npm /绝对
 
 网页停止任务时，扩展处理原生 MCP 的 `notifications/cancelled`：MySQL 仅取消该账号当前请求的查询，PostgreSQL 发出取消信号，ClickHouse 按随机 query_id 取消自己的查询，Elasticsearch 关闭搜索 HTTP 连接，本地 DuckDB 中断计算。不会向 Agent 暴露 KILL 管理语句。ClickHouse 25.8 取消自己查询还要求只读账号拥有 `SELECT(query_id,user,query) ON system.processes`；不需要授予 `KILL QUERY` 或写权限，服务器只读设置继续生效。部分数据库操作不保证瞬间终止，连接和服务端超时仍作为兜底。平台行为参考 [ClickHouse 文档](https://clickhouse.com/docs/reference/statements/kill) 和 [Elasticsearch 文档](https://www.elastic.co/guide/en/elasticsearch/reference/8.19/search-your-data.html#search-cancellation)。
 
-输入框模型与思考强度右侧的圆环使用原生 `last.totalTokens / modelContextWindow` 显示当前上下文占用，点击查看详情。累计用量单独显示，不作为占用百分比；没有统计时显示“—”。自动压缩继续由 Codex 原生运行时执行，压缩可能丢失模型历史细节，不能替代完整数据库快照。
+输入框模型与思考强度右侧的圆环显示“当前保留上下文最近统计 ÷ 模型完整窗口”，新对话和没有原生统计时隐藏。分子使用原生 `last.totalTokens`，它包含最近完整请求中的保留历史和该次输出；不累加每次请求消耗，不扣除缓存输入，不重复添加推理输出。DeepSeek 分母为 1,048,576，保留给运行时的 5% 余量不从展示分母中扣除。生成中的未统计内容会标注待更新；原生接口没有逐 token 的精确活动上下文字段。压缩后显示原生估算（≈），工具定义等固定开销将在下一次完整请求中重新统计。累计消耗独立显示。
+
+DeepSeek Flash/Pro 的独立模型目录设置 `auto_compact_token_limit = 734003`，按完整 1M 的 70% 自动压缩。网页创建、恢复 DeepSeek 会话时使用原生 `total` 范围并开启回合结束检查（`model_post_turn_compact_threshold_percent = 100`，由已达到 70% 的主阈值触发；不能把此值直接设为 70，否则会乘以原生 95% 可用窗口而提前压缩）。保留原生回合前、中、后检查与手动压缩入口，ChatGPT 不强制使用 DeepSeek 的阈值。压缩可能丢失历史细节，不能替代完整数据库快照。
+
+右上角“功能”提供初始化、计划模式、项目、状态、持续目标和反馈；模型与推理强度沿用原有控件。计划模式使用原生 `collaborationMode`，建议计划单独显示，支持编辑后确认，在原会话切换默认模式并执行；`update_plan` 清单显示已完成步数，支持折叠、停止与同一浏览器刷新恢复。清单进度来自模型事件，不是执行引擎的百分比，也不是每一步审批。`/plan /status /init /projects /goal /feedback /chat /fast` 可调用相同入口。
+
+ChatGPT 模型声明 `priority` 档位时显示快速入口，实际调用原生 `thread/settings/update`，可恢复标准档位；DeepSeek 不显示。项目使用原生项目存储，新聊天可以不关联项目，工具能力保留。持续目标由用户明确设置，支持暂停并停止、继续、移除和原生状态展示；目标预算口径为未缓存输入加输出，与上下文占用不同。原生新会话首个回合缺少统计基线时，短目标的 `tokensUsed` 可能为 0，不能视作没有消耗。反馈默认保存本地包，上传需用户主动明确点击；本次未上传。未发现开源画草图画布的对应实现，因此没有伪造此入口。
 
 专项复验使用独立 `.local-state/database-release-acceptance` 配置、8770 端口及现有的四类只读测试库。设置 `CODEX_DATABASE_CREDENTIALS` 指向私有测试账号文件（不提交），按顺序运行 `database_desktop.mjs`、`database_results_desktop.mjs`、`database_cancellation_desktop.mjs`；后两项通过 `CODEX_DB_CONNECTION_IDS` 读取首项生成的 ID。`database_results_desktop.mjs` 的断连测试需要显式设置 `CODEX_TEST_ALLOW_CONTAINER_RESTART=1`，仅用于独立测试容器。取消测试的服务器脚本只观察从网页发起的查询状态，不从命令行发起功能测试。测试准备与运行时工具分离。
 
@@ -210,3 +216,6 @@ node web/tests/skills_mcp_desktop.mjs
 - xterm.js 6.0.0 与官方 @xterm/addon-fit 0.11.0：MIT，许可证分别保存在 `web/public/vendor/XTERM-LICENSE` 和 `XTERM-FIT-LICENSE`。所有组件随页面本地提供，无需 CDN。
 
 本项目为独立 Web 界面，不是 OpenAI 官方桌面产品。
+
+
+上下文与原生功能专项使用独立 `.local-state/ui-native-acceptance` 配置和测试工作目录，按顺序执行 `native_ui_desktop.mjs`、`compaction_desktop.mjs`、`goal_complete_desktop.mjs`。这些脚本检查实例身份，不允许直接指向日常配置；`compaction_desktop.mjs` 只在独立配置中临时调低阈值并恢复。ChatGPT 快速档位的真实响应测试需独立配置中有有效的 ChatGPT 登录。所有请求均经网页控件发起，本地反馈保存会测试，上传不会执行。

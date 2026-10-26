@@ -1,0 +1,132 @@
+{
+  "results": [
+    {
+      "name": "新对话隐藏上下文、入口不重复模型与推理",
+      "status": "passed",
+      "evidence": {
+        "emptyHidden": true,
+        "deepseekFastHidden": true
+      }
+    },
+    {
+      "name": "两轮真实响应：完整历史除以1M，不累计消耗；刷新重放",
+      "status": "passed",
+      "evidence": {
+        "first": 58276,
+        "current": 60500,
+        "accumulated": 118776,
+        "denominator": 1048576,
+        "restored": true
+      }
+    },
+    {
+      "name": "原生计划模式实际生成建议计划，刷新保留模式",
+      "status": "passed",
+      "evidence": {
+        "planCard": true,
+        "mode": "plan",
+        "effort": "low"
+      }
+    },
+    {
+      "name": "编辑确认计划，在原会话执行且显示原生步骤进度",
+      "status": "passed",
+      "evidence": {
+        "sameThread": true,
+        "editedPlanExecuted": true,
+        "progressRestored": true
+      }
+    },
+    {
+      "name": "停止执行计划，进度标记停止且未完成步骤保留",
+      "status": "passed",
+      "evidence": {
+        "interrupted": true,
+        "unfinishedPreserved": true
+      }
+    },
+    {
+      "name": "状态展示实际提供方与完整窗口，不混用账号额度",
+      "status": "passed",
+      "evidence": {
+        "provider": "deepseek",
+        "fullWindow": 1048576
+      }
+    },
+    {
+      "name": "初始化调用官方提示生成AGENTS，再次初始化不覆盖",
+      "status": "passed",
+      "evidence": {
+        "generated": true,
+        "noOverwrite": true
+      }
+    },
+    {
+      "name": "原生项目创建、编辑、关联、新聊天与删除",
+      "status": "passed",
+      "evidence": {
+        "nativeProjectId": "01a17622-a23f-7a43-8b6b-3f899c7201f2",
+        "created": true,
+        "edited": true,
+        "assigned": true,
+        "unassigned": true,
+        "deleted": true
+      }
+    },
+    {
+      "name": "反馈只保存本地，不上传；完整176方法仍可访问",
+      "status": "passed",
+      "evidence": {
+        "localSave": true,
+        "uploadNotTested": true,
+        "methods": 176
+      }
+    },
+    {
+      "name": "ChatGPT可用原生快速档位，DeepSeek没有快速入口",
+      "status": "passed",
+      "evidence": {
+        "chatgptFastNative": true,
+        "realResponse": true,
+        "refreshPersisted": true,
+        "restoredStandard": true
+      }
+    },
+    {
+      "name": "持续目标：明确设置、暂停停止、继续与移除",
+      "status": "passed",
+      "evidence": {
+        "explicitOrigin": true,
+        "paused": true,
+        "resumed": true,
+        "cleared": true
+      }
+    }
+  ],
+  "errors": [],
+  "methods": [
+    "account/read",
+    "config/read",
+    "feedback/save",
+    "fs/readDirectory",
+    "fs/readFile",
+    "initialize",
+    "initialized",
+    "model/list",
+    "project/create",
+    "project/delete",
+    "project/list",
+    "project/update",
+    "thread/goal/clear",
+    "thread/goal/get",
+    "thread/goal/set",
+    "thread/list",
+    "thread/metadata/update",
+    "thread/resume",
+    "thread/settings/update",
+    "thread/start",
+    "turn/interrupt",
+    "turn/start"
+  ],
+  "note": "各原生操作均由网页控件发起。ChatGPT 档位的原生标准值为 default，按该值复测通过。反馈上传依用户要求未执行。"
+}

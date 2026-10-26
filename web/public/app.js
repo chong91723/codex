@@ -58,6 +58,7 @@ function addEvent(msg) { state.events.push({ at: new Date().toLocaleTimeString()
 function currentEvent(params) { return !params.threadId || params.threadId === state.thread?.id; }
 function handleEvent(msg) {
   const p = msg.params || {}, method = msg.method;
+  nativeUIEvent(msg);
   if(method==='mcpServer/startupStatus/updated'){invalidateMcpCache();state.mcpViewUpdate?.(p);}
   if (method === 'serverRequest/resolved') { state.requests.delete(String(p.requestId)); renderRequests(); }
   if (method === 'thread/settings/updated') {state.threadSettings.set(p.threadId,p.threadSettings);if(p.threadId===state.thread?.id&&state.view==='settings')renderSettings().catch(report);}
@@ -71,6 +72,7 @@ function handleEvent(msg) {
   if (method === 'item/autoApprovalReview/started' || method === 'item/autoApprovalReview/completed') renderGuardianReview(p);
   if (method === 'guardianWarning') toast(p.message);
   if (method === 'item/started' || method === 'item/completed') { upsertItem(p.item, method === 'item/completed', p.turnId); }
+  if (method === 'item/plan/delta') appendDelta(p.itemId,p.delta,'plan',p.turnId);
   if (method === 'item/agentMessage/delta') appendDelta(p.itemId, p.delta, 'agentMessage', p.turnId);
   if (method === 'item/reasoning/summaryTextDelta' || method === 'item/reasoning/textDelta') appendDelta(p.itemId, p.delta, 'reasoning', p.turnId);
   if (method === 'item/commandExecution/outputDelta') appendDelta(p.itemId, p.delta, 'commandExecution', p.turnId);
@@ -129,8 +131,8 @@ function renderGeneratedImage(item){
   figure.append(image);const caption=el('figcaption');caption.append(el('span','subtle','Codex 原生生图'),button('查看大图',()=>imagePreview(image.src,'生成的图片',path)),button('下载图片',()=>{const link=el('a');link.href=image.src;link.download=path?.split('/').pop()||'codex-image.png';link.click();}));figure.append(caption);return figure;
 }
 async function startProviderChat(model,provider){
-  const result=await rpc('thread/start',{cwd:state.selectedCwd,model,config:{model_provider:provider}});
-  resetChat();state.threadSettings.set(result.thread.id,{model:result.model,modelProvider:result.modelProvider,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread);showView('chat');loadThreads().catch(report);
+  const result=await rpc('thread/start',{cwd:state.selectedCwd,model,config:{...threadRuntimeConfig(provider),model_provider:provider},projectId:state.selectedProject||undefined});
+  resetChat();state.nativeModes.set(result.thread.id,'default');state.threadSettings.set(result.thread.id,{model:result.model,modelProvider:result.modelProvider,serviceTier:result.serviceTier,collaborationMode:result.collaborationMode,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread);showView('chat');loadThreads().catch(report);
   toast('已创建 '+(provider==='openai'?'ChatGPT':'新模型')+' 会话，已启用的技能可在对话中调用');
 }
 function selectedModelProvider(){return $('#model').selectedOptions[0]?.dataset.provider||state.runtimeDefaults?.model_provider||'openai';}
@@ -147,6 +149,7 @@ function markdown(text) {
 const toolNames = { reasoning:'思考过程', commandExecution:'执行命令', fileChange:'文件更改', mcpToolCall:'MCP 调用', dynamicToolCall:'工具调用', webSearch:'搜索网页', imageView:'查看图片', imageGeneration:'图像', collabAgentToolCall:'子代理', plan:'计划', contextCompaction:'压缩上下文', enteredReviewMode:'开始代码审查', exitedReviewMode:'审查结果' };
 function renderItem(item, done = false) {
   const chart=databaseChart(item);if(chart)return renderDatabaseChart(chart);
+  if(item.type==='plan')return renderProposedPlan(item,done);
   if(item.type==='imageGeneration'&&['completed','succeeded'].includes(item.status))return renderGeneratedImage(item);
   if (item.type === 'userMessage') { const node = el('div', 'message user'); for (const content of item.content || []) { if (content.text) node.append(document.createTextNode(content.text)); else if (content.type?.toLowerCase().includes('image')) {const source=content.url||content.imageUrl||content.path;if(source){const image=el('img','user-image');loadImageElement(image,source,content.path||null);node.append(image);}else node.append(el('div','subtle','[图片附件]'));} else node.append(el('div', 'subtle', pretty(redact(content)))); } return node; }
   if (item.type === 'agentMessage') { const node = el('div', 'message agent'); node.append(markdown(item.text || ''));if(item.phase==='final_answer'||!item.phase&&done){const actions=el('div','message-actions'),copy=button('',async()=>{await navigator.clipboard.writeText(item.text||'');toast('已复制回答');},'icon-button');copy.append(icon('copy'));copy.title=copy.ariaLabel='复制回答';actions.append(copy);node.append(actions);}return node; }
@@ -160,7 +163,7 @@ function renderItem(item, done = false) {
   node.append(body); return node;
 }
 function isActivity(item, turnId) {
-  if(databaseChart(item))return false;
+  if(databaseChart(item)||item.type==='plan')return false;
   if(item.type==='userMessage'||item.type==='imageGeneration'&&['completed','succeeded'].includes(item.status))return false;
   if(item.type!=='agentMessage')return true;
   if(item.phase==='final_answer')return false;
@@ -203,6 +206,7 @@ function updateActivityGroup(group) {
   group.classList.toggle('running', pending.length > 0); group.classList.toggle('has-errors', failed > 0 || turn?.status === 'failed');
 }
 function renderTurnPlan(params) {
+  rememberExecutionPlan(params);
   const turnId=params.turnId||state.activeTurns.get(state.thread?.id)||'';
   const group=$$('.activity-group',$('#messages')).find(group=>group.dataset.turnId===turnId)||createActivityGroup(turnId);
   let box=$('.activity-plan',group);if(!box){box=el('div','activity-plan');$('.activity-items',group).append(box);}
@@ -260,8 +264,8 @@ function renderThreadList() {
 function setCwd(path) { state.selectedCwd = path; localStorage.setItem('codex.cwd', path); const name = path.split('/').filter(Boolean).pop() || path; $('#project-name').textContent = name; $('#breadcrumb').textContent = name; $('#cwd-label').textContent = path; }
 function threadRoute(){const params=new URLSearchParams(location.search);return {id:params.get('thread'),archived:params.get('archived')==='1'};}
 function setThreadRoute(id=null,archived=false,replace=false){const url=new URL(location.href);url.searchParams.delete('token');url.searchParams.delete('thread');url.searchParams.delete('archived');if(id){url.searchParams.set('thread',id);if(archived)url.searchParams.set('archived','1');}if(url.href!==location.href)history[replace?'replaceState':'pushState'](null,'',url);}
-function resetChat(route=true) {restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='询问任何问题'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false; $('#chat-toolbar').hidden = true; $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; renderContextUsage(); renderThreadList(); renderRequests(); updateSend(); }
-function adoptThread(thread,archived=false,busy=false) { if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请先取消归档以继续任务':'询问任何问题';$('#chat-toolbar').hidden=false;$('#thread-info').textContent=thread.id;$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); }
+function resetChat(route=true) {restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='询问任何问题'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false; $('#chat-toolbar').hidden = true; $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; renderContextUsage(); renderThreadList(); renderRequests(); updateSend(); resetNativeUI(); }
+function adoptThread(thread,archived=false,busy=false) { if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请先取消归档以继续任务':'询问任何问题';$('#chat-toolbar').hidden=false;$('#thread-info').textContent=thread.id;$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); adoptNativeUI(thread); }
 async function restoreThreadRoute(){const route=threadRoute();if(route.id){state.archived=route.archived;$('#thread-list-label').textContent=route.archived?'归档会话':'最近会话';await openThread(route.id,{archived:route.archived,replace:true});loadThreads().catch(report);}else resetChat(false);}
 async function openThread(id,{archived=state.archived&&state.threads.some(thread=>thread.id===id),replace=false}={}) {
   const generation=++state.navigationGeneration;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
@@ -269,10 +273,10 @@ async function openThread(id,{archived=state.archived&&state.threads.some(thread
   try {
     let result,busy=false;
     for(let attempt=0;attempt<4;attempt++){
-      try{result=await rpc(archived?'thread/read':'thread/resume',{threadId:id,...(archived?{includeTurns:false}:{})});break;}
+      try{const provider=state.threadSettings.get(id)?.modelProvider||state.threads.find(t=>t.id===id)?.modelProvider||(await rpc('thread/read',{threadId:id,includeTurns:false})).thread.modelProvider;result=await rpc(archived?'thread/read':'thread/resume',{threadId:id,...(archived?{includeTurns:false}:{config:threadRuntimeConfig(provider)})});if(result.collaborationMode)state.nativeModes.set(id,result.collaborationMode.mode);break;}
       catch(error){if(archived||!/already has an active writer/i.test(error.message))throw error;if(generation!==state.navigationGeneration)return;if(attempt<3){await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));if(generation!==state.navigationGeneration)return;}else{result=await rpc('thread/read',{threadId:id,includeTurns:false});busy=true;}}
     }
-    if(generation!==state.navigationGeneration)return;if(result.model)state.threadSettings.set(id,{model:result.model,modelProvider:result.modelProvider,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread,archived,busy);
+    if(generation!==state.navigationGeneration)return;if(result.model)state.threadSettings.set(id,{model:result.model,modelProvider:result.modelProvider,serviceTier:result.serviceTier,collaborationMode:result.collaborationMode,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread,archived,busy);
     await hydrateThread(result.thread,generation);
     if(generation!==state.navigationGeneration)return;if(busy){const notice=el('div','panel-error');notice.dataset.threadBusy='';notice.append(el('p','','此会话正在另一个页面中使用，当前显示历史记录。关闭该页面后，可重试继续会话。'),button('重试继续会话',()=>openThread(id,{archived,replace:true})));$('#messages').prepend(notice);}renderThreadList();
   } catch(error) {
@@ -286,14 +290,15 @@ async function hydrateThread(thread, generation=state.navigationGeneration) {
   if (state.thread?.id !== thread.id||generation!==state.navigationGeneration) return;
   state.turns = turns; $('#messages').replaceChildren(); state.items.clear(); state.activeTurns.delete(thread.id);
   for (const turn of turns) { if (turn.status === 'inProgress') state.activeTurns.set(thread.id, turn.id); for (const item of turn.items || []) upsertItem(item, turn.status !== 'inProgress', turn.id); renderTurnOutcome(turn); }
-  $('#welcome').hidden = turns.length > 0;$('#view-chat').classList.toggle('empty',turns.length===0); $('#chat-toolbar').hidden = false; $('#page-title').textContent = thread.name || thread.preview || '新会话'; $('#thread-info').textContent = thread.id; updateSend();
+  $('#welcome').hidden = turns.length > 0;$('#view-chat').classList.toggle('empty',turns.length===0); $('#chat-toolbar').hidden = false; $('#page-title').textContent = thread.name || thread.preview || '新会话'; $('#thread-info').textContent = thread.id; updateSend(); restoreExecutionPlans(); renderNativeMode();
 }
 async function ensureThread() {
 
   if (state.thread) return state.thread;
-  const provider=selectedModelProvider(),config=provider!==(state.runtimeDefaults?.model_provider||'openai')?{model_provider:provider}:undefined;
-  const result = await rpc('thread/start', { cwd:state.selectedCwd, model:$('#model').value || null,config });
-  state.threadSettings.set(result.thread.id,{model:result.model,modelProvider:result.modelProvider,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread); loadThreads().catch(() => {}); return result.thread;
+  const draftMode=state.draftMode;
+  const provider=selectedModelProvider(),config={...threadRuntimeConfig(provider),...(provider!==(state.runtimeDefaults?.model_provider||'openai')?{model_provider:provider}:{})};
+  const result = await rpc('thread/start', { cwd:state.selectedCwd, model:$('#model').value || null,config,projectId:state.selectedProject||undefined });
+  state.nativeModes.set(result.thread.id,typeof draftMode==='string'?draftMode:'default');state.threadSettings.set(result.thread.id,{model:result.model,modelProvider:result.modelProvider,serviceTier:result.serviceTier,collaborationMode:result.collaborationMode,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread); loadThreads().catch(() => {}); return result.thread;
 }
 function updateSend() { const deletion=$('#thread-action option[value=delete]');if(deletion)deletion.disabled=state.threadBusy; const running = !state.threadBusy&&state.activeTurns.has(state.thread?.id); $('#send').disabled=state.threadLoading||state.restoreError||state.threadBusy||(!running&&(state.threadArchived||state.attachmentLoads>0)); $('#send').classList.toggle('running', running); $('#send').title = running ? '中断当前任务' : state.attachmentLoads>0?'正在读取附件':'发送'; $('#send').ariaLabel = running ? '中断当前任务' : '发送任务'; }
 async function submitPrompt() {
@@ -304,12 +309,15 @@ async function submitPrompt() {
   if(state.attachmentLoads)return toast('附件正在读取，请稍候');
   const text = $('#prompt').value.trim();
   if (!text && !state.attachments.length) return;
-  if (text.startsWith('/') && !state.attachments.length) { const commands = { '/skills':'skills','/mcp':'mcp','/settings':'settings','/native':'protocol','/apps':'plugins' }; if (commands[text]) { $('#prompt').value=''; return showView(commands[text]); } if (text === '/') return toast('/skills · /mcp · /apps · /native · /settings'); }
+  if(!state.attachments.length&&await nativeSlashCommand(text))return;
+  if (text.startsWith('/') && !state.attachments.length) { const commands = { '/skills':'skills','/mcp':'mcp','/settings':'settings','/native':'protocol','/apps':'plugins' }; if (commands[text]) { $('#prompt').value=''; return showView(commands[text]); } if (text === '/') return showNativeMenu(); }
+  const mode=currentMode();
   const thread = await ensureThread();
   const input = [{ type:'text', text, text_elements:[] }, ...state.attachments.map(a => a.input)];
   const running = state.activeTurns.get(thread.id);
-  const result = running ? await rpc('turn/steer', { threadId:thread.id, expectedTurnId:running, input }) : await rpc('turn/start', { threadId:thread.id, input, model:$('#model').value || null, effort:$('#effort').value || null, additionalContext:runtimeModelContext(thread.id) });
+  const result = running ? await rpc('turn/steer', { threadId:thread.id, expectedTurnId:running, input }) : await rpc('turn/start', { threadId:thread.id, input, model:$('#model').value || null, effort:$('#effort').value || null, collaborationMode:turnCollaborationMode(mode), additionalContext:runtimeModelContext(thread.id) });
   if (result.turn) state.activeTurns.set(thread.id, result.turn.id);
+  renderNativeMode();
   $('#prompt').value='';$('#prompt').style.height='auto'; state.attachments=[]; renderAttachments(); updateSend();
 }
 function runtimeModelContext(threadId){
@@ -327,7 +335,7 @@ async function loadModels() {
   if((configuration.config?.model_provider||'openai')!=='openai'&&state.modelDetails.some(model=>model.model==='gpt-5.6-luna')){const imageModel=new Option('ChatGPT · gpt-5.6-luna（支持生图）','gpt-5.6-luna');imageModel.dataset.provider='openai';$('#model').append(imageModel);}
   const saved=localStorage.getItem('codex.model');if(saved){if(!state.models.some(model=>model.model===saved))$('#model').append(new Option(saved,saved));$('#model').value=saved;}loadEfforts();
 }
-function loadEfforts() { const model = (state.modelDetails||state.models).find(m => m.model === ($('#model').value||state.runtimeDefaults?.model)); const enums = state.schema?.definitions?.ReasoningEffort?.enum || []; $('#effort').replaceChildren(new Option('默认推理', '')); for (const effort of model?.supportedReasoningEfforts || enums.map(reasoningEffort => ({ reasoningEffort }))) $('#effort').append(new Option(effort.reasoningEffort, effort.reasoningEffort)); const saved = localStorage.getItem('codex.effort'); if ($$('#effort option').some(x => x.value === saved)) $('#effort').value = saved; }
+function loadEfforts() { const model = (state.modelDetails||state.models).find(m => m.model === ($('#model').value||state.runtimeDefaults?.model)); const enums = state.schema?.definitions?.ReasoningEffort?.enum || []; $('#effort').replaceChildren(new Option('默认推理', '')); for (const effort of model?.supportedReasoningEfforts || enums.map(reasoningEffort => ({ reasoningEffort }))) $('#effort').append(new Option(effort.reasoningEffort, effort.reasoningEffort)); const saved = localStorage.getItem('codex.effort'); if ($$('#effort option').some(x => x.value === saved)) $('#effort').value = saved; renderNativeMode(); }
 async function loadAccount() { const data = await rpc('account/read', { refreshToken:false }); state.account = data; $('#account-name').textContent = data.account?.email || (data.account?.type === 'apiKey' ? 'API 密钥账户' : '本地账户'); $('#account-status').textContent = data.account?.planType || data.account?.type || (data.requiresOpenaiAuth ? '需要登录' : '自定义模型提供方'); if (state.view === 'account') renderAccount(); }
 function showView(view) {
   state.view = view; $$('.main-nav .nav-button,.sidebar-footer .nav-button').forEach(node => node.classList.toggle('active', node.dataset.view === view));

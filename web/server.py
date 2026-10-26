@@ -23,6 +23,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import tomllib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -257,7 +258,20 @@ class Settings:
         manifest = ROOT.parent / 'upstream-lock.json'
         baseline = json.loads(manifest.read_text()) if manifest.exists() else None
         return {'version': self.version, 'runtimePath': self.codex, 'workspace': str(self.workspace), 'baseline': baseline, 'build': self.provenance,
-                'transport': 'stdio', 'pid': os.getpid()}
+                'transport': 'stdio', 'pid': os.getpid(), 'modelWindows': self.model_windows()}
+
+    def model_windows(self):
+        # Expose only public model metadata; never return config credentials.
+        try:
+            home = Path(os.environ.get('CODEX_HOME', Path.home()/'.codex'))
+            config = tomllib.loads((home/'config.toml').read_text())
+            catalog = Path(config.get('model_catalog_json', ROOT.parent/'upstream/codex-rs/models-manager/models.json'))
+            return {m['slug']: {'contextWindow': config.get('model_context_window') or m.get('context_window'),
+                    'effectivePercent': m.get('effective_context_window_percent', 95),
+                    'autoCompactLimit': m.get('auto_compact_token_limit')}
+                    for m in json.loads(catalog.read_text()).get('models', [])}
+        except (OSError, ValueError, KeyError):
+            return {}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -364,6 +378,9 @@ class Handler(BaseHTTPRequestHandler):
                 status=database_status()
                 value=manage_database('list',{}) if status['ready'] else {'connections':[]}
                 return self.send_bytes(200,json.dumps({**status,**value},ensure_ascii=False).encode())
+            if parsed.path == '/api/init-prompt':
+                path = ROOT.parent/'upstream/codex-rs/tui/assets/prompt_for_init_command.md'
+                return self.send_bytes(200, json.dumps({'prompt': path.read_text()}).encode())
             if parsed.path == '/api/status':
                 return self.send_bytes(200, json.dumps(settings.status()).encode())
             if parsed.path.startswith('/api/schema/'):
