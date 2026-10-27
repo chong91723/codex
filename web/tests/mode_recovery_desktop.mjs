@@ -12,7 +12,9 @@ try{
  await page.evaluate(id=>openThread(id),owned);await page.locator('#mode-toggle').click();await page.waitForFunction(()=>!state.nativeModePending&&currentMode()==='plan');
  await page.evaluate(id=>{window.__nativeRpc=rpc;window.__holdNextResume=true;rpc=async function(method,params,...rest){const result=await window.__nativeRpc(method,params,...rest);if(method==='thread/resume'&&params.threadId===id){if(window.__holdNextResume){window.__holdNextResume=false;window.__heldModeSnapshot=result.collaborationMode.mode;await new Promise(resolve=>window.__releaseModeSnapshot=resolve);}else window.__newModeSnapshot=result.collaborationMode.mode;}return result;};window.__oldRecovery=openThread(id);},owned);
  await page.waitForFunction(()=>window.__heldModeSnapshot==='plan');
- // A genuine UI mode change while the earlier native resume reply is held.
+ // Finish a newer navigation before changing modes; loading mode controls are disabled.
+ await page.evaluate(id=>openThread(id),owned);
+ // The older genuine resume reply remains held while the loaded chat changes mode.
  await page.locator('#mode-toggle').click();await page.waitForFunction(()=>!state.nativeModePending&&state.nativeModes.get(state.thread.id)==='default');
  await page.evaluate(id=>openThread(id),owned);const before=await inspect();assert.equal(before.resumeSnapshot,'default');assert.equal(before.currentMode,'default');results.push({name:'native_resume_snapshot_overrides_old_local_mode_cache',status:'passed',evidence:before});
  await page.evaluate(async()=>{window.__releaseModeSnapshot();await window.__oldRecovery;});const after=await inspect();assert.equal(after.resumeSnapshot,'default');assert.equal(after.heldNativeSnapshot,'plan');assert.equal(after.returnedNewSnapshot,'default');assert.equal(after.restoreError,false);assert.equal(after.currentMode,expectBug?'plan':'default');results.push({name:'late_old_resume_cannot_overwrite_new_navigation_mode',status:expectBug?'reproduced':'passed',evidence:after});

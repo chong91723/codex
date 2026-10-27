@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: bare /plan enables Plan without creating a thread, sending an empty task, or silently disappearing
+ok 1 - bare /plan enables Plan without creating a thread, sending an empty task, or silently disappearing
+  ---
+  duration_ms: 4.610211
+  type: 'test'
+  ...
+# Subtest: bare /plan is idempotent for an existing thread
+ok 2 - bare /plan is idempotent for an existing thread
+  ---
+  duration_ms: 1.784659
+  type: 'test'
+  ...
+# Subtest: /plan plus a multiline task sends the stripped task in Plan with the selected Flash model and effort
+ok 3 - /plan plus a multiline task sends the stripped task in Plan with the selected Flash model and effort
+  ---
+  duration_ms: 3.454043
+  type: 'test'
+  ...
+# Subtest: /plan task in a new conversation supplies Plan to thread creation and exactly one real task boundary
+ok 4 - /plan task in a new conversation supplies Plan to thread creation and exactly one real task boundary
+  ---
+  duration_ms: 1.250183
+  type: 'test'
+  ...
+# Subtest: /planet and ordinary mentions of /plan do not activate Plan
+ok 5 - /planet and ordinary mentions of /plan do not activate Plan
+  ---
+  duration_ms: 2.247337
+  type: 'test'
+  ...
+# Subtest: /plan task retains text attachment and a selected native skill exactly once
+ok 6 - /plan task retains text attachment and a selected native skill exactly once
+  ---
+  duration_ms: 1.741793
+  type: 'test'
+  ...
+# Subtest: bare local /plan rejects an attachment while keeping all unsent content
+ok 7 - bare local /plan rejects an attachment while keeping all unsent content
+  ---
+  duration_ms: 1.948669
+  type: 'test'
+  ...
+# Subtest: Flash image capability checks still reject unsupported images on /plan tasks
+ok 8 - Flash image capability checks still reject unsupported images on /plan tasks
+  ---
+  duration_ms: 1.372871
+  type: 'test'
+  ...
+# Subtest: a rejected Plan task preserves the complete original command, skill, attachment, and retry state
+ok 9 - a rejected Plan task preserves the complete original command, skill, attachment, and retry state
+  ---
+  duration_ms: 1.657133
+  type: 'test'
+  ...
+# Subtest: a rejected thread creation preserves /plan plus task and does not invoke a turn
+ok 10 - a rejected thread creation preserves /plan plus task and does not invoke a turn
+  ---
+  duration_ms: 1.477502
+  type: 'test'
+  ...
+# Subtest: a pending Plan submission blocks repeat send from creating a duplicate turn
+ok 11 - a pending Plan submission blocks repeat send from creating a duplicate turn
+  ---
+  duration_ms: 1.466974
+  type: 'test'
+  ...
+# Subtest: late task acknowledgement keeps later edits and newly attached files
+ok 12 - late task acknowledgement keeps later edits and newly attached files
+  ---
+  duration_ms: 1.304676
+  type: 'test'
+  ...
+# Subtest: navigation during thread creation keeps the newer thread, mode, model, cwd, and draft intact
+ok 13 - navigation during thread creation keeps the newer thread, mode, model, cwd, and draft intact
+  ---
+  duration_ms: 1.238759
+  type: 'test'
+  ...
+# Subtest: late acknowledgement cannot switch a newer fresh draft back to Plan
+ok 14 - late acknowledgement cannot switch a newer fresh draft back to Plan
+  ---
+  duration_ms: 1.13766
+  type: 'test'
+  ...
+# Subtest: confirmed-plan independent submission does not interpret its approved text as a composer command
+ok 15 - confirmed-plan independent submission does not interpret its approved text as a composer command
+  ---
+  duration_ms: 1.055784
+  type: 'test'
+  ...
+# Subtest: whitespace after bare /plan changes mode without creating an empty task
+ok 16 - whitespace after bare /plan changes mode without creating an empty task
+  ---
+  duration_ms: 1.107139
+  type: 'test'
+  ...
+# Subtest: a rejected bare mode update preserves the command and previous mode
+ok 17 - a rejected bare mode update preserves the command and previous mode
+  ---
+  duration_ms: 1.266064
+  type: 'test'
+  ...
+# Subtest: an active default turn cannot receive /plan as a misleading ordinary steer
+ok 18 - an active default turn cannot receive /plan as a misleading ordinary steer
+  ---
+  duration_ms: 1.140244
+  type: 'test'
+  ...
+# Subtest: Plan command parser recognizes only a separated exact command and nonempty task
+ok 19 - Plan command parser recognizes only a separated exact command and nonempty task
+  ---
+  duration_ms: 0.973584
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 141.475603

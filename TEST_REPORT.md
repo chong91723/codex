@@ -1,6 +1,24 @@
 # 实际验收报告
 
-## 最新批次：输入框会话命令与占用删除（2026-10-27）
+## 最新批次：计划模式输入与退出（2026-10-27）
+
+修复`/plan`进入后无说明、重复命令反向退出，以及`/plan 具体需求`没有请求原生plan的问题。进入模式、向模型发任务和退出模式分别验证。仅在独立`/tmp`原生配置/工作区使用本轮新建合成数据；模型仅DeepSeek Flash，没有读取已有用户历史或凭据，没有修改原生源码、程序或代理循环。
+
+| 验证 | 实际结果与证据 |
+|---|---|
+| 修前原问题复现 | [baseline-final/results.json](test-results/plan-command-2026-10-27/baseline-final/results.json)：3/3按缺陷预期复现，新会话手输、菜单选择及已有会话均已进入plan却无下一步提示，0模型；不是模型鉴权/请求失败。较早夹具首次运行及失败保留在baseline目录 |
+| 生产函数的状态/协议夹具 | [state/summary.json](test-results/plan-command-2026-10-27/state/summary.json)：最终20/20、0模型/浏览器/原生运行；真实生产函数配受控传输/设置事件，不冒充真实协议集成。修前19项中11失败；初修19/19后新增迟到回执误toast到新会话用例先失败，修复同会话/导航代次/草稿归属后20/20。覆盖幂等、prefix输入与plan参数、运行中拒steer、错误/附件/草稿/导航保护 |
+| 无模型真实浏览器及原生设置 | [browser/final/results.json](test-results/plan-command-2026-10-27/browser/final/results.json)：9/9、0turn/start及0浏览器错误。bare与菜单仅进入、重复不退出、已有会话真实settings/update和通知、模式按钮明确退出、等待防重与新输入保留、原生非法线程拒绝后保留输入并成功重试、晚到不改新会话、归档及另一连接writer占用只读；自有存储夹具清理。响应门只延迟真实回复，不伪造成功 |
+| 相邻模式恢复真实浏览器 | [mode-recovery/results.json](test-results/plan-command-2026-10-27/mode-recovery/results.json)：2/2、0模型、0页面错误。真实旧resume回复晚到不覆盖新导航default；[fixture-provenance.json](test-results/plan-command-2026-10-27/mode-recovery/fixture-provenance.json)记录本次新建user-only源与全部3个自有会话清理，未读取旧用户历史。runner通用scope中的existing source特指该新建源 |
+| DeepSeek Flash真实计划与退出 | [flash/results.json](test-results/plan-command-2026-10-27/flash/results.json)：5/5，普通turn/start恰好2，0浏览器错误。单独/plan零任务且持续提示；其后自然语言和已有默认会话/plan需求各真实完成原生plan item，显示待确认卡片；请求mode=plan、模型deepseek-flash、provider=deepseek，第二条input无命令前缀。未调用工具、未执行计划，自有哨兵文件不变；两次按钮退出均由真实default设置事件确认，0额外模型任务；自有线程和目录清理 |
+| 桌面截图 | 最终无模型浏览器的进入/退出/归档状态截图及Flash四张截图单独保留；模式反馈与按钮布局不作为模型成功的替代证据 |
+| 工程及相邻回归 | [engineering/results.json](test-results/plan-command-2026-10-27/engineering/results.json)：77个JS/MJS语法检查、36个Python AST检查通过；50项状态/行为回归通过（计划输入20、计划批准提交7、模式恢复2、上下文恢复6、权限15）。原生完整性检查确认源码未修改、176项接口及完整schema匹配；git diff --check通过 |
+
+本轮仅验证通过模式按钮退出；计划卡“确认 / 修改后执行”在现有实现中会切默认模式后提交任务，其真实批准执行属于前批记录，本轮未重复，不累计为新增通过。计划模式允许原生只读调查，工具审批仍按当前权限策略；切默认模式本身不会自动执行已有计划，也没有新增`/default`命令。手机端和严格国际出口检查保持取消。
+
+本轮静态、相邻行为和原生完整性见独立工程记录；未重跑完整72项Python后端套件，历史结果不代替本轮执行。项目没有前端打包或TypeScript，构建及类型检查不适用；未重编译Codex核心。
+
+## 前一批次（历史）：输入框会话命令与占用删除（2026-10-27）
 
 侧栏右键/“…”只保留重命名、归档/恢复、永久删除；输入框新增 `/compact /fork /export /review /rollback`，点击或Tab仅填入，发送才执行。沿用现有threadAction→原生接口，不新增代理循环，不改变原生自动压缩。仅使用deepseek-flash，新合成数据及独立 `/tmp` Git 工作区；没有读取旧会话、凭据或修改全局配置。
 

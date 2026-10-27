@@ -1,0 +1,332 @@
+TAP version 13
+# Subtest: bare /plan enables Plan without creating a thread, sending an empty task, or silently disappearing
+not ok 1 - bare /plan enables Plan without creating a thread, sending an empty task, or silently disappearing
+  ---
+  duration_ms: 4.868936
+  type: 'test'
+  location: '/root/Codex/web/tests/plan_submission.mjs:50:1'
+  failureType: 'testCodeFailure'
+  error: 'A completed mode command needs explicit feedback'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/plan_submission.mjs:53:3)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: bare /plan is idempotent for an existing thread
+not ok 2 - bare /plan is idempotent for an existing thread
+  ---
+  duration_ms: 2.32852
+  type: 'test'
+  location: '/root/Codex/web/tests/plan_submission.mjs:55:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    'default' !== 'plan'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'plan'
+  actual: 'default'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/plan_submission.mjs:58:10)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: /plan plus a multiline task sends the stripped task in Plan with the selected Flash model and effort
+not ok 3 - /plan plus a multiline task sends the stripped task in Plan with the selected Flash model and effort
+  ---
+  duration_ms: 2.761559
+  type: 'test'
+  location: '/root/Codex/web/tests/plan_submission.mjs:61:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    'default' !== 'plan'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'plan'
+  actual: 'default'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/plan_submission.mjs:63:138)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: /plan task in a new conversation supplies Plan to thread creation and exactly one real task boundary
+not ok 4 - /plan task in a new conversation supplies Plan to thread creation and exactly one real task boundary
+  ---
+  duration_ms: 1.388293
+  type: 'test'
+  location: '/root/Codex/web/tests/plan_submission.mjs:66:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    'default' !== 'plan'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'plan'
+  actual: 'default'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/plan_submission.mjs:68:43)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: /planet and ordinary mentions of /plan do not activate Plan
+ok 5 - /planet and ordinary mentions of /plan do not activate Plan
+  ---
+  duration_ms: 2.247219
+  type: 'test'
+  ...
+# Subtest: /plan task retains text attachment and a selected native skill exactly once
+not ok 6 - /plan task retains text attachment and a selected native skill exactly once
+  ---
+  duration_ms: 3.858061
+  type: 'test'
+  location: '/root/Codex/web/tests/plan_submission.mjs:73:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      [
+        {
+    +     text: '/plan 请用 $openai-docs 阅读所附笔记后规划',
+    -     text: '请用 $openai-docs 阅读所附笔记后规划',
+          text_elements: [],
+          type: 'text'
+        },
+        {
+          name: 'openai-docs',
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      type: 'text'
+      text: '请用 $openai-docs 阅读所附笔记后规划'
+      text_elements:
+    1:
+      type: 'skill'
+      name: 'openai-docs'
+      path: '/tmp/plan-test-profile/skills/.system/openai-docs/SKILL.md'
+    2:
+      type: 'text'
+      text: 'OWN_TEXT_ATTACHMENT_SENTINEL'
+  actual:
+    0:
+      type: 'text'
+      text: '/plan 请用 $openai-docs 阅读所附笔记后规划'
+      text_elements:
+    1:
+      type: 'skill'
+      name: 'openai-docs'
+      path: '/tmp/plan-test-profile/skills/.system/openai-docs/SKILL.md'
+    2:
+      type: 'text'
+      text: 'OWN_TEXT_ATTACHMENT_SENTINEL'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/plan_submission.mjs:75:10)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: bare local /plan rejects an attachment while keeping all unsent content
+ok 7 - bare local /plan rejects an attachment while keeping all unsent content
+  ---
+  duration_ms: 1.703441
+  type: 'test'
+  ...
+# Subtest: Flash image capability checks still reject unsupported images on /plan tasks
+ok 8 - Flash image capability checks still reject unsupported images on /plan tasks
+  ---
+  duration_ms: 1.182501
+  type: 'test'
+  ...
+# Subtest: a rejected Plan task preserves the complete original command, skill, attachment, and retry state
+not ok 9 - a rejected Plan task preserves the complete original command, skill, attachment, and retry state
+  ---
+  duration_ms: 1.683145
+  type: 'test'
+  location: '/root/Codex/web/tests/plan_submission.mjs:87:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    'default' !== 'plan'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'plan'
+  actual: 'default'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/plan_submission.mjs:89:80)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: a rejected thread creation preserves /plan plus task and does not invoke a turn
+ok 10 - a rejected thread creation preserves /plan plus task and does not invoke a turn
+  ---
+  duration_ms: 1.423771
+  type: 'test'
+  ...
+# Subtest: a pending Plan submission blocks repeat send from creating a duplicate turn
+ok 11 - a pending Plan submission blocks repeat send from creating a duplicate turn
+  ---
+  duration_ms: 1.473857
+  type: 'test'
+  ...
+# Subtest: late task acknowledgement keeps later edits and newly attached files
+not ok 12 - late task acknowledgement keeps later edits and newly attached files
+  ---
+  duration_ms: 1.547551
+  type: 'test'
+  location: '/root/Codex/web/tests/plan_submission.mjs:101:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + '/plan 原始任务'
+    - '原始任务'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '原始任务'
+  actual: '/plan 原始任务'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/plan_submission.mjs:106:10)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: navigation during thread creation keeps the newer thread, mode, model, cwd, and draft intact
+not ok 13 - navigation during thread creation keeps the newer thread, mode, model, cwd, and draft intact
+  ---
+  duration_ms: 1.362296
+  type: 'test'
+  location: '/root/Codex/web/tests/plan_submission.mjs:108:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + '/plan 原页面任务'
+    - '原页面任务'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '原页面任务'
+  actual: '/plan 原页面任务'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/plan_submission.mjs:113:90)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: late acknowledgement cannot switch a newer fresh draft back to Plan
+not ok 14 - late acknowledgement cannot switch a newer fresh draft back to Plan
+  ---
+  duration_ms: 1.49885
+  type: 'test'
+  location: '/root/Codex/web/tests/plan_submission.mjs:116:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    'default' !== 'plan'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'plan'
+  actual: 'default'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/plan_submission.mjs:121:149)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: confirmed-plan independent submission does not interpret its approved text as a composer command
+ok 15 - confirmed-plan independent submission does not interpret its approved text as a composer command
+  ---
+  duration_ms: 1.03026
+  type: 'test'
+  ...
+# Subtest: whitespace after bare /plan changes mode without creating an empty task
+ok 16 - whitespace after bare /plan changes mode without creating an empty task
+  ---
+  duration_ms: 1.006877
+  type: 'test'
+  ...
+# Subtest: a rejected bare mode update preserves the command and previous mode
+ok 17 - a rejected bare mode update preserves the command and previous mode
+  ---
+  duration_ms: 1.182095
+  type: 'test'
+  ...
+# Subtest: an active default turn cannot receive /plan as a misleading ordinary steer
+not ok 18 - an active default turn cannot receive /plan as a misleading ordinary steer
+  ---
+  duration_ms: 1.324272
+  type: 'test'
+  location: '/root/Codex/web/tests/plan_submission.mjs:135:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected rejection.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'rejects'
+  stack: |-
+    async TestContext.<anonymous> (file:///root/Codex/web/tests/plan_submission.mjs:137:3)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: Plan command parser recognizes only a separated exact command and nonempty task
+not ok 19 - Plan command parser recognizes only a separated exact command and nonempty task
+  ---
+  duration_ms: 1.134333
+  type: 'test'
+  location: '/root/Codex/web/tests/plan_submission.mjs:139:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + 'undefined'
+    - 'function'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/plan_submission.mjs:140:28)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 8
+# fail 11
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 144.984369

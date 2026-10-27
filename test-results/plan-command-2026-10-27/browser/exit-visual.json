@@ -1,0 +1,64 @@
+{
+  "scope": "Additional visual check on a new empty conversation; visible UI commands only, no native thread or model work.",
+  "value": {
+    "id": null,
+    "mode": "default",
+    "status": "",
+    "toast": "已退出计划模式，后续任务按默认模式处理。×",
+    "aria": "进入计划模式"
+  },
+  "calls": [
+    {
+      "id": 1,
+      "method": "initialize",
+      "params": {
+        "clientInfo": {
+          "name": "codex_web_native",
+          "title": "Codex Web",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "experimentalApi": true
+        }
+      }
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "id": 2,
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "id": 3,
+      "method": "model/list",
+      "params": {
+        "includeHidden": true
+      }
+    },
+    {
+      "id": 4,
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "id": 5,
+      "method": "skills/list",
+      "params": {
+        "cwds": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "forceReload": true
+      }
+    }
+  ]
+}

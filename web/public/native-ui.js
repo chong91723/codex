@@ -101,14 +101,16 @@ function turnCollaborationMode(mode=currentMode()){
   return {mode,settings:{model:$('#model').value||settings.model||state.runtimeDefaults?.model,
     reasoning_effort:$('#effort').value||settings.effort||state.modelDetails?.find(m=>m.model===($('#model').value||settings.model||state.runtimeDefaults?.model))?.defaultReasoningEffort||null,developer_instructions:null}};
 }
-function renderNativeMode(){const node=$('#mode-toggle');if(!node)return;node.textContent=currentMode()==='plan'?'计划模式':'默认模式';node.classList.toggle('plan-active',currentMode()==='plan');node.disabled=state.nativeModePending||state.threadArchived||state.threadBusy||state.activeTurns.has(state.thread?.id);renderContextUsage();}
+function renderNativeMode(){const node=$('#mode-toggle');if(!node)return;const plan=currentMode()==='plan';node.textContent=state.nativeModePending?'正在切换模式…':plan?'计划模式':'默认模式';node.classList.toggle('plan-active',plan);node.title=plan?'当前为计划模式；点击切回默认模式':'当前为默认模式；点击进入计划模式';node.ariaLabel=plan?'退出计划模式，切回默认模式':'进入计划模式';node.disabled=state.nativeModePending||state.threadLoading||state.threadArchived||state.threadBusy||state.activeTurns.has(state.thread?.id);renderContextUsage();}
 async function setNativeMode(mode){
   if(state.nativeModePending)throw new Error('模式正在切换，请稍候');
+  if(state.threadLoading||state.restoreError)throw new Error('请先完成当前会话的恢复，再切换模式');
   if(state.activeTurns.has(state.thread?.id))throw new Error('请先停止当前任务，再切换模式');
   if(state.threadArchived||state.threadBusy)throw new Error('请先恢复可编辑的会话');
-  state.nativeModePending=true;renderNativeMode();
+  if(currentMode()===mode&&(!state.thread||state.threadSettings.get(state.thread.id)?.collaborationMode?.mode===mode)){renderNativeMode();return;}
+  state.nativeModePending=true;renderNativeMode();updateSend();
   try{if(state.thread){const id=state.thread.id;await rpc('thread/settings/update',{threadId:id,collaborationMode:turnCollaborationMode(mode)});state.nativeModes.set(id,mode);}
-  else state.draftMode=mode;}finally{state.nativeModePending=false;renderNativeMode();}
+  else state.draftMode=mode;}finally{state.nativeModePending=false;renderNativeMode();updateSend();}
 }
 function resetNativeUI(){state.draftMode='default';renderNativeMode();renderGoalBanner();renderExecutionProgressBanner();}
 function adoptNativeUI(thread){state.selectedProject=thread.projectId||null;renderNativeMode();renderGoalBanner();renderExecutionProgressBanner();}
@@ -124,7 +126,14 @@ function nativeUIEvent(msg){
   if(['thread/settings/updated','turn/started','turn/completed','thread/goal/updated','thread/goal/cleared'].includes(msg.method))queueMicrotask(()=>{renderNativeMode();renderGoalBanner();if(msg.method==='turn/completed')restoreExecutionPlans();renderExecutionProgressBanner();});
 }
 function composerThreadAction(action){if(!state.thread)throw new Error('请先选择已有会话，再使用此命令；没有创建会话或发送任务。');return threadAction(action);}
-function nativeSlashActions(){return {'/compact':()=>composerThreadAction('compact'),'/fork':()=>composerThreadAction('fork'),'/export':()=>composerThreadAction('export'),'/review':()=>composerThreadAction('review'),'/rollback':()=>composerThreadAction('revert'),'/plan':()=>setNativeMode(currentMode()==='plan'?'default':'plan'),'/status':showNativeStatus,'/init':initializeWorkspace,'/goal':showGoalDialog,'/projects':showProjects,'/chat':unassignedChat,'/model':()=>showComposerSetting('model'),'/reasoning':()=>showComposerSetting('effort')};}
+async function changeModeWithFeedback(mode){
+  const threadId=state.thread?.id,generation=state.navigationGeneration,draft=composerState();
+  await setNativeMode(mode);
+  if(threadId!==state.thread?.id||generation!==state.navigationGeneration||draft!==composerState())return;
+  toast(mode==='plan'?'已进入计划模式，请输入需要规划的任务后发送；点击下方「计划模式」可退出。':'已退出计划模式，后续任务按默认模式处理。');
+}
+async function enterPlanMode(){await changeModeWithFeedback('plan');}
+function nativeSlashActions(){return {'/compact':()=>composerThreadAction('compact'),'/fork':()=>composerThreadAction('fork'),'/export':()=>composerThreadAction('export'),'/review':()=>composerThreadAction('review'),'/rollback':()=>composerThreadAction('revert'),'/plan':enterPlanMode,'/status':showNativeStatus,'/init':initializeWorkspace,'/goal':showGoalDialog,'/projects':showProjects,'/chat':unassignedChat,'/model':()=>showComposerSetting('model'),'/reasoning':()=>showComposerSetting('effort')};}
 async function nativeSlashCommand(text){
   const actions=nativeSlashActions();if(!Object.hasOwn(actions,text))return false;
   const draft=saveComposer(),raw=draft.text,revision=draft.revision||0;await actions[text]();
@@ -145,7 +154,7 @@ function commandEntries(){return [
   {command:'/status',title:'状态',description:'显示聊天 ID、上下文用量和权限',icon:'code'},
   {command:'/goal',title:'目标',description:'设置要持续追求的目标',icon:'check'},
   {command:'/chat',title:'聊天',description:'新建不关联项目的会话',icon:'chat'},
-  {command:'/plan',title:'计划模式',description:currentMode()==='plan'?'退出计划模式':'开启计划模式',icon:'code'},
+  {command:'/plan',title:'计划模式',description:'进入计划模式；也可输入 /plan 具体任务',icon:'code'},
   {command:'/skills',title:'技能管理',description:'查看、启用或停用内置技能',icon:'skill'},
   {command:'/settings',title:'设置',description:'工作区、模型提供方和原生配置',icon:'settings'},
   {command:'/native',title:'原生协议',description:'查看可用范围和完整定义',icon:'code'}
@@ -352,5 +361,5 @@ document.addEventListener('pointerdown',event=>{if(!event.target.closest('.compo
 window.addEventListener('resize',positionCommandMenu);
 $('#prompt').addEventListener('compositionstart',()=>{state.commandComposing=true;closeCommandMenu();});
 $('#prompt').addEventListener('compositionend',()=>{state.commandComposing=false;updateCommandMenu();});
-$('#mode-toggle').onclick=()=>setNativeMode(currentMode()==='plan'?'default':'plan').catch(report);
+$('#mode-toggle').onclick=()=>changeModeWithFeedback(currentMode()==='plan'?'default':'plan').catch(report);
 renderNativeMode();renderGoalBanner();
