@@ -1,0 +1,89 @@
+{
+  "scope": "Real independent Python isolation, readonly PostgreSQL, source HTTP/file, MCP ECharts and immutable values. Tool/answer/history notifications and strict-turn registration are explicit fixtures, not model output. Zero model requests.",
+  "base": "http://127.0.0.1:18874",
+  "home": "/tmp/codex-numeric-evidence-20261027/home",
+  "workspace": "/tmp/codex-numeric-evidence-20261027/workspace",
+  "results": [
+    {
+      "name": "独立API真实获取→隔离Python→ECharts，不需要数据库连接",
+      "status": "passed",
+      "evidence": {
+        "rows": 3,
+        "databaseConnections": 0,
+        "source": "local HTTP fixture",
+        "publishedText": "起始日期 2026-10-01，收盘价 10；结束日期 2026-10-03，收盘价 15。"
+      }
+    },
+    {
+      "name": "同一区域切数据图表，CSV与PNG实际下载，来源与计算可查看",
+      "status": "passed",
+      "evidence": {
+        "sameResultArea": true,
+        "csvRows": 3,
+        "pngBytes": 61605
+      }
+    },
+    {
+      "name": "裸写数字拒绝成为结论，原始输出保留诊断且不会自动重发",
+      "status": "passed",
+      "evidence": {
+        "unverifiedValueHiddenFromConclusion": true,
+        "rawDiagnosticRetained": true,
+        "automaticModelRequests": 0
+      }
+    },
+    {
+      "name": "已发布答案改数字或添日期同样被拒绝",
+      "status": "passed",
+      "evidence": {
+        "tamperedTextRejected": true
+      }
+    },
+    {
+      "name": "CSV文件真实导入和Python精确小数计算",
+      "status": "passed",
+      "evidence": {
+        "actualFile": true,
+        "exactDecimal": "66.66",
+        "records": 3
+      }
+    },
+    {
+      "name": "真实只读PostgreSQL查询数字可直接发布，不强迫重复Python计算",
+      "status": "passed",
+      "evidence": {
+        "realPostgreSQL": true,
+        "exactSqlTotal": "66.66",
+        "records": 3
+      }
+    },
+    {
+      "name": "跨会话不能借用其他会话的发布记录或Python数据集",
+      "status": "passed",
+      "evidence": {
+        "differentThread": true,
+        "foreignProofRejected": true,
+        "foreignDatasetRejected": true
+      }
+    },
+    {
+      "name": "核验请求失败明确报错，重试读取实际证据后恢复",
+      "status": "failed",
+      "error": "page.waitForFunction: Timeout 30000ms exceeded.\n    at rejected (/root/Codex/web/tests/analysis_numeric_desktop.mjs:25:40)\n    at /root/Codex/web/tests/analysis_numeric_desktop.mjs:37:577\n    at async check (/root/Codex/web/tests/analysis_numeric_desktop.mjs:17:50)\n    at async file:///root/Codex/web/tests/analysis_numeric_desktop.mjs:37:2"
+    }
+  ],
+  "pageErrors": [],
+  "modelRequests": 0,
+  "toolCallNames": [
+    "fetch_data",
+    "run_python",
+    "create_chart",
+    "publish_answer",
+    "import_data_file",
+    "run_python",
+    "publish_answer",
+    "query_database",
+    "publish_answer",
+    "publish_answer"
+  ]
+}

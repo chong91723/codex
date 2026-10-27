@@ -4,10 +4,10 @@ import argparse,json,os,shutil,subprocess,sys,venv
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--node',help='Node.js 20+ executable');parser.add_argument('--npm',help='npm executable');parser.add_argument('--proxy',help='Optional HTTP proxy for dependency downloads');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--node',help='Node.js 20+ executable');parser.add_argument('--npm',help='npm executable');parser.add_argument('--proxy',help='Optional HTTP proxy for dependency downloads');parser.add_argument('--python-index-url',default='https://pypi.org/simple',help='Explicit Python package index, including a mainland mirror');parser.add_argument('--npm-registry',default='https://registry.npmjs.org',help='Explicit npm registry, including a mainland mirror');args=parser.parse_args()
     python=ROOT/'.toolchains/databases/bin/python';target=python.parents[1]
     if not python.exists():venv.EnvBuilder(with_pip=True).create(target)
-    command=[str(python),'-m','pip','install','--index-url','https://pypi.org/simple','-r',str(ROOT/'web/database/requirements.txt')]
+    command=[str(python),'-m','pip','install','--index-url',args.python_index_url,'-r',str(ROOT/'web/database/requirements.txt')]
     if args.proxy:command+=['--proxy',args.proxy]
     subprocess.run(command,check=True)
     node=Path(args.node or shutil.which('node') or '').resolve();npm=args.npm or shutil.which('npm')
@@ -17,7 +17,7 @@ def main():
     chart=ROOT/'.toolchains/chart-mcp';chart.mkdir(parents=True,exist_ok=True)
     for name in ('package.json','package-lock.json'):shutil.copy2(ROOT/'web/database'/('chart-'+name),chart/name)
     env={**os.environ,'PATH':str(node.parent)+os.pathsep+os.environ.get('PATH','')}
-    command=[str(npm),'ci','--prefix',str(chart),'--registry=https://registry.npmjs.org','--no-audit','--no-fund']
+    command=[str(npm),'ci','--prefix',str(chart),'--registry='+args.npm_registry,'--no-audit','--no-fund']
     if args.proxy:command+=['--https-proxy='+args.proxy]
     subprocess.run(command,check=True,env=env)
     if node!=chart/'node':shutil.copy2(node,chart/'node')

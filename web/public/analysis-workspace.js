@@ -1,17 +1,17 @@
 'use strict';
 // All decisions and execution remain native turns. The web only renders outputs
 // and applies an idle-thread mode change after an explicit model proposal.
-function analysisTaskContext(){return 'You assist data analysts using natural language. Discover available enabled and authorized databases through the configured MCP tools; no manual data-source selection is required. Preserve the user\'s stated analysis approach. Clarify metric definitions, dates, comparisons and ambiguous sources before drawing conclusions. Use actual tools and exact computations; never invent rows, figures, charts or execution. Choose the analysis workflow yourself from the meaning and scope of the request. A single well-defined metric or small direct lookup can be queried and answered immediately. Treat an investigation with multiple independent analytical questions plus charts or a report, causal interpretation, several metric definitions, or a staged comparison as requiring a plan. For those multi-stage analyses, first investigate only what is necessary to establish the approach and present a complete plan for confirmation; do not execute the full business queries before that confirmation. Also plan first whenever the user explicitly requests it. In Default mode, signal this decision by making your final answer exactly one <proposed_plan>...</proposed_plan> block containing the actual plan. The web will then enter native Plan mode for the subsequent discussion after this turn completes. This marker is a proposal, never approval. In native Plan mode follow its instructions. For an approved execution task, use native update_plan for real progress, cite available result IDs and data/metric limitations, generate charts from real query results, and answer every user question. The user does not need to write SQL or code. These instructions do not grant database or file permissions, replace tool approvals, or promise transaction-level pause/resume.';}
+function analysisTaskContext(){return (typeof analysisEvidenceInstructions==='function'?analysisEvidenceInstructions()+' ':'')+'You assist data analysts using natural language. Discover available enabled and authorized databases through the configured MCP tools; no manual data-source selection is required. Preserve the user\'s stated analysis approach. Clarify metric definitions, dates, comparisons and ambiguous sources before drawing conclusions. Use actual tools and exact computations; never invent rows, figures, charts or execution. Choose the analysis workflow yourself from the meaning and scope of the request. A single well-defined metric or small direct lookup can be queried and answered immediately. Treat an investigation with multiple independent analytical questions plus charts or a report, causal interpretation, several metric definitions, or a staged comparison as requiring a plan. For those multi-stage analyses, first investigate only what is necessary to establish the approach and present a complete plan for confirmation; do not execute the full business queries before that confirmation. Also plan first whenever the user explicitly requests it. In Default mode, signal this decision by making your final answer exactly one <proposed_plan>...</proposed_plan> block containing the actual plan. The web will then enter native Plan mode for the subsequent discussion after this turn completes. This marker is a proposal, never approval. In native Plan mode follow its instructions. For an approved execution task, use native update_plan for real progress, cite available result IDs and data/metric limitations, generate charts from real query results, and answer every user question. The user does not need to write SQL or code. These instructions do not grant database or file permissions, replace tool approvals, or promise transaction-level pause/resume.';}
 function extractAnalysisProposal(text){const match=typeof text==='string'&&text.match(/^\s*<proposed_plan>\s*([\s\S]*?)\s*<\/proposed_plan>\s*$/);return match&&match[1].trim()&&!/<\/?proposed_plan>/.test(match[1])?match[1].trim():null;}
 function analysisResultReferences(item){
   if(item.type!=='mcpToolCall'||item.status!=='completed'||item.result?.isError)return [];
   const results=new Map();
   const visit=(value,depth=0)=>{if(!value||typeof value!=='object'||depth>6)return;if(Array.isArray(value)){for(const v of value)visit(v,depth+1);return;}
-    if(typeof value.resultId==='string'&&/^[a-f0-9]{32}$/.test(value.resultId)){const prior=results.get(value.resultId)||{};results.set(value.resultId,{...prior,id:value.resultId,name:value.connectionName||prior.name||'查询结果',rowCount:value.rowCount??prior.rowCount});}
-    for(const [key,child]of Object.entries(value))if(key!=='rows')visit(child,depth+1);
+    if(typeof value.resultId==='string'&&/^[a-f0-9]{32}$/.test(value.resultId)){const prior=results.get(value.resultId)||{};results.set(value.resultId,{...prior,id:value.resultId,name:value.sourceName||value.connectionName||prior.name||'查询结果',rowCount:value.rowCount??prior.rowCount});}
+    for(const [key,child]of Object.entries(value))if(!['rows','inputSources','inputResultIds','evidence','sources'].includes(key))visit(child,depth+1);
   };visit(item.result?.structuredContent);for(const part of item.result?.content||[])if(part.type==='text')try{visit(JSON.parse(part.text));}catch{}return [...results.values()];
 }
-function isAnalysisResultItem(item){return item.server==='codex_web_databases'&&['query_database','analyze_result'].includes(item.tool)&&analysisResultReferences(item).length>0;}
+function isAnalysisResultItem(item){return item.server==='codex_web_databases'&&['query_database','analyze_result','run_python'].includes(item.tool)&&analysisResultReferences(item).length>0;}
 let unifiedResultSerial=0;
 function analysisResultContext(){return JSON.stringify([state.thread?.id||'new',state.navigationGeneration||0]);}
 function createUnifiedAnalysisResult(result,initialCharts=[]){
@@ -48,8 +48,8 @@ function createUnifiedAnalysisResult(result,initialCharts=[]){
     if(!Number.isInteger(target)||target<1||target>totalPages){status.hidden=false;status.textContent='请输入 1 至 '+totalPages+' 之间的整数页码。';status.setAttribute('role','alert');jump.value=String(page);return;}
     loading=true;lastTarget=target;const version=++request;controls();retry.hidden=true;status.hidden=false;status.textContent='正在读取第 '+target+' 页…';status.setAttribute('role','status');
     try{const data=await databaseApi('result',{resultId:result.id,offset:(target-1)*pageSize,limit:pageSize});if(version!==request||!current())return;
-      if(data.connectionName)result={...result,name:data.connectionName};rowCount=data.rowCount;totalPages=Math.max(1,Math.ceil(rowCount/pageSize));page=target;jump.value=String(page);table.replaceChildren(databaseTable(data.columns,data.rows));status.textContent=rowCount?((target-1)*pageSize+1)+'–'+((target-1)*pageSize+data.rows.length)+' / '+rowCount.toLocaleString()+' 行':'查询完成，没有符合条件的数据。';status.hidden=rowCount>0&&totalPages<=1;
-      sql.textContent=data.executedQuery||data.query||'';details.hidden=!sql.textContent;
+      title.textContent=data.sourceKind==='python'?'计算结果':'查询结果';if(data.sourceName||data.connectionName)result={...result,name:data.sourceName||data.connectionName};rowCount=data.rowCount;totalPages=Math.max(1,Math.ceil(rowCount/pageSize));page=target;jump.value=String(page);table.replaceChildren(databaseTable(data.columns,data.rows));status.textContent=rowCount?((target-1)*pageSize+1)+'–'+((target-1)*pageSize+data.rows.length)+' / '+rowCount.toLocaleString()+' 行':'查询完成，没有符合条件的数据。';status.hidden=rowCount>0&&totalPages<=1;
+      sql.textContent=data.pythonCode||data.executedQuery||data.query||'';details.querySelector('summary').textContent=data.sourceKind==='python'?'查看计算代码与来源':'查看查询语句';if(data.inputSources?.length)sql.textContent+='\n\n来源：'+JSON.stringify(data.inputSources,null,2);details.hidden=!sql.textContent;
     }catch(error){if(version===request&&current()){status.hidden=false;status.textContent='结果读取失败：'+nativeErrorMessage(error);status.setAttribute('role','alert');retry.hidden=false;}}
     finally{if(version===request){loading=false;controls();}}
   }
@@ -91,6 +91,7 @@ function refreshAnalysisResultVisibility(){
 }
 function analysisReportSnapshot(itemId){
   const entry=state.items.get(itemId),turn=state.turns.find(turn=>turn.id===entry?.turnId);
+  if(['pending','rejected'].includes(entry?.node?.dataset?.analysisVerification))throw new Error('数值依据尚未核验通过，不能下载为完成结论。');
   if(!entry?.done||entry.item.type!=='agentMessage'||entry.item.phase==='commentary'||turn?.status!=='completed'||extractAnalysisProposal(entry.item.text))throw new Error('该回答尚未完成，或仍是待确认方案，不能作为分析结论导出。');
   const results=new Map();for(const candidate of state.items.values())if(candidate.done&&candidate.turnId===entry.turnId)for(const result of analysisResultReferences(candidate.item))results.set(result.id,result);
   return {threadId:state.thread?.id,generation:state.navigationGeneration,itemId,title:state.thread?.name||state.thread?.preview||'分析结论',text:entry.item.text||'',results:[...results.values()]};
@@ -110,14 +111,17 @@ const analysisOwnedTurns=new Map(),analysisLiveTurns=new Map(),analysisModeChang
 function analysisModeChangeBlocked(threadId=state.thread?.id){return analysisModeChanges.get(threadId)?.status==='pending';}
 function analysisNotifyChange(){renderNativeMode();updateSend();}
 function recordAnalysisSubmission(threadId,turn,context){
+  if(turn?.id&&typeof registerAnalysisTurn==='function')registerAnalysisTurn(threadId,turn.id);
   if(!turn?.id||context.mode!=='default')return;
   analysisOwnedTurns.set(turn.id,{threadId,connection:state.ws,model:context.model||state.threadSettings.get(threadId)?.model||state.runtimeDefaults?.model,effort:context.effort||null});
   const observed=analysisLiveTurns.get(turn.id);if(observed?.status==='completed')queueMicrotask(()=>maybeEnterAnalysisPlan(turn.id));
 }
 function analysisUIEvent(message){
   const p=message.params||{};
+  if(message.method==='turn/started'&&p.threadId&&p.turn?.id&&typeof registerAnalysisTurn==='function')registerAnalysisTurn(p.threadId,p.turn.id);
   if(['item/completed','turn/completed'].includes(message.method))queueMicrotask(()=>{refreshAnalysisDownloads();refreshAnalysisResultVisibility();});
   if(message.method==='thread/settings/updated'&&p.threadSettings?.collaborationMode?.mode==='plan')analysisModeChanges.get(p.threadId)?.confirm?.();
+  if(message.method==='thread/deleted'&&typeof removeAnalysisThreadEvidence==='function')removeAnalysisThreadEvidence(p.threadId);
   if(message.method==='thread/deleted'){analysisModeChanges.delete(p.threadId);for(const [id,record]of analysisOwnedTurns)if(record.threadId===p.threadId){analysisOwnedTurns.delete(id);analysisLiveTurns.delete(id);}}
   if(!p.threadId)return;
   const id=p.turnId||p.turn?.id;if(!id)return;

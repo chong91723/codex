@@ -553,6 +553,8 @@ def rpc_bridge(ws, settings):
     settings.register(process)
     policy = ScopePolicy()
     forks = KnownForksObserver(settings.known_forks)
+    from analysis_evidence import Evidence
+    number_evidence = Evidence()
 
     def forward_output():
         try:
@@ -560,6 +562,11 @@ def rpc_bridge(ws, settings):
                 if line.strip():
                     # Preserve native payloads; observe identity to guard inherited sessions.
                     message = json.loads(line)
+                    try:
+                        number_evidence.observe(message)
+                    except (OSError, ValueError) as error:
+                        ws.send({'bridge': 'warning', 'message': '数值依据状态更新失败，请检查状态目录与清理结果：' + str(error)})
+                        raise
                     policy.observe(message)
                     warning = None
                     try:
@@ -699,7 +706,7 @@ class Settings:
         manifest = ROOT.parent / 'upstream-lock.json'
         baseline = json.loads(manifest.read_text()) if manifest.exists() else None
         return {'version': self.version, 'runtimePath': self.codex, 'workspace': str(self.workspace), 'baseline': baseline, 'build': self.provenance,
-                'transport': 'stdio', 'pid': os.getpid(), 'modelWindows': self.model_windows(), 'knownForksSupported': True}
+                'transport': 'stdio', 'analysisEvidenceVersion':'numeric-evidence-v1', 'pid': os.getpid(), 'modelWindows': self.model_windows(), 'knownForksSupported': True}
 
     def model_windows(self):
         # Expose only public model metadata; never return config credentials.
@@ -780,7 +787,7 @@ class Handler(BaseHTTPRequestHandler):
         if not parsed.path.startswith('/api/databases/'):
             return self.reject(404,'Not found')
         action=parsed.path.removeprefix('/api/databases/')
-        if action not in ('save','test','toggle','remove','schema','query','chart','result','analyze','read_chart','results','clear_result'):
+        if action not in ('save','test','toggle','remove','schema','query','chart','result','analyze','read_chart','results','clear_result','verify_answer'):
             return self.reject(404,'Unknown database operation')
         if self.headers.get('Content-Type','').split(';')[0]!='application/json':
             return self.reject(415,'JSON required')
@@ -789,8 +796,12 @@ class Handler(BaseHTTPRequestHandler):
             if not 0<size<=128*1024:return self.reject(413,'Invalid request size')
             payload=json.loads(self.rfile.read(size))
             if not isinstance(payload,dict):raise ValueError('JSON object required')
-            from database_bridge import manage_database
-            value=manage_database(action,payload)
+            if action=='verify_answer':
+                from analysis_evidence import Evidence
+                value=Evidence().verify(payload.get('threadId'),payload.get('turnId'),payload.get('text'),payload.get('requireEvidence') is True)
+            else:
+                from database_bridge import manage_database
+                value=manage_database(action,payload)
             return self.send_bytes(200,json.dumps(value,ensure_ascii=False).encode())
         except (ValueError,KeyError) as error:self.reject(400,str(error))
         except subprocess.TimeoutExpired:self.reject(504,'数据库请求超时，请缩小查询范围。')
@@ -816,7 +827,7 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if parsed.path == '/api/databases':
                 from database_bridge import database_status,manage_database
-                status=database_status()
+                status=database_status(settings.workspace)
                 value=manage_database('list',{}) if status['ready'] else {'connections':[]}
                 return self.send_bytes(200,json.dumps({**status,**value},ensure_ascii=False).encode())
             if parsed.path == '/api/init-prompt':

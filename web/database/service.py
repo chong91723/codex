@@ -14,7 +14,7 @@ from sql_guard import validate_queries,MAX_ROWS,ReadOnlyError
 from store import Store,public
 
 class Gateway:
-    def __init__(self,directory=None,cancellation=None):self.cancel=cancellation or Cancellation();self.store=Store(directory);self.snapshots=Snapshots(self.store.directory,self.cancel)
+    def __init__(self,directory=None,cancellation=None,thread_id=None,turn_id=None,parent_thread_id=None):self.turn_id=turn_id;self.parent_thread_id=parent_thread_id;self.thread_id=thread_id;self.cancel=cancellation or Cancellation();self.store=Store(directory);self.snapshots=Snapshots(self.store.directory,self.cancel)
     def probe(self,record):
         adapter=None
         try:
@@ -58,6 +58,12 @@ class Gateway:
             namespaces=[r['schema'] if r['engine']=='postgresql' else r['database'] for r in scope]
             config=dict(record,allowedNamespaces=namespaces);queries=validate_queries(query,config)
             import sqlglot
+            if self.thread_id:
+                for sql in queries:
+                    tree=sqlglot.parse_one(sql,read={'mysql':'mysql','postgresql':'postgres','clickhouse':'clickhouse'}[record['engine']])
+                    ctes={cte.alias_or_name for cte in tree.find_all(sqlglot.exp.CTE)}
+                    if not any(table.name not in ctes for table in tree.find_all(sqlglot.exp.Table)):
+                        raise DatabaseError('该查询没有读取实际数据表；外部数据或纯计算请使用 fetch_data/import_data_file 与 run_python，不能借数据库生成结果编号。')
             referenced={table.db for sql in queries for table in sqlglot.parse_one(sql,read={'mysql':'mysql','postgresql':'postgres','clickhouse':'clickhouse'}[record['engine']]).find_all(sqlglot.exp.Table) if table.db}
             for other in scope[1:]:
                 name=other['schema'] if other['engine']=='postgresql' else other['database']
@@ -89,10 +95,19 @@ class Gateway:
     def result(self,result_id,offset=0,limit=100,columns=None,model=False):
         metadata=self.snapshots.metadata(result_id)
         if model:self.result_owner(metadata)
+        if model and self.thread_id:
+            from analysis_tools import AnalysisTools
+            AnalysisTools(self,self.thread_id).remember(metadata)
         page=self.snapshots.page(result_id,offset,limit,columns)
         if model and len(json.dumps({'columns':page['columns'],'rows':page['rows']},ensure_ascii=False))>5000:raise DatabaseError('本页明细超过上下文单次预算。请减少行数或字段；完整结果仍保留，可在网页查看和下载。')
         return page
     def result_owner(self,metadata):
+        if metadata.get('sourceKind')=='python':
+            if self.thread_id and self.thread_id not in (metadata.get('ownerThreadId'),metadata.get('parentThreadId')) and self.parent_thread_id!=metadata.get('ownerThreadId'):raise DatabaseError('计算结果不属于当前会话。')
+            for dependency in metadata.get('connectionDependencies',[]):
+                record=self.require(dependency['id'])
+                if record['version']!=dependency['version'] or self.probe(record)['status']!='connected':raise DatabaseError('计算结果依赖的数据源已变化或断开，请重新查询计算。')
+            return None
         primary=self.require(metadata['connectionId'])
         dependencies=metadata.get('connectionDependencies') or [{'id':primary['id'],'version':metadata.get('connectionVersion',primary['version'])}]
         for dependency in dependencies:
@@ -102,7 +117,7 @@ class Gateway:
         return primary
     def analyze(self,result_id,query):
         metadata=self.snapshots.metadata(result_id);self.result_owner(metadata)
-        return self.snapshots.write({key:metadata[key] for key in ('connectionId','connectionName','engine','connectionVersion','connectionDependencies') if key in metadata}|{'query':query,'parentResultId':result_id},self.snapshots.analyze(result_id,query))
+        return self.snapshots.write({key:metadata[key] for key in ('connectionId','connectionName','engine','connectionVersion','connectionDependencies') if key in metadata}|{'sourceKind':'python','sourceName':'本地快照 SQL 计算','ownerThreadId':self.thread_id or metadata.get('ownerThreadId'),'inputResultIds':[result_id],'inputSources':[{'kind':'dataset','resultId':result_id,'sha256':metadata['sha256']}],'pythonCode':'# Python Snapshots.analyze executes this read-only DuckDB query\n'+query,'query':query,'parentResultId':result_id},self.snapshots.analyze(result_id,query))
     def chart(self,result_id,kind,x,ys,title=None):
         metadata=self.snapshots.metadata(result_id);self.result_owner(metadata)
         if metadata['rowCount']>20000:raise DatabaseError('完整数据已保留，但图表点数过多。请显式使用 analyze_result 对完整结果进行分组或筛选，再生成图表；不会自动抽样或丢弃明细。')
@@ -131,7 +146,10 @@ class Gateway:
         temp.chmod(0o600);temp.replace(path)
         return {'path':str(path),'mime':'text/csv; charset=utf-8','filename':'result-'+identifier+'.csv'}
     def manifest(self,value):
-        result={key:item for key,item in value.items() if key not in ('query','executedQuery')}
+        if self.thread_id:
+            from analysis_tools import AnalysisTools
+            AnalysisTools(self,self.thread_id).remember(value)
+        result={key:item for key,item in value.items() if key not in ('query','executedQuery','pythonCode','parameters')}
         if len(result.get('columns',[]))>100 or len(json.dumps(result,ensure_ascii=False))>5000:result['columnCount']=len(result['columns']);result.pop('columns');result['schemaResource']='Use describe_result to page through the complete schema.'
         return result
     def manage(self,action,payload):

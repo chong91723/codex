@@ -1,5 +1,28 @@
 # 实际验收报告
 
+
+## 当前增量：ECharts、隔离 Python 与数值依据（2026-10-27）
+
+起始提交 `e862590462775c856fc4158b73c1632949b104d9`；原生源码、发行资源、协议与核心没有修改。新增的是原生 MCP 允许接入的本项目分析扩展和前端核验，不自建模型循环。所有实验使用独立 `/tmp` 工作区、只读 PostgreSQL 和明确 DEMO API／CSV。密钥仅通过启动器隐藏输入用于测试进程，未写入配置、源码或报告；用户服务 8765 未重启。
+
+| 验证类别 | 实际结果与边界 |
+|---|---|
+| 真实 deepseek-flash 数据流程 | [flash/results.json](test-results/numeric-evidence-2026-10-27/flash/results.json)：4/4、4个普通原生回合。纯 Decimal 运算、实际本机 API 夹具→Python→ECharts、真实CSV精确汇总绘图、实际只读PG的 SUM／COUNT直接发布。全部最终数字匹配本回合查询／计算字段。无模型回退、无业务库借用、无命令安装或其他绘图库。过程中2次 run_python 参数／结果校验失败，模型在原生回合内纠正后完成；失败项保留，未冒充首次全部成功 |
+| 真实计划、多问与停止继续 | [lifecycle/results.json](test-results/numeric-evidence-2026-10-27/lifecycle/results.json)：4/4、5个原生回合。真实 `/plan`→生成→修改→编辑确认→Default执行，用户草稿保留；一次四问总额66.66、均额22.22、记录3、最大33.33均有真实计算引用，实际原生步骤全部completed。另一会话确认 Python进程已启动后点击停止，真实turn/interrupt、interrupted、实际进程及子进程退出、0新快照；本次观察401ms（不是时限承诺）。修改条件后新回合成功算出3.50。继续是新任务，不是事务断点恢复 |
+| 正式新后端与浏览器 | [browser-canonical/results.json](test-results/numeric-evidence-2026-10-27/browser-canonical/results.json)：11/11、0页面错误、0模型；真实标准stdio MCP、Python、只读PG、HTTP／文件源、ECharts及实际CSV／PNG下载。验证无DB计算、同卡切换、严格拒绝裸数／改数／加日期、跨会话拒绝、核验HTTP失败重试、迟到响应不污染新会话及历史标签；自有会话永久删除后，本模块原文／答案／策略文件已实际清理，归档保留由独立行为及真实文件测试验证。工具／答案／历史通知与严格回合登记是明确UI夹具，不能当模型输出或原生历史持久化通过 |
+| 已运行旧后端兼容 | [browser/results.json](test-results/numeric-evidence-2026-10-27/browser/results.json)：11/11，以旧result worker路由完成同类核验，未重启旧服务。旧配置补缺项、用户覆盖／禁用／工具策略、同名自定义MCP及提交ACK先到的风险由生产函数行为测试验证；配置迁移本身未单独进行真实生产启停验收 |
+| 桌面截图 | [visual-review.json](test-results/numeric-evidence-2026-10-27/browser-canonical/visual-review.json)：1440／1024、明暗实际查看，单一结果区、唯一CSV、精确答案及来源可看，无横向溢出。最终截图等待实际ECharts finished事件。手机按用户要求不测 |
+| 确定性行为 | [engineering/results.json](test-results/numeric-evidence-2026-10-27/engineering/results.json)：193/193，包含计划36、批准11、模式2、自动衔接21、设置19、产出31、上下文6、权限15、统一卡15、图表18、新核验19。均是生产函数配DOM／传输夹具，不代替真实模型；重复覆盖不再叠加 |
+| 完整Python套件 | 同一工程记录：94项中90通过、4按既有条件跳过；新增证据／隔离计算22项包含真实bwrap、无宿主文件／密钥／网络、取消、超时、NaN、精确大整数／Decimal、数据归属、API／文件来源与worker兼容；最后补查CSV重复表头及行列数不一致的真实失败回归。跳过的3项原生Web旧命令集成和1项raw-socket作用域用例未设置CODEX_WEB_TEST_URL，不能称通过。其他真实浏览器／Flash验证另列，不用其替代跳过项 |
+| 语法、构建与原生完整性 | 99份JS／MJS、42份Python AST通过；source pristine，176/176方法和完整schema与native一致，二进制／资源哈希一致。无前端bundler或TypeScript，构建／类型检查不适用；没有重编译核心。安装器新增显式国内包源选项，实际帮助参数检查通过；本轮依赖已从国内镜像安装且由真实计算使用，未声称重新执行完整npm安装 |
+| 拼写数字补查 | 中英文数字拼写、中文无单位及空格形式新增识别回归，同时避免“千位分隔符／结果一致”误判。[实际正文重核](test-results/numeric-evidence-2026-10-27/engineering/actual-transcript-policy-replay.json)将本轮真实最终回答与原生方案共8项对照保留的回合证据，全部verified或notRequired；0新模型请求，这是执行后证据重核，不是新的一轮模型流程 |
+
+[全部真实模型尝试](test-results/numeric-evidence-2026-10-27/model-attempts.json)包含9轮、22个普通turn/start，成功最终两组共9回合；不把provider内部HTTP推理算在此数。首次MCP失败解析、误把已阻断commentary算最终失败、合法澄清、未执行方案中的数量断言、格式词误判、测试器漏收进度及失败发布记录解析均原样保留。相应真实失败、代码依据风险与模型自纠正分开记录。无模型浏览器还出现过测试服务或API退出导致拒绝连接、旧接口故障注入选择器不全、截图抢在加载／动画完成前；最终测试器自管启动清理与等待真实渲染事件后通过，没有用固定延时或伪造成功解决。
+
+来源规则保证可追溯的显示值，不证明源数据真实性、指标口径或任意自然语言语义；自然语言数字识别是明确规则，不能宣称全语义形式完备。未经核验数字保留诊断并明确要求补充依据，不显示成成功结论。默认国内行情域名本身不是兼容证据，本轮API是本机DEMO夹具，未重试真实英伟达行情源。任意第三方MCP结果的自动逐字段证据尚未覆盖；多租户认证、存储、cgroup和配额隔离仍待独立建设。自动自主规划的完整真实业务链是前批记录，本次数值策略下重新执行的是手动计划链；不将前批自动规划结果宣称为本次新的真实验收。严格国际出口按用户要求不做。
+
+资源清理与推送以本批 `environment-cleanup.json` 和最终仓库记录为准；只清理自有测试数据、容器和服务，不改变其他运行实例或用户配置。
+
 ## 最新增量：统一图表／数据结果区（2026-10-27）
 
 同一结果ID只显示一张卡，在同一区域切换ECharts图表与标准数据表；保留精确快照、分页、CSV、PNG，不把表格改绘成canvas。图表到达时合并原结果，多图在卡内选择；用户已查看数据或翻页时不抢回图表。完整CSV只有底部一处，短表与空表隐藏分页。暗色文字和图表先到的来源名称同时修复。问题、根因和验收见CW-054至CW-057。

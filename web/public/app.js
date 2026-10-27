@@ -249,7 +249,8 @@ function markdown(text) {
   return wrapper;
 }
 const toolNames = { reasoning:'思考过程', commandExecution:'执行命令', fileChange:'文件更改', mcpToolCall:'MCP 调用', dynamicToolCall:'工具调用', webSearch:'搜索网页', imageView:'查看图片', imageGeneration:'图像', collabAgentToolCall:'子代理', plan:'计划', contextCompaction:'压缩上下文', enteredReviewMode:'开始代码审查', exitedReviewMode:'审查结果' };
-function renderItem(item, done = false) {
+function renderItem(item, done = false, turnId = null) {
+  if(typeof renderGroundedAnalysisItem==='function'){const grounded=renderGroundedAnalysisItem(item,done,turnId);if(grounded)return grounded;}
   if(typeof renderAnalysisToolResult==='function'){const result=renderAnalysisToolResult(item,done);if(result)return result;}
   const chart=databaseChart(item);if(chart)return renderDatabaseChart(chart);
   if(item.type==='agentMessage'&&typeof renderAutomaticAnalysisPlan==='function'){const plan=renderAutomaticAnalysisPlan(item,done);if(plan)return plan;}
@@ -344,14 +345,14 @@ function mountItem(item, node, done, turnId) {
 }
 function upsertItem(item, done = false, turnId = null) {
   if (!item?.id) return;
-  mountItem(item, renderItem(item, done), done, turnId); state.live.delete(item.id);
+  mountItem(item, renderItem(item, done, turnId), done, turnId); state.live.delete(item.id);
 }
 function appendDelta(id, delta, type, turnId = null) {
   if (!id || typeof delta !== 'string') return;
   const entry = state.items.get(id); const text = (state.live.get(id) ?? (type === 'agentMessage' ? entry?.item.text : type === 'commandExecution' ? entry?.item.aggregatedOutput : '') ?? '') + delta;
   state.live.set(id, text); const item = { ...(entry?.item || {}), id, type };
   if (type === 'commandExecution') item.aggregatedOutput = text; else if (type === 'reasoning') item.summary = [text]; else item.text = text;
-  mountItem(item, renderItem(item, entry?.done || false), entry?.done || false, turnId);
+  mountItem(item, renderItem(item, entry?.done || false, turnId||entry?.turnId), entry?.done || false, turnId);
 }
 async function loadThreads(more = false) {
   const generation=++state.listGeneration,archived=state.archived,query=$('#thread-search').value||null;
@@ -701,6 +702,7 @@ async function submitPrompt(submission=null) {
     if(skills.length){const result=await rpc('skills/list',{cwds:[context.cwd],forceReload:true}),available=(result.data||[]).flatMap(group=>group.skills||[]);for(const skill of skills)if(!available.some(item=>item.path===skill.path&&item.name===skill.name&&item.enabled!==false))throw new Error('所选技能已停用或不可用：'+skill.name+'。输入已保留，请重新选择。');}
     if(planPrompt===null&&!preserveDraft&&!attachments.length&&await nativeSlashCommand(text))return;
     if(!preserveDraft&&sourceText==='/'&&!attachments.length)return showNativeMenu();
+    if(typeof prepareAnalysisTools==='function')await prepareAnalysisTools();
     const thread=await ensureThread(context),running=state.activeTurns.get(thread.id);
     const result=running?await rpc('turn/steer',{threadId:thread.id,expectedTurnId:running,input}):await rpc('turn/start',{threadId:thread.id,input,model:context.model||null,effort:context.effort||null,collaborationMode,additionalContext:runtimeModelContext(thread.id,context)});
     if(!running&&typeof recordAnalysisSubmission==='function')recordAnalysisSubmission(thread.id,result.turn,context);
