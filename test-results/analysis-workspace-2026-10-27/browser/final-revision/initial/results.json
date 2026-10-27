@@ -1,0 +1,136 @@
+{
+  "stage": "Final interaction revision",
+  "scope": "Real browser/native settings and failed local DB management. Explicit transport/event rendering fixtures are labeled separately. No credentials, model work, live query or old user history.",
+  "base": "http://127.0.0.1:18871",
+  "home": "/tmp/codex-analysis-final-browser-20261027/home",
+  "workspace": "/tmp/codex-analysis-final-browser-20261027/workspace",
+  "results": [
+    {
+      "name": "最终主页面保留分析导航，移除成果侧栏、输入框数据源选择和计划开关",
+      "status": "passed",
+      "evidence": {
+        "navigation": [
+          {
+            "text": "新分析⌘ K",
+            "view": "chat"
+          },
+          {
+            "text": "技能",
+            "view": "skills"
+          },
+          {
+            "text": "数据源",
+            "view": "databases"
+          },
+          {
+            "text": "MCP 服务",
+            "view": "mcp"
+          },
+          {
+            "text": "设置源码 970111f",
+            "view": "settings"
+          }
+        ],
+        "noResultsSidebar": true,
+        "noSourcePicker": true,
+        "noPlanSwitch": true
+      }
+    },
+    {
+      "name": "高级设置中的原模型、推理和权限控件保留同一节点及事件",
+      "status": "passed",
+      "evidence": {
+        "sameDomNodes": true,
+        "permissionHandlerPreserved": true,
+        "valuesRetained": true
+      }
+    },
+    {
+      "name": "初始化、持续目标及原生协议通过高级设置可达，不提交模型任务",
+      "status": "passed",
+      "evidence": {
+        "initializationNotStarted": true,
+        "goalReadOnly": true,
+        "protocolReachable": true
+      }
+    },
+    {
+      "name": "最终 Skills 与 MCP 主入口和用户配置控件保持可达",
+      "status": "passed",
+      "evidence": {
+        "skillsManagementReachable": true,
+        "mcpConfigurationDialogReachable": true,
+        "enableDisableAndActualLocalMcpTool": "Already verified in intermediate final/results.json; not repeated without a related code change."
+      }
+    },
+    {
+      "name": "斜杠菜单只显示计划模式，选择后需发送；新分析可进入并明确退出",
+      "status": "passed",
+      "evidence": {
+        "onlyCommand": "/plan",
+        "selectionDidNotExecute": true,
+        "newDraftEntered": true,
+        "explicitExit": true,
+        "modelRequests": 0
+      }
+    },
+    {
+      "name": "已有分析发送 /plan 经真实原生设置确认，重复进入不退出，退出也经原生确认",
+      "status": "failed",
+      "error": "page.waitForFunction: Timeout 45000ms exceeded.\n    at open (/root/Codex/web/tests/analysis_workspace_desktop.mjs:29:79)\n    at async file:///root/Codex/web/tests/analysis_workspace_desktop.mjs:57:32\n    at async check (/root/Codex/web/tests/analysis_workspace_desktop.mjs:22:83)\n    at async file:///root/Codex/web/tests/analysis_workspace_desktop.mjs:56:2"
+    }
+  ],
+  "browserErrors": [],
+  "modelRequests": 0,
+  "nativeMethods": [
+    "initialize",
+    "initialized",
+    "thread/list",
+    "model/list",
+    "config/read",
+    "config/read",
+    "config/read",
+    "config/read",
+    "configRequirements/read",
+    "experimentalFeature/list",
+    "permissionProfile/list",
+    "experimentalFeature/list",
+    "config/read",
+    "config/read",
+    "thread/start",
+    "thread/list",
+    "thread/goal/get",
+    "thread/list",
+    "config/read",
+    "skills/list",
+    "config/read",
+    "mcpServerStatus/list",
+    "thread/start",
+    "thread/list",
+    "thread/read",
+    "thread/resume",
+    "thread/delete",
+    "thread/list",
+    "thread/delete",
+    "thread/list",
+    "config/read"
+  ],
+  "settingsEvents": [],
+  "cleanup": [
+    {
+      "kind": "owned native thread",
+      "id": "01a17c97-28ae-7ba0-938b-55d1097cc234",
+      "deleted": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17c97-2276-79a0-ab13-4e1ad9d29bef",
+      "deleted": true
+    },
+    {
+      "kind": "configuration integrity",
+      "mcpPreserved": true,
+      "providerPreserved": true
+    }
+  ]
+}

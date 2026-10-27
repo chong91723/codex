@@ -132,6 +132,7 @@ function showConnectionError(message) { const banner = $('#connection-error'); b
 function addEvent(msg) { state.events.push({ at: new Date().toLocaleTimeString(), ...msg }); if (state.events.length > 400) state.events.shift(); if ($('#event-log')) renderEvents(); }
 function currentEvent(params) { return !params.threadId || params.threadId === (state.hydration?.threadId||state.thread?.id); }
 function handleEvent(msg) {
+  if(typeof analysisUIEvent==='function')analysisUIEvent(msg);
   const p = msg.params || {}, method = msg.method;
   observeTurnStop(msg);
   if(state.hydration&&state.hydration.threadId===p.threadId&&(/^(item|turn)\//.test(method)||method==='thread/tokenUsage/updated'||method==='thread/settings/updated')) {
@@ -250,10 +251,12 @@ function markdown(text) {
 const toolNames = { reasoning:'思考过程', commandExecution:'执行命令', fileChange:'文件更改', mcpToolCall:'MCP 调用', dynamicToolCall:'工具调用', webSearch:'搜索网页', imageView:'查看图片', imageGeneration:'图像', collabAgentToolCall:'子代理', plan:'计划', contextCompaction:'压缩上下文', enteredReviewMode:'开始代码审查', exitedReviewMode:'审查结果' };
 function renderItem(item, done = false) {
   const chart=databaseChart(item);if(chart)return renderDatabaseChart(chart);
+  if(typeof renderAnalysisToolResult==='function'){const result=renderAnalysisToolResult(item,done);if(result)return result;}
+  if(item.type==='agentMessage'&&typeof renderAutomaticAnalysisPlan==='function'){const plan=renderAutomaticAnalysisPlan(item,done);if(plan)return plan;}
   if(item.type==='plan')return renderProposedPlan(item,done);
   if(item.type==='imageGeneration'&&['completed','succeeded'].includes(item.status))return renderGeneratedImage(item);
   if (item.type === 'userMessage') { const node = el('div', 'message user'); for (const content of item.content || []) { if (content.text) node.append(document.createTextNode(content.text)); else if(content.type==='skill'){if(!(item.content||[]).some(part=>part.type==='text'&&part.text?.includes('$'+content.name)))node.append(el('span','skill-mention','$'+content.name));} else if (content.type?.toLowerCase().includes('image')) {const source=content.url||content.imageUrl||content.path;if(source){const image=el('img','user-image');loadImageElement(image,source,content.path||null);node.append(image);}else node.append(el('div','subtle','[图片附件]'));} else node.append(el('div', 'subtle', pretty(redact(content)))); } return node; }
-  if (item.type === 'agentMessage') { const node = el('div', 'message agent'); node.append(markdown(item.text || ''));if(item.phase==='final_answer'||!item.phase&&done){const actions=el('div','message-actions'),copy=button('',async()=>{await navigator.clipboard.writeText(item.text||'');toast('已复制回答');},'icon-button');copy.append(icon('copy'));copy.title=copy.ariaLabel='复制回答';actions.append(copy);node.append(actions);}return node; }
+  if (item.type === 'agentMessage') { const node = el('div', 'message agent'); node.append(markdown(item.text || ''));if(item.phase==='final_answer'||!item.phase&&done){const actions=el('div','message-actions'),copy=button('',async()=>{await navigator.clipboard.writeText(item.text||'');toast('已复制回答');},'icon-button');copy.append(icon('copy'));copy.title=copy.ariaLabel='复制回答';actions.append(copy);node.append(actions);}if(typeof decorateAnalysisAnswer==='function')decorateAnalysisAnswer(node,item,done);return node; }
   const node = el('details', 'tool-item'); node.open = item.type === 'fileChange';
   const title = toolNames[item.type] || item.type || '原生事件'; const status = item.status || (done ? 'completed' : 'inProgress');
   node.append(el('summary', '', (['completed','succeeded'].includes(status) ? '✓ ' : status === 'failed' ? '✕ ' : '· ') + title + (item.command ? ' · ' + item.command : item.tool ? ' · ' + item.tool : '')));
@@ -264,7 +267,7 @@ function renderItem(item, done = false) {
   node.append(body); return node;
 }
 function isActivity(item, turnId) {
-  if(databaseChart(item)||item.type==='plan')return false;
+  if(databaseChart(item)||item.type==='plan'||typeof isAnalysisResultItem==='function'&&isAnalysisResultItem(item))return false;
   if(item.type==='userMessage'||item.type==='imageGeneration'&&['completed','succeeded'].includes(item.status))return false;
   if(item.type!=='agentMessage')return true;
   if(item.phase==='final_answer')return false;
@@ -380,7 +383,7 @@ async function loadThreads(more = false) {
   state.cursor=result.nextCursor;renderThreadList();
 }
 function renderThreadArchiveControls() {
-  $('#thread-list-label').textContent=state.archived?'已归档':'最近会话';
+  $('#thread-list-label').textContent=state.archived?'已归档':'分析记录';
   $('#recent-toggle').setAttribute('aria-pressed',String(!state.archived));
   $('#archive-toggle').setAttribute('aria-pressed',String(state.archived));
   $('#archive-list-help').hidden=!state.archived;
@@ -397,7 +400,7 @@ async function switchArchiveScope(archived,{reload=false}={}) {
   closeThreadMenu(false);
   if(state.archived===archived&&!reload)return;
   setArchiveScope(archived);state.threads=[];state.cursor=null;
-  $('#thread-list').replaceChildren(el('div','empty-small subtle',archived?'正在读取已归档会话…':'正在读取最近会话…'));
+  $('#thread-list').replaceChildren(el('div','empty-small subtle',archived?'正在读取已归档会话…':'正在读取分析记录…'));
   $('#threads-more').hidden=true;
   const generation=state.listGeneration+1;
   try{await loadThreads();}
@@ -412,7 +415,7 @@ async function switchArchiveScope(archived,{reload=false}={}) {
 }
 function showHistoryHelp() {
   openDialog('归档与永久删除',root=>{
-    root.append(el('p','','归档：从「最近会话」移入左侧「已归档」，保留全部对话历史；可随时打开查看，或在会话右键及「…」菜单中恢复。'));
+    root.append(el('p','','归档：从「分析记录」移入左侧「已归档」，保留全部对话历史；可随时打开查看，或在会话右键及「…」菜单中恢复。'));
     root.append(el('p','','永久删除：在左侧对要删除的会话点击右键或「…」，选择「永久删除历史…」，确认后删除原生会话历史及其创建的子代理会话，无法恢复。已归档会话也可以直接永久删除。'));
     root.append(el('p','','归档或删除会话不会回滚工作区内已修改的文件，也不会删除数据库中的业务数据。'));
   },async()=>{},'知道了');
@@ -454,8 +457,8 @@ function refreshThreadMenu(){
 function openThreadMenu(target,origin,point=null){
   closeThreadMenu(false);const root=$('#thread-context-menu'),thread=target.thread;
   state.threadMenu={target:{thread:{...thread},archived:target.archived},origin};root.dataset.threadId=thread.id;root.replaceChildren();
-  const name=thread.name||thread.preview||'未命名会话',heading=el('div','thread-menu-name',name);heading.title=name;root.append(heading);
-  const entries=[['rename','重命名'],target.archived?['unarchive','恢复到最近会话']:['archive','归档（保留历史）'],null,['delete','永久删除历史…']];
+  const name=thread.name||thread.preview||'未命名分析',heading=el('div','thread-menu-name',name);heading.title=name;root.append(heading);
+  const entries=[['rename','重命名'],target.archived?['unarchive','恢复到分析记录']:['archive','归档（保留历史）'],null,['delete','永久删除历史…']];
   for(const entry of entries){
     if(!entry){const separator=el('div','thread-menu-separator');separator.setAttribute('role','separator');root.append(separator);continue;}
     const [action,label]=entry,item=button(label,()=>{const selected=state.threadMenu?.target;if(!selected)return;const reason=threadActionReason(action,selected);if(reason)throw new Error(reason);closeThreadMenu();return threadAction(action,selected);},'thread-menu-item'+(action==='delete'?' danger':''));
@@ -489,7 +492,7 @@ function renderThreadList() {
   const list = $('#thread-list'); list.replaceChildren();
   for(const thread of state.threads){
     const row=el('div','thread-row'+(state.thread?.id===thread.id?' active':''));row.dataset.threadId=thread.id;
-    const name=thread.name||thread.preview||'未命名会话',target={thread:{...thread},archived:state.archived};
+    const name=thread.name||thread.preview||'未命名分析',target={thread:{...thread},archived:state.archived};
     const open=button('',()=>{closeThreadMenu(false);return openThread(thread.id);},'thread-open');open.dataset.threadOpen=thread.id;
     const dot=el('span','thread-dot'+(state.activeTurns.has(thread.id)?' running':''));if(state.activeTurns.has(thread.id))dot.title='此页面正在执行任务';
     open.append(dot,el('span','thread-name',name));const date=new Date(thread.updatedAt*1000);open.title=name+' · '+date.toLocaleString();open.append(el('time','',date.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'})));
@@ -499,14 +502,14 @@ function renderThreadList() {
     row.append(open,trigger);list.append(row);
   }
   if(state.threadMenu&&!state.threads.some(thread=>thread.id===state.threadMenu.target.thread.id))closeThreadMenu(false);
-  if (!state.threads.length) list.append(el('div', 'empty-small subtle', query?'当前列表中没有匹配的会话。':state.archived?'暂无已归档会话。归档会保留历史，可在这里恢复。':'从一次新会话开始。'));
+  if (!state.threads.length) list.append(el('div', 'empty-small subtle', query?'当前列表中没有匹配的会话。':state.archived?'暂无已归档会话。归档会保留历史，可在这里恢复。':'从一次新分析开始。'));
   $('#threads-more').hidden = !state.cursor;
 }
 function setCwd(path) { state.selectedCwd = path; localStorage.setItem('codex.cwd', path); const name = path.split('/').filter(Boolean).pop() || path; $('#project-name').textContent = name; $('#breadcrumb').textContent = name; $('#cwd-label').textContent = path; }
 function threadRoute(){const params=new URLSearchParams(location.search);return {id:params.get('thread'),archived:params.get('archived')==='1'};}
 function setThreadRoute(id=null,archived=false,replace=false){const url=new URL(location.href);url.searchParams.delete('token');url.searchParams.delete('thread');url.searchParams.delete('archived');if(id){url.searchParams.set('thread',id);if(archived)url.searchParams.set('archived','1');}if(url.href!==location.href)history[replace?'replaceState':'pushState'](null,'',url);}
-function resetChat(route=true) {closeThreadMenu(false);rememberScroll();const fresh=state.composerKey==='new'&&composerState().pending;switchComposer('new',fresh);restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.hydration=null;state.historyPage=null;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='输入任务，或输入 / 查看功能'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false;$('#jump-latest').hidden=true;  $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; renderContextUsage(); renderThreadList(); renderRequests(); updateSend(); resetNativeUI(); }
-function adoptThread(thread,archived=false,busy=false) { state.knownThreads.set(thread.id,thread);if(state.composerKey!==thread.id)switchComposer(thread.id);if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=busy||archived;$('#prompt').placeholder=busy?'会话只读：请关闭占用页面后重试继续对话':archived?'会话已归档：请在侧栏恢复后继续对话':'询问任何问题';$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); adoptNativeUI(thread); }
+function resetChat(route=true) {closeThreadMenu(false);rememberScroll();const fresh=state.composerKey==='new'&&composerState().pending;switchComposer('new',fresh);restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.hydration=null;state.historyPage=null;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='描述分析问题、指标和时间范围，或添加资料'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false;$('#jump-latest').hidden=true;  $('#page-title').textContent = '新分析'; $('#plan-summary').hidden = true; renderContextUsage(); renderThreadList(); renderRequests(); updateSend(); resetNativeUI(); }
+function adoptThread(thread,archived=false,busy=false) { state.knownThreads.set(thread.id,thread);if(state.composerKey!==thread.id)switchComposer(thread.id);if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=busy||archived;$('#prompt').placeholder=busy?'会话只读：请关闭占用页面后重试继续对话':archived?'会话已归档：请在侧栏恢复后继续对话':'继续提问、调整分析口径或补充资料';$('#page-title').textContent=thread.name||thread.preview||'新分析';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); adoptNativeUI(thread); }
 async function restoreThreadRoute(){const route=threadRoute();if(route.id){setArchiveScope(route.archived);await openThread(route.id,{archived:route.archived,replace:true});loadThreads().catch(report);}else resetChat(false);}
 async function openThread(id,{archived=state.archived&&state.threads.some(thread=>thread.id===id),replace=false}={}) {
   closeThreadMenu(false);rememberScroll();saveComposer();const generation=++state.navigationGeneration;state.hydration={threadId:id,generation,events:[]};state.historyPage=null;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
@@ -522,7 +525,7 @@ async function openThread(id,{archived=state.archived&&state.threads.some(thread
     if(generation!==state.navigationGeneration)return;if(busy){const notice=el('div','panel-error');notice.dataset.threadBusy='';notice.append(el('p','','此会话正在另一个页面中使用，当前显示历史记录。关闭该页面后，可重试继续会话。'),button('重试继续会话',()=>openThread(id,{archived,replace:true})));$('#messages').prepend(notice);}renderThreadList();
   } catch(error) {
     if(generation!==state.navigationGeneration)return;state.restoreError=true;state.thread=null;
-    $('#messages').replaceChildren(el('div','panel-error','无法恢复此会话：'+nativeErrorMessage(error)),button('重试恢复会话',()=>openThread(id,{archived,replace:true})),button('新建会话',()=>resetChat()));
+    $('#messages').replaceChildren(el('div','panel-error','无法恢复此会话：'+nativeErrorMessage(error)),button('重试恢复会话',()=>openThread(id,{archived,replace:true})),button('新分析',()=>resetChat()));
   } finally {if(generation===state.navigationGeneration){state.hydration=null;state.threadLoading=false;$('#prompt').disabled=state.restoreError;updateSend();restoreScroll();}}
 }
 function finishHistoryRender(){for(const group of $$('.activity-group',$('#messages')))updateActivityGroup(group);}
@@ -570,7 +573,7 @@ async function hydrateThread(thread,generation=state.navigationGeneration,snapsh
   try{for (const turn of turns) { if (turn.status === 'inProgress'&&!state.finishedTurns.has(turn.id)) state.activeTurns.set(thread.id, turn.id); for (const item of turn.items || []) upsertItem(item, turn.status !== 'inProgress', turn.id); renderTurnOutcome(turn); }}
   finally{state.renderingHistory=false;}
   finishHistoryRender();renderHistoryMore();
-  $('#welcome').hidden = turns.length > 0;$('#view-chat').classList.toggle('empty',turns.length===0);  $('#page-title').textContent = thread.name || thread.preview || '新会话';  const buffered=state.hydration?.generation===generation?state.hydration.events:[];state.hydration=null;
+  $('#welcome').hidden = turns.length > 0;$('#view-chat').classList.toggle('empty',turns.length===0);  $('#page-title').textContent = thread.name || thread.preview || '新分析';  const buffered=state.hydration?.generation===generation?state.hydration.events:[];state.hydration=null;
   // Full terminal items/outcomes are idempotent. Deltas already included in a
   // snapshot must not be appended a second time.
   // Turn pages do not contain usage/settings snapshots. Keep their independent
@@ -597,14 +600,17 @@ async function ensureThread(context=null) {
 function updateSend() {
   refreshThreadMenu();
   if(typeof renderPermissions==='function')renderPermissions();
-  const permissionBlocked=typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked(),modeBlocked=state.nativeModePending;
+  const permissionBlocked=typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked(),modeBlocked=state.nativeModePending||(typeof analysisModeChangeBlocked==='function'&&analysisModeChangeBlocked());
   const stop=[...state.stopOperations.values()].find(op=>op.threadId===state.thread?.id&&op.status==='pending');
   const turn=state.activeTurns.get(state.thread?.id),running=!state.threadBusy&&!state.threadArchived&&!!turn,stopping=!!stop||state.interrupting.has(turn),pending=composerState().pending;
   $('#send').disabled=((permissionBlocked||modeBlocked)&&!running)||!state.ready||state.threadLoading||state.restoreError||state.threadBusy||stopping||(!running&&(pending||state.threadArchived||state.attachmentLoads>0));
   $('#send').classList.toggle('running',running);const label=stopping?'正在停止并回收命令…':running?'中断当前任务':pending?'正在发送…':state.attachmentLoads>0?'正在读取附件':'发送任务';
   $('#send').title=label;$('#send').ariaLabel=label;$('#send').setAttribute('aria-busy',String(stopping||pending));
-  $('#composer-status').textContent=modeBlocked?'正在切换模式，请等待原生配置确认':permissionBlocked?'权限更改正在确认或尚未确认，请核对原生状态后再发送任务':stopping?'正在等待回合结束并回收本轮命令…':pending?'正在发送，输入内容会保留至请求确认':state.attachmentLoads>0?'正在读取附件…':!state.ready?'连接尚未就绪，草稿已保留':state.threadBusy?'此会话被其他页面或 Codex 进程占用，当前只读；关闭占用方后重试继续':state.threadArchived?'此会话已归档，只能查看；在侧栏恢复后可继续对话':!running&&typeof currentMode==='function'&&currentMode()==='plan'?'已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。':'';
+  $('#composer-status').textContent=modeBlocked?'正在切换模式，请等待原生配置确认':permissionBlocked?'权限更改正在确认或尚未确认，请核对原生状态后再发送任务':stopping?'正在等待回合结束并回收本轮命令…':pending?'正在发送，输入内容会保留至请求确认':state.attachmentLoads>0?'正在读取附件…':!state.ready?'连接尚未就绪，草稿已保留':state.threadBusy?'此会话被其他页面或 Codex 进程占用，当前只读；关闭占用方后重试继续':state.threadArchived?'此会话已归档，只能查看；在侧栏恢复后可继续对话':!running&&typeof currentMode==='function'&&currentMode()==='plan'?'计划模式已开启。输入需求生成计划，由你确认后执行。':'';
   if(typeof renderExecutionProgressBanner==='function')renderExecutionProgressBanner();
+
+  if(typeof refreshAnalysisDownloads==='function')refreshAnalysisDownloads();
+  if(typeof refreshAnalysisResultVisibility==='function')refreshAnalysisResultVisibility();
 }
 // A turn can finish while its resumable unified-exec commands remain alive.
 // Keep ownership independent of the selected conversation and never clean all terminals.
@@ -658,12 +664,12 @@ async function interruptTurn(threadId=state.thread?.id,turnId=state.activeTurns.
     finally{clearTimeout(timer);op.connection.removeEventListener('close',connectionClosed);delete op.resolveCompletion;delete op.rejectCompletion;state.interrupting.delete(turnId);updateSend();renderStopResult(op);}
   })();return op.promise;
 }
+function parsePlanPrompt(text){const match=text.match(/^\/plan\s+([\s\S]+)$/);return match&&match[1].trim()?match[1].trim():null;}
 function validateComposerCommand(text){
-  if(!/^\/[a-z][\w-]*(?:\s|$)/i.test(text)||Object.hasOwn(nativeSlashActions(),text))return;
-  if(/^\/plan(?:\s|$)/i.test(text))throw new Error('计划模式请使用输入框下方的开关；输入已保留，未发送任务。');
-  if(/^\/chat(?:\s|$)/i.test(text))throw new Error('请点击输入框下方的「新建聊天」；输入已保留，未发送任务。');
-  if(/^\/compact(?:\s|$)/i.test(text))throw new Error('上下文按设置自动压缩，不再提供 /compact 手动入口；输入已保留，未发送任务。');
-  throw new Error('/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。');
+  if(text==='/'||text==='/plan'||parsePlanPrompt(text)!==null||!/^\/[a-z][\w-]*(?:\s|$)/i.test(text))return;
+  if(/^\/compact(?:\s|$)/i.test(text))throw new Error('上下文按设置自动压缩；输入已保留，未发送任务。');
+  if(/^\/(?:init|goal)(?:\s|$)/i.test(text))throw new Error('初始化和持续目标已移至「设置 → 高级设置」；输入已保留，未发送任务。');
+  throw new Error('/ 菜单仅提供计划模式 /plan；输入已保留，未发送任务。');
 }
 async function submitPrompt(submission=null) {
   const preserveDraft=submission?.preserveDraft===true;
@@ -671,7 +677,7 @@ async function submitPrompt(submission=null) {
   closeCommandMenu();
   if(!state.ready)return toast('请等待原生运行时连接');
 
-  if(state.nativeModePending)throw new Error('模式正在切换，请稍候再发送；输入已保留。');
+  if(state.nativeModePending||(typeof analysisModeChangeBlocked==='function'&&analysisModeChangeBlocked()))throw new Error('模式正在切换，请稍候再发送；输入已保留。');
   if(typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked())throw new Error('权限更改尚未确认，请重新打开会话核对后再发送任务');
   if(state.threadLoading||state.restoreError)return toast('请先完成当前会话的恢复');
   if(state.threadArchived)return toast('请先取消归档，再继续这个会话');
@@ -679,11 +685,12 @@ async function submitPrompt(submission=null) {
   if(state.attachmentLoads)return toast('附件正在读取，请稍候');
   if([...state.stopOperations.values()].some(op=>op.threadId===state.thread?.id&&op.status==='pending'))return toast('本轮命令仍在回收，请等待停止结果。');
   const draft=saveComposer();if(draft.pending)return;
-  const raw=preserveDraft?submission.text:draft.text,revision=draft.revision||0,text=raw.trim(),attachments=preserveDraft?[]:[...draft.attachments];if(!text&&!attachments.length)return;
-  if(!preserveDraft)validateComposerCommand(text);
-  const context={thread:state.thread,generation:state.navigationGeneration,cwd:state.selectedCwd,model:$('#model').value,effort:$('#effort').value,provider:selectedModelProvider(),projectId:state.selectedProject,mode:currentMode(),draft};
+  const raw=preserveDraft?submission.text:draft.text,revision=draft.revision||0,sourceText=raw.trim(),planPrompt=preserveDraft?null:parsePlanPrompt(sourceText),text=planPrompt??sourceText,attachments=preserveDraft?[]:[...draft.attachments];if(!text&&!attachments.length)return;
+  if(!preserveDraft)validateComposerCommand(sourceText);
+  if(planPrompt!==null&&state.activeTurns.has(state.thread?.id))throw new Error('请先停止当前任务，再按计划模式发送；输入已保留。');
+  const context={thread:state.thread,generation:state.navigationGeneration,cwd:state.selectedCwd,model:$('#model').value,effort:$('#effort').value,provider:selectedModelProvider(),projectId:state.selectedProject,mode:planPrompt!==null?'plan':currentMode(),draft};
   if(state.thread&&isRemovedModel(state.threadSettings.get(state.thread.id)?.model,modelProvider()))throw new Error('此历史会话使用的模型已移除。请新建 DeepSeek 会话；历史内容仍可查看。');
-  if(attachments.length&&(Object.hasOwn(nativeSlashActions(),text)||text==='/'))throw new Error('此本地命令不接收附件，请先移除附件再执行。输入与附件已保留。');
+  if(planPrompt===null&&attachments.length&&(Object.hasOwn(nativeSlashActions(),text)||text==='/'))throw new Error('此本地命令不接收附件，请先移除附件再执行。输入与附件已保留。');
   const metadata=state.modelDetails?.find(model=>model.model===(context.model||state.runtimeDefaults?.model));
   const unsupported=metadata?.inputModalities?.length?attachments.filter(a=>['image','audio'].includes(a.input.type)&&!metadata.inputModalities.includes(a.input.type)):[];
   if(unsupported.length)throw new Error('当前模型 '+(context.model||state.runtimeDefaults?.model)+' 未声明支持这些附件：'+unsupported.map(a=>a.name).join('、')+'。请选择支持的模型或移除附件；输入与附件已保留。');
@@ -692,10 +699,11 @@ async function submitPrompt(submission=null) {
   draft.pending=true;updateSend();
   try{
     if(skills.length){const result=await rpc('skills/list',{cwds:[context.cwd],forceReload:true}),available=(result.data||[]).flatMap(group=>group.skills||[]);for(const skill of skills)if(!available.some(item=>item.path===skill.path&&item.name===skill.name&&item.enabled!==false))throw new Error('所选技能已停用或不可用：'+skill.name+'。输入已保留，请重新选择。');}
-    if(!preserveDraft&&!attachments.length&&await nativeSlashCommand(text))return;
-    if(!preserveDraft&&text==='/'&&!attachments.length)return showNativeMenu();
+    if(planPrompt===null&&!preserveDraft&&!attachments.length&&await nativeSlashCommand(text))return;
+    if(!preserveDraft&&sourceText==='/'&&!attachments.length)return showNativeMenu();
     const thread=await ensureThread(context),running=state.activeTurns.get(thread.id);
     const result=running?await rpc('turn/steer',{threadId:thread.id,expectedTurnId:running,input}):await rpc('turn/start',{threadId:thread.id,input,model:context.model||null,effort:context.effort||null,collaborationMode,additionalContext:runtimeModelContext(thread.id,context)});
+    if(!running&&typeof recordAnalysisSubmission==='function')recordAnalysisSubmission(thread.id,result.turn,context);
     if(result.turn&&!state.finishedTurns.has(result.turn.id)&&result.turn.status==='inProgress')state.activeTurns.set(thread.id,result.turn.id);
     if(!preserveDraft){
       if(composerState()===draft)saveComposer();
@@ -709,7 +717,9 @@ async function submitPrompt(submission=null) {
 function runtimeModelContext(threadId,context=null){
   const settings=state.threadSettings.get(threadId)||{},model=context?.model||settings.model||state.runtimeDefaults?.model,provider=context?.provider||settings.modelProvider||state.runtimeDefaults?.model_provider;
   if(!model||!provider)return undefined;
-  return {'codex-web-runtime':{kind:'application',value:'Runtime configuration facts: model provider = '+provider+'; active model ID for this turn = '+model+'. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model.'}};
+  const details={'codex-web-runtime':{kind:'application',value:'Runtime configuration facts: model provider = '+provider+'; active model ID for this turn = '+model+'. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model.'}};
+  if(typeof analysisTaskContext==='function')details['codex-web-analysis']={kind:'application',value:analysisTaskContext(context)};
+  return details;
 }
 async function loadModels() {
   const [result,configuration]=await Promise.all([rpc('model/list',{includeHidden:true}),rpc('config/read',{includeLayers:false,cwd:state.selectedCwd})]);
@@ -722,19 +732,26 @@ async function loadModels() {
 }
 function loadEfforts() { const model = (state.modelDetails||state.models).find(m => m.model === ($('#model').value||state.runtimeDefaults?.model)); const enums = state.schema?.definitions?.ReasoningEffort?.enum || []; $('#effort').replaceChildren(new Option('默认推理', '')); for (const effort of model?.supportedReasoningEfforts || enums.map(reasoningEffort => ({ reasoningEffort }))) $('#effort').append(new Option(effort.reasoningEffort, effort.reasoningEffort)); const saved = localStorage.getItem('codex.effort'); if ($$('#effort option').some(x => x.value === saved)) $('#effort').value = saved; renderNativeMode(); }
 function refreshProviderConnection(){const provider=state.runtimeDefaults?.model_provider||'未配置';$('#account-name').textContent=provider==='deepseek'?'DeepSeek':provider;$('#account-status').textContent='模型服务连接';}
+// Keep the original model and permission controls connected while rebuilding panels.
+// Moving the same nodes preserves their listeners, values and native update targets.
+function parkAdvancedControls(){
+  const controls=$('#analysis-advanced-controls'),parking=$('#analysis-advanced-controls-parking');
+  if(controls&&parking&&controls.parentNode!==parking)parking.append(controls);
+}
 function showView(view) {
   if(view==='plugins')return toast('插件管理入口已隐藏。');
+  parkAdvancedControls();
   if(view!=='chat'&&typeof closeCommandMenu==='function')closeCommandMenu();
   state.view = view; $$('.main-nav .nav-button,.sidebar-footer .nav-button').forEach(node => node.classList.toggle('active', node.dataset.view === view));
   $('#view-chat').hidden = view !== 'chat'; $('#view-panel').hidden = view === 'chat';
   if(window.innerWidth<760)document.body.classList.add('sidebar-hidden');
-  if (view === 'chat') { $('#page-title').textContent = state.thread?.name || state.thread?.preview || '新建会话'; $('#prompt').focus(); return; }
-  const title = {databases:'数据库',skills:'技能',mcp:'MCP 服务',plugins:'本地插件',protocol:'原生能力',settings:'设置',account:'模型服务'}[view]; $('#page-title').textContent = title;
-  $('#panel-content').replaceChildren(el('div', 'loading', '读取原生能力…'));
+  if (view === 'chat') { $('#page-title').textContent = state.thread?.name || state.thread?.preview || '新分析'; $('#prompt').focus(); return; }
+  const title = {databases:'数据源',skills:'技能',mcp:'MCP 服务',plugins:'本地插件',protocol:'原生能力',settings:'设置',account:'模型服务'}[view]; $('#page-title').textContent = title;
+  $('#panel-content').replaceChildren(el('div', 'loading', '正在加载…'));
   ({ databases:renderDatabases, skills:renderSkills, mcp:renderMcp, plugins:renderPlugins, protocol:renderProtocol, settings:renderSettings, account:renderAccount })[view]?.().catch(error => { if (state.view === view) panelError(error); });
 }
-function panelError(error) { $('#panel-content').replaceChildren(el('div', 'panel-error', nativeErrorMessage(error)), button('重试', () => showView(state.view))); }
-function panelHeading(title, description, iconName) { const header = el('div', 'panel-heading'), text = el('div'); text.append(el('h1', '', title), el('p', '', description)); header.append(text, icon(iconName)); $('#panel-content').replaceChildren(header); return $('#panel-content'); }
+function panelError(error) { parkAdvancedControls();$('#panel-content').replaceChildren(el('div', 'panel-error', nativeErrorMessage(error)), button('重试', () => showView(state.view))); }
+function panelHeading(title, description, iconName) { const header = el('div', 'panel-heading'), text = el('div'); text.append(el('h1', '', title), el('p', '', description)); header.append(text, icon(iconName)); parkAdvancedControls();$('#panel-content').replaceChildren(header); return $('#panel-content'); }
 function showJSON(title, data) { openDialog(title, root => root.append(el('pre', '', pretty(redact(data)))), async () => {}, '关闭'); }
 function openDialog(title, build, submit, submitLabel = '保存') {
   const generation=state.dialogGeneration=(state.dialogGeneration||0)+1;let submitting=false;
@@ -903,21 +920,51 @@ async function renderProtocol(){
 }
 function renderEvents(){const log=$('#event-log');if(!log)return;log.replaceChildren();for(const event of state.events.slice(-100).reverse()){const row=el('details','event-row');row.append(el('summary','',event.at+'  '+event.method),el('pre','',pretty(redact(event.params))));log.append(row);}if(!state.events.length)log.append(el('p','subtle','等待原生运行时事件…'));}
 async function renderSettings(){
-  const result=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});if(state.view!=='settings')return;state.config=result;const config=result.config||{};if(typeof refreshPermissionDefaults==='function')refreshPermissionDefaults(config);
-  const root=panelHeading('按照你的方式工作','设置写入 Codex 的配置，不修改上游源码。当前运行时保留原生权限与沙箱。','settings');
-  const appearance=el('div','section-card');appearance.append(el('h3','','工作区与外观'));root.append(appearance);
-  settingRow(appearance,'工作区目录',state.selectedCwd,button('更改',editProject));settingRow(appearance,'外观','跟随你的偏好，保存在当前浏览器。',button(document.documentElement.dataset.theme==='dark'?'深色':'浅色',()=>{toggleTheme();return renderSettings();}));
-  const execution=el('div','section-card');execution.append(el('h3','','原生运行配置'));root.append(execution);
-  for(const [label,key,values] of [['沙箱','sandbox_mode',['read-only','workspace-write','danger-full-access']],['审批策略','approval_policy',['untrusted','on-request','never']]]){const select=el('select');for(const value of values)select.append(new Option(value,value));select.value=typeof config[key]==='string'?config[key]:values[0];select.ariaLabel=label;select.onchange=async()=>{try{await rpc('config/value/write',{keyPath:key,value:select.value,mergeStrategy:'replace',expectedVersion:result.layers?.find(layer=>layer.name?.type==='user')?.version,reloadUserConfig:true});toast('原生配置已保存');renderSettings();}catch(error){report(error);}};settingRow(execution,label,'由 Codex 原生执行；部分配置从新会话开始生效。',select);}
+  const generation=state.settingsGeneration=(state.settingsGeneration||0)+1;
+  const result=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});
+  if(state.view!=='settings'||generation!==state.settingsGeneration)return;
+  state.config=result;const config=result.config||{};
+  if(typeof refreshPermissionDefaults==='function')refreshPermissionDefaults(config);
+  const root=panelHeading('分析设置','设置分析体验，管理可用的技能与工具。','settings');
+  const appearance=el('div','section-card');appearance.append(el('h3','','使用偏好'));root.append(appearance);
+  settingRow(appearance,'外观','保存在当前浏览器。',button(document.documentElement.dataset.theme==='dark'?'深色':'浅色',()=>{toggleTheme();return renderSettings();}));
+  settingRow(appearance,'Skills 技能','查看、配置和启停当前可用的技能。',button('管理 Skills',()=>showView('skills')));
+  settingRow(appearance,'MCP 工具','添加或配置服务，管理启停及连接状态。',button('管理 MCP',()=>showView('mcp')));
+  const advanced=el('details','section-card analysis-advanced-settings');advanced.id='analysis-advanced-settings';advanced.open=!!state.settingsAdvancedOpen;
+  advanced.append(el('summary','','高级设置'),el('p','subtle','原生运行配置和诊断工具。当前实例的用户均可操作；折叠入口不构成权限隔离。请先了解配置影响。'));
+  advanced.ontoggle=()=>{state.settingsAdvancedOpen=advanced.open;};root.append(advanced);
+  const controls=$('#analysis-advanced-controls');
+  if(controls){const session=el('div','analysis-session-settings');session.append(el('h3','','当前分析的运行设置'),el('p','subtle','模型、推理强度与 Agent 文件执行权限沿用原生处理。Agent 沙箱权限不替代数据库访问控制。'),controls);advanced.append(session);}
+  const workspace=el('div','section-card');workspace.append(el('h3','','分析空间与维护'));advanced.append(workspace);
+  settingRow(workspace,'工作目录',state.selectedCwd,button('更改目录',editProject));
+  settingRow(workspace,'分析空间','使用原生项目组织分析记录和工作目录。',button('管理空间',()=>showProjects()));
+  settingRow(workspace,'目录浏览','查看原始工作目录与文件；日常成果请使用右上角「资料与成果」。',button('浏览原始目录',()=>fileBrowser()));
+  settingRow(workspace,'工作区初始化','检查工作目录并生成 AGENTS.md。已有文件不会覆盖；此操作会提交真实任务。',button('初始化工作区',()=>initializeWorkspace()));
+  settingRow(workspace,'持续目标','配置持续推进的目标及预算；与分析计划分开管理。',button('管理持续目标',()=>showGoalDialog()));
+  settingRow(workspace,'原生协议诊断','直接查看并调用当前版本的原生接口，执行结果和错误保持可诊断。',button('打开原生协议',()=>showView('protocol')));
+  settingRow(workspace,'模型服务','查看实际提供方、端点与凭据配置方式。',button('查看服务连接',()=>showView('account')));
+  const databaseSettings=el('div');databaseSettings.id='analysis-advanced-databases';advanced.append(databaseSettings);
+  const execution=el('div','section-card');execution.append(el('h3','','原生运行配置'));advanced.append(execution);
+  const version=result.layers?.find(layer=>layer.name?.type==='user')?.version;
+  for(const [label,key,values] of [['沙箱','sandbox_mode',['read-only','workspace-write','danger-full-access']],['审批策略','approval_policy',['untrusted','on-request','never']]]){
+    const select=el('select');for(const value of values)select.append(new Option(value,value));select.value=typeof config[key]==='string'?config[key]:values[0];select.ariaLabel=label;
+    select.onchange=async()=>{select.disabled=true;try{await rpc('config/value/write',{keyPath:key,value:select.value,mergeStrategy:'replace',expectedVersion:version,reloadUserConfig:true});toast('原生配置已保存');await renderSettings();}catch(error){report(error);await renderSettings();}finally{select.disabled=false;}};
+    settingRow(execution,label,'由 Codex 原生执行；部分配置从新分析开始生效。',select);
+  }
   const network=el('input');network.type='checkbox';network.ariaLabel='允许工作区沙箱访问网络';network.checked=config.sandbox_workspace_write?.network_access===true;
-  network.onchange=async()=>{const enabled=network.checked;network.disabled=true;try{await rpc('config/value/write',{keyPath:'sandbox_workspace_write.network_access',value:enabled,mergeStrategy:'replace',expectedVersion:result.layers?.find(layer=>layer.name?.type==='user')?.version,reloadUserConfig:true});const policy=state.threadSettings.get(state.thread?.id)?.sandboxPolicy;if(state.thread&&!state.threadBusy&&!state.threadArchived&&policy?.type==='workspaceWrite')await rpc('thread/settings/update',{threadId:state.thread.id,sandboxPolicy:{...policy,networkAccess:enabled}});toast('沙箱网络设置已保存，审批策略保持原样');await renderSettings();}catch(error){report(error);await renderSettings();}finally{network.disabled=false;}};
-  settingRow(execution,'沙箱网络访问','允许 workspace-write 沙箱内联网。保留文件边界和原生危险操作审批；新会话使用此设置。',network);
+  network.onchange=async()=>{const enabled=network.checked;network.disabled=true;try{await rpc('config/value/write',{keyPath:'sandbox_workspace_write.network_access',value:enabled,mergeStrategy:'replace',expectedVersion:version,reloadUserConfig:true});const policy=state.threadSettings.get(state.thread?.id)?.sandboxPolicy;if(state.thread&&!state.threadBusy&&!state.threadArchived&&policy?.type==='workspaceWrite')await rpc('thread/settings/update',{threadId:state.thread.id,sandboxPolicy:{...policy,networkAccess:enabled}});toast('沙箱网络设置已保存，审批策略保持原样');await renderSettings();}catch(error){report(error);await renderSettings();}finally{network.disabled=false;}};
+  settingRow(execution,'沙箱网络访问','允许 workspace-write 沙箱内联网。保留文件边界和原生危险操作审批；新分析使用此设置。',network);
   const currentPolicy=state.threadSettings.get(state.thread?.id)?.sandboxPolicy;
-  if(state.thread&&!state.threadBusy&&!state.threadArchived&&currentPolicy?.type==='workspaceWrite'&&currentPolicy.networkAccess!==network.checked)settingRow(execution,'当前会话的网络设置','历史会话保留原生权限快照，点击后仅同步网络设置，保留其他文件权限。',button('应用到当前会话',async()=>{await rpc('thread/settings/update',{threadId:state.thread.id,sandboxPolicy:{...currentPolicy,networkAccess:network.checked}});toast('已将网络设置应用到当前会话后续任务');await renderSettings();}));
-  const planToggle=el('input');planToggle.type='checkbox';planToggle.ariaLabel='启用原生计划工具';planToggle.checked=result.layers?.find(layer=>layer.config?.tools?.update_plan?.enabled!==undefined)?.config.tools.update_plan.enabled===true;planToggle.onchange=async()=>{try{await rpc('config/value/write',{keyPath:'tools.update_plan.enabled',value:planToggle.checked,mergeStrategy:'replace',reloadUserConfig:true});toast('已保存，从新会话开始生效');await renderSettings();}catch(error){report(error);}};settingRow(execution,'原生计划工具','允许 Codex 使用 update_plan 展示任务步骤，从新会话开始生效。',planToggle);
-  settingRow(execution,'自定义模型','例如提供方配置中的模型名。模型是否可用以实际请求为准。',button('设置模型名',()=>askText('自定义模型','模型 ID', $('#model').value,async value=>{if(isRemovedModel(value,modelProvider()))throw new Error('此模型已从本项目移除，请使用当前第三方提供方模型。');if(!$$('#model option').some(x=>x.value===value)){const option=new Option(value,value);option.dataset.provider=modelProvider();$('#model').append(option);}$('#model').value=value;localStorage.setItem(modelPreferenceKey(),value);loadEfforts();})));
-  const advanced=el('div','section-card');advanced.append(el('h3','','高级配置'),el('p','subtle','使用 JSON 编辑用户配置层。仅保存修改的字段，并保留未修改的设置。'));const editor=el('textarea','code-editor');editor.ariaLabel='原生配置编辑器';const editable=result.layers?.find(layer=>layer.name?.type==='user'&&!layer.name?.profile)?.config||config;editor.value=pretty(redact(editable));advanced.append(editor,button('保存修改的配置项',async()=>{const next=JSON.parse(editor.value);if(!next||typeof next!=='object'||Array.isArray(next))throw new Error('请输入 JSON 配置对象');const edits=configDiff(redact(editable),next);if(!edits.length)return toast('没有配置变更');if(pretty(edits).includes('[已隐藏]'))throw new Error('请通过原生能力面板编辑含密钥的配置项');await rpc('config/batchWrite',{edits,expectedVersion:result.layers?.find(layer=>layer.name?.type==='user')?.version,reloadUserConfig:true});toast('配置已保存');await renderSettings();}));root.append(advanced);
-  const about=el('div','section-card');about.append(el('h3','','源码与运行时'),el('pre','protocol-result',pretty(state.status)));if(state.status?.baseline?.sourceCommit)about.append(el('p','subtle','原生程序由此官方提交直接构建。启动时核对源码、程序校验值和完整协议；可通过官方更新脚本升级。'));root.append(about);
+  if(state.thread&&!state.threadBusy&&!state.threadArchived&&currentPolicy?.type==='workspaceWrite'&&currentPolicy.networkAccess!==network.checked)settingRow(execution,'当前分析的网络设置','历史记录保留原生权限快照，仅同步网络设置，保留其他文件权限。',button('应用到当前分析',async()=>{await rpc('thread/settings/update',{threadId:state.thread.id,sandboxPolicy:{...currentPolicy,networkAccess:network.checked}});toast('已将网络设置应用到当前分析后续任务');await renderSettings();}));
+  const planToggle=el('input');planToggle.type='checkbox';planToggle.ariaLabel='启用原生计划工具';planToggle.checked=result.layers?.find(layer=>layer.config?.tools?.update_plan?.enabled!==undefined)?.config.tools.update_plan.enabled===true;
+  planToggle.onchange=async()=>{planToggle.disabled=true;try{await rpc('config/value/write',{keyPath:'tools.update_plan.enabled',value:planToggle.checked,mergeStrategy:'replace',reloadUserConfig:true});toast('已保存，从新分析开始生效');await renderSettings();}catch(error){report(error);await renderSettings();}finally{planToggle.disabled=false;}};
+  settingRow(execution,'原生计划工具','允许 Codex 使用 update_plan 展示实际步骤，从新分析开始生效。',planToggle);
+  settingRow(execution,'自定义模型','提供方配置中的模型名，可用性以实际请求为准。当前项目统一使用 DeepSeek Flash 验证。',button('设置模型名',()=>askText('自定义模型','模型 ID',$('#model').value,async value=>{if(isRemovedModel(value,modelProvider()))throw new Error('此模型已从本项目移除，请使用当前第三方提供方模型。');if(!$$('#model option').some(x=>x.value===value)){const option=new Option(value,value);option.dataset.provider=modelProvider();$('#model').append(option);}$('#model').value=value;localStorage.setItem(modelPreferenceKey(),value);loadEfforts();})));
+  const editorCard=el('div','section-card');editorCard.append(el('h3','','用户配置 JSON'),el('p','subtle','仅保存修改的字段，并保留未修改的设置。含密钥字段已隐藏。'));
+  const editor=el('textarea','code-editor');editor.ariaLabel='原生配置编辑器';const editable=result.layers?.find(layer=>layer.name?.type==='user'&&!layer.name?.profile)?.config||config;editor.value=pretty(redact(editable));
+  editorCard.append(editor,button('保存修改的配置项',async()=>{const next=JSON.parse(editor.value);if(!next||typeof next!=='object'||Array.isArray(next))throw new Error('请输入 JSON 配置对象');const edits=configDiff(redact(editable),next);if(!edits.length)return toast('没有配置变更');if(pretty(edits).includes('[已隐藏]'))throw new Error('请通过原生协议诊断编辑含密钥的配置项');await rpc('config/batchWrite',{edits,expectedVersion:version,reloadUserConfig:true});toast('配置已保存');await renderSettings();}));advanced.append(editorCard);
+  const about=el('div','section-card');about.append(el('h3','','源码与运行时'),el('pre','protocol-result',pretty(state.status)));if(state.status?.baseline?.sourceCommit)about.append(el('p','subtle','原生程序由此官方提交直接构建。启动时核对源码、程序校验值和完整协议；可通过官方更新脚本升级。'));advanced.append(about);
+  if(typeof renderDatabaseSettings==='function')await renderDatabaseSettings(databaseSettings);
 }
 function settingRow(root,label,description,control){const row=el('div','settings-row'),text=el('div');text.append(el('label','',label),el('small','',description));row.append(text,control);root.append(row);}
 async function rollbackThread(id){
@@ -1008,7 +1055,7 @@ async function threadAction(action,target=null){
     case'delete':
       return openDialog('永久删除会话',root=>{
         root.append(el('p','','将永久删除“'+(thread.name||thread.preview||id)+'”的会话历史及其创建的子代理会话，无法撤销。'));
-        root.append(el('p','','如果只是想从最近会话中收起，请取消后选择「归档（保留历史）」。永久删除不会回滚工作区文件或删除业务数据库。'));
+        root.append(el('p','','如果只是想从分析记录中收起，请取消后选择「归档（保留历史）」。永久删除不会回滚工作区文件或删除业务数据库。'));
         if(state.thread?.id===id&&state.threadBusy)root.append(el('p','','打开此历史时检测到其他页面或 Codex 进程占用。请关闭占用方，再点击「永久删除」重新检查；原生确认释放后才能删除，网页不会强制关闭其他连接。'));
         else if(state.activeTurns.has(id)||thread.status?.type==='active')root.append(el('p','','此会话中的当前任务会被停止。'));
         const error=el('p','thread-removal-error panel-error');error.hidden=true;error.setAttribute('role','alert');root.append(error);
@@ -1029,7 +1076,7 @@ async function threadAction(action,target=null){
     case'unarchive':
       await perform(()=>rpc('thread/unarchive',{threadId:id}));
       if(state.thread?.id===id&&generation===state.navigationGeneration){setArchiveScope(false);await openThread(id,{archived:false,replace:true});}
-      await loadThreads();toast('已恢复到「最近会话」，可以继续对话。');return;
+      await loadThreads();toast('已恢复到「分析记录」，可以继续对话。');return;
     case'archive':
       try{await perform(()=>rpc('thread/archive',{threadId:id}));}catch(error){if(/already has an active writer/i.test(error.message))throw new Error('此会话被其他页面或 Codex 进程占用，尚未归档。请关闭占用方后重试。原生原因：'+nativeErrorMessage(error));throw error;}if(state.thread?.id===id)resetChat();
       await loadThreads();toast('已归档，历史仍保留。可在左侧「已归档」中恢复或永久删除。');return;
@@ -1091,7 +1138,7 @@ async function init(){
   document.addEventListener('keydown',threadMenuKey);
   window.addEventListener('resize',dismissMovedThreadMenu);
   document.addEventListener('scroll',event=>{if(state.threadMenu&&!$('#thread-context-menu').contains(event.target))dismissMovedThreadMenu();},true);
-  $('#files-toggle').onclick=()=>{if(!$('#file-panel').hidden)$('#file-panel').hidden=true;else fileBrowser().catch(report);};$('#files-close').onclick=()=>$('#file-panel').hidden=true;
+  $('#files-toggle').onclick=()=>fileBrowser().catch(report);$('#files-close').onclick=()=>$('#file-panel').hidden=true;
   $('#terminal-toggle').onclick=openTerminal;$('#terminal-start').onclick=()=>{try{startTerminal();}catch(error){report(error);}};$('#terminal-expand').onclick=expandTerminal;$('#terminal-close').onclick=()=>{termWS?.close();$('#terminal-panel').hidden=true;$('.main').classList.remove('terminal-expanded');$('#terminal-expand').textContent='展开';terminalStatus('未启动');};
   document.addEventListener('keydown',event=>{if((event.metaKey||event.ctrlKey)&&event.key==='k'){event.preventDefault();resetChat();showView('chat');}});
   const [status,schema,serverSchema,skillCatalog]=await Promise.all([fetchJSON('/api/status'),fetchJSON('/api/schema/ClientRequest.json'),fetchJSON('/api/schema/ServerRequest.json'),fetchJSON('/skill-catalog.zh-CN.json').catch(()=>({}))]);state.skillCatalog=skillCatalog;state.status=status;state.schema=schema;state.serverSchema=serverSchema;setCwd(state.selectedCwd||status.workspace);$('#runtime-pill').textContent=status.build?'源码 '+status.build.sourceCommit.slice(0,7):status.version.replace('codex-cli ','v');await connect();

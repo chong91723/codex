@@ -1,0 +1,286 @@
+{
+  "stage": "Final interaction revision",
+  "scope": "Real browser/native settings and failed local DB management. Explicit transport/event rendering fixtures are labeled separately. No credentials, model work, live query or old user history.",
+  "base": "http://127.0.0.1:18871",
+  "home": "/tmp/codex-analysis-final-browser-20261027/home",
+  "workspace": "/tmp/codex-analysis-final-browser-20261027/workspace",
+  "results": [
+    {
+      "name": "最终主页面保留分析导航，移除成果侧栏、输入框数据源选择和计划开关",
+      "status": "passed",
+      "evidence": {
+        "navigation": [
+          {
+            "text": "新分析⌘ K",
+            "view": "chat"
+          },
+          {
+            "text": "技能",
+            "view": "skills"
+          },
+          {
+            "text": "数据源",
+            "view": "databases"
+          },
+          {
+            "text": "MCP 服务",
+            "view": "mcp"
+          },
+          {
+            "text": "设置源码 970111f",
+            "view": "settings"
+          }
+        ],
+        "noResultsSidebar": true,
+        "noSourcePicker": true,
+        "noPlanSwitch": true
+      }
+    },
+    {
+      "name": "高级设置中的原模型、推理和权限控件保留同一节点及事件",
+      "status": "passed",
+      "evidence": {
+        "sameDomNodes": true,
+        "permissionHandlerPreserved": true,
+        "valuesRetained": true
+      }
+    },
+    {
+      "name": "初始化、持续目标及原生协议通过高级设置可达，不提交模型任务",
+      "status": "passed",
+      "evidence": {
+        "initializationNotStarted": true,
+        "goalReadOnly": true,
+        "protocolReachable": true
+      }
+    },
+    {
+      "name": "最终 Skills 与 MCP 主入口和用户配置控件保持可达",
+      "status": "passed",
+      "evidence": {
+        "skillsManagementReachable": true,
+        "mcpConfigurationDialogReachable": true,
+        "enableDisableAndActualLocalMcpTool": "Already verified in intermediate final/results.json; not repeated without a related code change."
+      }
+    },
+    {
+      "name": "斜杠菜单只显示计划模式，选择后需发送；新分析可进入并明确退出",
+      "status": "passed",
+      "evidence": {
+        "onlyCommand": "/plan",
+        "selectionDidNotExecute": true,
+        "newDraftEntered": true,
+        "explicitExit": true,
+        "modelRequests": 0
+      }
+    },
+    {
+      "name": "已有分析发送 /plan 经真实原生设置确认，重复进入不退出，退出也经原生确认",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a17c9c-79c8-7cf2-924a-eb59c1abe518",
+        "nativePlanAndDefaultConfirmed": true,
+        "repeatedCommandIdempotent": true,
+        "modelRequests": 0
+      }
+    },
+    {
+      "name": "/plan 具体需求按 Plan 参数提交，传输拒绝时保留完整输入（明确的故障夹具）",
+      "status": "passed",
+      "evidence": {
+        "fixture": "Explicit pre-transport rejection; no successful model response is supplied",
+        "prefixRemoved": true,
+        "planParameterCaptured": true,
+        "draftRetained": true,
+        "actualModelCompatibility": "not verified"
+      }
+    },
+    {
+      "name": "其余旧斜杠命令不展示且不会作为任务发送，输入保留",
+      "status": "passed",
+      "evidence": {
+        "unavailableCommands": [
+          "/init",
+          "/goal",
+          "/compact",
+          "/fork"
+        ],
+        "draftRetained": true,
+        "noModelSubmission": true
+      }
+    },
+    {
+      "name": "数据源页直接配置并管理真实失败连接，支持编辑和启停，无本次分析选择",
+      "status": "passed",
+      "evidence": {
+        "failedConnectionId": "817db70323ed1cc2fc983b75",
+        "error": "(2003, \"Can't connect to MySQL server on '127.0.0.1' ([Errno 111] Connection refused)\")",
+        "directCreateEditToggle": true,
+        "noPerAnalysisSelection": true,
+        "successfulConnectionNotClaimed": true
+      }
+    },
+    {
+      "name": "数据源网络错误可诊断并重试，切页不丢失未发送需求",
+      "status": "passed",
+      "evidence": {
+        "transportFailureInjected": true,
+        "actualBackendReloaded": true,
+        "draftRetained": true
+      }
+    },
+    {
+      "name": "对话内结果与每条结论下载按回合隔离，未完成及失败回答不展示成功下载（UI 事件夹具）",
+      "status": "passed",
+      "evidence": {
+        "fixture": "Explicit handleEvent transcript fixtures; no model or actual database query",
+        "reportsDownloaded": 2,
+        "eachReportContainsOwnAnswerAndSameTurnResult": true,
+        "inProgressAndFailedReportDownloadsHidden": true,
+        "newAnalysisHasNoOldDownloadCards": true,
+        "csvLinksRenderedOnly": true,
+        "csvDataDownload": "not tested against a live query"
+      }
+    },
+    {
+      "name": "模型方案事件夹具衔接真实原生 Plan 设置并等待原生确认，不自动执行",
+      "status": "passed",
+      "evidence": {
+        "modelDecision": "Explicit event fixture, not verified with a real model",
+        "nativeSettingsRequestAndConfirmation": true,
+        "noExtraTurnStart": true,
+        "noApprovedExecutionSubmitted": true
+      }
+    },
+    {
+      "name": "1440 与 1024 桌面宽度下分析输入及计划状态无横向溢出",
+      "status": "passed",
+      "evidence": {
+        "sizes": [
+          {
+            "viewport": 1440,
+            "scrollWidth": 1440,
+            "composerWidth": 800,
+            "promptWidth": 770
+          },
+          {
+            "viewport": 1024,
+            "scrollWidth": 1024,
+            "composerWidth": 746,
+            "promptWidth": 716
+          }
+        ],
+        "themeSwitchChecked": true,
+        "mobileNotInScope": true
+      }
+    }
+  ],
+  "browserErrors": [],
+  "modelRequests": 0,
+  "nativeMethods": [
+    "initialize",
+    "initialized",
+    "thread/list",
+    "model/list",
+    "config/read",
+    "config/read",
+    "config/read",
+    "config/read",
+    "configRequirements/read",
+    "experimentalFeature/list",
+    "permissionProfile/list",
+    "experimentalFeature/list",
+    "config/read",
+    "config/read",
+    "thread/start",
+    "thread/list",
+    "thread/goal/get",
+    "thread/list",
+    "config/read",
+    "skills/list",
+    "config/read",
+    "mcpServerStatus/list",
+    "thread/start",
+    "thread/list",
+    "thread/inject_items",
+    "thread/read",
+    "thread/resume",
+    "thread/settings/update",
+    "thread/settings/update",
+    "thread/start",
+    "thread/list",
+    "thread/inject_items",
+    "thread/read",
+    "thread/resume",
+    "thread/list",
+    "thread/list",
+    "thread/list",
+    "thread/start",
+    "thread/list",
+    "thread/inject_items",
+    "thread/read",
+    "thread/resume",
+    "thread/list",
+    "thread/settings/update",
+    "thread/settings/update",
+    "thread/delete",
+    "thread/list",
+    "thread/delete",
+    "thread/list",
+    "thread/delete",
+    "thread/list",
+    "thread/delete",
+    "thread/list",
+    "config/read"
+  ],
+  "settingsEvents": [
+    {
+      "threadId": "01a17c9c-79c8-7cf2-924a-eb59c1abe518",
+      "mode": "plan"
+    },
+    {
+      "threadId": "01a17c9c-79c8-7cf2-924a-eb59c1abe518",
+      "mode": "default"
+    },
+    {
+      "threadId": "01a17c9c-968f-70e1-8ceb-812de096fc37",
+      "mode": "plan"
+    },
+    {
+      "threadId": "01a17c9c-968f-70e1-8ceb-812de096fc37",
+      "mode": "default"
+    }
+  ],
+  "cleanup": [
+    {
+      "kind": "owned failed database connection",
+      "id": "817db70323ed1cc2fc983b75",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17c9c-968f-70e1-8ceb-812de096fc37",
+      "deleted": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17c9c-93e9-7050-b67d-3d4f7f18ba55",
+      "deleted": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17c9c-79c8-7cf2-924a-eb59c1abe518",
+      "deleted": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17c9c-752c-7f00-9e9f-1d2331bd4342",
+      "deleted": true
+    },
+    {
+      "kind": "configuration integrity",
+      "mcpPreserved": true,
+      "providerPreserved": true
+    }
+  ]
+}

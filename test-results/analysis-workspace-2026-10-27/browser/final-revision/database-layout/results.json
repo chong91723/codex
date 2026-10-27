@@ -1,0 +1,75 @@
+{
+  "stage": "Final interaction revision",
+  "scope": "Real browser/native settings and failed local DB management. Explicit transport/event rendering fixtures are labeled separately. No credentials, model work, live query or old user history.",
+  "base": "http://127.0.0.1:18871",
+  "home": "/tmp/codex-analysis-final-browser-20261027/home",
+  "workspace": "/tmp/codex-analysis-final-browser-20261027/workspace",
+  "results": [
+    {
+      "name": "数据源页直接配置并管理真实失败连接，支持编辑和启停，无本次分析选择",
+      "status": "passed",
+      "evidence": {
+        "failedConnectionId": "908ad692f68d67973523a328",
+        "error": "(2003, \"Can't connect to MySQL server on '127.0.0.1' ([Errno 111] Connection refused)\")",
+        "directCreateEditToggle": true,
+        "noPerAnalysisSelection": true,
+        "successfulConnectionNotClaimed": true
+      }
+    },
+    {
+      "name": "数据源网络错误可诊断并重试，切页不丢失未发送需求",
+      "status": "passed",
+      "evidence": {
+        "transportFailureInjected": true,
+        "actualBackendReloaded": true,
+        "draftRetained": true
+      }
+    },
+    {
+      "name": "1440 与 1024 桌面宽度下分析输入及计划状态无横向溢出",
+      "status": "passed",
+      "evidence": {
+        "sizes": [
+          {
+            "viewport": 1440,
+            "scrollWidth": 1440,
+            "composerWidth": 800,
+            "promptWidth": 770
+          },
+          {
+            "viewport": 1024,
+            "scrollWidth": 1024,
+            "composerWidth": 746,
+            "promptWidth": 716
+          }
+        ],
+        "themeSwitchChecked": true,
+        "mobileNotInScope": true
+      }
+    }
+  ],
+  "browserErrors": [],
+  "modelRequests": 0,
+  "nativeMethods": [
+    "initialize",
+    "initialized",
+    "thread/list",
+    "model/list",
+    "config/read",
+    "config/read",
+    "config/read"
+  ],
+  "settingsEvents": [],
+  "cleanup": [
+    {
+      "kind": "owned failed database connection",
+      "id": "908ad692f68d67973523a328",
+      "removed": true
+    },
+    {
+      "kind": "configuration integrity",
+      "mcpPreserved": true,
+      "providerPreserved": true
+    }
+  ]
+}

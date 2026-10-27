@@ -1,6 +1,42 @@
 # 实际验收报告
 
-## 最新批次：精简斜杠菜单与计划开关（2026-10-27）
+## 最新批次：数据分析工作台（2026-10-27）
+
+起始提交 `19399bf16b472a1b144f1a90b396ca47c78af612`；锁定Codex源码 `970111f6cb62cc02fe36a82ea7d71b37a2889c97` 未修改。用户最终要求：无成果侧栏、无单次数据源选择，数据源主页面由用户完整配置管理，Agent发现全部已配置启用且获授权连接；Skills／MCP入口保留。唯一手动计划入口 `/plan` bare／inline，底部只显示计划状态与退出，不展示原显式开关。历史与中间形态不算最终通过。
+
+| 验证类别 | 本轮实际结果与边界 |
+|---|---|
+| 最终真实浏览器／原生／后端 | [final-revision/results.json](test-results/analysis-workspace-2026-10-27/browser/final-revision/results.json)：13/13、0页面错误、0模型。核对最终导航与无侧栏／来源选择／开关、同一高级控件及事件、初始化与目标弹窗只打开不执行、原生协议可达、Skills／MCP管理入口可达、bare计划真实设置与通知及幂等退出、直接失败连接创建／编辑／启停／移除、真实列表故障重试与草稿保持 |
+| 明确传输及UI夹具 | [verification-summary.json](test-results/analysis-workspace-2026-10-27/browser/final-revision/verification-summary.json)分别说明：inline `/plan`在发送前故障夹具核对前缀／mode／输入保留；对话事件夹具显示同轮结果卡、两条真实Markdown文件下载及跨回合隔离；未完成／失败下载隐藏。自动方案决定为夹具，后续thread/settings/update及等待原生通知真实，无额外turn/start／自动批准执行。CSV只验链接，不能当真实查询或下载通过 |
+| 已复现报告状态问题 | 同一summary保留 `inline-rendering-before/results.json`及failure截图：item完成但turn未完成时过早显示下载。修为done消息＋成功完成回合联合判定，并在合并状态后刷新；修后及最终13组相关项通过。完成后可能仍隐藏为代码推断顺序风险，不冒称修前另复现。查询结果卡保持直接可见，不折叠进工具活动 |
+| 桌面与截图 | 最终1440×960、1024×960无横向溢出；明暗主题及四张最终首页／对话下载／输入区截图已实际查看。不含手机，不以截图代替原生／模型／数据库结果 |
+| 高级设置行为 | `web/tests/analysis_settings.mjs` 19/19，实际生产函数配DOM／RPC夹具：同一控件保留、折叠、原处理器、异步导航与失败；仅 `/plan` 可用，其余旧命令拒绝。无原生／模型请求，不冒充集成 |
+| 对话结果与报告行为 | `web/tests/analysis_artifacts.mjs` 31/31，实际生产函数配原生item夹具：仅成功MCP合法ID、排除rows／错误／pending、same-turn隔离、真实答案快照、completed回合判定、commentary／方案／失败／中断拒绝、Markdown内容和导航／恢复保护，另含20行分页offset、防重、越界、失败保留及重试、0行与同ID去重。无模型或真实数据库 |
+| 计划与自动衔接状态 | [state/auto-plan-after.tap](test-results/analysis-workspace-2026-10-27/state/auto-plan-after.tap)：70/70生产函数／受控传输事件，包括手动入口／批准草稿与自动决策后的归属、设置等待、并发与错误，不代替真实模型决定。修前失败保留于auto-plan-before.tap。与其他工程重叠项不累加为业务通过 |
+| 中间实现历史 | [browser/final/results.json](test-results/analysis-workspace-2026-10-27/browser/final/results.json)12/12仅对应被替代侧栏／来源选择／显式开关；保留未改的真实原生技能停启、本地stdio MCP添加／停启／工具列举／echo证据，不重复配置写入。来源选择测试已随用户撤回删除，不作为当前能力 |
+| 真实Flash手动计划完整链 | [手动计划完整链](test-results/analysis-workspace-2026-10-27/flash-plan/manual-chain/results.json)7/7，4个普通turn/start。真实原生方案→多轮修改→编辑批准→首查询后停止第二待审批SQL→修改条件新回合继续复用首结果→真实步骤全完成→完整回答三问→对话CSV／PNG／Markdown实际下载。三个标not-repeated的先期入口用例不计入7项，也不再产生模型请求 |
+| 真实Flash自动规划完整链 | [自动决策修后完整链](test-results/analysis-workspace-2026-10-27/flash-plan/automatic-chain-after-policy/results.json)7/7，4个普通turn/start。初始Default由Flash实际提出方案（查询批准前0业务SQL），完成后真实转Plan、无额外模型回合；后续修改／批准／停止／继续／三问／图表及下载完整通过。不是用手动/plan代替自主决定 |
+| 真实Flash简单直接查询 | [简单直接查询](test-results/analysis-workspace-2026-10-27/flash-plan/simple-direct/results.json)3/3，1个Default回合。模型通过native MCP实际query_database／read_result得到SUM2220.00，与独立固定SQL一致，0proposed_plan／0Plan设置；没有把基准数值喂给模型 |
+| 真实PG结果分页与去重 | [真实分页浏览器](test-results/analysis-workspace-2026-10-27/browser/inline-pagination/results.json)9/9，0模型／0页面错误。独立PG真实查询247行与31行派生快照；自动20行表格、前后页、末页7行、越界零请求、失败保留上页重试、read_result不重复、同ID唯一卡、完整247行CSV下载。handleEvent MCP完成仅为明确渲染入口夹具，不冒充native模型数据库调用 |
+| 最终工程检查 | [最终工程记录](test-results/analysis-workspace-2026-10-27/engineering/results.json)：86份JS／MJS语法、36份Python AST通过；141/141行为（Plan36＋批准提交11＋模式恢复2＋自动衔接21＋设置19＋产出31＋上下文6＋权限15）。source pristine、176/176完整Schema及native一致，diff通过。首次140/141仅旧断言仍期待精简前长Plan提示，更新为用户指定短提示后通过，before-results／before-behavior保留。无前端打包或TypeScript，未重编译核心，未重跑完整Python后端套件 |
+
+
+真实模型两条完整链均使用独立只读PostgreSQL测试库。首查询得到地区Top2（华南980.00／4单、华东900.00／5单），第二条SQL等待真实MCP审批时停止，收到原生interrupted且第二条未执行。之后以新回合把Q2改为2026年8月各地区（华东400.00／2单、华北90.00／1单、华南300.00／1单），Q3改为产品Top1（Alpha910.00），复用Q1。最终三个问题均回答完整、原生update_plan所有步骤completed，CSV／PNG／Markdown实际下载；独立SQL与数据指纹均核对不变，自有会话、结果、图表及连接均清理。停止／继续不是事务断点恢复。
+
+真实失败及测试器边界保留：attempt-1批准后等待state.turns终态超时、attempt-2／3遇到未预设澄清问题，按测试驱动等待或答案范围调整，不直接认定产品Bug；先期bare／inline／退出真实通过在attempt-1／2中保留。attempt-4是实际模型策略问题：复杂三问＋图表直接申请SQL，测试未批准即中断，0执行；强化analysisTaskContext的语义规划边界后自动完整链7/7，再以简单Default查询3/3确认未强迫所有问题先规划。语义指引不是权限强制保证。[全部真实模型尝试](test-results/analysis-workspace-2026-10-27/flash-plan/summary.json)确认全部7轮共18个普通turn/start，含4次失败尝试和最终3组成功；不能只报成功两链，不将内部provider HTTP请求算在该数字中。[相同业务问题修前／修后对照](test-results/analysis-workspace-2026-10-27/flash-plan/application-policy-fix.json)核对修前／修后相同业务问题、相同Default与Flash，保留实际应用上下文。
+
+结果呈现回归另见CW-052：自动表格恢复、CSV底部唯一、read_result不新建卡和同ID去重；产出行为从23增至31项。用户讨论的统一ECharts容器／图表与数据切换只是建议，本批没有新增统一tabs或用ECharts替代HTML表格。
+
+最终无模型浏览器使用独立 `/tmp/codex-analysis-final-browser-20261027/`；只创建真实拒绝连接的本机MySQL，不伪造成功库响应。网络异常只中断一次浏览器请求，重试读取实际后端；显式原生事件／transcript夹具不代表模型或查询成功。4个自有会话和失败连接清理，MCP／provider配置保持。此前中间服务的技能状态也已恢复，测试MCP移除；不读取旧业务历史或凭据。
+
+原生无模型当前回合自主改mode入口。最小Web配套只在Default模型以严格整块proposed_plan提出方案并真实成功完成后，通过公开设置接口等通知进入后续Plan讨论；不把此前Default过程标为Plan，无新模型回合或自研循环；历史／失败／中断不触发，等待阻止竞争，失败保留方案。此协议配套与真实模型是否遵循格式分别验证。
+
+报告仅导出本条完成回答和同轮已加载结果编号，不含PDF／Word、完整模板或逐句审计。当前服务快照总表明确包含其他分析，不声称多租户隔离；本批真实模型业务回归限独立只读PostgreSQL与Flash，其他引擎／生产远端未重新验收，也不承诺所有意图分类必然正确；多租户未实现。手机及严格国际出口按用户要求不做。没有新增业务Skills，保留四个源码自带技能；Skills／MCP和数据源可由当前实例用户配置启停。root随后停止18872测试服务并移除本轮自有PG容器，未停止用户服务；模型summary中的runtime/container交接记录反映交给root时状态，清理在交接后完成。
+
+## 前一批次（历史）：精简斜杠菜单与计划开关（2026-10-27）
+
+> 下方两项菜单及底部新建聊天为前批历史。现行仅 `/plan`，新分析统一入口，计划状态及退出按钮可见；本节开关形态属于中间历史。
+
 
 本轮按用户最新要求把 `/` 菜单和分发限制为 `/init /goal`，聊天改为输入框下方“新建聊天”按钮，计划模式使用显式开关，移除 `/plan` 及带需求形式的快捷触发。压缩继续按设置自动运行，技能页、MCP、模型/权限控件和原生能力保留。本轮起始提交为 `672a96012fefe027fccd53a0ea45522dcba5becd`；下方旧菜单及旧计划命令通过数均属于历史，不能代替本轮验收。
 
@@ -19,7 +55,7 @@
 
 ## 前一批次（历史）：计划模式输入与退出（2026-10-27）
 
-> `/plan` 命令入口已按最新要求取消。本节记录前批实现及真实结果，不能作为当前使用说明或本轮开关验证。
+> 本节是前批 `/plan` 实现及真实结果；当前已恢复唯一 `/plan`，具体布局及本轮衔接验证以上方最新记录为准，历史数字不计入本轮。
 
 修复`/plan`进入后无说明、重复命令反向退出，以及`/plan 具体需求`没有请求原生plan的问题。进入模式、向模型发任务和退出模式分别验证。仅在独立`/tmp`原生配置/工作区使用本轮新建合成数据；模型仅DeepSeek Flash，没有读取已有用户历史或凭据，没有修改原生源码、程序或代理循环。
 

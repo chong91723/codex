@@ -1,0 +1,56 @@
+{
+  "stage": "Final interaction revision",
+  "scope": "Real browser/native settings and failed local DB management. Explicit transport/event rendering fixtures are labeled separately. No credentials, model work, live query or old user history.",
+  "base": "http://127.0.0.1:18871",
+  "home": "/tmp/codex-analysis-final-browser-20261027/home",
+  "workspace": "/tmp/codex-analysis-final-browser-20261027/workspace",
+  "results": [
+    {
+      "name": "对话内结果与每条结论下载按回合隔离，未完成及失败回答不展示成功下载（UI 事件夹具）",
+      "status": "passed",
+      "evidence": {
+        "fixture": "Explicit handleEvent transcript fixtures; no model or actual database query",
+        "reportsDownloaded": 2,
+        "eachReportContainsOwnAnswerAndSameTurnResult": true,
+        "inProgressAndFailedReportDownloadsHidden": true,
+        "newAnalysisHasNoOldDownloadCards": true,
+        "csvLinksRenderedOnly": true,
+        "csvDataDownload": "not tested against a live query"
+      }
+    }
+  ],
+  "browserErrors": [],
+  "modelRequests": 0,
+  "nativeMethods": [
+    "initialize",
+    "initialized",
+    "thread/list",
+    "model/list",
+    "config/read",
+    "config/read",
+    "thread/start",
+    "thread/inject_items",
+    "thread/list",
+    "thread/read",
+    "thread/resume",
+    "thread/list",
+    "thread/list",
+    "thread/list",
+    "thread/delete",
+    "thread/list",
+    "config/read"
+  ],
+  "settingsEvents": [],
+  "cleanup": [
+    {
+      "kind": "owned native thread",
+      "id": "01a17c9b-d2da-7fa3-8b4d-0dc69f5eb02f",
+      "deleted": true
+    },
+    {
+      "kind": "configuration integrity",
+      "mcpPreserved": true,
+      "providerPreserved": true
+    }
+  ]
+}

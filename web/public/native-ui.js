@@ -102,13 +102,17 @@ function turnCollaborationMode(mode=currentMode()){
     reasoning_effort:$('#effort').value||settings.effort||state.modelDetails?.find(m=>m.model===($('#model').value||settings.model||state.runtimeDefaults?.model))?.defaultReasoningEffort||null,developer_instructions:null}};
 }
 function renderNativeMode(){
-  const node=$('#mode-toggle');if(!node)return;const plan=currentMode()==='plan';
-  node.classList.toggle('plan-active',plan);node.setAttribute('role','switch');node.setAttribute('aria-checked',String(plan));node.setAttribute('aria-busy',String(!!state.nativeModePending));node.ariaLabel='计划模式';
-  node.querySelector('.plan-switch-state').textContent=state.nativeModePending?'切换中…':plan?'开启':'关闭';
-  node.title=plan?'关闭计划模式，后续任务按默认模式处理':'开启计划模式，先规划并确认后执行';
-  node.disabled=state.nativeModePending||state.threadLoading||state.restoreError||state.threadArchived||state.threadBusy||state.activeTurns.has(state.thread?.id);renderContextUsage();
+  const node=$('#mode-toggle');if(!node)return;const plan=currentMode()==='plan',automaticPending=typeof analysisModeChangeBlocked==='function'&&analysisModeChangeBlocked(state.thread?.id),pending=!!state.nativeModePending||automaticPending;
+  node.classList.toggle('plan-active',plan);node.setAttribute('role','switch');node.setAttribute('aria-checked',String(plan));node.setAttribute('aria-busy',String(pending));node.ariaLabel='计划模式';
+  node.querySelector('.plan-switch-state').textContent=pending?'切换中…':plan?'开启':'关闭';
+  node.title=plan?'当前为计划模式；退出不会执行已有方案':'通过 /plan 进入计划模式';
+  node.disabled=pending||state.threadLoading||state.restoreError||state.threadArchived||state.threadBusy||state.activeTurns.has(state.thread?.id);
+  const status=$('#analysis-mode-status');if(status){status.hidden=!plan&&!pending;status.textContent=automaticPending?'方案已提出，正在进入计划模式…':state.nativeModePending?'正在切换计划模式…':'计划模式';status.title='先形成并确认整体分析方案；规划期间可能进行只读调查。';}
+  const exit=$('#exit-plan-mode');if(exit){exit.hidden=!plan;exit.disabled=node.disabled;}
+  renderContextUsage();
 }
 async function setNativeMode(mode){
+  if(typeof analysisModeChangeBlocked==='function'&&analysisModeChangeBlocked(state.thread?.id))throw new Error('正在进入计划模式，请稍候');
   if(state.nativeModePending)throw new Error('模式正在切换，请稍候');
   if(state.threadLoading||state.restoreError)throw new Error('请先完成当前会话的恢复，再切换模式');
   if(state.activeTurns.has(state.thread?.id))throw new Error('请先停止当前任务，再切换模式');
@@ -135,19 +139,17 @@ async function changeModeWithFeedback(mode){
   const threadId=state.thread?.id,generation=state.navigationGeneration,draft=composerState();
   await setNativeMode(mode);
   if(threadId!==state.thread?.id||generation!==state.navigationGeneration||draft!==composerState())return;
-  toast(mode==='plan'?'已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。':'已退出计划模式，后续任务按默认模式处理。');
+  toast(mode==='plan'?'已手动进入计划模式，生成计划后由你确认执行。':'已退出计划模式。后续可直接开展分析；退出不会执行已有方案。');
 }
-function nativeSlashActions(){return {'/init':initializeWorkspace,'/goal':showGoalDialog};}
+async function enterPlanMode(){await changeModeWithFeedback('plan');}
+function nativeSlashActions(){return {'/plan':enterPlanMode};}
 async function nativeSlashCommand(text){
   const actions=nativeSlashActions();if(!Object.hasOwn(actions,text))return false;
   const draft=saveComposer(),raw=draft.text,revision=draft.revision||0;await actions[text]();
   if(draft.text===raw&&(draft.revision||0)===revision){draft.text='';persistDrafts();if(composerState()===draft){$('#prompt').value='';resizePrompt();closeCommandMenu();}}return true;
 }
-// The slash menu only exposes the two explicitly supported local actions.
-function commandEntries(){return [
-  {command:'/init',title:'初始化',description:'创建包含项目指令的 AGENTS.md 文件',icon:'file'},
-  {command:'/goal',title:'目标',description:'设置要持续追求的目标',icon:'check'}
-].map(entry=>({...entry,id:'menu-'+entry.command.slice(1),kind:'command'}));}
+// Plan is the only slash action; engineering actions stay in advanced settings.
+function commandEntries(){return [{command:'/plan',title:'计划模式',description:'手动进入计划模式，生成计划后由你确认执行',icon:'check',id:'menu-plan',kind:'command'}];}
 function showComposerSetting(id){
   const source=$('#'+id),model=id==='model';
   openDialog(model?'选择模型':'选择思考强度',root=>{
@@ -170,7 +172,7 @@ function renderCommandMenu(){
     const option=button('',()=>chooseCommand(entry),'command-option');option.id=entry.id;option.title=entry.command;option.setAttribute('role','option');option.setAttribute('aria-selected',String(index===value.index));option.onmousedown=event=>event.preventDefault();
     option.append(icon(entry.icon),el('span','command-title',entry.title),el('span','command-description',entry.description));menu.append(option);
   });
-  if(!value.entries.length)menu.append(el('p','command-notice','仅支持初始化 /init 和目标 /goal'));
+  if(!value.entries.length)menu.append(el('p','command-notice','仅支持 /plan；初始化和持续目标位于高级设置，技能和 MCP 可在左侧配置。'));
   menu.hidden=false;$('#view-chat').classList.add('command-menu-open');menu.scrollTop=scroll;$('#prompt').setAttribute('aria-expanded','true');
   const active=value.entries[value.index];if(active){$('#prompt').setAttribute('aria-activedescendant',active.id);document.getElementById(active.id)?.scrollIntoView({block:'nearest'});}else $('#prompt').removeAttribute('aria-activedescendant');positionCommandMenu();
 }
@@ -178,6 +180,7 @@ function updateCommandMenu(){
   const text=$('#prompt').value;if(state.commandComposing||state.view!=='chat'||!/^\/[^\s]*$/.test(text))return closeCommandMenu();
   const previous=state.commandMenu,query=text.slice(1).toLocaleLowerCase();
   const entries=commandEntries().filter(entry=>[entry.command,entry.title,entry.description].join(' ').toLocaleLowerCase().includes(query));
+  if(!entries.length)return closeCommandMenu();
   const active=previous?.text===text?previous.entries[previous.index]?.id:null;
   state.commandMenu={text,entries,index:Math.max(0,entries.findIndex(entry=>entry.id===active)),draft:composerState()};renderCommandMenu();
 }
@@ -194,7 +197,7 @@ function commandMenuKey(event){
   return false;
 }
 async function initializeWorkspace(){
-  openDialog('初始化工作区',root=>{root.append(el('p','','Codex 将检查当前工作区，再按官方初始化指令生成 AGENTS.md。已有 AGENTS.md 不会覆盖。'),el('p','subtle',state.selectedCwd));if(currentMode()==='plan')root.append(el('p','subtle','计划模式已开启：先生成初始化计划，确认执行后才写入文件。'));},async()=>{const {prompt}=await fetchJSON('/api/init-prompt');showView('chat');$('#prompt').value=prompt;await submitPrompt();},'开始初始化');
+  openDialog('初始化工作区',root=>{root.append(el('p','','Codex 将检查当前工作区，再按官方初始化指令生成 AGENTS.md。已有 AGENTS.md 不会覆盖。'),el('p','subtle',state.selectedCwd));if(currentMode()==='plan')root.append(el('p','subtle','当前为计划模式：会先形成初始化方案，确认执行后才写入文件。'));},async()=>{const {prompt}=await fetchJSON('/api/init-prompt');showView('chat');$('#prompt').value=prompt;await submitPrompt();},'开始初始化');
 }
 async function showNativeStatus(){
   const id=state.thread?.id,settings=state.threadSettings.get(id)||{},snapshot=contextSnapshot(),provider=id?modelProvider():selectedModelProvider();
@@ -204,16 +207,16 @@ async function showNativeStatus(){
 }
 function renderProposedPlan(item,done){
   const node=el('section','message proposed-plan');node.dataset.proposedPlan=item.id;
-  node.append(el('h3','','建议计划'),markdown(item.text||'正在形成计划…'));
-  if(done){const actions=el('div','card-actions');actions.append(button('确认 / 修改后执行',()=>reviewPlan(item),'solid-button'),button('继续修改计划',async()=>{await setNativeMode('plan');$('#prompt').focus();toast('请在输入框说明需要调整的部分');}));node.append(actions,el('p','subtle','确认前保持计划模式。执行中的普通任务清单由模型更新进度，不会逐步弹出计划确认。'));}
+  node.append(el('h3','','分析方案'),markdown(item.text||'正在形成分析方案…'));
+  if(done){const actions=el('div','card-actions');actions.append(button('确认并执行分析',()=>reviewPlan(item),'solid-button'),button('修改分析方案',async()=>{await setNativeMode('plan');$('#prompt').focus();toast('请说明需要调整的分析思路、指标口径或输出要求');}));node.append(actions,el('p','subtle','此处确认整体分析方案；规划期间可能进行只读调查。具体工具仍按权限请求审批，执行进度按实际步骤更新。'));}
   return node;
 }
 function reviewPlan(item){
-  if(state.activeTurns.has(state.thread?.id))throw new Error('请等待计划生成完成');
-  openDialog('确认执行计划',root=>{root.append(el('p','','可以直接修改下方计划。确认后在当前会话切换至默认模式并开始执行；工具权限仍由原生审批策略控制。'));formField(root,'执行计划','approved-plan',{value:item.text||'',multiline:true,required:true});},async root=>{
-    const plan=$('#approved-plan',root).value.trim();if(!plan)throw new Error('计划不能为空');
-    await setNativeMode('default');await submitPrompt({text:'我已确认以下计划，请按照这个版本执行。若需调整，请先说明。开始执行前请使用原生 update_plan 建立任务清单，并按实际进展更新；完成后回答我的问题。\n\n'+plan,preserveDraft:true});
-  },'确认并执行');
+  if(state.activeTurns.has(state.thread?.id))throw new Error('请等待分析方案生成完成');
+  openDialog('确认分析方案',root=>{root.append(el('p','','可以修改下方分析方案。确认后退出计划模式，并开始执行整体方案；具体工具仍受现有权限控制。这不等同于逐条 SQL 审批。'));formField(root,'分析方案','approved-plan',{value:item.text||'',multiline:true,required:true});},async root=>{
+    const plan=$('#approved-plan',root).value.trim();if(!plan)throw new Error('分析方案不能为空');
+    await setNativeMode('default');await submitPrompt({text:'我已确认以下分析方案，请按照这个版本执行，保留我明确指定的分析思路、指标口径、时间范围和数据来源。若需调整方案，请先说明。开始执行前请使用原生 update_plan 建立分析步骤，并按实际执行结果更新进度，不使用估算百分比。只依据真实查询和计算结果形成结论；存在 resultId 时保留结果引用，复用与本方案口径一致的已有结果。遇到缺少数据或查询失败，请明确说明，不能编造。完成后逐项回答我的问题，并提供方案要求的图表或分析报告。停止后按实际完成情况重新安排剩余步骤，不假定数据库事务可以断点恢复。\n\n'+plan,preserveDraft:true});
+  },'确认并执行分析');
 }
 function executionPlanKey(threadId=state.thread?.id){return 'codex.execution-plans.'+state.runtimeInfo?.codexHome+'.'+threadId;}
 function savedExecutionPlans(){try{return JSON.parse(localStorage.getItem(executionPlanKey())||'{}');}catch{return {};}}
@@ -249,7 +252,7 @@ function fillExecutionProgress(node,turnId,p,banner=false){
   const progress=executionProgressSnapshot(turnId,p),key=state.thread.id+'.'+turnId;
   if(node.dataset.progressKey!==key){node.open=false;node.replaceChildren();node.dataset.progressKey=key;}
   let summary=$('summary',node);
-  if(!summary){summary=el('summary','execution-progress-heading');summary.append(el('span','execution-progress-status'),el('strong','execution-progress-count'),el('span','execution-progress-current'),el('span','execution-progress-toggle','查看步骤'));node.append(summary,el('div','progress-steps'));}
+  if(!summary){summary=el('summary','execution-progress-heading');summary.append(el('span','execution-progress-status'),el('strong','execution-progress-count'),el('span','execution-progress-current'),el('span','execution-progress-toggle','查看分析步骤'));node.append(summary,el('div','progress-steps'));}
   node.dataset.progressStatus=progress.status;
   const text=(selector,value)=>{const target=$(selector,node);if(target.textContent!==value)target.textContent=value;};
   text('.execution-progress-status',progress.label);text('.execution-progress-count',progress.completed+'/'+progress.total+' 步已完成');
@@ -259,9 +262,9 @@ function fillExecutionProgress(node,turnId,p,banner=false){
     const list=$('.progress-steps',node);list.replaceChildren();
     if(p.explanation)list.append(el('p','subtle',p.explanation));
     for(const step of p.plan)list.append(el('div','plan-step '+step.status,(step.status==='completed'?'✓ ':step.status==='inProgress'?'◉ ':'○ ')+step.step));
-    list.append(el('p','execution-progress-note','按 Codex 原生 update_plan 报告的步骤计数，不代表用时百分比。停止后可修改要求并继续；已完成操作不会回滚。'));node.dataset.planSignature=signature;
+    list.append(el('p','execution-progress-note','按实际报告的分析步骤计数，不代表查询扫描或用时百分比。停止后可修改方案并发起新一轮执行；已完成操作不会回滚，不保证数据库事务断点恢复。'));node.dataset.planSignature=signature;
   }
-  node.setAttribute('aria-label',(banner?'当前任务进度':'执行计划')+' · '+progress.label+' · '+progress.completed+'/'+progress.total+' 步已完成');
+  node.setAttribute('aria-label',(banner?'当前分析进度':'分析步骤')+' · '+progress.label+' · '+progress.completed+'/'+progress.total+' 步已完成');
 }
 function renderExecutionProgress(turnId,p,updateBanner=true){
   if(!p.plan?.length){$$('[data-execution-plan]').find(node=>node.dataset.executionPlan===turnId)?.remove();if(updateBanner)renderExecutionProgressBanner();return;}let node=$$('[data-execution-plan]').find(node=>node.dataset.executionPlan===turnId);
@@ -331,11 +334,12 @@ function projectEditor(project=null){
     if(project)await rpc('project/update',{projectId:project.id,...params});else await rpc('project/create',{...params,idempotencyKey:crypto.randomUUID()});toast('项目已保存');
   });
 }
-function unassignedChat(){resetChat();state.selectedProject=null;showView('chat');toast('新聊天不关联项目，仍使用当前工作目录');}
+function unassignedChat(){resetChat();state.selectedProject=null;showView('chat');toast('已新建分析。');}
 document.addEventListener('pointerdown',event=>{if(!event.target.closest('.composer'))closeCommandMenu();});
 window.addEventListener('resize',positionCommandMenu);
 $('#prompt').addEventListener('compositionstart',()=>{state.commandComposing=true;closeCommandMenu();});
 $('#prompt').addEventListener('compositionend',()=>{state.commandComposing=false;updateCommandMenu();});
 $('#unassigned-chat-button').onclick=()=>unassignedChat();
 $('#mode-toggle').onclick=()=>changeModeWithFeedback(currentMode()==='plan'?'default':'plan').catch(report);
+if($('#exit-plan-mode'))$('#exit-plan-mode').onclick=()=>changeModeWithFeedback('default').catch(report);
 renderNativeMode();renderGoalBanner();

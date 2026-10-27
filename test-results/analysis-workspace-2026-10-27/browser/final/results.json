@@ -1,0 +1,284 @@
+{
+  "scope": "Real browser/native settings, built-in skill configuration and local stdio MCP. New synthetic storage only. No model invocation; no live database/query/chart/report workflow.",
+  "base": "http://127.0.0.1:18871",
+  "home": "/tmp/codex-analysis-workspace-browser-20261027/home",
+  "workspace": "/tmp/codex-analysis-workspace-browser-20261027/workspace",
+  "results": [
+    {
+      "name": "分析主导航保留新分析、数据源、Skills 和 MCP，开发入口不占主页面",
+      "status": "passed",
+      "evidence": {
+        "navigation": [
+          {
+            "text": "新分析⌘ K",
+            "view": "chat"
+          },
+          {
+            "text": "技能",
+            "view": "skills"
+          },
+          {
+            "text": "数据源",
+            "view": "databases"
+          },
+          {
+            "text": "MCP 服务",
+            "view": "mcp"
+          },
+          {
+            "text": "设置源码 970111f",
+            "view": "settings"
+          }
+        ],
+        "advancedControlsHidden": true,
+        "planControlVisible": true
+      }
+    },
+    {
+      "name": "高级设置复用原模型、推理和权限节点，离开重进保留值与事件",
+      "status": "passed",
+      "evidence": {
+        "sameDomNodes": true,
+        "model": "deepseek-flash",
+        "effort": "low",
+        "permissionsDialogOpened": true
+      }
+    },
+    {
+      "name": "初始化和持续目标移入高级设置，可打开真实弹窗而不提交任务",
+      "status": "passed",
+      "evidence": {
+        "initializationPreviewOpened": true,
+        "goalReadOpened": true,
+        "initializationNotStarted": true,
+        "goalNotSet": true
+      }
+    },
+    {
+      "name": "原生协议从高级设置可达，返回分析页后主导航仍不显示协议入口",
+      "status": "passed",
+      "evidence": {
+        "advancedProtocolReachable": true,
+        "protocolMethodCount": 176
+      }
+    },
+    {
+      "name": "Skills 主入口与原生技能停用、重新启用及配置持久化保持可用",
+      "status": "passed",
+      "evidence": {
+        "nativeSkill": "openai-docs",
+        "configWrites": 2,
+        "disabledAndEnabled": true
+      }
+    },
+    {
+      "name": "MCP 主入口新增真实本地 stdio 服务、读取工具、停用和恢复",
+      "status": "passed",
+      "evidence": {
+        "addedLocalService": "analysis_browser_1793089578217",
+        "transport": "stdio",
+        "networkRequestsNeeded": false,
+        "nativeTool": "echo",
+        "actualNativeToolCallCompleted": true,
+        "disabledAndEnabled": true
+      }
+    },
+    {
+      "name": "计划显式开关在真实已有分析中写原生设置并可退出，不产生任务",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a17c77-bd14-7e40-b833-a50086922138",
+        "actualNativePlanEvents": 1,
+        "exitConfirmed": true,
+        "modelRequests": 0
+      }
+    },
+    {
+      "name": "斜杠菜单移除且旧命令不静默执行，保留用户输入",
+      "status": "passed",
+      "evidence": {
+        "slashMenuHidden": true,
+        "legacyCommandNotExecuted": true,
+        "draftPreserved": true
+      }
+    },
+    {
+      "name": "数据源添加真实失败连接并显示原因，主页面不可将其当作可用连接",
+      "status": "passed",
+      "evidence": {
+        "failedConnectionId": "0026d11ae71fb20dbe81d952",
+        "error": "(2003, \"Can't connect to MySQL server on '127.0.0.1' ([Errno 111] Connection refused)\")",
+        "unavailableSourceDisabled": true,
+        "queryNotInvoked": true
+      }
+    },
+    {
+      "name": "数据源网络失败可诊断并可重试，切回分析后保留未发送需求",
+      "status": "passed",
+      "evidence": {
+        "transportFailureInjected": true,
+        "realListReloaded": true,
+        "unsentInputPreserved": true,
+        "noSyntheticSuccessfulResponse": true
+      }
+    },
+    {
+      "name": "资料与成果按当前分析更新，空记录保持空态",
+      "status": "passed",
+      "evidence": {
+        "newAnalysisEmpty": true,
+        "storedUserOnlyAnalysisEmpty": true,
+        "bothFixturesContainNoQueryResults": true,
+        "panelClosedOnNewAnalysis": false
+      }
+    },
+    {
+      "name": "1440 与 1024 桌面宽度中主操作可见且不横向溢出",
+      "status": "passed",
+      "evidence": {
+        "sizes": [
+          {
+            "viewport": 1440,
+            "scrollWidth": 1440,
+            "composerWidth": 756,
+            "promptWidth": 726
+          },
+          {
+            "viewport": 1024,
+            "scrollWidth": 1024,
+            "composerWidth": 456,
+            "promptWidth": 426
+          }
+        ],
+        "mobileNotInScope": true
+      }
+    }
+  ],
+  "browserErrors": [],
+  "modelRequests": 0,
+  "nativeMethods": [
+    "initialize",
+    "initialized",
+    "thread/list",
+    "model/list",
+    "config/read",
+    "config/read",
+    "config/read",
+    "config/read",
+    "configRequirements/read",
+    "experimentalFeature/list",
+    "permissionProfile/list",
+    "experimentalFeature/list",
+    "config/read",
+    "config/read",
+    "thread/start",
+    "thread/list",
+    "thread/goal/get",
+    "thread/list",
+    "config/read",
+    "skills/list",
+    "skills/config/write",
+    "skills/list",
+    "skills/list",
+    "skills/config/write",
+    "skills/list",
+    "skills/list",
+    "config/read",
+    "mcpServerStatus/list",
+    "config/read",
+    "config/batchWrite",
+    "config/mcpServer/reload",
+    "config/read",
+    "mcpServerStatus/list",
+    "mcpServerStatus/list",
+    "config/read",
+    "config/read",
+    "config/batchWrite",
+    "config/mcpServer/reload",
+    "config/read",
+    "mcpServerStatus/list",
+    "config/read",
+    "config/read",
+    "config/batchWrite",
+    "config/mcpServer/reload",
+    "config/read",
+    "mcpServerStatus/list",
+    "mcpServerStatus/list",
+    "thread/start",
+    "thread/list",
+    "thread/inject_items",
+    "mcpServer/tool/call",
+    "thread/start",
+    "thread/list",
+    "thread/inject_items",
+    "thread/read",
+    "thread/resume",
+    "thread/settings/update",
+    "thread/settings/update",
+    "config/read",
+    "thread/start",
+    "thread/list",
+    "thread/inject_items",
+    "thread/read",
+    "thread/resume",
+    "skills/config/write",
+    "config/read",
+    "config/value/write",
+    "config/mcpServer/reload",
+    "config/read",
+    "thread/delete",
+    "thread/list",
+    "thread/delete",
+    "thread/list",
+    "thread/delete",
+    "thread/list",
+    "thread/delete"
+  ],
+  "settingsEvents": [
+    {
+      "threadId": "01a17c77-bd14-7e40-b833-a50086922138",
+      "mode": "plan"
+    },
+    {
+      "threadId": "01a17c77-bd14-7e40-b833-a50086922138",
+      "mode": "default"
+    }
+  ],
+  "cleanup": [
+    {
+      "kind": "owned database connection",
+      "id": "0026d11ae71fb20dbe81d952",
+      "removed": true
+    },
+    {
+      "kind": "built-in skill config",
+      "restored": true
+    },
+    {
+      "kind": "owned local MCP config",
+      "removed": true,
+      "otherMcpPreserved": true,
+      "providerPreserved": true
+    },
+    {
+      "kind": "owned user-only thread",
+      "id": "01a17c77-db3d-7ba0-986e-bbb451a1ee95",
+      "deleted": true
+    },
+    {
+      "kind": "owned user-only thread",
+      "id": "01a17c77-bd14-7e40-b833-a50086922138",
+      "deleted": true
+    },
+    {
+      "kind": "owned user-only thread",
+      "id": "01a17c77-bbe2-7583-80ed-d0c9b6eeb7a8",
+      "deleted": true
+    },
+    {
+      "kind": "owned user-only thread",
+      "id": "01a17c77-b0d9-7b73-a539-18eef747ac25",
+      "deleted": true
+    }
+  ]
+}

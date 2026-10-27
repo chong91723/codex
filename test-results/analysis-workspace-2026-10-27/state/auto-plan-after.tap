@@ -1,0 +1,430 @@
+TAP version 13
+# Subtest: only one complete nonempty proposal block is an autonomous mode decision
+ok 1 - only one complete nonempty proposal block is an autonomous mode decision
+  ---
+  duration_ms: 3.730458
+  type: 'test'
+  ...
+# Subtest: rendering a historical model proposal does not issue settings or task requests
+ok 2 - rendering a historical model proposal does not issue settings or task requests
+  ---
+  duration_ms: 1.299782
+  type: 'test'
+  ...
+# Subtest: a live proposal without an owned web submission cannot switch modes
+ok 3 - a live proposal without an owned web submission cannot switch modes
+  ---
+  duration_ms: 1.547345
+  type: 'test'
+  ...
+# Subtest: native Plan submissions are not registered for default-to-Plan adaptation
+ok 4 - native Plan submissions are not registered for default-to-Plan adaptation
+  ---
+  duration_ms: 1.40709
+  type: 'test'
+  ...
+# Subtest: failed default turn does not enter native Plan
+ok 5 - failed default turn does not enter native Plan
+  ---
+  duration_ms: 2.381428
+  type: 'test'
+  ...
+# Subtest: interrupted default turn does not enter native Plan
+ok 6 - interrupted default turn does not enter native Plan
+  ---
+  duration_ms: 1.478398
+  type: 'test'
+  ...
+# Subtest: commentary and ordinary final answers are not mode decisions
+ok 7 - commentary and ordinary final answers are not mode decisions
+  ---
+  duration_ms: 2.610357
+  type: 'test'
+  ...
+# Subtest: a completed proposal waits for turn completion instead of changing an active turn
+ok 8 - a completed proposal waits for turn completion instead of changing an active turn
+  ---
+  duration_ms: 1.784439
+  type: 'test'
+  ...
+# Subtest: ACK alone cannot claim native Plan; only a matching real-event fixture confirms it
+ok 9 - ACK alone cannot claim native Plan; only a matching real-event fixture confirms it
+  ---
+  duration_ms: 1.528224
+  type: 'test'
+  ...
+# Subtest: matching settings notification before delayed ACK resolves without waiting or later reversal
+ok 10 - matching settings notification before delayed ACK resolves without waiting or later reversal
+  ---
+  duration_ms: 1.603867
+  type: 'test'
+  ...
+# Subtest: duplicated item and turn completion events make only one native settings request
+ok 11 - duplicated item and turn completion events make only one native settings request
+  ---
+  duration_ms: 1.667663
+  type: 'test'
+  ...
+# Subtest: real completion events arriving before submission ACK are associated after ownership registration
+ok 12 - real completion events arriving before submission ACK are associated after ownership registration
+  ---
+  duration_ms: 1.406461
+  type: 'test'
+  ...
+# Subtest: native settings rejection preserves the proposal and never retries or starts a model task
+ok 13 - native settings rejection preserves the proposal and never retries or starts a model task
+  ---
+  duration_ms: 1.541862
+  type: 'test'
+  ...
+# Subtest: connection close fails pending adaptation; a late ACK cannot display success
+ok 14 - connection close fails pending adaptation; a late ACK cannot display success
+  ---
+  duration_ms: 1.303422
+  type: 'test'
+  ...
+# Subtest: confirmation deadline preserves a diagnostic without automatic resend or fake success
+ok 15 - confirmation deadline preserves a diagnostic without automatic resend or fake success
+  ---
+  duration_ms: 1.313726
+  type: 'test'
+  ...
+# Subtest: an owner connection replaced before adaptation makes no settings request
+ok 16 - an owner connection replaced before adaptation makes no settings request
+  ---
+  duration_ms: 1.907326
+  type: 'test'
+  ...
+# Subtest: a disconnected runtime cannot apply a queued proposal
+ok 17 - a disconnected runtime cannot apply a queued proposal
+  ---
+  duration_ms: 1.071156
+  type: 'test'
+  ...
+# Subtest: a newer active task prevents retroactively changing that task to Plan
+ok 18 - a newer active task prevents retroactively changing that task to Plan
+  ---
+  duration_ms: 1.444145
+  type: 'test'
+  ...
+# Subtest: switching visible analysis B keeps background A adaptation and pending ownership on A only
+ok 19 - switching visible analysis B keeps background A adaptation and pending ownership on A only
+  ---
+  duration_ms: 2.464468
+  type: 'test'
+  ...
+# Subtest: events from another thread cannot associate their proposal with the owned task
+ok 20 - events from another thread cannot associate their proposal with the owned task
+  ---
+  duration_ms: 0.940202
+  type: 'test'
+  ...
+# Subtest: the last final answer must itself be a proposal; a superseding ordinary answer cancels adaptation
+ok 21 - the last final answer must itself be a proposal; a superseding ordinary answer cancels adaptation
+  ---
+  duration_ms: 0.913727
+  type: 'test'
+  ...
+# Subtest: approved-plan submission sends only approved text and preserves unsent text, attachments and skills
+ok 22 - approved-plan submission sends only approved text and preserves unsent text, attachments and skills
+  ---
+  duration_ms: 4.820632
+  type: 'test'
+  ...
+# Subtest: ordinary submission still sends selected skill and attachment, then clears sent text and attachment
+ok 23 - ordinary submission still sends selected skill and attachment, then clears sent text and attachment
+  ---
+  duration_ms: 2.037359
+  type: 'test'
+  ...
+# Subtest: delayed approved-task acknowledgement cannot overwrite text or attachments entered meanwhile
+ok 24 - delayed approved-task acknowledgement cannot overwrite text or attachments entered meanwhile
+  ---
+  duration_ms: 1.322609
+  type: 'test'
+  ...
+# Subtest: ordinary delayed acknowledgement keeps later edits and newly added attachments
+ok 25 - ordinary delayed acknowledgement keeps later edits and newly added attachments
+  ---
+  duration_ms: 2.795326
+  type: 'test'
+  ...
+# Subtest: repeated confirmation while pending produces exactly one protocol request
+ok 26 - repeated confirmation while pending produces exactly one protocol request
+  ---
+  duration_ms: 1.257552
+  type: 'test'
+  ...
+# Subtest: approved-task transport rejection preserves the original draft sentinel, attachments and skills
+ok 27 - approved-task transport rejection preserves the original draft sentinel, attachments and skills
+  ---
+  duration_ms: 1.615707
+  type: 'test'
+  ...
+# Subtest: ordinary transport rejection also retains its original input and attachment for retry
+ok 28 - ordinary transport rejection also retains its original input and attachment for retry
+  ---
+  duration_ms: 1.248069
+  type: 'test'
+  ...
+# Subtest: actual analysis confirmation uses the edited whole plan, genuine progress instructions and preserved user draft
+ok 29 - actual analysis confirmation uses the edited whole plan, genuine progress instructions and preserved user draft
+  ---
+  duration_ms: 1.985999
+  type: 'test'
+  ...
+# Subtest: native mode-switch rejection aborts analysis confirmation without submitting a task or losing the draft
+ok 30 - native mode-switch rejection aborts analysis confirmation without submitting a task or losing the draft
+  ---
+  duration_ms: 1.355135
+  type: 'test'
+  ...
+# Subtest: an empty edited analysis plan is rejected before mode changes or protocol submissions
+ok 31 - an empty edited analysis plan is rejected before mode changes or protocol submissions
+  ---
+  duration_ms: 1.498178
+  type: 'test'
+  ...
+# Subtest: an active analysis cannot open a second confirmation while the model is still planning
+ok 32 - an active analysis cannot open a second confirmation while the model is still planning
+  ---
+  duration_ms: 1.106167
+  type: 'test'
+  ...
+# Subtest: late native resume reply cannot overwrite a newer navigation mode cache
+ok 33 - late native resume reply cannot overwrite a newer navigation mode cache
+  ---
+  duration_ms: 10.088102
+  type: 'test'
+  ...
+# Subtest: a real later settings event replay keeps priority over the successful resume snapshot
+ok 34 - a real later settings event replay keeps priority over the successful resume snapshot
+  ---
+  duration_ms: 1.923184
+  type: 'test'
+  ...
+# Subtest: slash menu exposes only native Plan; initialization and goals stay in advanced settings
+ok 35 - slash menu exposes only native Plan; initialization and goals stay in advanced settings
+  ---
+  duration_ms: 5.838664
+  type: 'test'
+  ...
+# Subtest: Plan menu filters without fetching installed skills and closes for Chinese composition
+ok 36 - Plan menu filters without fetching installed skills and closes for Chinese composition
+  ---
+  duration_ms: 1.456941
+  type: 'test'
+  ...
+# Subtest: stale former slash options cannot fill the composer or invoke advanced actions
+ok 37 - stale former slash options cannot fill the composer or invoke advanced actions
+  ---
+  duration_ms: 2.133539
+  type: 'test'
+  ...
+# Subtest: menu selection fills Plan without executing; sending enters actual Plan with no task
+ok 38 - menu selection fills Plan without executing; sending enters actual Plan with no task
+  ---
+  duration_ms: 2.389637
+  type: 'test'
+  ...
+# Subtest: opening Plan menu preserves existing drafts; empty composer receives only slash text
+ok 39 - opening Plan menu preserves existing drafts; empty composer receives only slash text
+  ---
+  duration_ms: 1.970626
+  type: 'test'
+  ...
+# Subtest: Plan menu respects Chinese IME and Escape; Tab selects without submitting
+ok 40 - Plan menu respects Chinese IME and Escape; Tab selects without submitting
+  ---
+  duration_ms: 1.523235
+  type: 'test'
+  ...
+# Subtest: removed bare slash commands cannot execute tools, change views, create threads, or become model prompts
+ok 41 - removed bare slash commands cannot execute tools, change views, create threads, or become model prompts
+  ---
+  duration_ms: 22.377976
+  type: 'test'
+  ...
+# Subtest: bare Plan entry is idempotent, including surrounding whitespace, and makes no task
+ok 42 - bare Plan entry is idempotent, including surrounding whitespace, and makes no task
+  ---
+  duration_ms: 1.580749
+  type: 'test'
+  ...
+# Subtest: inline Plan input strips the prefix and sends exactly one task in actual Plan mode
+ok 43 - inline Plan input strips the prefix and sends exactly one task in actual Plan mode
+  ---
+  duration_ms: 5.005481
+  type: 'test'
+  ...
+# Subtest: inline Plan keeps attachments and skill validation while bare Plan rejects attached files
+ok 44 - inline Plan keeps attachments and skill validation while bare Plan rejects attached files
+  ---
+  duration_ms: 3.692497
+  type: 'test'
+  ...
+# Subtest: inline Plan failure preserves the entire command and attached files for retry
+ok 45 - inline Plan failure preserves the entire command and attached files for retry
+  ---
+  duration_ms: 1.36197
+  type: 'test'
+  ...
+# Subtest: old commands with arguments and attachments cannot bypass removal or lose unsent files
+ok 46 - old commands with arguments and attachments cannot bypass removal or lose unsent files
+  ---
+  duration_ms: 7.215133
+  type: 'test'
+  ...
+# Subtest: active turns reject new Plan requests and removed commands instead of steering
+ok 47 - active turns reject new Plan requests and removed commands instead of steering
+  ---
+  duration_ms: 3.052061
+  type: 'test'
+  ...
+# Subtest: a read-only archive cannot use the former /export exception to invoke an operation
+ok 48 - a read-only archive cannot use the former /export exception to invoke an operation
+  ---
+  duration_ms: 1.783136
+  type: 'test'
+  ...
+# Subtest: Plan switch on a fresh draft changes only draft mode and leaves the typed task intact
+ok 49 - Plan switch on a fresh draft changes only draft mode and leaves the typed task intact
+  ---
+  duration_ms: 1.096789
+  type: 'test'
+  ...
+# Subtest: an existing-thread Plan switch uses native settings and stays pending until its ACK
+ok 50 - an existing-thread Plan switch uses native settings and stays pending until its ACK
+  ---
+  duration_ms: 1.448483
+  type: 'test'
+  ...
+# Subtest: a rejected native Plan switch preserves default mode and the whole composer, then can be retried
+ok 51 - a rejected native Plan switch preserves default mode and the whole composer, then can be retried
+  ---
+  duration_ms: 1.348011
+  type: 'test'
+  ...
+# Subtest: busy, archived, loading, restoring, and active conversations cannot change Plan mode
+ok 52 - busy, archived, loading, restoring, and active conversations cannot change Plan mode
+  ---
+  duration_ms: 4.645734
+  type: 'test'
+  ...
+# Subtest: repeat switch attempts while pending produce only one settings update
+ok 53 - repeat switch attempts while pending produce only one settings update
+  ---
+  duration_ms: 1.209122
+  type: 'test'
+  ...
+# Subtest: late switch completion updates its original thread without announcing Plan in the newly selected thread
+ok 54 - late switch completion updates its original thread without announcing Plan in the newly selected thread
+  ---
+  duration_ms: 1.06597
+  type: 'test'
+  ...
+# Subtest: ordinary task after explicit Plan switch sends unmodified text and native Plan/model settings
+ok 55 - ordinary task after explicit Plan switch sends unmodified text and native Plan/model settings
+  ---
+  duration_ms: 1.705215
+  type: 'test'
+  ...
+# Subtest: a fresh explicitly enabled Plan draft supplies Plan to thread creation and exactly one task
+ok 56 - a fresh explicitly enabled Plan draft supplies Plan to thread creation and exactly one task
+  ---
+  duration_ms: 1.234267
+  type: 'test'
+  ...
+# Subtest: explicit exit sends no task; the next ordinary task uses default collaboration mode
+ok 57 - explicit exit sends no task; the next ordinary task uses default collaboration mode
+  ---
+  duration_ms: 1.410663
+  type: 'test'
+  ...
+# Subtest: an ordinary task keeps supported text attachments and explicitly selected native skills
+ok 58 - an ordinary task keeps supported text attachments and explicitly selected native skills
+  ---
+  duration_ms: 1.295414
+  type: 'test'
+  ...
+# Subtest: Plan does not bypass Flash image capability checks or lose unsupported input
+ok 59 - Plan does not bypass Flash image capability checks or lose unsupported input
+  ---
+  duration_ms: 1.234197
+  type: 'test'
+  ...
+# Subtest: failed Plan task submission preserves its whole input for retry
+ok 60 - failed Plan task submission preserves its whole input for retry
+  ---
+  duration_ms: 1.471546
+  type: 'test'
+  ...
+# Subtest: pending ordinary Plan submission cannot create a duplicate turn
+ok 61 - pending ordinary Plan submission cannot create a duplicate turn
+  ---
+  duration_ms: 1.358637
+  type: 'test'
+  ...
+# Subtest: late task ACK preserves later text and newly attached files
+ok 62 - late task ACK preserves later text and newly attached files
+  ---
+  duration_ms: 1.544366
+  type: 'test'
+  ...
+# Subtest: approved-plan independent text is not reinterpreted as a composer slash command
+ok 63 - approved-plan independent text is not reinterpreted as a composer slash command
+  ---
+  duration_ms: 1.096338
+  type: 'test'
+  ...
+# Subtest: Plan status reports only the confirmed native mode without exposing a switch
+ok 64 - Plan status reports only the confirmed native mode without exposing a switch
+  ---
+  duration_ms: 1.299855
+  type: 'test'
+  ...
+# Subtest: Plan on/off settings are idempotent when the native snapshot already confirms that mode
+ok 65 - Plan on/off settings are idempotent when the native snapshot already confirms that mode
+  ---
+  duration_ms: 1.194562
+  type: 'test'
+  ...
+# Subtest: unassigned chat can submit in Plan while retaining its actual working directory
+ok 66 - unassigned chat can submit in Plan while retaining its actual working directory
+  ---
+  duration_ms: 1.191494
+  type: 'test'
+  ...
+# Subtest: unlisted slash words and removed commands with Unicode-separated arguments cannot fall through as tasks
+ok 67 - unlisted slash words and removed commands with Unicode-separated arguments cannot fall through as tasks
+  ---
+  duration_ms: 3.610234
+  type: 'test'
+  ...
+# Subtest: ordinary prose mentioning a former command and absolute file paths remain valid tasks
+ok 68 - ordinary prose mentioning a former command and absolute file paths remain valid tasks
+  ---
+  duration_ms: 2.254078
+  type: 'test'
+  ...
+# Subtest: autonomous handoff prevents manual mode changes until native Plan confirmation
+ok 69 - autonomous handoff prevents manual mode changes until native Plan confirmation
+  ---
+  duration_ms: 1.205792
+  type: 'test'
+  ...
+# Subtest: explicit Plan exit is available only for confirmed Plan and remains disabled during execution or handoff
+ok 70 - explicit Plan exit is available only for confirmed Plan and remains disabled during execution or handoff
+  ---
+  duration_ms: 1.011567
+  type: 'test'
+  ...
+1..70
+# tests 70
+# suites 0
+# pass 70
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 565.660416

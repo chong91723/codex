@@ -1,0 +1,47 @@
+{
+  "manualQuestion": "请使用已连接的只读测试库「计划流程独立测试」，为2026年7月至9月的经营分析制定一个可执行方案：比较各地区营收、月度走势和产品贡献。先调查连接和表结构，再给出可修改确认的原生分析计划；本轮不执行数据SQL、不画图、不编造结论、不用命令或文件工具。 本次指标仅营收和订单数，营收为revenue之和、订单数为COUNT(*)；不纳入毛利、毛利率或额外业务过滤。",
+  "inlineQuestion": "请使用已连接的只读测试库「计划流程独立测试」，制定一个比较地区营收与成本差异的分析方案，说明指标口径和数据来源。仅调查连接与表结构并形成原生计划，等用户确认，不执行数据SQL、不画图、不用命令或文件工具。",
+  "complexQuestion": "请使用已连接的只读测试库「计划流程独立测试」，分析2026年7月至9月的经营情况，制作一份有图表的数据分析报告，一次回答三个问题。Q1：整个期间按region统计营收前2地区，列地区和总营收，金额降序、并列地区升序。Q2：按order_date的月份统计订单数和总营收。Q3：整个期间按product统计营收前2产品，列产品和总营收，金额降序、并列产品升序。三个问题的查询要分别单独执行，按Q1、Q2、Q3顺序，不合批、不并行，便于我查看每项进展。先发现可用连接和读取orders表结构，不猜列名；使用真实结果、说明指标定义和数据局限，最后用中文按Q1/Q2/Q3分别呈现完整结果。不要用命令或文件工具替代数据库MCP。 本次仅分析题目列出的营收与订单指标，不扩展毛利、税费、币种、订单状态或同比等数据库未给定的口径。",
+  "modifiedPlan": "用户修改后批准执行的完整分析方案：\n1. 数据源为只读测试库「计划流程独立测试」，connection_id={{connectionId}}；先以真实表结构为准。范围2026-07-01含至2026-10-01不含。\n2. Q1仍统计整个范围内各地区营收前2，但新增该地区订单数，输出region、total_revenue、order_count；按SUM(revenue)降序，金额并列按region升序。仅执行一次query_database，然后read_result读回精确结果，再进入下一问。\n3. Q2按月份统计整个期间订单数和总营收；Q3按产品营收Top2。每个子问独立一次query_database，按Q1→Q2→Q3顺序，每项完成读取结果后才进入下一项，不合批、不并行。\n4. 执行前使用原生update_plan列出Q1/Q2/Q3和报告步骤，在每一项真实完成时更新状态。最终按Q1/Q2/Q3分别给出完整表格和结论，金额精确到两位小数，并用真实结果create_chart生成至少一张地区营收柱状图。不得先填假进度；不使用shell、不改文件或数据库。",
+  "continuationPlan": "用户停止后的最终修订方案，替代此前剩余步骤：\n1. Q1已经完成，结果ID={{firstResultId}}，原SQL={{firstSql}}。不要再次query_database执行Q1，必须用read_result读取该结果，保留地区Top2营收和订单数，用于最终回答。\n2. Q2改为只统计2026年8月（2026-08-01含至2026-09-01不含），按region分组，输出region、order_count、total_revenue，地区升序。执行一次query_database并read_result核对。\n3. Q3改为整个2026年7至9月的产品营收Top1，输出product、total_revenue，按SUM(revenue)降序、并列product升序。只执行一次query_database并read_result核对，不能再按Top2。\n4. 仅使用connection_id={{connectionId}}的数据库MCP；按Q1复用→Q2→Q3顺序处理，不并行、不合批、不执行额外数据库查询。使用原生update_plan报告真实完成步骤。\n5. 用Q1已有结果create_chart生成至少一张地区营收柱状图，x=region，ys=[total_revenue]。最终中文分析报告必须按Q1/Q2/Q3完整给出每一行真实数值和结论、结果ID以及口径和局限，金额两位小数。先前等待审批的Q2没有执行，不假设数据库事务断点恢复；这是依照真实历史开始的新回合，不使用shell、不改文件或数据库。",
+  "referenceQueries": {
+    "Q1": "SELECT region,SUM(revenue) AS total_revenue,COUNT(*) AS order_count FROM orders WHERE order_date >= DATE '2026-07-01' AND order_date < DATE '2026-10-01' GROUP BY region ORDER BY total_revenue DESC,region ASC LIMIT 2",
+    "Q2": "SELECT region,COUNT(*) AS order_count,SUM(revenue) AS total_revenue FROM orders WHERE order_date >= DATE '2026-08-01' AND order_date < DATE '2026-09-01' GROUP BY region ORDER BY region ASC",
+    "Q3": "SELECT product,SUM(revenue) AS total_revenue FROM orders WHERE order_date >= DATE '2026-07-01' AND order_date < DATE '2026-10-01' GROUP BY product ORDER BY total_revenue DESC,product ASC LIMIT 1"
+  },
+  "queryPatterns": {
+    "Q2": "2026-08",
+    "Q3": "\\bproduct\\b",
+    "Q1": "\\bregion\\b"
+  },
+  "fingerprintQuery": "SELECT COUNT(*) AS rows,MD5(STRING_AGG(ROW_TO_JSON(t)::text,',' ORDER BY id)) AS content_hash FROM orders t",
+  "clarifications": [
+    {
+      "pattern": "数据源|数据库|连接",
+      "answer": "使用已连接的只读测试库「计划流程独立测试」，从list_databases发现其真实ID，不用其他连接。"
+    },
+    {
+      "pattern": "时间|日期|月份|期间",
+      "answer": "当前范围统一为2026年7月至9月，包含2026-07-01且不含2026-10-01。"
+    },
+    {
+      "pattern": "毛利|利润|盈亏|成本",
+      "answer": "本次只按题目列出的营收与订单指标规划，不新增毛利、毛利率等指标。",
+      "answers": {
+        "manual-inline": "当前只制定地区营收与成本比较方案，可列营收总和、成本总和及差额，先不执行计算。"
+      }
+    },
+    {
+      "pattern": "指标|口径|营收|成本",
+      "answer": "营收使用revenue字段求和，订单数为COUNT(*)，无需扣除cost。地区或产品金额并列按原始名称升序。"
+    },
+    {
+      "pattern": "图表|报告|导出",
+      "answer": "最终按Q1/Q2/Q3完整给表格与结论，使用Q1真实结果制作地区营收柱状图，不写文件或使用shell。"
+    },
+    {
+      "pattern": "同比|环比|增长|基期|对比",
+      "answer": "只比较题目所给范围的真实数值，不补充不存在的基期或数据库外部数据。"
+    }
+  ]
+}

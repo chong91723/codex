@@ -10,11 +10,15 @@ const draftsStart=source.indexOf('function composerState('),draftsEnd=source.ind
 const saveStart=source.indexOf('function saveComposer('),saveEnd=source.indexOf('\nfunction rememberScroll(',saveStart);
 assert(submitStart>=0&&submitEnd>submitStart&&draftsStart>=0&&draftsEnd>draftsStart&&saveEnd>saveStart,'Exercise actual submission and draft functions');
 const commandStart=source.indexOf('function validateComposerCommand(');assert(commandStart>=0&&commandStart<submitStart);
-const implementation=[source.slice(commandStart,submitStart),source.slice(draftsStart,draftsEnd),source.slice(saveStart,saveEnd),source.slice(submitStart,submitEnd)].join('\n');
+const planParseStart=source.indexOf('function parsePlanPrompt('),localCommandStart=planParseStart>=0?Math.min(commandStart,planParseStart):commandStart;
+const implementation=[source.slice(localCommandStart,submitStart),source.slice(draftsStart,draftsEnd),source.slice(saveStart,saveEnd),source.slice(submitStart,submitEnd)].join('\n');
+const native=fs.readFileSync(new URL('../public/native-ui.js',import.meta.url),'utf8');
+const reviewStart=native.indexOf('function reviewPlan('),reviewEnd=native.indexOf('\nfunction executionPlanKey(',reviewStart);assert(reviewStart>=0&&reviewEnd>reviewStart);
+const reviewImplementation=native.slice(reviewStart,reviewEnd);
 const approved='APPROVED_PLAN_SENTINEL: use $openai-docs only if this approved task needs it.';
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};}
-function fixture(transport=async()=>({turn:{id:'turn-approved',status:'inProgress'}})){
-  const storage=new Map(),calls=[],notifications=[];
+function fixture(transport=async()=>({turn:{id:'turn-approved',status:'inProgress'}}),modeTransport=async()=>{}){
+  const storage=new Map(),calls=[],notifications=[],modeChanges=[],dialogs=[];
   const attachment={name:'unsent.png',input:{type:'image',url:'data:image/png;base64,UNSENT_ATTACHMENT'}};
   const skill={name:'openai-docs',path:'/tmp/test-profile/skills/.system/openai-docs/SKILL.md'};
   const sentinel='UNSENT_DRAFT_SENTINEL $openai-docs';
@@ -24,12 +28,15 @@ function fixture(transport=async()=>({turn:{id:'turn-approved',status:'inProgres
   const context={state,$:selector=>{assert(nodes[selector],'Unexpected DOM access '+selector);return nodes[selector];},
     sessionStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
     closeCommandMenu(){},toast:message=>notifications.push(message),selectedModelProvider:()=> 'deepseek',modelProvider:()=> 'deepseek',isRemovedModel:()=>false,currentMode:()=> 'default',
-    nativeSlashActions:()=>({'/init':()=>{},'/goal':()=>{}}),nativeSlashCommand:async()=>false,turnCollaborationMode:mode=>({mode,settings:{model:'deepseek-flash'}}),ensureThread:async captured=>captured.thread,
+    nativeSlashActions:()=>({}),nativeSlashCommand:async()=>false,turnCollaborationMode:mode=>({mode,settings:{model:'deepseek-flash'}}),ensureThread:async captured=>captured.thread,
+    setNativeMode:async mode=>{modeChanges.push(mode);await modeTransport(mode);},
+    el:(tag,className,text)=>({tag,className,text}),formField:(root,label,id,options)=>{nodes['#'+id]={value:options.value};},
+    openDialog:(title,build,submit,submitLabel)=>{const root={children:[],append(...items){this.children.push(...items);}};build(root);dialogs.push({title,root,submit,submitLabel});},
     runtimeModelContext:()=>undefined,updateSend(){},renderNativeMode(){},resizePrompt(){},renderAttachments(){},scrollMessages(){},
     rpc:async(method,params)=>{calls.push({method,params});if(method==='skills/list')return {data:[{skills:[{...skill,enabled:true}]}]};assert(['turn/start','turn/steer'].includes(method),'Unexpected RPC '+method);return transport(method,params);},
   };
-  const api=vm.runInNewContext(implementation+'\n({submitPrompt,saveComposer});',context);
-  return {state,draft,nodes,calls,storage,sentinel,attachment,skill,notifications,...api};
+  const api=vm.runInNewContext(implementation+'\n'+reviewImplementation+'\n({submitPrompt,saveComposer,reviewPlan});',context);
+  return {state,draft,nodes,calls,storage,sentinel,attachment,skill,notifications,modeChanges,dialogs,...api};
 }
 const plain=value=>JSON.parse(JSON.stringify(value));
 const turns=f=>f.calls.filter(call=>call.method==='turn/start'||call.method==='turn/steer');
@@ -84,4 +91,18 @@ test('approved-task transport rejection preserves the original draft sentinel, a
 test('ordinary transport rejection also retains its original input and attachment for retry',async()=>{
   const f=fixture(async()=>{throw Error('ordinary transport rejection');});await assert.rejects(f.submitPrompt(),/ordinary transport rejection/);
   assert.equal(f.draft.text,f.sentinel);assert.equal(f.nodes['#prompt'].value,f.sentinel);assert.deepEqual(f.draft.attachments,[f.attachment]);assert.equal(f.draft.pending,false);
+});
+
+test('actual analysis confirmation uses the edited whole plan, genuine progress instructions and preserved user draft',async()=>{
+  const f=fixture();f.reviewPlan({text:'ORIGINAL_ANALYSIS_PLAN'});assert.equal(f.dialogs.length,1);const dialog=f.dialogs[0];assert.equal(dialog.title,'确认分析方案');assert.equal(dialog.submitLabel,'确认并执行分析');assert(dialog.root.children.some(node=>/不等同于逐条 SQL 审批/.test(node.text)));assert.equal(turns(f).length,0);assert.deepEqual(f.modeChanges,[]);
+  f.nodes['#approved-plan'].value='EDITED_ANALYSIS_PLAN: 月度收入，按付款日期，结果 resultId=OWN_RESULT';await dialog.submit(dialog.root);assert.deepEqual(f.modeChanges,['default']);assert.equal(turns(f).length,1);const text=turns(f)[0].params.input[0].text;assert.match(text,/EDITED_ANALYSIS_PLAN/);assert.doesNotMatch(text,/ORIGINAL_ANALYSIS_PLAN/);for(const required of ['update_plan','指标口径','数据来源','真实查询','resultId','断点恢复'])assert(text.includes(required),required);assert.equal(f.draft.text,f.sentinel);assert.equal(f.nodes['#prompt'].value,f.sentinel);assert.deepEqual(f.draft.attachments,[f.attachment]);assert.deepEqual(f.draft.skills,[f.skill]);
+});
+test('native mode-switch rejection aborts analysis confirmation without submitting a task or losing the draft',async()=>{
+  const f=fixture(undefined,async()=>{throw Error('OWN_ANALYSIS_MODE_REJECTED');});f.reviewPlan({text:'OWN_ANALYSIS_PLAN'});await assert.rejects(f.dialogs[0].submit(f.dialogs[0].root),/OWN_ANALYSIS_MODE_REJECTED/);assert.deepEqual(f.modeChanges,['default']);assert.equal(turns(f).length,0);assert.equal(f.draft.text,f.sentinel);assert.deepEqual(f.draft.attachments,[f.attachment]);
+});
+test('an empty edited analysis plan is rejected before mode changes or protocol submissions',async()=>{
+  const f=fixture();f.reviewPlan({text:'OWN_ANALYSIS_PLAN'});f.nodes['#approved-plan'].value='  ';await assert.rejects(f.dialogs[0].submit(f.dialogs[0].root),/分析方案不能为空/);assert.deepEqual(f.modeChanges,[]);assert.equal(turns(f).length,0);assert.equal(f.draft.text,f.sentinel);
+});
+test('an active analysis cannot open a second confirmation while the model is still planning',()=>{
+  const f=fixture();f.state.activeTurns.set('thread-A','turn-planning');assert.throws(()=>f.reviewPlan({text:'INCOMPLETE_ANALYSIS_PLAN'}),/分析方案生成完成/);assert.equal(f.dialogs.length,0);assert.deepEqual(f.modeChanges,[]);assert.equal(turns(f).length,0);
 });

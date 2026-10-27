@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="基于 Codex 原生运行时的个人 AI 助手">
-  <title>Codex Chat · 个人助手</title>
+  <meta name="description" content="基于 Codex 的自然语言数据库查询、图表与数据分析工作台">
+  <title>Codex · 数据分析</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/vendor/xterm.css">
   <link rel="stylesheet" href="/style.css">
@@ -22,6 +22,8 @@
   <script src="/native-ui.js" defer></script>
   <script src="/permissions.js" defer></script>
   <script src="/databases.js" defer></script>
+  <script src="/analysis-workspace.js" defer></script>
+  <link rel="stylesheet" href="/analysis-workspace.css">
 </head>
 <body>
 <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -47,41 +49,42 @@
 <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></symbol>
 </defs></svg>
 <aside class="sidebar" id="sidebar">
-  <div class="brand-row"><a class="brand" href="/" aria-label="Codex 首页"><svg viewBox="0 0 32 32" class="logo"><path d="m11 7-8 9 8 9M21 7l8 9-8 9M18 4l-4 24"/></svg><strong>Codex</strong><span class="badge">个人助手</span></a><button class="icon-button" id="collapse" aria-label="收起侧栏"><svg><use href="#i-panel"/></svg></button></div>
+  <div class="brand-row"><a class="brand" href="/" aria-label="Codex 首页"><svg viewBox="0 0 32 32" class="logo"><path d="m11 7-8 9 8 9M21 7l8 9-8 9M18 4l-4 24"/></svg><strong>Codex</strong><span class="badge">数据分析</span></a><button class="icon-button" id="collapse" aria-label="收起侧栏"><svg><use href="#i-panel"/></svg></button></div>
   <nav class="main-nav" aria-label="主导航">
-    <button class="nav-button primary-nav" data-view="chat" id="new-chat"><svg><use href="#i-plus"/></svg>新对话<kbd>⌘ K</kbd></button>
-    <label class="thread-search"><svg><use href="#i-search"/></svg><input id="thread-search" placeholder="搜索会话" aria-label="搜索会话"></label>
+    <button class="nav-button primary-nav" data-view="chat" id="new-chat"><svg><use href="#i-plus"/></svg>新分析<kbd>⌘ K</kbd></button>
+    <label class="thread-search"><svg><use href="#i-search"/></svg><input id="thread-search" placeholder="搜索分析记录" aria-label="搜索分析记录"></label>
     <button class="nav-button" data-view="skills"><svg><use href="#i-skill"/></svg>技能</button>
-    <button class="nav-button" data-view="databases"><svg><use href="#i-database"/></svg>数据库</button>
+    <button class="nav-button" data-view="databases"><svg><use href="#i-database"/></svg>数据源</button>
     <button class="nav-button" data-view="mcp"><svg><use href="#i-mcp"/></svg>MCP 服务</button>
-    <button class="nav-button" data-view="protocol"><svg><use href="#i-code"/></svg>原生能力</button>
+    <button class="nav-button" data-view="protocol" hidden><svg><use href="#i-code"/></svg>原生能力</button>
   </nav>
-  <div class="sidebar-section"><span>项目</span><button class="icon-button" id="project-edit" aria-label="选择项目"><svg><use href="#i-plus"/></svg></button></div>
-  <button class="project-button" id="project-button"><svg><use href="#i-folder"/></svg><span id="project-name">工作区</span><svg class="tiny"><use href="#i-down"/></svg></button>
-  <div class="sidebar-history-tabs" role="group" aria-label="会话列表范围"><button id="recent-toggle" type="button" aria-pressed="true">最近会话</button><button id="archive-toggle" type="button" aria-pressed="false"><svg><use href="#i-archive"/></svg>已归档</button></div>
+  <div class="sidebar-section" hidden><span>项目</span><button class="icon-button" id="project-edit" aria-label="选择项目"><svg><use href="#i-plus"/></svg></button></div>
+  <button class="project-button" id="project-button" hidden><svg><use href="#i-folder"/></svg><span id="project-name">工作区</span><svg class="tiny"><use href="#i-down"/></svg></button>
+  <div class="sidebar-history-tabs" role="group" aria-label="会话列表范围"><button id="recent-toggle" type="button" aria-pressed="true">最近分析</button><button id="archive-toggle" type="button" aria-pressed="false"><svg><use href="#i-archive"/></svg>已归档</button></div>
   <div class="sidebar-history-caption"><span id="thread-list-label" class="subtle">最近会话</span><button id="history-help" type="button" title="归档保留历史，可恢复；永久删除无法撤销" aria-label="了解归档和永久删除">说明</button></div>
   <p id="archive-list-help" class="sidebar-history-help" hidden>归档保留全部历史。在会话右键或「…」菜单中恢复或永久删除。</p>
   <div class="thread-list" id="thread-list"><div class="subtle empty-small">正在连接原生运行时…</div></div>
   <button id="threads-more" class="text-button" hidden>加载更多</button>
-  <footer class="sidebar-footer"><button class="nav-button" data-view="settings"><svg><use href="#i-settings"/></svg>设置<span id="runtime-pill" class="version-pill">本地</span></button><button class="account-button" data-view="account"><span class="avatar">C</span><span><strong id="account-name">模型服务</strong><small id="account-status">通过环境变量配置</small></span><svg><use href="#i-down"/></svg></button></footer>
+  <footer class="sidebar-footer"><button class="nav-button" data-view="settings"><svg><use href="#i-settings"/></svg>设置<span id="runtime-pill" class="version-pill">本地</span></button><button class="account-button" data-view="account" hidden><span class="avatar">C</span><span><strong id="account-name">模型服务</strong><small id="account-status">通过环境变量配置</small></span><svg><use href="#i-down"/></svg></button></footer>
 </aside>
 <div id="thread-context-menu" class="thread-context-menu" role="menu" aria-label="会话操作" hidden></div>
 <main class="main">
-  <header class="topbar"><div class="topbar-left"><button class="icon-button" id="show-sidebar" aria-label="展开侧栏"><svg><use href="#i-panel"/></svg></button><div class="assistant-picker"><span class="assistant-name">Codex</span></div><span id="breadcrumb">工作区</span><span class="slash">/</span><strong id="page-title">新建会话</strong><span id="thread-archive-status" class="thread-archive-status" hidden>已归档 · 历史已保留</span></div><div class="topbar-right"><span class="connection" id="connection"><i></i>连接中</span><button class="icon-button" id="files-toggle" title="文件" aria-label="文件浏览器"><svg><use href="#i-folder"/></svg></button><button class="icon-button" id="terminal-toggle" hidden aria-hidden="true" title="原生终端" aria-label="原生终端"><svg><use href="#i-terminal"/></svg></button><button class="icon-button" id="theme-toggle" title="切换主题" aria-label="切换主题">◐</button></div></header>
+  <header class="topbar"><div class="topbar-left"><button class="icon-button" id="show-sidebar" aria-label="展开侧栏"><svg><use href="#i-panel"/></svg></button><div class="assistant-picker"><span class="assistant-name">Codex</span></div><span id="breadcrumb" hidden>工作区</span><span class="slash" hidden>/</span><strong id="page-title">新建会话</strong><span id="thread-archive-status" class="thread-archive-status" hidden>已归档 · 历史已保留</span></div><div class="topbar-right"><span class="connection" id="connection"><i></i>连接中</span><button class="icon-button" id="files-toggle" hidden title="分析资料与成果" aria-label="分析资料与成果"><svg><use href="#i-folder"/></svg></button><button class="icon-button" id="terminal-toggle" hidden aria-hidden="true" title="原生终端" aria-label="原生终端"><svg><use href="#i-terminal"/></svg></button><button class="icon-button" id="theme-toggle" title="切换主题" aria-label="切换主题">◐</button></div></header>
   <div class="error-banner" id="connection-error" hidden></div>
   <div class="workspace-body">
     <section class="chat-view empty" id="view-chat">
-      <div class="conversation-scroll" id="conversation-scroll"><div class="welcome" id="welcome"><h1>今天有什么可以帮你？</h1><div class="starter-suggestions" id="starter-suggestions"><button data-prompt="我想写一段文字，请先了解主题、读者和我希望表达的内容。"><svg><use href="#i-chat"/></svg>帮我写作</button><button data-prompt="我想分析一些资料，请先了解我的问题和手头的文件。"><svg><use href="#i-file"/></svg>分析资料</button><button data-prompt="我想研究一个问题，请先确认研究目标，再使用当前可用的工具寻找依据。"><svg><use href="#i-search"/></svg>研究问题</button><button data-prompt="先了解当前项目和我的目标，再协助我完成编程任务。"><svg><use href="#i-code"/></svg>编写代码</button></div></div><div class="messages" id="messages" aria-live="polite"></div></div>
+      <div class="conversation-scroll" id="conversation-scroll"><div class="welcome" id="welcome"><h1>今天想了解哪些数据？</h1><p class="analysis-welcome-description">描述你的问题，让 Codex 查询数据、生成图表并说明分析结论。</p><div class="starter-suggestions" id="starter-suggestions"><button data-prompt="我想查询一个业务指标，请先确认数据源、指标定义和时间范围，再使用真实数据回答。"><svg><use href="#i-database"/></svg>查询指标</button><button data-prompt="我想比较不同时间或维度的数据变化，请先了解我的分析对象、对比基准和口径。"><svg><use href="#i-search"/></svg>解释变化</button><button data-prompt="请根据真实查询结果生成合适的图表，先确认要展示的指标、维度和时间范围。"><svg><use href="#i-grid"/></svg>生成图表</button><button data-prompt="我想形成一份数据分析报告，请先确认分析目标、受众、数据范围和结论要求，并提出分析方案供我确认。"><svg><use href="#i-file"/></svg>分析报告</button></div></div><div class="messages" id="messages" aria-live="polite"></div></div>
       <button id="jump-latest" class="small-button jump-latest" type="button" hidden>回到最新消息 ↓</button>
       <div id="requests" class="requests" aria-live="assertive"></div>
-      <div class="composer-area"><div class="plan-summary" id="plan-summary" hidden></div><div class="composer"><div id="command-menu" class="command-menu" role="listbox" aria-label="对话命令" hidden></div><div class="attachments" id="attachments"></div><textarea id="prompt" placeholder="输入任务，或输入 / 查看功能" rows="1" aria-label="任务内容" aria-autocomplete="list" aria-controls="command-menu" aria-expanded="false"></textarea><div class="composer-bottom"><div class="composer-options"><button class="icon-button" id="attach-button" title="添加文件或图片" aria-label="添加文件或图片"><svg><use href="#i-plus"/></svg></button><input type="file" id="file-input" multiple hidden><button id="permissions-button" type="button" class="permissions-button" aria-haspopup="dialog" aria-label="Agent 权限" disabled>读取权限…</button><select id="model" aria-label="模型"><option value="">默认模型</option></select><select id="effort" aria-label="思考强度"><option value="">默认推理</option></select><button type="button" id="usage-label" class="context-meter" hidden aria-label="查看上下文占用">上下文 · 待统计</button></div><button id="send" class="send-button" title="发送" aria-label="发送任务"><svg><use href="#i-arrow"/></svg></button></div></div><p id="composer-status" class="composer-status" role="status"></p><div class="composer-meta"><button id="cwd-button"><svg><use href="#i-folder"/></svg><span id="cwd-label">工作区</span><svg><use href="#i-down"/></svg></button><button id="unassigned-chat-button" type="button" title="新建不关联项目的聊天，保留当前工作目录">新建聊天</button><button id="mode-toggle" type="button" class="plan-switch" role="switch" aria-checked="false" aria-label="计划模式"><span class="plan-switch-track" aria-hidden="true"></span><span>计划模式</span><span class="plan-switch-state">关闭</span></button><span>Enter 发送 · Shift Enter 换行</span></div></div>
+      <div class="composer-area"><div class="plan-summary" id="plan-summary" hidden></div><div class="composer"><div id="command-menu" class="command-menu" role="listbox" aria-label="对话命令" hidden></div><div class="attachments" id="attachments"></div><textarea id="prompt" placeholder="描述你的数据问题，或输入 /plan 先制定分析计划…" rows="1" aria-label="分析问题" aria-autocomplete="list" aria-controls="command-menu" aria-expanded="false"></textarea><div class="composer-bottom"><div class="composer-options"><button class="icon-button" id="attach-button" title="添加文件或图片" aria-label="添加文件或图片"><svg><use href="#i-plus"/></svg></button><input type="file" id="file-input" multiple hidden><button type="button" id="usage-label" class="context-meter" hidden aria-label="查看上下文占用">上下文 · 待统计</button></div><button id="send" class="send-button" title="发送" aria-label="发送任务"><svg><use href="#i-arrow"/></svg></button></div></div><p id="composer-status" class="composer-status" role="status"></p><div class="composer-meta"><button id="cwd-button" hidden><svg><use href="#i-folder"/></svg><span id="cwd-label">工作区</span><svg><use href="#i-down"/></svg></button><button id="unassigned-chat-button" type="button" hidden title="新建不关联项目的聊天，保留当前工作目录">新建聊天</button><button id="mode-toggle" type="button" class="plan-switch" hidden role="switch" aria-checked="false" aria-label="先制定分析计划"><span class="plan-switch-track" aria-hidden="true"></span><span>先制定分析计划</span><span class="plan-switch-state">关闭</span></button><span id="analysis-mode-status" class="subtle" hidden></span><button id="exit-plan-mode" type="button" hidden>退出计划模式</button><span>Enter 发送 · Shift Enter 换行</span></div></div>
 
     </section>
     <section class="content-view" id="view-panel" hidden><div id="panel-content"></div></section>
-    <aside class="file-panel" id="file-panel" hidden><div class="panel-header"><strong>项目文件</strong><button id="files-close" class="icon-button" aria-label="关闭文件面板"><svg><use href="#i-close"/></svg></button></div><div class="file-path" id="file-path"></div><div id="file-tree"></div><pre id="file-preview" hidden></pre></aside>
+    <aside class="file-panel" id="file-panel" hidden><div class="panel-header"><strong>分析资料与成果</strong><button id="files-close" class="icon-button" aria-label="关闭文件面板"><svg><use href="#i-close"/></svg></button></div><div class="file-path" id="file-path"></div><div id="file-tree"></div><pre id="file-preview" hidden></pre></aside>
   </div>
   <section class="terminal-panel" id="terminal-panel" hidden><div class="panel-header"><div><svg><use href="#i-terminal"/></svg><strong>原生 Codex CLI</strong><span class="subtle" id="terminal-status">未启动</span></div><div class="terminal-actions"><input id="cli-args" value="[]" aria-label="CLI 参数 JSON 数组" title="Codex CLI 参数，例如 [&#34;--help&#34;]"><button id="terminal-start" class="small-button">启动 CLI</button><button id="terminal-expand" class="small-button" aria-label="展开终端面板">展开</button><button id="terminal-close" class="icon-button" aria-label="关闭终端"><svg><use href="#i-close"/></svg></button></div></div><div id="terminal"></div></section>
 </main>
+<div id="analysis-advanced-controls-parking" hidden><div id="analysis-advanced-controls"><label class="analysis-control-label">Agent 执行权限<button id="permissions-button" type="button" class="permissions-button" aria-haspopup="dialog" aria-label="Agent 权限" disabled>读取权限…</button></label><label class="analysis-control-label">分析模型<select id="model" aria-label="模型"><option value="">默认模型</option></select></label><label class="analysis-control-label">推理强度<select id="effort" aria-label="思考强度"><option value="">默认推理</option></select></label></div></div>
 <dialog id="dialog"><form id="dialog-form"><div class="dialog-title"><h2 id="dialog-title"></h2><button type="button" id="dialog-close" class="icon-button" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div><div id="dialog-body"></div><div class="dialog-actions"><button type="button" id="dialog-cancel" class="small-button">取消</button><button id="dialog-submit" class="solid-button" type="submit">保存</button></div></form></dialog>
 <div class="toast" id="toast" role="status" hidden></div>
 </body></html>

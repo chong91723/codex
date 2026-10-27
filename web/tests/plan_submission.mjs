@@ -1,5 +1,5 @@
 // Deterministic behavior/protocol-boundary regressions for the restricted slash
-// menu and explicit Plan switch. Native RPC replies are transport fixtures;
+// menu and actual native Plan commands. Native RPC replies are transport fixtures;
 // these tests do not claim real browser, model, or native-runtime verification.
 import fs from 'node:fs';
 import vm from 'node:vm';
@@ -13,8 +13,8 @@ function declaration(source,name){
   const next=/\n(?:async )?function \w+\(/g;next.lastIndex=match.index+match[0].length;
   return source.slice(match.index,next.exec(source)?.index??source.length);
 }
-const nativeFunctions=['currentMode','turnCollaborationMode','renderNativeMode','setNativeMode','changeModeWithFeedback','nativeSlashActions','nativeSlashCommand','commandEntries','updateCommandMenu','chooseCommand'];
-const appFunctions=['composerState','persistDrafts','saveComposer','validateComposerCommand','submitPrompt'];
+const nativeFunctions=['currentMode','turnCollaborationMode','renderNativeMode','setNativeMode','changeModeWithFeedback','enterPlanMode','nativeSlashActions','nativeSlashCommand','commandEntries','updateCommandMenu','chooseCommand','showNativeMenu','commandMenuKey'];
+const appFunctions=['composerState','persistDrafts','saveComposer','validateComposerCommand',...(app.includes('function parsePlanPrompt(')?['parsePlanPrompt']:[]),'submitPrompt'];
 let implementation=[...appFunctions.map(name=>declaration(app,name)),...nativeFunctions.map(name=>declaration(native,name))].join('\n');
 const plain=value=>JSON.parse(JSON.stringify(value));
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return{promise,resolve,reject};}
@@ -24,11 +24,11 @@ function fixture({text='需要规划的任务',existing=true,attachments=[],skil
   const thread=existing?{id:'own-thread-A'}:null,key=thread?.id||'new';
   const state={ready:true,view:'chat',thread,composerKey:key,composers:new Map([[key,draft]]),stopOperations:new Map(),threadSettings:new Map(thread?[[thread.id,{model:'deepseek-flash',modelProvider:'deepseek',collaborationMode:{mode:'default'}}]]:[]),nativeModes:new Map(),draftMode:'default',activeTurns:new Map(),finishedTurns:new Set(),navigationGeneration:1,selectedCwd:'/tmp/restricted-slash-fixture',selectedProject:null,modelDetails:[{model:'deepseek-flash',inputModalities:['text'],defaultReasoningEffort:'low'}],runtimeDefaults:{model:'deepseek-flash'}};
   const dom=()=>({value:'',textContent:'',disabled:false,hidden:false,attributes:{},querySelector(selector){assert.equal(selector,'.plan-switch-state');return this.planSwitchState??={textContent:''};},classList:{toggle(){},add(){},remove(){}},setAttribute(name,value){this.attributes[name]=value;},removeAttribute(name){delete this.attributes[name];},focus(){},setSelectionRange(){}});
-  const nodes={'#prompt':Object.assign(dom(),{value:text}),'#model':Object.assign(dom(),{value:'deepseek-flash'}),'#effort':Object.assign(dom(),{value:'high'}),'#mode-toggle':dom(),'#composer-status':dom()};
+  const nodes={'#prompt':Object.assign(dom(),{value:text}),'#model':Object.assign(dom(),{value:'deepseek-flash'}),'#effort':Object.assign(dom(),{value:'high'}),'#mode-toggle':dom(),'#composer-status':dom(),'#command-menu':dom(),'#analysis-mode-status':dom(),'#exit-plan-mode':dom()};
   const context={state,$:selector=>{assert(nodes[selector],'Unexpected DOM selector '+selector);return nodes[selector];},sessionStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
     renderContextUsage(){},renderCommandMenu(){},closeCommandMenu(){state.commandMenu=null;},resizePrompt(){},renderAttachments(){},scrollMessages(){},updateSend(){},
     toast:message=>notifications.push(message),selectedModelProvider:()=> 'deepseek',modelProvider:()=> 'deepseek',isRemovedModel:()=>false,
-    permissionSubmissionBlocked:()=>false,runtimeModelContext:()=>undefined,
+    analysisModeChangeBlocked:(threadId=state.thread?.id)=>!!threadId&&state.analysisHandoffPending===threadId,permissionSubmissionBlocked:()=>false,runtimeModelContext:()=>undefined,
     rpc:async(method,params)=>{calls.push({method,params});if(method==='skills/list')return{data:[{skills:skills.map(skill=>({...skill,enabled:true}))}]};assert(['thread/settings/update','turn/start','turn/steer'].includes(method),'Unexpected RPC '+method);
       const result=transport?await transport(method,params):method==='thread/settings/update'?{}:{turn:{id:'own-turn-'+calls.length,status:'inProgress'}};
       // A confirmed native settings event is a separate input from the ACK.
@@ -39,7 +39,7 @@ function fixture({text='需要规划的任务',existing=true,attachments=[],skil
     threadAction:action=>{actions.push(action);},showView:view=>{actions.push('view:'+view);},showNativeMenu:()=>{actions.push('menu');}
   };
   for(const [name,id]of [['initializeWorkspace','init'],['showGoalDialog','goal'],['unassignedChat','chat']])context[name]=()=>{actions.push(id);};
-  const api=vm.runInNewContext(implementation+'\n({submitPrompt,saveComposer,currentMode,setNativeMode,changeModeWithFeedback,renderNativeMode,nativeSlashCommand,nativeSlashActions,commandEntries,updateCommandMenu,chooseCommand});',context);
+  const api=vm.runInNewContext(implementation+'\n({submitPrompt,saveComposer,currentMode,setNativeMode,changeModeWithFeedback,enterPlanMode,renderNativeMode,nativeSlashCommand,nativeSlashActions,commandEntries,updateCommandMenu,chooseCommand,showNativeMenu,commandMenuKey});',context);
   return{state,draft,nodes,calls,ensures,notifications,actions,storage,...api};
 }
 const turns=f=>f.calls.filter(call=>['turn/start','turn/steer'].includes(call.method));
@@ -47,30 +47,45 @@ async function flushUntil(predicate){for(let n=0;n<80&&!predicate();n++)await Pr
 const request=f=>{assert.equal(turns(f).length,1);return turns(f)[0];};
 const textAttachment={name:'plan-notes.txt',input:{type:'text',text:'OWN_TEXT_ATTACHMENT_SENTINEL'}};
 const skill={name:'openai-docs',path:'/tmp/restricted-slash-profile/skills/.system/openai-docs/SKILL.md'};
-const removed=['/chat','/plan','/compact','/fork','/export','/review','/rollback','/mcp','/projects','/reasoning','/model','/status','/skills','/settings','/native','/apps','/plugins','/fast','/feedback','/image','/imagegen'];
+const removed=['/init','/goal','/chat','/compact','/fork','/export','/review','/rollback','/mcp','/projects','/reasoning','/model','/status','/skills','/settings','/native','/apps','/plugins','/fast','/feedback','/image','/imagegen'];
 
-test('slash menu and executable local adapter expose only initialization and goals',()=>{
-  const f=fixture();assert.deepEqual(plain(f.commandEntries().map(entry=>entry.command)),['/init','/goal']);assert.deepEqual(Object.keys(f.nativeSlashActions()),['/init','/goal']);
-  assert(f.commandEntries().every(entry=>entry.kind==='command'));assert.equal(f.calls.length,0);
+test('slash menu exposes only native Plan; initialization and goals stay in advanced settings',()=>{
+  const f=fixture();assert.deepEqual(plain(f.commandEntries().map(entry=>entry.command)),['/plan']);assert.deepEqual(Object.keys(f.nativeSlashActions()),['/plan']);assert.equal(f.calls.length,0);
 });
-test('opening and filtering slash menu never fetches or inserts installed skills',()=>{
-  const f=fixture({text:'/',skills:[skill]});f.updateCommandMenu();assert.deepEqual(plain(f.state.commandMenu.entries.map(entry=>entry.command)),['/init','/goal']);
-  f.nodes['#prompt'].value='/go';f.updateCommandMenu();assert.deepEqual(plain(f.state.commandMenu.entries.map(entry=>entry.command)),['/goal']);
-  f.nodes['#prompt'].value='/openai';f.updateCommandMenu();assert.equal(f.state.commandMenu.entries.length,0);assert.equal(f.calls.length,0,'Menu must not request skills/list');
+test('Plan menu filters without fetching installed skills and closes for Chinese composition',()=>{
+  const f=fixture({text:'/',skills:[skill]});f.updateCommandMenu();assert.deepEqual(plain(f.state.commandMenu.entries.map(entry=>entry.command)),['/plan']);f.nodes['#prompt'].value='/pl';f.updateCommandMenu();assert.equal(f.state.commandMenu.entries[0].command,'/plan');f.nodes['#prompt'].value='/openai';f.updateCommandMenu();assert.equal(f.state.commandMenu,null);f.state.commandComposing=true;f.updateCommandMenu();assert.equal(f.state.commandMenu,null);assert.equal(f.calls.length,0);
 });
-test('selecting a retained menu item only fills the composer; sending invokes the real local adapter',async()=>{
-  for(const command of ['/init','/goal']){const f=fixture({text:'/'});f.updateCommandMenu();f.chooseCommand(f.state.commandMenu.entries.find(entry=>entry.command===command));assert.equal(f.nodes['#prompt'].value,command);assert.deepEqual(f.actions,[]);await f.submitPrompt();assert.deepEqual(f.actions,[command.slice(1)]);assert.equal(turns(f).length,0);assert.equal(f.ensures.length,0);assert.equal(f.draft.text,'');}
+test('stale former slash options cannot fill the composer or invoke advanced actions',async()=>{
+  for(const command of ['/init','/goal']){const f=fixture({text:'/'});f.state.commandMenu={draft:f.draft,text:'/',entries:[]};f.chooseCommand({kind:'command',command});assert.equal(f.nodes['#prompt'].value,'/');assert.deepEqual(f.actions,[]);assert.equal(f.calls.length,0);assert.equal(f.state.commandMenu,null);assert.equal(await f.nativeSlashCommand(command),false);assert.deepEqual(f.actions,[]);}
+});
+test('menu selection fills Plan without executing; sending enters actual Plan with no task',async()=>{
+  const f=fixture({text:'/',existing:false});f.updateCommandMenu();f.chooseCommand(f.state.commandMenu.entries[0]);assert.equal(f.nodes['#prompt'].value,'/plan');assert.equal(f.currentMode(),'default');assert.equal(f.calls.length,0);await f.submitPrompt();assert.equal(f.currentMode(),'plan');assert.equal(turns(f).length,0);assert.equal(f.ensures.length,0);assert.equal(f.nodes['#prompt'].value,'');assert(f.notifications.some(text=>/已手动进入计划模式/.test(text)));
+});
+test('opening Plan menu preserves existing drafts; empty composer receives only slash text',()=>{
+  const f=fixture({text:'UNSENT_ANALYSIS_DRAFT'});f.showNativeMenu();assert.equal(f.nodes['#prompt'].value,'UNSENT_ANALYSIS_DRAFT');assert.equal(f.draft.text,'UNSENT_ANALYSIS_DRAFT');assert.equal(f.calls.length,0);assert.equal(f.state.commandMenu,null);const empty=fixture({text:''});empty.showNativeMenu();assert.equal(empty.nodes['#prompt'].value,'/');assert.equal(empty.state.commandMenu.entries.length,1);assert.equal(empty.calls.length,0);
+});
+test('Plan menu respects Chinese IME and Escape; Tab selects without submitting',()=>{
+  const f=fixture({text:'/'});f.updateCommandMenu();let prevented=0;const key=value=>({key:value,preventDefault(){prevented++;}});assert.equal(f.commandMenuKey({...key('Enter'),isComposing:true,keyCode:229}),false);assert.equal(prevented,0);assert.equal(f.commandMenuKey(key('Escape')),true);assert.equal(f.state.commandMenu,null);f.updateCommandMenu();assert.equal(f.commandMenuKey(key('Tab')),true);assert.equal(f.nodes['#prompt'].value,'/plan');assert.equal(f.currentMode(),'default');assert.equal(f.calls.length,0);
 });
 test('removed bare slash commands cannot execute tools, change views, create threads, or become model prompts',async()=>{
   for(const command of removed){const f=fixture({text:command,existing:false});await assert.rejects(f.submitPrompt(),/输入已保留|不再|移除|开关|仅保留|不支持|不可用/);assert.equal(f.calls.length,0,command);assert.equal(f.ensures.length,0,command);assert.deepEqual(f.actions,[],command);assert.equal(f.draft.text,command);assert.equal(f.nodes['#prompt'].value,command);assert.equal(f.currentMode(),'default');assert.equal(f.draft.pending,false);}
 });
-test('/plan with whitespace or task text is rejected without changing mode or losing its complete input',async()=>{
-  for(const text of ['/plan 具体问题',' /plan\n多行\n任务 ','/plan\t问题','/plan\u3000问题','  /plan \n\t  ']){const f=fixture({text});await assert.rejects(f.submitPrompt(),/计划|开关|不支持|不再/);assert.equal(f.currentMode(),'default');assert.equal(f.calls.length,0);assert.equal(f.draft.text,text);assert.equal(f.nodes['#prompt'].value,text);}
+test('bare Plan entry is idempotent, including surrounding whitespace, and makes no task',async()=>{
+  const f=fixture({text:'  /plan \n\t  '});await f.submitPrompt();assert.equal(f.currentMode(),'plan');assert.equal(f.draft.text,'');assert.equal(f.calls.length,1);f.nodes['#prompt'].value='/plan';await f.submitPrompt();assert.equal(f.currentMode(),'plan');assert.equal(f.calls.length,1);assert.equal(turns(f).length,0);
+});
+test('inline Plan input strips the prefix and sends exactly one task in actual Plan mode',async()=>{
+  for(const text of ['/plan 具体问题',' /plan\n多行\n任务 ','/plan\t问题','/plan\u3000问题']){const f=fixture({text}),expected=text.trim().replace(/^\/plan\s+/,'');await f.submitPrompt();assert.equal(request(f).params.collaborationMode.mode,'plan');assert.equal(request(f).params.input[0].text,expected);assert.equal(f.draft.text,'');}
+});
+test('inline Plan keeps attachments and skill validation while bare Plan rejects attached files',async()=>{
+  const f=fixture({text:'/plan 请按 $openai-docs 给方案',attachments:[textAttachment],skills:[skill]});await f.submitPrompt();assert.equal(request(f).params.collaborationMode.mode,'plan');assert.equal(request(f).params.input[0].text,'请按 $openai-docs 给方案');assert.equal(request(f).params.input[1].type,'skill');assert.equal(request(f).params.input[2].text,textAttachment.input.text);const bare=fixture({text:'/plan',attachments:[textAttachment]});await assert.rejects(bare.submitPrompt(),/附件/);assert.equal(bare.calls.length,0);assert.equal(bare.nodes['#prompt'].value,'/plan');assert.deepEqual(bare.draft.attachments,[textAttachment]);
+});
+test('inline Plan failure preserves the entire command and attached files for retry',async()=>{
+  const f=fixture({text:'/plan 复杂分析',attachments:[textAttachment],transport:async()=>{throw Error('OWN_INLINE_REJECTED');}});await assert.rejects(f.submitPrompt(),/OWN_INLINE_REJECTED/);assert.equal(request(f).params.collaborationMode.mode,'plan');assert.equal(f.nodes['#prompt'].value,'/plan 复杂分析');assert.equal(f.draft.text,'/plan 复杂分析');assert.deepEqual(f.draft.attachments,[textAttachment]);
 });
 test('old commands with arguments and attachments cannot bypass removal or lose unsent files',async()=>{
   for(const command of ['/compact','/export','/review','/mcp','/skills']){const text=command+' 参数';const f=fixture({text,attachments:[textAttachment],skills:[skill]});await assert.rejects(f.submitPrompt());assert.equal(f.calls.length,0);assert.equal(f.ensures.length,0);assert.equal(f.draft.text,text);assert.deepEqual(f.draft.attachments,[textAttachment]);assert.deepEqual(f.draft.skills,[skill]);}
 });
-test('removed commands remain blocked in an existing Plan conversation and during an active turn',async()=>{
+test('active turns reject new Plan requests and removed commands instead of steering',async()=>{
   for(const text of ['/plan','/plan 新需求','/compact']){const f=fixture({text});f.state.nativeModes.set('own-thread-A','plan');f.state.activeTurns.set('own-thread-A','own-active-turn');await assert.rejects(f.submitPrompt());assert.equal(f.currentMode(),'plan');assert.equal(f.calls.length,0);assert.equal(f.nodes['#prompt'].value,text);}
 });
 test('a read-only archive cannot use the former /export exception to invoke an operation',async()=>{
@@ -124,11 +139,11 @@ test('late task ACK preserves later text and newly attached files',async()=>{
 test('approved-plan independent text is not reinterpreted as a composer slash command',async()=>{
   const f=fixture({text:'USER_UNSENT_DRAFT'});await f.submitPrompt({text:'/plan literal approved instruction',preserveDraft:true});assert.equal(request(f).params.input[0].text,'/plan literal approved instruction');assert.equal(request(f).params.collaborationMode.mode,'default');assert.equal(f.nodes['#prompt'].value,'USER_UNSENT_DRAFT');assert.equal(f.draft.text,'USER_UNSENT_DRAFT');
 });
-test('the visible Plan control reports its confirmed on/off state to assistive technology',()=>{
+test('Plan status reports only the confirmed native mode without exposing a switch',()=>{
   const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
-  assert.match(html,/<button\b[^>]*\bid="mode-toggle"[^>]*\brole="switch"[^>]*>/);
-  const f=fixture();f.renderNativeMode();assert.equal(f.nodes['#mode-toggle'].attributes['aria-checked'],'false');
-  f.state.nativeModes.set('own-thread-A','plan');f.renderNativeMode();assert.equal(f.nodes['#mode-toggle'].attributes['aria-checked'],'true');
+  assert.match(html,/<button\b[^>]*\bid="mode-toggle"[^>]*\bhidden\b[^>]*\brole="switch"[^>]*>/);assert.match(html,/id="analysis-mode-status"/);assert.match(html,/id="exit-plan-mode"/);
+  const f=fixture();f.renderNativeMode();assert.equal(f.nodes['#mode-toggle'].attributes['aria-checked'],'false');assert.equal(f.nodes['#mode-toggle'].ariaLabel,'计划模式');assert.equal(f.nodes['#analysis-mode-status'].hidden,true);
+  f.state.nativeModes.set('own-thread-A','plan');f.renderNativeMode();assert.equal(f.nodes['#mode-toggle'].attributes['aria-checked'],'true');assert.equal(f.nodes['#analysis-mode-status'].hidden,false);assert.equal(f.nodes['#analysis-mode-status'].textContent,'计划模式');
   f.state.nativeModePending=true;f.renderNativeMode();assert.equal(f.nodes['#mode-toggle'].disabled,true);assert.equal(f.nodes['#mode-toggle'].attributes['aria-checked'],'true','Pending switch must retain the confirmed mode');
 });
 test('Plan on/off settings are idempotent when the native snapshot already confirms that mode',async()=>{
@@ -138,8 +153,15 @@ test('unassigned chat can submit in Plan while retaining its actual working dire
   const f=fixture({existing:false});assert.equal(f.state.selectedProject,null);const cwd=f.state.selectedCwd;await f.changeModeWithFeedback('plan');await f.submitPrompt();assert.equal(f.ensures[0].projectId,null);assert.equal(f.ensures[0].cwd,cwd);assert.equal(f.ensures[0].mode,'plan');assert.equal(request(f).params.collaborationMode.mode,'plan');
 });
 test('unlisted slash words and removed commands with Unicode-separated arguments cannot fall through as tasks',async()=>{
-  for(const text of ['/unknown','/planet 介绍行星','/PLAN\t任务','/chat\u3000任务','/export\n参数']){const f=fixture({text});await assert.rejects(f.submitPrompt());assert.equal(f.calls.length,0);assert.equal(f.ensures.length,0);assert.equal(f.nodes['#prompt'].value,text);assert.equal(f.draft.text,text);}
+  for(const text of ['/unknown','/planet 介绍行星','/chat\u3000任务','/export\n参数']){const f=fixture({text});await assert.rejects(f.submitPrompt());assert.equal(f.calls.length,0);assert.equal(f.ensures.length,0);assert.equal(f.nodes['#prompt'].value,text);assert.equal(f.draft.text,text);}
 });
 test('ordinary prose mentioning a former command and absolute file paths remain valid tasks',async()=>{
   for(const text of ['请解释 /plan 以前的用途','/tmp/project/README.md 请阅读这个文件']){const f=fixture({text});await f.submitPrompt();assert.equal(request(f).params.input[0].text,text);assert.equal(request(f).params.collaborationMode.mode,'default');}
+});
+
+test('autonomous handoff prevents manual mode changes until native Plan confirmation',async()=>{
+  const f=fixture();f.state.analysisHandoffPending='own-thread-A';f.renderNativeMode();assert.equal(f.nodes['#mode-toggle'].disabled,true);assert.equal(f.nodes['#analysis-mode-status'].hidden,false);assert.match(f.nodes['#analysis-mode-status'].textContent,/正在进入计划模式/);assert.equal(f.nodes['#exit-plan-mode'].hidden,true);await assert.rejects(f.setNativeMode('plan'),/正在进入计划模式/);await assert.rejects(f.setNativeMode('default'),/正在进入计划模式/);await assert.rejects(f.submitPrompt(),/模式正在切换/);assert.equal(f.nodes['#prompt'].value,'需要规划的任务');assert.equal(f.calls.length,0);assert.equal(f.currentMode(),'default');
+});
+test('explicit Plan exit is available only for confirmed Plan and remains disabled during execution or handoff',()=>{
+  const f=fixture();f.renderNativeMode();assert.equal(f.nodes['#exit-plan-mode'].hidden,true);f.state.nativeModes.set('own-thread-A','plan');f.renderNativeMode();assert.equal(f.nodes['#exit-plan-mode'].hidden,false);assert.equal(f.nodes['#exit-plan-mode'].disabled,false);f.state.activeTurns.set('own-thread-A','running');f.renderNativeMode();assert.equal(f.nodes['#exit-plan-mode'].disabled,true);f.state.activeTurns.clear();f.state.analysisHandoffPending='own-thread-A';f.renderNativeMode();assert.equal(f.nodes['#exit-plan-mode'].disabled,true);
 });

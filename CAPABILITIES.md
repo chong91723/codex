@@ -2,15 +2,28 @@
 
 检查更新：2026-10-27（固定源码基线不变）。目标：桌面浏览器；允许 DeepSeek 官方 API 和国内公网，运行时不依赖国际公网。安装/编译/更新所需外网单独计算。手机端不在范围。
 
-## 当前交付状态：精简斜杠菜单与独立计划开关
+## 当前交付状态：数据分析工作台
+
+Skills 和 MCP 保留当前主入口及用户配置、启停能力。主导航为新分析、技能、数据源、MCP 和设置；数据源主页面直接配置、测试、启停和移除连接，Agent 发现全部已配置、启用、可用且获授权的只读数据源。没有“本次数据源”选择状态。模型／思考强度／Agent 文件权限、目录、初始化、持续目标、原始文件及协议移入高级设置；当前没有管理员角色，折叠不构成权限隔离。
+
+斜杠菜单只保留 `/plan`：手动进入计划模式，生成计划后由你确认执行。支持 bare 与带需求形式，选择只填入、发送才触发；计划状态和退出按钮可见，原显式开关隐藏。其余旧命令不执行并保留输入。压缩按原生配置自动触发。
+
+锁定原生协议没有让模型在当前回合自主改变 collaborationMode 的入口。本批最小 Web 配套在 Default 的分析用途上下文中要求模型对复杂多阶段问题先提出严格整块 `<proposed_plan>`；只有本连接拥有、真实完成且成功的回合可在结束后调用公开 `thread/settings/update`，等待真实原生设置通知再确认进入 Plan，供后续讨论。Default 生成过程不标为 Plan，不新增模型回合或自研代理循环；历史重放、失败／中断不触发，等待期间阻止发送及模式竞争，失败保留方案并说明。方案仍须用户确认后执行。
+
+不提供成果侧栏。成功query_database／analyze_result在对应消息卡自动显示20行分页表格，支持前后页、跳页、失败保留及重试；SQL折叠、CSV仅底部一处，read_result不重复、同resultId跨item去重；图表保留原有PNG／CSV下载，完成回答操作区导出该条 Markdown 结论及同轮已加载结果 ID；未完成、失败、中断、commentary 和待确认方案不能导出为完成结论。只聚合成功 MCP 的合法 ID，跨回合隔离，旧导航下载会拒绝。没有新增 PDF／Word 引擎或逐句证据绑定；四个原生技能边界保持。
+
+[最终浏览器](test-results/analysis-workspace-2026-10-27/browser/final-revision/results.json)13/13、0模型、0页面错误：真实原生设置和失败连接管理，与显式事件／传输夹具分开记录。事件夹具验证两条同轮隔离的 Markdown 下载及未完成／失败隐藏；自动方案决定使用夹具，后续原生 Plan 请求和确认是真实的，不代表 Flash 自主决策通过。确定性状态测试：计划与自动衔接70/70、设置19/19、对话产出31/31，分别报告，不相加当成业务成功。[调整前12项](test-results/analysis-workspace-2026-10-27/browser/final/results.json)仅为被替代中间界面及未改的技能／MCP生命周期证据。独立Flash＋只读PostgreSQL [手动计划完整链](test-results/analysis-workspace-2026-10-27/flash-plan/manual-chain/results.json)7/7与[自动决策修后完整链](test-results/analysis-workspace-2026-10-27/flash-plan/automatic-chain-after-policy/results.json)7/7分别通过，各4个普通回合，完成修改／批准／真实中断／修改继续／三问／图表及下载；[简单直接查询](test-results/analysis-workspace-2026-10-27/flash-plan/simple-direct/results.json)3/3以1回合Default直接返回2220.00，0方案／0Plan设置。[真实分页浏览器](test-results/analysis-workspace-2026-10-27/browser/inline-pagination/results.json)9/9使用真实247行及31行派生快照，0模型，UI进入点为明确MCP事件夹具。前期复杂问题直接申请SQL的失败保留，语义策略已修但不是权限强制保证；[全部真实模型尝试](test-results/analysis-workspace-2026-10-27/flash-plan/summary.json)共7轮18个普通turn/start（含失败，不是provider内部HTTP请求计数）；[相同业务问题修前／修后对照](test-results/analysis-workspace-2026-10-27/flash-plan/application-policy-fix.json)确认Default相同业务问题修后通过。[最终工程记录](test-results/analysis-workspace-2026-10-27/engineering/results.json)86份JS／MJS、36份Python AST及141/141行为通过，source pristine、176/176完整Schema一致；无前端打包／TS，未重跑完整Python后端套件。当前真实业务回归限独立PG与Flash，不泛化生产远端、其他引擎或所有意图分类；多租户未实现。详见[验收报告](TEST_REPORT.md)。
+
+## 前一批次交付状态（历史）：两项菜单与独立计划开关
 
 按用户2026-10-27的最新明确要求，输入框 `/` 只保留初始化 `/init` 和目标 `/goal`；聊天移到输入框下方“新建聊天”按钮，计划模式使用该处的显式开关。`/chat` 不再新建聊天，`/plan` 及带需求形式不再触发计划模式；压缩、分叉、导出、审查、回退、MCP、项目、模型、推理、状态、技能、设置及原生协议不再在斜杠菜单中显示或由该路径触发。手工输入旧命令应报明原因并保留草稿，不能静默变为普通模型任务。
 
 原生自动压缩按既有配置继续运行，不改阈值或代理循环。其他页面、模型和权限控件、四个源码自带技能及原生协议仍保留；本批删除的是错误的快捷入口及其斜杠分发路径。本轮[真实浏览器](test-results/composer-scope-2026-10-27/browser/results.json)12/12，0模型任务及0页面错误，24条旧命令尝试均零能力调用并保留输入；初始化和目标只打开弹窗并取消。真实设置事件核对开关on/off、等待和拒绝重试，新聊天保留cwd且不关联项目；3个自有记录清理。受控传输状态35/35与工程相邻行为58/58分别记录，覆盖重叠不相加；JS/MJS78、Python AST36、原生176方法完整schema及源码未改检查通过。未调用模型、未重测实际初始化写文件、目标执行、计划批准执行或自动阈值触发，不沿用下方历史计数当作本轮通过。
 
+
 ## 前一批次交付状态（历史）：计划模式命令与退出
 
-> 以下 `/plan` 用法和测试仅反映前批版本，现已由上方明确开关与精简菜单取代，不是当前操作说明。
+> 以下 `/plan` 用法和测试仅反映前批版本，现行仅 `/plan`，布局及衔接以本页当前状态为准，不是当前操作说明。
 
 2026-10-27修复单独发送 `/plan` 后输入消失却无说明的问题：该命令只进入模式，不请求模型；现已提供即时提示和持续输入框状态，重复发送保持计划模式。`/plan 具体需求` 会去掉前缀并通过原生 `turn/start.collaborationMode=plan` 提交，执行中拒绝将其当成 `turn/steer`。点击输入框“计划模式”可切回默认：已有会话经原生设置请求确认，新会话保留草稿选择至首次提交；切换不自动执行计划。异步提示只归属于发起时同一会话、导航代次和草稿。
 
@@ -40,19 +53,19 @@
 
 用户后续明确：以后只使用 `deepseek-flash` 验证；移除 ChatGPT 模型/账号强依赖内容、反馈、快速和生图；删除项目管理的非源码自带技能。源码内置共五项，`imagegen` 排除后保留 `openai-docs`、`review-agent`、`skill-creator`、`skill-installer` 四项。旧 Flash/Pro 对照和测试结果属于前轮历史，不计入本轮 Flash 通过项。
 
-前轮证据位于 `test-results/flash-followup-2026-10-26/`。当时的十三个斜杠命令已逐项完成真实路径验收，现已被最新三项菜单要求取代；菜单公共测试、具体业务验收、后台协议和模型兼容性分别记录。
+前轮证据位于 `test-results/flash-followup-2026-10-26/`。当时的十三个斜杠命令已逐项完成真实路径验收，现行斜杠菜单仅保留 `/plan`，其他入口按当前分析定位处理；菜单公共测试、具体业务验收、后台协议和模型兼容性分别记录。
 
 后续验收口径：用户明确不再要求严格国际出口阻断测试，该项从待验收清单移除，未标记为测试通过。远端扩展改为分别选择一个中国大陆可用的真实 MCP 和原生插件做代表性验收；不将代表性结果泛化到其他配置。
 
 ## 固定基线
 
-- 实际仓库 `/root/Codex`，本批精简入口修复起始HEAD为`672a96012fefe027fccd53a0ea45522dcba5becd`；前批计划修复起始HEAD为`db6089b2269a889c3b5c6ca4776c57a9c399e043`；前批会话入口修复起始HEAD为`7a47a139a09b0f4a0595826d72e6c6f1c0cc0009`，前批侧栏权限改进起始HEAD为`8befc8eccedbc3e246a54c5fdffb83da21598c46`；前轮能力核验起始HEAD为`f31cbabb1a6677d116df67cc6631be948973cd42`。前轮起始改动的 diff、23 个文件及 SHA-256 已保存到 `/tmp/codex-web-capability-audit/baseline/`；不回滚前轮修复。
+- 实际仓库 `/root/Codex`，本批数据分析工作台起始HEAD为`19399bf16b472a1b144f1a90b396ca47c78af612`；前批精简入口修复起始HEAD为`672a96012fefe027fccd53a0ea45522dcba5becd`；前批计划修复起始HEAD为`db6089b2269a889c3b5c6ca4776c57a9c399e043`；前批会话入口修复起始HEAD为`7a47a139a09b0f4a0595826d72e6c6f1c0cc0009`，前批侧栏权限改进起始HEAD为`8befc8eccedbc3e246a54c5fdffb83da21598c46`；前轮能力核验起始HEAD为`f31cbabb1a6677d116df67cc6631be948973cd42`。前轮起始改动的 diff、23 个文件及 SHA-256 已保存到 `/tmp/codex-web-capability-audit/baseline/`；不回滚前轮修复。
 - 原生程序 `native/bin/codex` 报告 `codex-cli 0.0.0`，因此不拿此开发版本字符串与其他发行版混用。身份以 `upstream-lock.json` 的提交 `970111f6cb62cc02fe36a82ea7d71b37a2889c97`、树 `e09c71b9069e689c9c997c766d0de8b7b288583f` 和 `native/provenance.json` 的二进制 SHA-256 为准。
 - 集成：Python 3.12 标准库 HTTP/WebSocket 桥接，每个浏览器连接独占一个未修改的 `codex app-server --listen stdio://`；一个进程内允许多个 thread。初始化开启实验协议。实际生成 ClientRequest 为 **176** 方法；完整盘点见 [protocol-inventory.json](test-results/capability-audit-2026-10-26/protocol-inventory.json)。方法数量不等于可用功能数量。
-- 前端为普通 JS/CSS，无打包和 TypeScript。`app.js` 管连接、会话、事件和通用页面；`native-ui.js` 管计划/目标/项目；`permissions.js` 管会话权限选择和原生确认；`context.js` 管统计；`databases.js` + 独立 Python MCP 管只读数据库。配置由原生 config APIs 读写，模型/目录/权限按 thread settings 生效。
+- 前端为普通 JS/CSS，无打包和 TypeScript。`app.js` 管连接、会话、事件和通用页面；`native-ui.js` 管计划/目标/项目，`analysis-workspace.js` 管分析用途、对话内产出和完成后的原生计划衔接；`permissions.js` 管会话权限选择和原生确认；`context.js` 管统计；`databases.js` + 独立 Python MCP 管只读数据库。配置由原生 config APIs 读写，模型/目录/权限按 thread settings 生效。
 - 启动：`python3 web/start.py --deepseek --state-dir <独立目录> --port <端口> --workspace <测试目录>`；需有效 `DEEPSEEK_API_KEY`。前轮独立实例为 `127.0.0.1:8784`；最新完整版本已在 `127.0.0.1:8789` 以标准隐藏输入启动，工作区 `/tmp/codex-web-flash-final-audit/workspace`，工作区与配置均在 `/tmp/codex-web-flash-final-audit/`，未复制 ChatGPT 授权；清除了 HTTP/HTTPS/ALL_PROXY，保留 DeepSeek 直连。没有改变宿主机路由或施加系统出口防火墙，不能把此环境称为“已通过全网封锁测试”。
 - 当前验证模型：provider `deepseek`，仅 `deepseek-flash`；Pro 目录保留但本轮未调用；原生 Responses，实际目标 `https://api.deepseek.com/responses`。第三方普通 Chat Completions 地址不可直接替代。
-- 桌面参考：用户已提供两张新会话 `/` 菜单截图（`codex-clipboard-fffaa287-1cde-4b6e-89c8-1cd66e40c1df.jpg`、`codex-clipboard-f735667f-02f5-4da6-bc12-0bd4dc30d1f8.png`）。输入框上沿的紧凑菜单和选择后发送沿用其布局参考；条目范围以用户最新要求为准，只保留初始化和目标，聊天改为下方“新建聊天”按钮、计划改为显式开关，不再照搬截图中的技能和其他命令。截图未给出桌面构建号；当前右键菜单没有截图，具体条目和顺序待确认。权限三档另有锁定开源TUI预设依据，不能据此宣称闭源桌面布局完全一致。
+- 桌面参考：用户已提供两张新会话 `/` 菜单截图（`codex-clipboard-fffaa287-1cde-4b6e-89c8-1cd66e40c1df.jpg`、`codex-clipboard-f735667f-02f5-4da6-bc12-0bd4dc30d1f8.png`）。原截图仅保留为布局参考；当前按用户最终要求只保留 `/plan`，统一侧栏新分析，仅显示计划状态和退出按钮，不照搬旧截图的工程命令。截图未给出桌面构建号；当前右键菜单没有截图，具体条目和顺序待确认。权限三档另有锁定开源TUI预设依据，不能据此宣称闭源桌面布局完全一致。
 
 ## 证据与判定口径
 
@@ -70,20 +83,20 @@
 
 | ID / 能力 | 开源依据与外部入口 | 前端表达 | 模型 / 网络条件 | 范围及当前状态 |
 |---|---|---|---|---|
-| C01 连接/诊断 | P initialize、server/diagnostics；原生 stdio | 连接状态、错误、重连 | 本机；模型无关 | 保留；前轮连接/服务重启已验证；本批ephemeral启动与第三方Flash实际工作流已验证，MCP OAuth使用独立存储 |
-| C02 项目/目录 | P project CRUD、thread/metadata/update、fs/readDirectory | 目录选择、项目页；不提供 `/projects` | 本地；模型无关 | 保留；本轮真实项目创建/编辑/关联/解除/删除通过，目录保留 |
+| C01 连接/诊断 | P initialize、server/diagnostics；原生 stdio | 连接状态、错误、重连 | 本机；模型无关 | 保留；前轮连接/服务重启已验证；前批ephemeral启动与第三方Flash实际工作流已验证，MCP OAuth使用独立存储 |
+| C02 项目/目录 | P project CRUD、thread/metadata/update、fs/readDirectory | 高级设置中的分析空间与工作目录；不提供 `/projects` | 本地；模型无关 | 保留；前轮真实项目创建/编辑/关联/解除/删除通过，目录保留 |
 | C03 会话历史/搜索/分页/分叉/归档/删除/回退 | P thread APIs，T 实际存储 | 侧栏管理重命名/归档/恢复/删除；其他接口保留于原生能力面板，不再由 `/fork /export /rollback` 触发，恢复错误明确显示 | 本地；删除/回退需确认；回退不撤销磁盘 | 保留；已见索引和当前CODEX_HOME只读元数据补候选，均经原生确认；此前从未见的真实旧fork首次发现/搜索/刷新/归档恢复删除5组通过，23项只读与边界回归；最新20回合/按需更早页真实6/6；前批侧栏目标菜单12/12、归档恢复/删除11/11、新建合成真实历史导出和回退4/4。历史入口迁移侧栏10/10、旧输入框命令10/10、另一新合成历史4/4；历史Flash完整链6/6覆盖分叉继承/非空导出/确认回退；占用删除5/5，原生锁仍最终控制 |
-| C04 流式对话/多轮/执行中补充 | P turn/start、steer、item delta/completed | 输入、过程折叠、最终回答；输入框下方“新建聊天”新建不关联项目的会话并保留cwd，不改变工具权限，也不与计划开关互斥 | DeepSeek Responses + 工具格式 | 保留；Flash/Pro 分别验证，不能用聊天代替工具验收 |
-| C05 模型/provider/推理强度 | P model/list、thread/settings/update；C | 模型/强度控件和设置页；不提供 `/model` 或 `/reasoning` | provider 实现 Responses；真实模型目录 | 保留；禁止静默 fallback；历史 OpenAI 数据可读 |
-| C06 命令/文件修改/沙箱 | T native unified exec、apply_patch；P fs APIs | 对话工具过程、文件面板、差异 | 工具调用能力；本机 OS 沙箱 | 保留；不另写代理循环；终端 UI 沿用原产品隐藏要求 |
-| C07 停止与本轮命令回收 | P turn/interrupt + backgroundTerminals list/terminate；T | 停止、回收状态、失败重试 | 实验 API 已启用；仅匹配本轮 itemId | 保留；CW-009 已接入；单进程、同线程旧后台任务、A/B 隔离、失败重试、目标暂停及回收期间导航通过 |
-| C08 审批/拒绝/用户问题/权限请求 | P ServerRequest、resolved | 输入框内权限选择、审批卡片和明确归属 | 原生策略与requirements；自动审核需guardian_approval启用及Flash工具能力；不要求ChatGPT登录 | 保留三档；会话级界面8/8含真实新建Flash，人工拒绝文件未创建、原生auto_review允许后命令输出、full实际文件后恢复工作区模式均有真实证据；初次ask测试等待失败及增量重复full另记，不称一次3/3。后续真实通知先于ACK、同线程resume确认等9组协议/浏览器增量与12项状态单测通过；ask↔auto请求不重写沙箱以保留profile来源，不声称命名profile全部组合已验 |
+| C04 流式对话/多轮/执行中补充 | P turn/start、steer、item delta/completed | 输入、过程折叠、最终回答；侧栏“新分析”统一创建会话并保留cwd，不改变工具权限，可独立使用原生计划模式 | DeepSeek Responses + 工具格式 | 保留；Flash/Pro 分别验证，不能用聊天代替工具验收 |
+| C05 模型/provider/推理强度 | P model/list、thread/settings/update；C | 高级设置中的原模型／强度控件；不提供 `/model` 或 `/reasoning` | provider 实现 Responses；真实模型目录 | 保留；禁止静默 fallback；历史 OpenAI 数据可读 |
+| C06 命令/文件修改/沙箱 | T native unified exec、apply_patch；P fs APIs | 真实工具过程与错误保留；原始目录浏览仅高级设置，日常在对话内显示结果与下载 | 工具调用能力；本机 OS 沙箱 | 保留；不另写代理循环；终端 UI 沿用原产品隐藏要求 |
+| C07 停止与前轮命令回收 | P turn/interrupt + backgroundTerminals list/terminate；T | 停止、回收状态、失败重试 | 实验 API 已启用；仅匹配前轮 itemId | 保留；CW-009 已接入；单进程、同线程旧后台任务、A/B 隔离、失败重试、目标暂停及回收期间导航通过 |
+| C08 审批/拒绝/用户问题/权限请求 | P ServerRequest、resolved | 高级设置中的当前分析权限、实际审批卡片和明确归属 | 原生策略与requirements；自动审核需guardian_approval启用及Flash工具能力；不要求ChatGPT登录 | 保留三档；会话级界面8/8含真实新建Flash，人工拒绝文件未创建、原生auto_review允许后命令输出、full实际文件后恢复工作区模式均有真实证据；初次ask测试等待失败及增量重复full另记，不称一次3/3。后续真实通知先于ACK、同线程resume确认等9组协议/浏览器增量与12项状态单测通过；ask↔auto请求不重写沙箱以保留profile来源，不声称命名profile全部组合已验 |
 | C09 多会话并发 | P thread/turn IDs；T 原生线程管理 | 侧栏运行状态、分会话草稿 | 不同 cwd 才隔离文件；不等于租户边界 | 保留；前轮 A/B 事件与文件已验证 |
-| C10 手动/自动压缩、上下文统计 | P compact、tokenUsage；C catalog | 统计圆环和原生配置；压缩按设置自动触发，不提供 `/compact` | 压缩调用当前Flash；可能丢细节 | 保留原生压缩能力及自动路径；本批移除 `/compact` 菜单与分发，不改自动压缩。历史手动请求及原生contextCompaction完成已验证；前批手动1组、自动及阈值恢复2组通过；临时阈值20,000，真实31,554→27,493并续聊保留标记，不冒充默认阈值实耗验收；上下文默认按最近采样/核实完整窗口，实际10534/1048576=1.0%，分页恢复丢统计已修复，12+4行为与4组只读浏览器通过 |
-| C11 计划模式/步骤 | P collaborationMode、plan delta、turn/plan/updated | 输入框下方“计划模式”显式开关；自然语言需求、计划确认、步骤状态；不提供 `/plan` | 模型须遵循计划/工具协议 | 条件保留；本批明确开关经真实浏览器12组中的新草稿、已有线程设置on/off/等待/原生拒绝重试验证，0模型；自然语言按计划模式提交由受控传输行为检查，不冒充真实模型。旧 `/plan` 两种形式均不再分发；本轮未重测模型计划或批准执行。前批命令幂等、prefix提交和退出测试：无模型浏览器9/9、确定性20/20、真实Flash5/5（2任务、无工具/文件改动），仅为旧入口历史；当时未重复批准执行。历史验证：最新Flash真实Sakila计划→编辑批准→首查询完成→停止待审批的下一查询→改条件继续→步骤完成和三问回答6/6；普通聊天一次三问另通过。保留草稿、恢复模式竞态已修；不是持久步骤调度或数据库事务断点，逐SQL审批取决于原生工具策略；输入框上方真实步骤摘要和等待/终态可见，13状态+12合成UI+3真实Flash通过 |
-| C12 持续目标 | P thread/goal set/get/clear；T | /goal，状态、暂停/继续 | 原生目标工具与预算；非云调度 | 保留；完整生命周期及CW-021通过；网页独立真实观测与原生预算分列，16项行为+6组Flash通过。原生首回合/终态漏计不可写回，明确未知/下界及预算限制 |
-| C13 源码自带Skills发现/启停/调用 | skills/src/assets/samples；P skills/list、config/write、UserInput.skill | 技能页启停、对话按任务调用；不进 `/` 菜单，不再提供额外导入 | 保留四个原生Skill；在线依赖分开核实 | 保留；四个均真实Flash调用，5组验收；2375个非原生定义已从项目受管目录清理，宿主全局目录不动 |
-| C14 stdio MCP / 工具 / 资源 | P mcpServer*；原生 MCP manager | 服务配置、状态、按需详情、对话调用 | 本机进程可离线；模型工具格式 | 保留；本轮本地真实 MCP + Flash/Pro 验收 |
+| C10 手动/自动压缩、上下文统计 | P compact、tokenUsage；C catalog | 统计圆环和原生配置；压缩按设置自动触发，不提供 `/compact` | 压缩调用当前Flash；可能丢细节 | 保留原生压缩能力及自动路径；前批移除 `/compact` 菜单与分发，不改自动压缩。历史手动请求及原生contextCompaction完成已验证；前批手动1组、自动及阈值恢复2组通过；临时阈值20,000，真实31,554→27,493并续聊保留标记，不冒充默认阈值实耗验收；上下文默认按最近采样/核实完整窗口，实际10534/1048576=1.0%，分页恢复丢统计已修复，12+4行为与4组只读浏览器通过 |
+| C11 计划模式／步骤 | P collaborationMode、plan delta、turn/plan/updated；公开 thread/settings/update | 唯一 `/plan` bare／inline；计划状态、退出、整体确认与真实步骤；无显式开关 | 模型须遵循计划／工具与方案标记格式；Default 决策与原生 Plan 分别核验 | 条件保留；计划与自动衔接确定性70/70，最终浏览器原生设置及夹具决策衔接通过；Default 仅在成功完成后由 Web 等待原生通知转 Plan，不把生成过程冒充 Plan，不新增模型回合。真实Flash手动计划链7/7、自动决策修后链7/7各4回合，计划修改／批准／中断／继续／三问和产出已验；简单问题1回合3/3保持Default直接查询。复杂题曾直接申请SQL而未提方案，修语义指引后重跑通过，失败保留；语义策略不是权限强制保证。历史Sakila6/6另记；不是数据库事务断点或逐SQL审批 |
+| C12 持续目标 | P thread/goal set/get/clear；T | 高级设置中的持续目标、状态、暂停／继续；不提供 `/goal` | 原生目标工具与预算；非云调度 | 保留；完整生命周期及CW-021通过；网页独立真实观测与原生预算分列，16项行为+6组Flash通过。原生首回合/终态漏计不可写回，明确未知/下界及预算限制 |
+| C13 源码自带Skills发现/启停/调用 | skills/src/assets/samples；P skills/list、config/write、UserInput.skill | 保留主技能页供用户配置启停、对话按任务调用；不进 `/` 菜单，不再提供额外导入 | 保留四个原生Skill；在线依赖分开核实 | 保留；四个均真实Flash调用，5组验收；2375个非原生定义已从项目受管目录清理，宿主全局目录不动 |
+| C14 stdio MCP / 工具 / 资源 | P mcpServer*；原生 MCP manager | 保留主 MCP 页供用户添加／配置／启停、查看状态和工具资源 | 本机进程可离线；模型工具格式 | 保留；前轮本地真实 MCP + Flash/Pro 验收 |
 | C15 HTTP MCP / OAuth / elicitation | P OAuth、tools、resources、ServerRequest | HTTP配置、服务授权和确认 | 按实际国内/内网端点及后端依赖判定，OAuth不等于ChatGPT登录 | 条件保留；本机HTTP/OAuth 6组通过；另真实远端24好玩匿名MCP经网页添加、8工具/1资源目录、Flash搜索→详情、启停及清理4项增量通过，含真实429错误反馈；未逐个调用全部工具或读取资源内容，不泛化其他服务 |
 | C16 本地插件/市场 | P plugin/list/read/install、marketplace APIs；实际来源配置 | 插件目录、协议操作 | 本地目录/国内源可用；插件内部网络逐项核实 | 条件保留底层能力，按用户要求隐藏常规前端入口；Playwright代表性验收及额外true失败证据保留。测试插件/MCP现已卸载并核查；不恢复云Apps或安装非原生Skill |
 | C17 云端Apps/连接器 | A apps_enabled_for_auth / uses_codex_backend | 已移除对应操作入口 | 当前实现强依赖云端账号且无现成国内路径 | 排除；前后端均拒绝app/*；保留本地插件/MCP及原始协议定义 |
@@ -91,18 +104,20 @@
 | C19 生图/快速档位 | 原生image_generation、fast_mode、service_tier及内置imagegen | 已移除对应操作与Skill入口 | 用户明确移除，无替代模型接入 | 移除；原生受支持启动配置关闭、后端拒绝重新启用；源包能力定义不改，Flash图像输入保留 |
 | C20 图片上传/预览/本地图片显示 | P UserInput image、fs/readFile；C modalities | 附件、图片预览 | Flash 目录声明 image；Pro 仅 text；不能自动换模型 | 条件保留；Flash 真实本地色块识图通过；Pro 图像发送前拒绝并保留草稿/附件，无切换模型 |
 | C21 实时语音/音频/语音列表 | P thread/realtime APIs及实验WS配置 | 保留定义，当前不提供启动操作 | 原生默认GPT实时模型；Flash无已配置且验证的实时服务 | 条件未满足；start明确拒绝，不发默认GPT请求；不能据此宣称所有可配置实时服务永久绑定ChatGPT |
-| C22 搜索/联网浏览 | 原生工具及MCP | 工具活动/具体服务配置 | Flash Responses托管web_search不作为已支持路径；国内MCP另按配置验证 | 条件保留；默认web_search=disabled；前轮Pro实测为历史，不能替代本轮Flash验证 |
-| C23 Hooks | P hooks/list；core hooks 执行器 | 配置入口、执行事件 | 本地命令可离线；具体 hook 可访问外网 | 条件保留；无需为每个自动 hook 加按钮；本轮线程级五类生命周期事件与真实命令通过，全局配置/文件哈希不变；不泛化所有处理器类型 |
-| C24 Guardian自动审核 | P审核事件/确认；ext/guardian-reviewer模型选择 | 输入框“帮我批准”、审核结果及用户确认 | 当前目录无默认审核模型时原生回退父Flash；需要guardian_approval和策略允许，未独立捕获HTTP请求体 | 条件保留；前批真实允许、拒绝及手动确认2组保留；本批经权限选择器切为auto_review后真实approved与命令stdout通过。自动审核会拒绝，不是全部批准，手动确认只记录授权不自动重执行 |
+| C22 搜索/联网浏览 | 原生工具及MCP | 工具活动/具体服务配置 | Flash Responses托管web_search不作为已支持路径；国内MCP另按配置验证 | 条件保留；默认web_search=disabled；前轮Pro实测为历史，不能替代前轮Flash验证 |
+| C23 Hooks | P hooks/list；core hooks 执行器 | 配置入口、执行事件 | 本地命令可离线；具体 hook 可访问外网 | 条件保留；无需为每个自动 hook 加按钮；前轮线程级五类生命周期事件与真实命令通过，全局配置/文件哈希不变；不泛化所有处理器类型 |
+| C24 Guardian自动审核 | P审核事件/确认；ext/guardian-reviewer模型选择 | 高级设置中的“帮我批准”、实际审核结果及用户确认 | 当前目录无默认审核模型时原生回退父Flash；需要guardian_approval和策略允许，未独立捕获HTTP请求体 | 条件保留；前批真实允许、拒绝及手动确认2组保留；前批经权限选择器切为auto_review后真实approved与命令stdout通过。自动审核会拒绝，不是全部批准，手动确认只记录授权不自动重执行 |
 | C25 记忆 | P memory/status、thread/memory；原生memories工具 | 配置/协议和原生工具 | 辅助模型显式Flash；原生自动提取要求源会话至少闲置1小时 | 条件保留；真实笔记新增/读取/检索通过；自然满一小时后6条历史真实提取、v2合并及3583字符原生摘要读回，v2Ready=true；全局功能未擅自开启 |
-| C26 队列/分组/会话附件 | P thread/queue、threadSection、attachment APIs | 通用协议；无需为了接口增按钮 | queue/add可自动执行，CRUD需未加载线程；存储与模型交付分开 | 条件保留；本轮存储3组通过：增改删、排序、分页、刷新、隔离和附件归档过滤；另有Flash自动消费、忙碌拒绝与停止后手动启动2组真实通过，不以CRUD冒充执行 |
+| C26 队列/分组/会话附件 | P thread/queue、threadSection、attachment APIs | 通用协议；无需为了接口增按钮 | queue/add可自动执行，CRUD需未加载线程；存储与模型交付分开 | 条件保留；前轮存储3组通过：增改删、排序、分页、刷新、隔离和附件归档过滤；另有Flash自动消费、忙碌拒绝与停止后手动启动2组真实通过，不以CRUD冒充执行 |
 | C27 子代理/审查 | 原生 spawn-agent tools、P review/start | 对话工具事件、原生能力面板；不提供 `/review` | 模型工具能力；可独立第三方配置 | 条件保留；历史 `/review` 真实审查未提交除零修改并完成，未增加普通turn/start；目录正确声明原生V1，真实同连接审查后新父worker 2/2通过，完整任务/父子关联/Flash身份/文件结果已验；非前端串线。V2字段编码不兼容、旧V2会话需新建，不重写循环 |
-| C28 数据库/图表/完整结果 | Web独立只读MCP；不是Codex内置数据库 | 数据库页、结果和图表 | 本机/国内数据库与既有驱动；资源本地 | 保留扩展；本轮MySQL/PostgreSQL/ClickHouse/Elasticsearch真实读取、跨库范围、写入拒绝及Flash真实图表已复验；不是仅历史证据；新增Sakila复杂三问真实计划/批准/停止/修改继续/最终结果6/6、普通一轮多问通过。SQL结构及日期format误判修复，13项回归及真实聚合通过；最新MCP原SQL浏览器完整链3/3通过，run3旧MCP一次format拒绝与透明恢复保留 |
+| C28 数据库/图表/完整结果 | Web独立只读MCP；不是Codex内置数据库 | 主数据源页直接配置管理启停；对应对话20行分页表格、图表和下载 | 本机/国内数据库与既有驱动；资源本地 | 保留扩展；本轮真实PG247行／31行派生结果分页及CSV9/9，真实Flash手动／自动完整链各7/7，普通简单查询3/3；前轮MySQL/PostgreSQL/ClickHouse/Elasticsearch真实读取、跨库范围、写入拒绝及Flash真实图表已复验；这些为历史真实能力证据；新增Sakila复杂三问真实计划/批准/停止/修改继续/最终结果6/6、普通一轮多问通过。SQL结构及日期format误判修复，13项回归及真实聚合通过；最新MCP原SQL浏览器完整链3/3通过，run3旧MCP一次format拒绝与透明恢复保留 |
 | C29 本地反馈 | P feedback/save | 操作入口已移除 | 用户明确移除 | 排除；后端拒绝feedback/*，不再创建反馈包 |
 | C30 上传反馈 | P feedback/upload | 操作入口已移除 | 用户明确移除且网络范围外 | 排除；前后端拒绝，不上传 |
 | C31 平台/远程环境 | P windowsSandbox、environment、remoteControl | 协议定义/条件说明 | Windows 不适用 Linux；远程控制中继、认证、网络待核实 | Windows 条件保留；原生 remoteControl 的 auth.rs 明确拒绝 API key、要求 ChatGPT，因此当前远程控制路径排除；environment 其余配置待核实 |
 | C32 云插件分享/内部测试入口 | core-plugins remote::ensure_chatgpt_auth、mock协议 | 已移除对应执行入口，保留定义 | 分享要求ChatGPT/workspace；内部测试非业务能力 | 排除对应路径；不阻断本地plugin/list/read/install及MCP |
 | C33 云自动化/画布/闭源桌面专属 | 未找到该锁定版本适合本项目的公开入口 | 不伪造入口 | 闭源/私有或证据不足 | 待核实/超范围，不能把原生持续目标认作定时调度 |
+| C35 分析任务上下文与数据发现 | P turn/start.additionalContext；现有只读数据库 MCP | 不提供手工来源选择；Agent 发现全部已配置、启用、可用且获授权连接 | 固定 Flash 与实际连接／权限；没有新增账号依赖 | 保留；只传用途说明，不传凭据，不增加选择状态或授权。直接连接管理与真实拒绝连接已验；本轮Flash通过MCP发现独立只读PG并执行成功，手动链／自动链各7/7，简单Default直接查询3/3，权限与数据hash保持；不泛化其他provider／数据库配置 |
+| C36 对话内结果与结论导出 | 成功 done MCP structuredContent／文本 JSON 引用；已完成 agentMessage；本地 Markdown | 对应结果／图表卡 CSV／PNG，每条完成回答 Markdown；无成果栏 | 实际成功结果；同轮且已加载；导出受导航／恢复保护 | 保留；31项生产函数行为与最终浏览器显式事件夹具验证同轮隔离／完成状态及两条Markdown下载；真实Flash两条完整链各7/7包含CSV、PNG、Markdown实际下载；另PG247行全量CSV及31行派生分页浏览器9/9（0模型，渲染入口为明确事件夹具），不混作native模型查询。未新增PDF／Word／逐句审计 |
 | C34 多租户 | 现 Web 单 token、同 UID/env/CODEX_HOME，不是上游业务能力 | 当前个人服务，无租户 UI | 必须后端授权 + 密钥/文件/执行环境/配额隔离 | 当前未实现；单独范围工作，不将本次定向进程回收宣称租户隔离 |
 
 最新证据见 [WEB_AUDIT.md](WEB_AUDIT.md) 和本轮 summary。排除路径由前后端校验，Web启动原生进程使用支持的关闭配置；这不等于OS出口策略、多租户隔离或任意命令/MCP的安全白名单。协议源定义176项保持原样，界面只列当前范围内操作；用户文件、历史、授权和Codex源包保留。

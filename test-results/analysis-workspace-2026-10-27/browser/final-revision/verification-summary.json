@@ -1,0 +1,141 @@
+{
+  "stage": "Final interaction revision after user correction",
+  "date": "2026-10-27",
+  "evidence": "results.json",
+  "counts": {
+    "passed": 13,
+    "failed": 0,
+    "browserErrors": [],
+    "nativeModelRequests": 0
+  },
+  "environment": {
+    "base": "http://127.0.0.1:18871",
+    "codexHome": "/tmp/codex-analysis-final-browser-20261027/home",
+    "workspace": "/tmp/codex-analysis-final-browser-20261027/workspace",
+    "credentials": "DEEPSEEK_API_KEY and OPENAI_API_KEY explicitly removed for the independent server. No old credentials or user history read.",
+    "database": "Independent test state; localhost port 1 genuinely refused a connection. No business database used."
+  },
+  "finalBehavior": [
+    "No results sidebar, input data-source picker or visible Plan switch",
+    "Data source connections managed directly on their page; no per-analysis selection",
+    "Only /plan in slash menu; bare enters idempotently, inline strips prefix and selects native Plan parameters",
+    "Read-only Plan status plus exit button",
+    "Completed result downloads displayed in their conversation; each conclusion download scoped to its answer and same turn",
+    "Skills and MCP main management entry points retained; engineering controls accessible in advanced settings"
+  ],
+  "realNativeVerification": [
+    "Existing thread Plan/default settings request and notification",
+    "Native mode change after an explicit synthetic model-decision event, waiting for the actual native notification and submitting no further task",
+    "Original advanced controls retain DOM identity, values and permission dialog handlers",
+    "Initialization preview and native goal read dialog do not submit work"
+  ],
+  "realBackendVerification": [
+    "Connection creation/editing/enablement/disablement and removal in the isolated database store",
+    "Genuine local connection refusal is shown instead of a success state",
+    "After an injected browser transport failure, retry reloads the real backend list without losing the unsent draft"
+  ],
+  "explicitFixtures": [
+    {
+      "kind": "Inline /plan transport failure",
+      "scope": "Captures production submission parameters and rejects before native turn/start. Verifies prefix stripping, mode parameters and retained input; no fake success."
+    },
+    {
+      "kind": "Transcript UI events",
+      "scope": "Clearly marked synthetic handleEvent messages test in-progress/completed/failed download visibility, visible query cards and two actual Markdown downloads with distinct same-turn result IDs. No live query or model response supplied."
+    },
+    {
+      "kind": "Automatic plan decision",
+      "scope": "Model decision is synthetic; the subsequent native settings request and confirmation are real. Does not verify that DeepSeek chooses to emit a proposal."
+    },
+    {
+      "kind": "Network failure",
+      "scope": "One list request is aborted deliberately. Retry uses the actual backend response; no successful response is simulated."
+    }
+  ],
+  "regression": {
+    "confirmedProductBug": "After item/completed but before turn/completed the report download was incorrectly visible; reproduced through explicit UI events and preserved before screenshot.",
+    "before": "inline-rendering-before/results.json",
+    "beforeScreenshot": "inline-rendering-before/failure-1.png",
+    "after": "inline-rendering-after/results.json",
+    "final": "results.json",
+    "relatedCodeFixes": [
+      "Download refresh now runs after event state merges; a completed answer remaining hidden was a code-inferred ordering risk, not separately reproduced before the first assertion stopped the test.",
+      "Query result cards are excluded from folded activity grouping. Final browser verification confirms visible inline cards."
+    ]
+  },
+  "testHarnessCorrections": [
+    {
+      "evidence": "initial/results.json",
+      "cause": "New empty native thread had no persisted rollout. Restored the unique user-only storage injection used by existing tests; this is not a product regression."
+    },
+    {
+      "evidence": "attempt2/results.json",
+      "cause": "An assertion counted hidden retained slash-menu DOM. Corrected to inspect visible entries and menu visibility; no product workaround."
+    }
+  ],
+  "previousStage": {
+    "summary": "../verification-summary.json",
+    "note": "The former 12/12 result applies only to the superseded intermediate sidebar/source-picker/Plan-switch UI and is retained as history."
+  },
+  "managementRegression": {
+    "previousRealVerification": "../final/results.json",
+    "note": "Built-in skill disable/enable and local stdio MCP add/disable/enable/actual echo were already verified. Final-stage entry reachability was checked without needlessly repeating unchanged configuration writes."
+  },
+  "visualInspection": {
+    "viewports": [
+      [
+        1440,
+        960
+      ],
+      [
+        1024,
+        960
+      ]
+    ],
+    "screenshots": [
+      "analysis-home-1440.png",
+      "inline-downloads-explicit-ui-fixtures.png",
+      "analysis-composer-1024.png",
+      "analysis-composer-dark-1440.png"
+    ],
+    "result": "Manually viewed all four; controls and inline outputs remain visible without horizontal page overflow."
+  },
+  "notVerified": [
+    "Actual DeepSeek Flash generation with the final analyst instruction context",
+    "Real model choice to emit a proposed plan and subsequent multi-turn refinement",
+    "Successful live database querying, real chart/CSV output and a model-generated report in this final UI",
+    "Production remote and multi-tenant isolation; mobile and international-egress restriction testing are outside this task"
+  ],
+  "cleanup": [
+    {
+      "kind": "owned failed database connection",
+      "id": "817db70323ed1cc2fc983b75",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17c9c-968f-70e1-8ceb-812de096fc37",
+      "deleted": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17c9c-93e9-7050-b67d-3d4f7f18ba55",
+      "deleted": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17c9c-79c8-7cf2-924a-eb59c1abe518",
+      "deleted": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17c9c-752c-7f00-9e9f-1d2331bd4342",
+      "deleted": true
+    },
+    {
+      "kind": "configuration integrity",
+      "mcpPreserved": true,
+      "providerPreserved": true
+    }
+  ]
+}

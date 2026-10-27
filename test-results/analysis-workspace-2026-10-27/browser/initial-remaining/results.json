@@ -1,0 +1,87 @@
+{
+  "scope": "Real browser/native settings, built-in skill configuration and local stdio MCP. New synthetic storage only. No model invocation; no live database/query/chart/report workflow.",
+  "base": "http://127.0.0.1:18871",
+  "home": "/tmp/codex-analysis-workspace-browser-20261027/home",
+  "workspace": "/tmp/codex-analysis-workspace-browser-20261027/workspace",
+  "results": [
+    {
+      "name": "数据源添加真实失败连接并显示原因，主页面不可将其当作可用连接",
+      "status": "passed",
+      "evidence": {
+        "failedConnectionId": "b0b8951dcea1d8f5bf0c87cc",
+        "error": "(2003, \"Can't connect to MySQL server on '127.0.0.1' ([Errno 111] Connection refused)\")",
+        "unavailableSourceDisabled": true,
+        "queryNotInvoked": true
+      }
+    },
+    {
+      "name": "资料与成果以当前分析为范围，空会话不展示其他分析成果",
+      "status": "passed",
+      "evidence": {
+        "newAnalysisEmpty": true,
+        "storedUserOnlyAnalysisEmpty": true,
+        "noForeignResultsExposed": true,
+        "panelClosedOnNewAnalysis": false
+      }
+    },
+    {
+      "name": "1440 与 1024 桌面宽度中主操作可见且不横向溢出",
+      "status": "passed",
+      "evidence": {
+        "sizes": [
+          {
+            "viewport": 1440,
+            "scrollWidth": 1440,
+            "composerWidth": 756,
+            "promptWidth": 726
+          },
+          {
+            "viewport": 1024,
+            "scrollWidth": 1024,
+            "composerWidth": 456,
+            "promptWidth": 426
+          }
+        ],
+        "mobileNotInScope": true
+      }
+    }
+  ],
+  "browserErrors": [],
+  "modelRequests": 0,
+  "nativeMethods": [
+    "initialize",
+    "initialized",
+    "thread/list",
+    "model/list",
+    "config/read",
+    "config/read",
+    "config/read",
+    "thread/start",
+    "thread/list",
+    "thread/inject_items",
+    "thread/read",
+    "thread/resume",
+    "config/read",
+    "config/read",
+    "thread/delete"
+  ],
+  "settingsEvents": [],
+  "cleanup": [
+    {
+      "kind": "owned database connection",
+      "id": "b0b8951dcea1d8f5bf0c87cc",
+      "removed": true
+    },
+    {
+      "kind": "owned local MCP config",
+      "removed": true,
+      "otherMcpPreserved": true,
+      "providerPreserved": true
+    },
+    {
+      "kind": "owned user-only thread",
+      "id": "01a17c75-098b-7801-84a0-499d68d8b0fb",
+      "deleted": true
+    }
+  ]
+}

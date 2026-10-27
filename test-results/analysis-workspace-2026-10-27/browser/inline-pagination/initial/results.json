@@ -1,0 +1,229 @@
+{
+  "scope": "Independent real PostgreSQL fixture and real backend query snapshots. Explicit handleEvent MCP completion fixtures test normal inline rendering only; no native MCP/model query and no model decision is claimed.",
+  "base": "http://127.0.0.1:18871",
+  "home": "/tmp/codex-inline-pagination-browser-20261027/home",
+  "workspace": "/tmp/codex-inline-pagination-browser-20261027/workspace",
+  "results": [
+    {
+      "name": "独立只读 PostgreSQL 实际执行247行查询并保存完整快照",
+      "status": "passed",
+      "evidence": {
+        "engine": "postgresql",
+        "readOnlyValidated": true,
+        "actualRows": 247,
+        "complete": true,
+        "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+        "queryKind": "Real PostgreSQL evaluation of synthetic literal data; no business table modified"
+      }
+    },
+    {
+      "name": "对应对话内自动显示真实快照前20行，SQL默认折叠且CSV只出现一次",
+      "status": "passed",
+      "evidence": {
+        "automaticRows": 20,
+        "totalRows": 247,
+        "pages": 13,
+        "csvLinksPerResult": 1,
+        "sqlInitiallyCollapsed": true,
+        "inlineNotModal": true
+      }
+    },
+    {
+      "name": "上一页和下一页读取真实20行分页，首尾按钮状态准确",
+      "status": "passed",
+      "evidence": {
+        "firstPage": [
+          1,
+          20
+        ],
+        "secondPage": [
+          21,
+          40
+        ],
+        "realSnapshotOffset20Observed": true
+      }
+    },
+    {
+      "name": "输入页码跳至末页7行，越界输入不请求不存在的页",
+      "status": "passed",
+      "evidence": {
+        "lastPage": [
+          241,
+          247
+        ],
+        "lastPageRows": 7,
+        "totalPages": 13,
+        "outOfRangeRequestsSent": false
+      }
+    },
+    {
+      "name": "读取失败保留原表格并提供重试，重试后加载真实下一页",
+      "status": "passed",
+      "evidence": {
+        "transportFailureInjected": true,
+        "previousPagePreserved": true,
+        "retriedRealRows": [
+          21,
+          40
+        ],
+        "noSuccessfulResponseSimulated": true
+      }
+    },
+    {
+      "name": "read_result 不重复展示，重复 query_database 同一结果仅保留一张可见卡",
+      "status": "passed",
+      "evidence": {
+        "readResultCreatedNoVisibleDuplicate": true,
+        "repeatedSameResultHasOneVisibleCard": true,
+        "visibleCsvLinks": 1
+      }
+    },
+    {
+      "name": "analyze_result 的真实派生快照独立展示并分页，不混入原结果",
+      "status": "passed",
+      "evidence": {
+        "derivedRows": 31,
+        "derivedSecondPage": [
+          11,
+          1
+        ],
+        "originalResultId": "c30c1843b310fc89154bf0185eb96ee5",
+        "derivedResultId": "eb4d7b0b5b29d24d22d92a9de13bba29",
+        "oneCsvPerDistinctResult": true
+      }
+    },
+    {
+      "name": "唯一CSV入口实际下载全部247行，与当前20行分页显示独立",
+      "status": "passed",
+      "evidence": {
+        "downloadedDataRows": 247,
+        "header": "row_id,label",
+        "firstRow": "1,分页验收",
+        "lastRow": "247,分页验收",
+        "realBackendCsvDownload": true
+      }
+    },
+    {
+      "name": "切换新分析不保留上一分析结果卡，也不打开额外成果侧栏",
+      "status": "passed",
+      "evidence": {
+        "resultCardsClearedOnNewAnalysis": true,
+        "noExtraSidebar": true
+      }
+    }
+  ],
+  "browserErrors": [],
+  "nativeModelRequests": 0,
+  "nativeMethods": [
+    "initialize",
+    "initialized",
+    "thread/list",
+    "model/list",
+    "config/read",
+    "config/read",
+    "thread/start",
+    "thread/list",
+    "thread/inject_items",
+    "thread/read",
+    "thread/resume",
+    "thread/list",
+    "thread/delete",
+    "thread/list",
+    "config/read"
+  ],
+  "pageRequests": [
+    {
+      "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+      "offset": 0,
+      "limit": 20
+    },
+    {
+      "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+      "offset": 0,
+      "limit": 20
+    },
+    {
+      "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+      "offset": 20,
+      "limit": 20
+    },
+    {
+      "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+      "offset": 0,
+      "limit": 20
+    },
+    {
+      "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+      "offset": 240,
+      "limit": 20
+    },
+    {
+      "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+      "offset": 0,
+      "limit": 20
+    },
+    {
+      "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+      "offset": 20,
+      "limit": 20
+    },
+    {
+      "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+      "offset": 20,
+      "limit": 20
+    },
+    {
+      "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+      "offset": 0,
+      "limit": 20
+    },
+    {
+      "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+      "offset": 0,
+      "limit": 20
+    },
+    {
+      "resultId": "eb4d7b0b5b29d24d22d92a9de13bba29",
+      "offset": 0,
+      "limit": 20
+    },
+    {
+      "resultId": "eb4d7b0b5b29d24d22d92a9de13bba29",
+      "offset": 20,
+      "limit": 20
+    }
+  ],
+  "databaseEvidence": {
+    "engine": "postgresql",
+    "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+    "rowCount": 247,
+    "complete": true,
+    "sha256": "c5c71db0f810ac32f9962d9d5f70abc4af563fabc88c514eb391a9a40755adee",
+    "readOnly": true
+  },
+  "cleanup": [
+    {
+      "kind": "owned actual snapshot",
+      "resultId": "c30c1843b310fc89154bf0185eb96ee5",
+      "removed": true
+    },
+    {
+      "kind": "owned actual snapshot",
+      "resultId": "eb4d7b0b5b29d24d22d92a9de13bba29",
+      "removed": true
+    },
+    {
+      "kind": "owned readonly PostgreSQL connection",
+      "removed": true
+    },
+    {
+      "kind": "owned native storage thread",
+      "threadId": "01a17cb1-7a61-7941-b59d-789b8a8fede6",
+      "deleted": true
+    },
+    {
+      "kind": "configuration integrity",
+      "providerAndMcpPreserved": true
+    }
+  ]
+}

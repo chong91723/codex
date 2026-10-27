@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-27",
+  "scope": "Real PostgreSQL query execution and complete immutable query snapshots, passed into the production renderer through explicitly synthetic MCP-completion UI events. No model request or native MCP query is claimed.",
+  "evidence": "results.json",
+  "counts": {
+    "passed": 9,
+    "failed": 0,
+    "browserErrors": [],
+    "nativeModelRequests": 0
+  },
+  "environment": {
+    "web": "http://127.0.0.1:18871",
+    "home": "/tmp/codex-inline-pagination-browser-20261027/home",
+    "workspace": "/tmp/codex-inline-pagination-browser-20261027/workspace",
+    "database": "127.0.0.1:15876 / analysis_fixture; disposable read-only account supplied through test environment, no credential copied into source or evidence",
+    "foreignInstance": "18872 and its model profile, connections and threads were not touched"
+  },
+  "actualData": {
+    "engine": "postgresql",
+    "resultId": "21ba699e3354a2f8fe4d6d19b01577c2",
+    "rowCount": 247,
+    "complete": true,
+    "sha256": "c5c71db0f810ac32f9962d9d5f70abc4af563fabc88c514eb391a9a40755adee",
+    "readOnly": true
+  },
+  "verified": [
+    "Actual read-only PostgreSQL validation and 247-row SQL evaluation using synthetic literal data",
+    "First 20 rows automatically visible inside the conversation; SQL collapsed; one CSV link per result; no view-data modal button",
+    "Previous/next request exact real snapshot offsets in 20-row pages",
+    "Jump to page 13 returns rows 241–247; page 0 and 14 show an explicit range error, restore page 13 and issue no page request",
+    "Injected read transport failure preserves previous rows; retry loads actual next-page data",
+    "read_result events do not create another result card; repeated same result ID has one visible card",
+    "Actual local analyze_result snapshot has 31 rows with independent paging and result identity",
+    "Actual backend CSV download contains header plus all 247 rows, irrespective of current page",
+    "New analysis clears previous visible result cards without opening another sidebar"
+  ],
+  "fixtures": {
+    "queryData": "PostgreSQL actually evaluated UNION ALL literal rows; no business tables or data were changed.",
+    "ui": "Standard handleEvent item/completed events contain the actual snapshot manifest and result IDs; no fabricated successful database response is supplied.",
+    "failure": "A single browser result request is aborted deliberately; retry reads the actual snapshot."
+  },
+  "visual": {
+    "viewport": [
+      1440,
+      960
+    ],
+    "manuallyViewed": [
+      "inline-first-page-1440.png",
+      "inline-page-jump-1440.png",
+      "inline-distinct-results-1440.png"
+    ],
+    "observed": "The inline table, pager, jump input and single per-result CSV control remain visible; last page and explicit invalid-page feedback are shown."
+  },
+  "downloadArtifact": "actual-postgresql-fixture-247.csv",
+  "notVerified": [
+    "DeepSeek or native MCP creating these results in this independent browser test",
+    "Production business database or remote service behavior"
+  ],
+  "previousResults": "The earlier 13-check workspace UI record is preserved and is not substituted for this real-snapshot pagination verification.",
+  "cleanup": [
+    {
+      "kind": "owned actual snapshot",
+      "resultId": "21ba699e3354a2f8fe4d6d19b01577c2",
+      "removed": true
+    },
+    {
+      "kind": "owned actual snapshot",
+      "resultId": "4dbeb9cbc8c59505deb10f52aa2d437c",
+      "removed": true
+    },
+    {
+      "kind": "owned readonly PostgreSQL connection",
+      "removed": true
+    },
+    {
+      "kind": "owned native storage thread",
+      "threadId": "01a17cb2-e194-79a3-b952-fc49139f8f1c",
+      "deleted": true
+    },
+    {
+      "kind": "configuration integrity",
+      "providerAndMcpPreserved": true
+    }
+  ]
+}

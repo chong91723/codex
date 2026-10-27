@@ -1,0 +1,172 @@
+TAP version 13
+# Subtest: only one complete nonempty proposal block is an autonomous mode decision
+not ok 1 - only one complete nonempty proposal block is an autonomous mode decision
+  ---
+  duration_ms: 4.504288
+  type: 'test'
+  location: '/root/Codex/web/tests/analysis_auto_plan.mjs:35:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    <proposed_plan>A</proposed_plan> extra </proposed_plan>
+    + actual - expected
+
+    + 'A</proposed_plan> extra'
+    - null
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual: 'A</proposed_plan> extra'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/analysis_auto_plan.mjs:37:347)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.start (node:internal/test_runner/test:1262:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+  ...
+# Subtest: rendering a historical model proposal does not issue settings or task requests
+ok 2 - rendering a historical model proposal does not issue settings or task requests
+  ---
+  duration_ms: 1.309117
+  type: 'test'
+  ...
+# Subtest: a live proposal without an owned web submission cannot switch modes
+ok 3 - a live proposal without an owned web submission cannot switch modes
+  ---
+  duration_ms: 1.586375
+  type: 'test'
+  ...
+# Subtest: native Plan submissions are not registered for default-to-Plan adaptation
+ok 4 - native Plan submissions are not registered for default-to-Plan adaptation
+  ---
+  duration_ms: 2.666522
+  type: 'test'
+  ...
+# Subtest: failed default turn does not enter native Plan
+ok 5 - failed default turn does not enter native Plan
+  ---
+  duration_ms: 1.032138
+  type: 'test'
+  ...
+# Subtest: interrupted default turn does not enter native Plan
+ok 6 - interrupted default turn does not enter native Plan
+  ---
+  duration_ms: 1.08448
+  type: 'test'
+  ...
+# Subtest: commentary and ordinary final answers are not mode decisions
+ok 7 - commentary and ordinary final answers are not mode decisions
+  ---
+  duration_ms: 2.755409
+  type: 'test'
+  ...
+# Subtest: a completed proposal waits for turn completion instead of changing an active turn
+ok 8 - a completed proposal waits for turn completion instead of changing an active turn
+  ---
+  duration_ms: 1.649415
+  type: 'test'
+  ...
+# Subtest: ACK alone cannot claim native Plan; only a matching real-event fixture confirms it
+ok 9 - ACK alone cannot claim native Plan; only a matching real-event fixture confirms it
+  ---
+  duration_ms: 1.485077
+  type: 'test'
+  ...
+# Subtest: matching settings notification before delayed ACK resolves without waiting or later reversal
+ok 10 - matching settings notification before delayed ACK resolves without waiting or later reversal
+  ---
+  duration_ms: 1.525231
+  type: 'test'
+  ...
+# Subtest: duplicated item and turn completion events make only one native settings request
+ok 11 - duplicated item and turn completion events make only one native settings request
+  ---
+  duration_ms: 1.573542
+  type: 'test'
+  ...
+# Subtest: real completion events arriving before submission ACK are associated after ownership registration
+ok 12 - real completion events arriving before submission ACK are associated after ownership registration
+  ---
+  duration_ms: 1.386212
+  type: 'test'
+  ...
+# Subtest: native settings rejection preserves the proposal and never retries or starts a model task
+ok 13 - native settings rejection preserves the proposal and never retries or starts a model task
+  ---
+  duration_ms: 1.421327
+  type: 'test'
+  ...
+# Subtest: connection close fails pending adaptation; a late ACK cannot display success
+ok 14 - connection close fails pending adaptation; a late ACK cannot display success
+  ---
+  duration_ms: 1.214296
+  type: 'test'
+  ...
+# Subtest: confirmation deadline preserves a diagnostic without automatic resend or fake success
+ok 15 - confirmation deadline preserves a diagnostic without automatic resend or fake success
+  ---
+  duration_ms: 1.458038
+  type: 'test'
+  ...
+# Subtest: an owner connection replaced before adaptation makes no settings request
+ok 16 - an owner connection replaced before adaptation makes no settings request
+  ---
+  duration_ms: 1.075987
+  type: 'test'
+  ...
+# Subtest: a disconnected runtime cannot apply a queued proposal
+ok 17 - a disconnected runtime cannot apply a queued proposal
+  ---
+  duration_ms: 1.078888
+  type: 'test'
+  ...
+# Subtest: a newer active task prevents retroactively changing that task to Plan
+ok 18 - a newer active task prevents retroactively changing that task to Plan
+  ---
+  duration_ms: 2.712529
+  type: 'test'
+  ...
+# Subtest: switching visible analysis B keeps background A adaptation and pending ownership on A only
+ok 19 - switching visible analysis B keeps background A adaptation and pending ownership on A only
+  ---
+  duration_ms: 1.121155
+  type: 'test'
+  ...
+# Subtest: events from another thread cannot associate their proposal with the owned task
+ok 20 - events from another thread cannot associate their proposal with the owned task
+  ---
+  duration_ms: 0.890212
+  type: 'test'
+  ...
+# Subtest: the last final answer must itself be a proposal; a superseding ordinary answer cancels adaptation
+not ok 21 - the last final answer must itself be a proposal; a superseding ordinary answer cancels adaptation
+  ---
+  duration_ms: 1.211844
+  type: 'test'
+  location: '/root/Codex/web/tests/analysis_auto_plan.mjs:93:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    1 !== 0
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/analysis_auto_plan.mjs:94:132)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 19
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 139.866979
