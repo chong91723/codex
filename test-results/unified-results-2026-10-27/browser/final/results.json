@@ -1,0 +1,341 @@
+{
+  "scope": "Real independent PostgreSQL read-only SQL, immutable snapshots, local mcp-echarts option validation and Chromium downloads. All transcript events/history are explicit UI fixtures; no model or user history is used.",
+  "base": "http://127.0.0.1:18873",
+  "home": "/tmp/codex-web-unified-results/home",
+  "workspace": "/tmp/codex-web-unified-results/workspace",
+  "results": [
+    {
+      "name": "独立只读 PostgreSQL 真查询及本机 ECharts MCP 产生真实快照",
+      "status": "passed",
+      "evidence": {
+        "rowCounts": [
+          10,
+          247,
+          0
+        ],
+        "localEChartsMcpValidatedCharts": 3,
+        "allRowsPreserved": true,
+        "modelRequests": 0
+      }
+    },
+    {
+      "name": "查询后图表、重复 read_result 统一一张结果卡和一个底部 CSV",
+      "status": "passed",
+      "evidence": {
+        "cards": 1,
+        "visiblePanels": 1,
+        "rows": 10,
+        "paginationVisible": false,
+        "footerCsvLinks": 1,
+        "csv": {
+          "bytes": 168,
+          "rows": 10,
+          "header": "category_name,rental_count"
+        }
+      }
+    },
+    {
+      "name": "同一区域切换 ECharts 图表，PNG 真下载且无第二张数据表",
+      "status": "passed",
+      "evidence": {
+        "sameResultCard": true,
+        "visibleTables": 0,
+        "canvas": true,
+        "pngBytes": 58842
+      }
+    },
+    {
+      "name": "图表先到、同结果两张图和另一结果保持准确关联",
+      "status": "passed",
+      "evidence": {
+        "resultCards": 2,
+        "chartsForSameResult": 2,
+        "oneChartSelector": true,
+        "chartIdentityPreserved": true
+      }
+    },
+    {
+      "name": "247 行分页、跳页、非法页码及数据图表切换保留当前页",
+      "status": "passed",
+      "evidence": {
+        "pageSize": 20,
+        "pages": 13,
+        "lastPageRows": 7,
+        "lastPageStartsAt": 241,
+        "invalidPagePreserved": true,
+        "pagePreservedAcrossTabs": true,
+        "csv": {
+          "bytes": 4762,
+          "rows": 247,
+          "header": "row_id,category_name,rental_count"
+        }
+      }
+    },
+    {
+      "name": "零行查询保留清楚空态和 CSV，隐藏无意义分页",
+      "status": "passed",
+      "evidence": {
+        "rows": 0,
+        "paginationVisible": false,
+        "csv": {
+          "bytes": 31,
+          "rows": 0,
+          "header": "category_name,rental_count"
+        }
+      }
+    },
+    {
+      "name": "图表读取失败可重试，真实数据仍可切换查看",
+      "status": "passed",
+      "evidence": {
+        "explicitTransportFailure": true,
+        "retryReadRealChart": true,
+        "dataStillAvailable": true
+      }
+    },
+    {
+      "name": "结果页读取失败可重试，已渲染图表不受影响",
+      "status": "passed",
+      "evidence": {
+        "explicitTransportFailure": true,
+        "realResultRetry": true,
+        "chartStillAvailable": true
+      }
+    },
+    {
+      "name": "键盘左右与 Home End 切换数据图表，ARIA 面板关联正确",
+      "status": "passed",
+      "evidence": {
+        "ariaLinked": true,
+        "keys": [
+          "ArrowLeft",
+          "ArrowRight",
+          "Home",
+          "End"
+        ],
+        "oneVisiblePanel": true
+      }
+    },
+    {
+      "name": "1440 与 1024 桌面和暗色下数据图表同区域，无横向溢出",
+      "status": "passed",
+      "evidence": {
+        "metrics": [
+          {
+            "width": 1440,
+            "view": "数据",
+            "viewport": 1440,
+            "pageWidth": 1440,
+            "left": 450,
+            "right": 1250,
+            "visiblePanels": 1,
+            "canvasWidth": 0
+          },
+          {
+            "width": 1440,
+            "view": "图表",
+            "viewport": 1440,
+            "pageWidth": 1440,
+            "left": 450,
+            "right": 1250,
+            "visiblePanels": 1,
+            "canvasWidth": 758
+          },
+          {
+            "width": 1024,
+            "view": "数据",
+            "viewport": 1024,
+            "pageWidth": 1024,
+            "left": 254,
+            "right": 1000,
+            "visiblePanels": 1,
+            "canvasWidth": 0
+          },
+          {
+            "width": 1024,
+            "view": "图表",
+            "viewport": 1024,
+            "pageWidth": 1024,
+            "left": 254,
+            "right": 1000,
+            "visiblePanels": 1,
+            "canvasWidth": 704
+          }
+        ],
+        "themeSwitch": true,
+        "darkTextContrast": {
+          "axis": "#ececec",
+          "legend": "#ececec",
+          "background": "rgb(43, 43, 43)",
+          "axisRatio": 11.985266821428315,
+          "legendRatio": 11.985266821428315
+        },
+        "mobileNotInScope": true
+      }
+    },
+    {
+      "name": "切换主题保留用户已选择的图例和数据缩放范围",
+      "status": "passed",
+      "evidence": {
+        "sameInstance": true,
+        "legendSelectionPreserved": true,
+        "dataZoomPreserved": true,
+        "before": {
+          "legend": {
+            "rental_count": false
+          },
+          "zoom": [
+            {
+              "start": 25,
+              "end": 65
+            },
+            {
+              "start": 25,
+              "end": 65
+            }
+          ],
+          "instanceId": "ec_1793097129679"
+        },
+        "after": {
+          "legend": {
+            "rental_count": false
+          },
+          "zoom": [
+            {
+              "start": 25,
+              "end": 65
+            },
+            {
+              "start": 25,
+              "end": 65
+            }
+          ],
+          "instanceId": "ec_1793097129679"
+        }
+      }
+    },
+    {
+      "name": "迟到数据响应及图表事件不串入切换后的会话",
+      "status": "passed",
+      "evidence": {
+        "heldRealResultResponse": true,
+        "lateChartEventFixture": true,
+        "selectedThreadPreserved": true,
+        "noOldCardsOrCanvas": true
+      }
+    },
+    {
+      "name": "刷新后经过真实 hydrateThread 历史路径，同结果多引用仅一张卡（明确历史夹具）",
+      "status": "passed",
+      "evidence": {
+        "actualPageReload": true,
+        "history": "Explicit tool-item fixture through real hydrateThread; not a model-persisted transcript",
+        "nativeOwnedThreadRestored": true,
+        "resultCards": 1,
+        "charts": 2,
+        "csvLinks": 1
+      }
+    },
+    {
+      "name": "进行中回合恢复：已完成查询和两图共享一卡，未完成工具不冒充成功",
+      "status": "passed",
+      "evidence": {
+        "history": "Explicit inProgress turn fixture through real hydrateThread; no model work",
+        "completedQueryAndChartsShareOneCard": true,
+        "chartOptions": 2,
+        "csvLinks": 1,
+        "pendingToolDidNotRenderSuccessfulResult": true,
+        "subsequentTurnCompletedDidNotDuplicate": true
+      }
+    }
+  ],
+  "browserErrors": [],
+  "modelRequests": 0,
+  "cleanup": [
+    {
+      "kind": "owned snapshot",
+      "id": "e2d1479c6feb6cdae4972b5ad4823eb9",
+      "removed": true
+    },
+    {
+      "kind": "owned snapshot",
+      "id": "dbc23716b2542fb809bcafd6e7d5c4d8",
+      "removed": true
+    },
+    {
+      "kind": "owned snapshot",
+      "id": "f2c61c11abbf3877ffb2252d64fa6075",
+      "removed": true
+    },
+    {
+      "kind": "owned chart",
+      "id": "db23013bc50a4b5e1e8fd3fe2cfd5a9f",
+      "removed": true
+    },
+    {
+      "kind": "owned chart",
+      "id": "a219e080138e656ae2ea7c6275ac789b",
+      "removed": true
+    },
+    {
+      "kind": "owned chart",
+      "id": "a62ce70576ee606ba771fb552d25c79a",
+      "removed": true
+    },
+    {
+      "kind": "owned database connection",
+      "id": "74405234f843aa0aede58ede",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17cea-fdb6-7700-863e-5a97ab797a01",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17ceb-0500-7de2-8847-3932da2a687a",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17ceb-1414-72c0-8819-3a17de7d797c",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17ceb-196a-7400-845d-ee1d73ae6f8e",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17ceb-1ffd-7841-a35a-4c3c5535551c",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17ceb-2972-7011-9b77-9e5b9c674728",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17ceb-2e77-7052-b88b-7026daea69a2",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17ceb-2fa4-7c80-b197-0cfca9069132",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17ceb-3308-7513-bf5a-0222126d43d8",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17ceb-3ce7-7621-9071-fba1eeda8cb9",
+      "removed": true
+    }
+  ]
+}

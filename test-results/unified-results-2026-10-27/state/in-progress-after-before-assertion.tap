@@ -1,0 +1,238 @@
+TAP version 13
+# Subtest: only completed successful MCP items expose actual well formed result ids
+ok 1 - only completed successful MCP items expose actual well formed result ids
+  ---
+  duration_ms: 7.591104
+  type: 'test'
+  ...
+# Subtest: result refs merge structured and JSON content without using row values or arbitrary text ids
+ok 2 - result refs merge structured and JSON content without using row values or arbitrary text ids
+  ---
+  duration_ms: 5.137089
+  type: 'test'
+  ...
+# Subtest: invalid identifiers and overly deep payloads cannot produce internal download paths
+ok 3 - invalid identifiers and overly deep payloads cannot produce internal download paths
+  ---
+  duration_ms: 2.190748
+  type: 'test'
+  ...
+# Subtest: inline database result auto-loads a table and has exactly one CSV below it without a detail popup
+not ok 4 - inline database result auto-loads a table and has exactly one CSV below it without a detail popup
+  ---
+  duration_ms: 4.466709
+  type: 'test'
+  location: '/root/Codex/web/tests/analysis_artifacts.mjs:40:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + <ref *1> Node {
+    +   attributes: {},
+    +   children: [
+    +     Node {
+    +       attributes: {},
+    +       children: [],
+    +       classList: {
+    +         add: [Function: add]
+    +       },
+    +       className: 'analysis-result-slot',
+    +       dataset: {
+    +         analysisResultHost: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    +       },
+    +       hidden: false,
+    +       isConnected: true,
+    +       parentNode: [Circular *1],
+    +       style: {},
+    +       tagName: 'div',
+    +       textContent: ''
+    +     }
+    +   ],
+    +   classList: {
+    +     add: [Function: add]
+    +   },
+    +   className: 'message agent analysis-results analysis-result-message',
+    +   dataset: {},
+    +   hidden: false,
+    +   isConnected: true,
+    +   parentNode: null,
+    +   style: {},
+    +   tagName: 'section',
+    +   textContent: ''
+    + }
+    - null
+
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: read_result, foreign MCP servers and unfinished calls do not create duplicate database result cards
+ok 5 - read_result, foreign MCP servers and unfinished calls do not create duplicate database result cards
+  ---
+  duration_ms: 1.301914
+  type: 'test'
+  ...
+# Subtest: pager requests actual offsets 20 and 40 and returns to 20 on previous
+ok 6 - pager requests actual offsets 20 and 40 and returns to 20 on previous
+  ---
+  duration_ms: 24.735823
+  type: 'test'
+  ...
+# Subtest: concurrent page actions are blocked while one real page request is pending
+ok 7 - concurrent page actions are blocked while one real page request is pending
+  ---
+  duration_ms: 2.92523
+  type: 'test'
+  ...
+# Subtest: invalid and out of range jumps produce no API calls and retain current page
+ok 8 - invalid and out of range jumps produce no API calls and retain current page
+  ---
+  duration_ms: 2.680496
+  type: 'test'
+  ...
+# Subtest: failed page keeps previous rows and retry uses the failed target instead of edited jump input
+ok 9 - failed page keeps previous rows and retry uses the failed target instead of edited jump input
+  ---
+  duration_ms: 6.093973
+  type: 'test'
+  ...
+# Subtest: initial read failure exposes retry without inventing rows and succeeds only after actual reply
+ok 10 - initial read failure exposes retry without inventing rows and succeeds only after actual reply
+  ---
+  duration_ms: 7.803852
+  type: 'test'
+  ...
+# Subtest: zero row result is one empty page with no invalid next or previous request
+ok 11 - zero row result is one empty page with no invalid next or previous request
+  ---
+  duration_ms: 3.283693
+  type: 'test'
+  ...
+# Subtest: repeated result ids across completed tool items keep one visible table while other ids remain visible
+ok 12 - repeated result ids across completed tool items keep one visible table while other ids remain visible
+  ---
+  duration_ms: 6.976463
+  type: 'test'
+  ...
+# Subtest: report snapshots include exactly the chosen actual answer and same-turn completed results
+ok 13 - report snapshots include exactly the chosen actual answer and same-turn completed results
+  ---
+  duration_ms: 8.684548
+  type: 'test'
+  ...
+# Subtest: same-turn failed or error tool results never become report query evidence
+ok 14 - same-turn failed or error tool results never become report query evidence
+  ---
+  duration_ms: 2.629107
+  type: 'test'
+  ...
+# Subtest: report rejects pending answer
+ok 15 - report rejects pending answer
+  ---
+  duration_ms: 2.395474
+  type: 'test'
+  ...
+# Subtest: report rejects commentary
+ok 16 - report rejects commentary
+  ---
+  duration_ms: 1.800055
+  type: 'test'
+  ...
+# Subtest: report rejects running turn
+ok 17 - report rejects running turn
+  ---
+  duration_ms: 1.577087
+  type: 'test'
+  ...
+# Subtest: report rejects failed turn
+ok 18 - report rejects failed turn
+  ---
+  duration_ms: 1.568137
+  type: 'test'
+  ...
+# Subtest: report rejects interrupted turn
+ok 19 - report rejects interrupted turn
+  ---
+  duration_ms: 1.57527
+  type: 'test'
+  ...
+# Subtest: report rejects proposal
+ok 20 - report rejects proposal
+  ---
+  duration_ms: 1.675384
+  type: 'test'
+  ...
+# Subtest: report rejects non-answer
+ok 21 - report rejects non-answer
+  ---
+  duration_ms: 1.753028
+  type: 'test'
+  ...
+# Subtest: unknown answer or missing turn cannot be exported as a completed conclusion
+ok 22 - unknown answer or missing turn cannot be exported as a completed conclusion
+  ---
+  duration_ms: 1.84232
+  type: 'test'
+  ...
+# Subtest: snapshot remains a stable value after the current answer text and thread change
+ok 23 - snapshot remains a stable value after the current answer text and thread change
+  ---
+  duration_ms: 1.673553
+  type: 'test'
+  ...
+# Subtest: report download refuses stale or recovering view: thread
+ok 24 - report download refuses stale or recovering view: thread
+  ---
+  duration_ms: 2.760258
+  type: 'test'
+  ...
+# Subtest: report download refuses stale or recovering view: generation
+ok 25 - report download refuses stale or recovering view: generation
+  ---
+  duration_ms: 4.154919
+  type: 'test'
+  ...
+# Subtest: report download refuses stale or recovering view: loading
+ok 26 - report download refuses stale or recovering view: loading
+  ---
+  duration_ms: 1.528375
+  type: 'test'
+  ...
+# Subtest: report download refuses stale or recovering view: restore failure
+ok 27 - report download refuses stale or recovering view: restore failure
+  ---
+  duration_ms: 1.815226
+  type: 'test'
+  ...
+# Subtest: Markdown export contains actual selected answer and same-turn ids without other-turn material
+ok 28 - Markdown export contains actual selected answer and same-turn ids without other-turn material
+  ---
+  duration_ms: 3.580043
+  type: 'test'
+  ...
+# Subtest: answer download is attached inside existing message actions and bound to its original navigation
+ok 29 - answer download is attached inside existing message actions and bound to its original navigation
+  ---
+  duration_ms: 2.185226
+  type: 'test'
+  ...
+# Subtest: pending, commentary and proposal messages receive no conclusion download action
+ok 30 - pending, commentary and proposal messages receive no conclusion download action
+  ---
+  duration_ms: 1.888259
+  type: 'test'
+  ...
+# Subtest: download visibility follows actual completed turn status rather than done message alone
+ok 31 - download visibility follows actual completed turn status rather than done message alone
+  ---
+  duration_ms: 1.792406
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 30
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 363.344842

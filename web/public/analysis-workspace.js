@@ -12,40 +12,82 @@ function analysisResultReferences(item){
   };visit(item.result?.structuredContent);for(const part of item.result?.content||[])if(part.type==='text')try{visit(JSON.parse(part.text));}catch{}return [...results.values()];
 }
 function isAnalysisResultItem(item){return item.server==='codex_web_databases'&&['query_database','analyze_result'].includes(item.tool)&&analysisResultReferences(item).length>0;}
-function renderInlineAnalysisResult(result){
-  const root=el('article','analysis-query-result');root.dataset.analysisResultId=result.id;
-  const title=el('h3','',result.name==='查询结果'?'查询结果':result.name+' · 查询结果'),table=el('div','analysis-result-table'),status=el('p','subtle','正在读取查询结果…');status.setAttribute('role','status');root.append(title,status,table);
-  const toolbar=el('div','analysis-result-pagination'),previous=button('上一页',()=>loadPage(page-1)),next=button('下一页',()=>loadPage(page+1)),label=el('span','subtle'),jump=el('input','field-input'),go=button('跳转',()=>loadPage(Number(jump.value))),csv=el('a','small-button','下载完整 CSV');
-  let page=1,totalPages=1,rowCount=result.rowCount??null,loading=false,request=0,lastTarget=1;const pageSize=20;
-  jump.type='number';jump.min='1';jump.step='1';jump.value='1';jump.ariaLabel='结果页码';jump.style.width='72px';jump.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();loadPage(Number(jump.value));}};
-  csv.href='/api/databases/results/'+result.id+'.csv';csv.download='query-result.csv';toolbar.append(previous,label,next,el('span','subtle','第'),jump,el('span','subtle','页'),go,csv);root.append(toolbar);
+let unifiedResultSerial=0;
+function analysisResultContext(){return JSON.stringify([state.thread?.id||'new',state.navigationGeneration||0]);}
+function createUnifiedAnalysisResult(result,initialCharts=[]){
+  result={...result};
+  const context=analysisResultContext(),root=el('article','analysis-query-result unified-analysis-result');root.dataset.analysisResultId=result.id;
+  const heading=el('div','analysis-result-heading'),titles=el('div'),title=el('h3','','查询结果'),metadata=el('p','subtle analysis-result-metadata',result.name||'');titles.append(title,metadata);heading.append(titles);root.append(heading);
+  const tabs=el('div','analysis-result-tabs');tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','结果视图');
+  const serial=++unifiedResultSerial,chartPanel=el('div','analysis-result-chart-panel'),dataPanel=el('div','analysis-result-data-panel'),chartTab=button('图表',()=>selectTab('chart',true)),dataTab=button('数据',()=>selectTab('data',true));
+  for(const [name,tab,panel]of [['chart',chartTab,chartPanel],['data',dataTab,dataPanel]]){tab.id='analysis-result-tab-'+serial+'-'+name;panel.id='analysis-result-panel-'+serial+'-'+name;tab.setAttribute('role','tab');tab.setAttribute('aria-controls',panel.id);panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',tab.id);panel.tabIndex=0;}
+  tabs.append(chartTab,dataTab);root.append(tabs);
+  const chartSelect=el('select','field-input analysis-chart-selector');chartSelect.ariaLabel='选择图表';chartSelect.hidden=true;chartPanel.append(chartSelect);const chartHost=el('div');chartPanel.append(chartHost);
+  const status=el('p','subtle analysis-result-status','正在读取查询结果…'),table=el('div','analysis-result-table');status.setAttribute('role','status');dataPanel.append(status,table);
+  const toolbar=el('div','analysis-result-pagination'),previous=button('上一页',()=>loadPage(page-1,true)),next=button('下一页',()=>loadPage(page+1,true)),label=el('span','subtle'),jump=el('input','field-input'),go=button('跳转',()=>loadPage(Number(jump.value),true));
+  let page=1,totalPages=1,rowCount=result.rowCount??null,loading=false,request=0,lastTarget=1,disposed=false,active='data',interacted=false,selectedChart=null;const pageSize=20,charts=new Map();
+  jump.type='number';jump.min='1';jump.step='1';jump.value='1';jump.ariaLabel='结果页码';jump.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();loadPage(Number(jump.value),true);}};
+  toolbar.append(previous,label,next,el('span','subtle','第'),jump,el('span','subtle','页'),go);dataPanel.append(toolbar);
+  const retry=button('重试读取结果',()=>loadPage(lastTarget,true),'text-button');retry.classList.add('analysis-result-retry');retry.hidden=true;dataPanel.append(retry);
+  const viewport=el('div','analysis-result-viewport');viewport.append(chartPanel,dataPanel);root.append(viewport);
+  const footer=el('div','analysis-result-footer'),csv=el('a','small-button','下载完整 CSV'),png=button('下载 PNG',()=>{const current=charts.get(selectedChart);if(!current)throw new Error('当前没有可下载的图表。');const url=current.view.downloadPNG(),link=el('a');link.href=url;link.download=(current.data.title||'分析图表')+'.png';link.click();});
+  csv.href='/api/databases/results/'+result.id+'.csv';csv.download='query-result.csv';footer.append(csv,png);root.append(footer);
   const details=el('details','analysis-query-details'),sql=el('pre');details.append(el('summary','','查看查询语句'),sql);details.hidden=true;root.append(details);
-  const retry=button('重试读取结果',()=>loadPage(lastTarget));retry.hidden=true;root.append(retry);
-  function controls(){previous.disabled=loading||page<=1;next.disabled=loading||page>=totalPages;jump.disabled=go.disabled=loading;jump.max=String(totalPages);label.textContent=rowCount===null?'正在读取':'第 '+page+' / '+totalPages+' 页 · 共 '+rowCount.toLocaleString()+' 行';}
-  async function loadPage(target){
-    if(loading)return;
-    if(!Number.isInteger(target)||target<1||target>totalPages){status.textContent='请输入 1 至 '+totalPages+' 之间的整数页码。';status.setAttribute('role','alert');jump.value=String(page);return;}
-    loading=true;lastTarget=target;const version=++request;controls();retry.hidden=true;status.textContent='正在读取第 '+target+' 页…';status.setAttribute('role','status');
-    try{const data=await databaseApi('result',{resultId:result.id,offset:(target-1)*pageSize,limit:pageSize});if(version!==request||root.isConnected===false)return;
-      rowCount=data.rowCount;totalPages=Math.max(1,Math.ceil(rowCount/pageSize));page=target;jump.value=String(page);table.replaceChildren(databaseTable(data.columns,data.rows));status.textContent=rowCount?((target-1)*pageSize+1)+'–'+((target-1)*pageSize+data.rows.length)+' / '+rowCount.toLocaleString()+' 行':'查询完成，没有符合条件的数据。';
+  const current=()=>!disposed&&context===analysisResultContext()&&root.isConnected!==false;
+  function updatePNG(){const entry=charts.get(selectedChart);png.hidden=active!=='chart';png.disabled=!entry||entry.view.node.dataset.rendered!=='true';}
+  function activateChart(){const entry=charts.get(selectedChart);if(!entry||active!=='chart'||!current())return;entry.view.node.hidden=false;const ready=entry.view.activate();Promise.resolve(ready).then(()=>{if(current()&&selectedChart===entry.key)updatePNG();},()=>{if(current())updatePNG();});updatePNG();}
+  function selectTab(name,user=false){if(name==='chart'&&!charts.size)return;if(user)interacted=true;active=name;
+    for(const [kind,tab,panel]of [['chart',chartTab,chartPanel],['data',dataTab,dataPanel]]){const chosen=kind===name;tab.setAttribute('aria-selected',String(chosen));tab.tabIndex=chosen?0:-1;panel.hidden=!chosen;}
+    updatePNG();if(name==='chart')activateChart();
+  }
+  for(const tab of [chartTab,dataTab])tab.onkeydown=event=>{const enabled=[chartTab,dataTab].filter(item=>!item.disabled);let index=enabled.indexOf(tab);if(['ArrowLeft','ArrowRight'].includes(event.key))index=(index+(event.key==='ArrowRight'?1:-1)+enabled.length)%enabled.length;else if(event.key==='Home')index=0;else if(event.key==='End')index=enabled.length-1;else return;event.preventDefault();const target=enabled[index];selectTab(target===chartTab?'chart':'data',true);target.focus();};
+  function controls(){previous.disabled=loading||page<=1;next.disabled=loading||page>=totalPages;jump.disabled=go.disabled=loading;jump.max=String(totalPages);toolbar.hidden=rowCount===null||totalPages<=1;label.textContent='第 '+page+' / '+totalPages+' 页';metadata.textContent=(result.name&&result.name!=='查询结果'?result.name+' · ':'')+(rowCount===null?'正在读取':rowCount.toLocaleString()+' 行');}
+  function updateMetadata(value){if(value.id!==result.id)return;if(value.name&&value.name!=='查询结果')result={...result,name:value.name};if(rowCount===null&&Number.isInteger(value.rowCount))rowCount=value.rowCount;controls();}
+  async function loadPage(target,user=false){
+    if(loading)return;if(user)interacted=true;
+    if(!Number.isInteger(target)||target<1||target>totalPages){status.hidden=false;status.textContent='请输入 1 至 '+totalPages+' 之间的整数页码。';status.setAttribute('role','alert');jump.value=String(page);return;}
+    loading=true;lastTarget=target;const version=++request;controls();retry.hidden=true;status.hidden=false;status.textContent='正在读取第 '+target+' 页…';status.setAttribute('role','status');
+    try{const data=await databaseApi('result',{resultId:result.id,offset:(target-1)*pageSize,limit:pageSize});if(version!==request||!current())return;
+      if(data.connectionName)result={...result,name:data.connectionName};rowCount=data.rowCount;totalPages=Math.max(1,Math.ceil(rowCount/pageSize));page=target;jump.value=String(page);table.replaceChildren(databaseTable(data.columns,data.rows));status.textContent=rowCount?((target-1)*pageSize+1)+'–'+((target-1)*pageSize+data.rows.length)+' / '+rowCount.toLocaleString()+' 行':'查询完成，没有符合条件的数据。';status.hidden=rowCount>0&&totalPages<=1;
       sql.textContent=data.executedQuery||data.query||'';details.hidden=!sql.textContent;
-    }catch(error){if(version===request&&root.isConnected!==false){status.textContent='结果读取失败：'+nativeErrorMessage(error);status.setAttribute('role','alert');retry.hidden=false;}}
+    }catch(error){if(version===request&&current()){status.hidden=false;status.textContent='结果读取失败：'+nativeErrorMessage(error);status.setAttribute('role','alert');retry.hidden=false;}}
     finally{if(version===request){loading=false;controls();}}
   }
-  controls();loadPage(1);return root;
-}
-function renderAnalysisToolResult(item,done){
-  if(!done||!isAnalysisResultItem(item))return null;const card=el('section','message agent analysis-results');
-  for(const result of analysisResultReferences(item))card.append(renderInlineAnalysisResult(result));return card;
-}
-function refreshAnalysisResultVisibility(){
-  const seen=new Set();
-  for(const entry of state.items.values()){
-    if(!isAnalysisResultItem(entry.item))continue;
-    const rows=entry.node?.querySelectorAll('[data-analysis-result-id]')||[];let visible=0;
-    for(const row of rows){const id=row.dataset.analysisResultId;row.hidden=seen.has(id);if(!row.hidden){seen.add(id);visible++;}}
-    if(rows.length)entry.node.hidden=visible===0;
+  chartSelect.onchange=()=>{interacted=true;selectedChart=chartSelect.value;for(const [key,entry]of charts)entry.view.node.hidden=key!==selectedChart;activateChart();};
+  function updateCharts(values){const before=charts.size,keys=new Set();
+    for(const data of values){const key=data.chartId||data._chartKey||JSON.stringify([data.title,data.kind,data.option]);keys.add(key);if(charts.has(key))continue;const view=createDatabaseChartView(data),entry={key,data,view};charts.set(key,entry);view.node.hidden=true;chartHost.append(view.node);
+      const observer=new MutationObserver(()=>{if(current())updatePNG();});observer.observe(view.node,{attributes:true,attributeFilter:['data-rendered']});entry.observer=observer;
+    }
+    for(const [key,entry]of charts)if(!keys.has(key)){entry.observer.disconnect();entry.view.dispose();entry.view.node.remove();charts.delete(key);}
+    if(!charts.has(selectedChart))selectedChart=charts.keys().next().value||null;
+    chartSelect.replaceChildren();for(const [key,entry]of charts){const option=el('option','',entry.data.title||'分析图表');option.value=key;chartSelect.append(option);entry.view.node.hidden=key!==selectedChart;}chartSelect.value=selectedChart||'';chartSelect.hidden=charts.size<=1;chartTab.disabled=!charts.size;chartTab.title=charts.size?'查看该结果的图表':'尚未生成图表';
+    if(!before&&charts.size&&!interacted)selectTab('chart');else if(!charts.size&&active==='chart')selectTab('data');else selectTab(active);
   }
+  function dispose(){if(disposed)return;disposed=true;request++;for(const entry of charts.values()){entry.observer.disconnect();entry.view.dispose();}charts.clear();}
+  root.analysisResultView={updateMetadata,updateCharts,activate:()=>{if(active==='chart')activateChart();},dispose};controls();selectTab('data');updateCharts(initialCharts);loadPage(1);return root;
+}
+function renderInlineAnalysisResult(result){return createUnifiedAnalysisResult(result);}
+function renderStandaloneAnalysisChart(data){const node=createUnifiedAnalysisResult({id:data.resultId,name:data.connectionName||'查询结果',rowCount:data.rowCount},[data]);queueMicrotask(()=>node.analysisResultView.activate());return node;}
+function analysisPresentation(item){const chart=databaseChart(item);if(chart)return [{result:{id:chart.resultId,name:chart.connectionName||'查询结果',rowCount:chart.rowCount},chart}];return isAnalysisResultItem(item)?analysisResultReferences(item).map(result=>({result,chart:null})):[];}
+function renderAnalysisToolResult(item,done){
+  // History marks the whole turn unfinished even when this tool has completed.
+  if(!done&&item.status!=='completed')return null;const values=analysisPresentation(item);if(!values.length)return null;const host=el('section','message agent analysis-results analysis-result-message');
+  for(const {result}of values){const slot=el('div','analysis-result-slot');slot.dataset.analysisResultHost=result.id;host.append(slot);}queueMicrotask(()=>refreshAnalysisResultVisibility());return host;
+}
+const analysisUnifiedResults=new Map();let analysisUnifiedContext=null;
+function refreshAnalysisResultVisibility(){
+  const context=analysisResultContext();if(context!==analysisUnifiedContext){for(const value of analysisUnifiedResults.values())value.node.analysisResultView.dispose();analysisUnifiedResults.clear();analysisUnifiedContext=context;}
+  if(state.threadLoading)return;
+  const groups=new Map(),hosts=[];
+  for(const entry of state.items.values()){
+    if(!entry.done&&entry.item.status!=='completed')continue;const values=analysisPresentation(entry.item);if(!values.length)continue;hosts.push(entry.node);entry.node.hidden=false;
+    for(const {result,chart}of values){const slot=[...entry.node.querySelectorAll('[data-analysis-result-host]')].find(node=>node.dataset.analysisResultHost===result.id);if(!slot)continue;
+      if(!groups.has(result.id))groups.set(result.id,{result,slots:[],charts:new Map()});const group=groups.get(result.id);group.slots.push(slot);if(result.name&&result.name!=='查询结果')group.result={...group.result,...result};if(chart)group.charts.set(chart.chartId||JSON.stringify([chart.title,chart.kind,chart.option]),chart);
+    }
+  }
+  for(const [id,value]of analysisUnifiedResults)if(!groups.has(id)){value.node.analysisResultView.dispose();value.node.remove();analysisUnifiedResults.delete(id);}
+  for(const [id,group]of groups){let value=analysisUnifiedResults.get(id);if(!value){value={node:createUnifiedAnalysisResult(group.result)};analysisUnifiedResults.set(id,value);}const owner=group.slots[0];if(value.node.parentNode!==owner)owner.replaceChildren(value.node);value.node.analysisResultView.updateMetadata(group.result);value.node.analysisResultView.updateCharts([...group.charts.values()]);value.node.analysisResultView.activate();for(const slot of group.slots)slot.hidden=slot!==owner;}
+  for(const host of hosts){const slots=[...host.querySelectorAll('[data-analysis-result-host]')];host.hidden=slots.length>0&&slots.every(slot=>slot.hidden);}
 }
 function analysisReportSnapshot(itemId){
   const entry=state.items.get(itemId),turn=state.turns.find(turn=>turn.id===entry?.turnId);

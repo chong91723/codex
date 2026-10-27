@@ -1,0 +1,32 @@
+{
+  "baselineCommit": "620e06919b1f212cf359abfbfc1535e6bc28ab6c",
+  "issues": [
+    "CW-054",
+    "CW-055",
+    "CW-056",
+    "CW-057"
+  ],
+  "browser": {
+    "passed": 14,
+    "failed": 0,
+    "javascriptErrors": 0,
+    "modelRequests": 0,
+    "result": "browser/final/results.json"
+  },
+  "engineering": {
+    "syntaxJavaScriptFiles": 89,
+    "pythonAstFiles": 36,
+    "behaviorPassed": 174,
+    "behaviorFailed": 0,
+    "nativePristine": true,
+    "result": "engineering/results.json"
+  },
+  "evidenceBoundaries": "Real independent PostgreSQL SQL, immutable snapshots, local mcp-echarts validation and Chromium CSV/PNG downloads. Tool transcript events and restored history are explicit UI fixtures; no new model/Flash/native-persisted transcript test claimed. No user history or credentials read.",
+  "cleanup": "browser/environment-cleanup.json",
+  "limitations": [
+    "No frontend bundler or TypeScript project.",
+    "No complete backend Python suite rerun; backend unchanged.",
+    "No new Flash intent or Plan workflow requests; existing real workflow scripts only adapted and syntax checked.",
+    "Multi-tenant isolation remains outside this presentation change."
+  ]
+}

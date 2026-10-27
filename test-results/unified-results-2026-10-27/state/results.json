@@ -1,0 +1,70 @@
+{
+  "scope": "Deterministic production-JavaScript behavior using native-item, DOM, HTTP and ECharts fixtures; no live model, database, MCP or browser validation.",
+  "baseline": {
+    "analysisArtifacts": {
+      "passed": 31,
+      "total": 31,
+      "evidence": "baseline-artifacts.tap"
+    },
+    "newUnifiedCases": {
+      "passed": 0,
+      "total": 8,
+      "evidence": "baseline-unified-final.tap"
+    }
+  },
+  "final": {
+    "analysisArtifacts": {
+      "passed": 31,
+      "total": 31
+    },
+    "unifiedResults": {
+      "passed": 15,
+      "total": 15
+    },
+    "databaseChartView": {
+      "passed": 18,
+      "total": 18
+    },
+    "total": 64,
+    "passed": 64,
+    "evidence": "final.tap"
+  },
+  "preservedGuards": [
+    "Completed same-turn result evidence only in report exports",
+    "Failed/incomplete/Plan proposals cannot be downloaded as completed conclusions",
+    "Stale thread/navigation cannot export or attach late result responses"
+  ],
+  "coverage": [
+    "query/read_result/create_chart duplicate suppression",
+    "query-first and chart-first events/history replay",
+    "Multiple snapshots and charts",
+    "Single shared footer CSV and readiness-gated PNG",
+    "ARIA tabs and keyboard navigation",
+    "Single-page pager hidden; existing multipage jumps/retry retained",
+    "User-selected data page retained across tab changes and late chart events",
+    "Thread isolation and ECharts disposal",
+    "Chart request failure and retry",
+    "Late query manifests update chart-first database metadata without recreating the card",
+    "Light/dark chart presentation and PNG export use the current theme; original dataset/zoom/legend/colors retained",
+    "Running-turn hydration: completed query and two completed charts with entry.done=false still merge through actual app renderItem; pending tools remain excluded"
+  ],
+  "legacyDesktopScripts": {
+    "adapted": [
+      "web/tests/analysis_plan_workflow_desktop.mjs",
+      "web/tests/database_desktop.mjs",
+      "web/tests/database_results_desktop.mjs"
+    ],
+    "validation": "Node syntax check and git diff --check passed; no live model/browser/database execution repeated.",
+    "changes": [
+      "Find actual native chart resultId in shared card",
+      "Select chart tab and correct chart before PNG export",
+      "Five charts on one snapshot share a card with five choices; history checks select each view",
+      "Current saved-query entry label used"
+    ]
+  },
+  "inProgressRestore": {
+    "before": "in-progress-restore-before.tap",
+    "outcome": "Actual renderItem produced two cards/two CSVs before the guard fix; final fixture produces one card/two chart choices/one CSV without marking the whole turn complete.",
+    "staleAssertion": "in-progress-after-before-assertion.tap preserves old done=false-equals-unfinished assertion. It now tests item.status=inProgress explicitly; completed tool/unfinished turn is covered separately."
+  }
+}

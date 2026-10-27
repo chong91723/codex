@@ -1,0 +1,220 @@
+✔ only completed successful MCP items expose actual well formed result ids (4.972034ms)
+✔ result refs merge structured and JSON content without using row values or arbitrary text ids (2.94524ms)
+✔ invalid identifiers and overly deep payloads cannot produce internal download paths (1.379915ms)
+✖ inline database result auto-loads a table and has exactly one CSV below it without a detail popup (13.136362ms)
+✔ read_result, foreign MCP servers and unfinished calls do not create duplicate database result cards (1.459861ms)
+✖ pager requests actual offsets 20 and 40 and returns to 20 on previous (2.079402ms)
+✖ concurrent page actions are blocked while one real page request is pending (2.011644ms)
+✖ invalid and out of range jumps produce no API calls and retain current page (2.14388ms)
+✖ failed page keeps previous rows and retry uses the failed target instead of edited jump input (1.905838ms)
+✖ initial read failure exposes retry without inventing rows and succeeds only after actual reply (1.851372ms)
+✖ zero row result is one empty page with no invalid next or previous request (1.653117ms)
+✖ repeated result ids across completed tool items keep one visible table while other ids remain visible (2.482219ms)
+✔ report snapshots include exactly the chosen actual answer and same-turn completed results (1.693956ms)
+✔ same-turn failed or error tool results never become report query evidence (1.502162ms)
+✔ report rejects pending answer (2.530668ms)
+✔ report rejects commentary (1.032475ms)
+✔ report rejects running turn (0.967273ms)
+✔ report rejects failed turn (0.988184ms)
+✔ report rejects interrupted turn (1.018232ms)
+✔ report rejects proposal (1.004493ms)
+✔ report rejects non-answer (0.96603ms)
+✔ unknown answer or missing turn cannot be exported as a completed conclusion (1.163625ms)
+✔ snapshot remains a stable value after the current answer text and thread change (1.071872ms)
+✔ report download refuses stale or recovering view: thread (1.234837ms)
+✔ report download refuses stale or recovering view: generation (0.990052ms)
+✔ report download refuses stale or recovering view: loading (1.059413ms)
+✔ report download refuses stale or recovering view: restore failure (1.000919ms)
+✔ Markdown export contains actual selected answer and same-turn ids without other-turn material (1.782969ms)
+✔ answer download is attached inside existing message actions and bound to its original navigation (1.680139ms)
+✔ pending, commentary and proposal messages receive no conclusion download action (1.191638ms)
+✔ download visibility follows actual completed turn status rather than done message alone (2.717356ms)
+✖ query, read_result and create_chart references share one card and one CSV footer (26.09002ms)
+✖ chart-first events and history replay keep the same mounted result and cached table (5.304584ms)
+✖ different results retain separate cards while repeated result references merge across turns (5.11088ms)
+✔ two charts for one snapshot use one chart selector and preserve both chart identities (5.640767ms)
+✔ shared result tabs expose linked ARIA panels and keyboard switching hides the other view (6.034162ms)
+✔ single-page result omits pagination controls while keeping row status and one download (2.79566ms)
+✔ late result page from another navigation cannot update or attach to the current thread (3.061446ms)
+✔ PNG is unavailable until the shared ECharts view has actually initialized (3.950867ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 28
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 309.055417
+
+✖ failing tests:
+
+test at web/tests/analysis_artifacts.mjs:40:1
+✖ inline database result auto-loads a table and has exactly one CSV below it without a detail popup (13.136362ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+    assert(row)
+
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/analysis_artifacts.mjs:41:315)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at web/tests/analysis_artifacts.mjs:47:1
+✖ pager requests actual offsets 20 and 40 and returns to 20 on previous (2.079402ms)
+  TypeError [Error]: Cannot read properties of undefined (reading 'add')
+      at createUnifiedAnalysisResult (evalmachine.<anonymous>:30:92)
+      at Object.renderInlineAnalysisResult (evalmachine.<anonymous>:67:52)
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/analysis_artifacts.mjs:48:35)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at web/tests/analysis_artifacts.mjs:50:1
+✖ concurrent page actions are blocked while one real page request is pending (2.011644ms)
+  TypeError [Error]: Cannot read properties of undefined (reading 'add')
+      at createUnifiedAnalysisResult (evalmachine.<anonymous>:30:92)
+      at Object.renderInlineAnalysisResult (evalmachine.<anonymous>:67:52)
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/analysis_artifacts.mjs:51:140)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at web/tests/analysis_artifacts.mjs:53:1
+✖ invalid and out of range jumps produce no API calls and retain current page (2.14388ms)
+  TypeError [Error]: Cannot read properties of undefined (reading 'add')
+      at createUnifiedAnalysisResult (evalmachine.<anonymous>:30:92)
+      at Object.renderInlineAnalysisResult (evalmachine.<anonymous>:67:52)
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/analysis_artifacts.mjs:54:35)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at web/tests/analysis_artifacts.mjs:56:1
+✖ failed page keeps previous rows and retry uses the failed target instead of edited jump input (1.905838ms)
+  TypeError [Error]: Cannot read properties of undefined (reading 'add')
+      at createUnifiedAnalysisResult (evalmachine.<anonymous>:30:92)
+      at Object.renderInlineAnalysisResult (evalmachine.<anonymous>:67:52)
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/analysis_artifacts.mjs:57:168)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at web/tests/analysis_artifacts.mjs:59:1
+✖ initial read failure exposes retry without inventing rows and succeeds only after actual reply (1.851372ms)
+  TypeError [Error]: Cannot read properties of undefined (reading 'add')
+      at createUnifiedAnalysisResult (evalmachine.<anonymous>:30:92)
+      at Object.renderInlineAnalysisResult (evalmachine.<anonymous>:67:52)
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/analysis_artifacts.mjs:60:144)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at web/tests/analysis_artifacts.mjs:62:1
+✖ zero row result is one empty page with no invalid next or previous request (1.653117ms)
+  TypeError [Error]: Cannot read properties of undefined (reading 'add')
+      at createUnifiedAnalysisResult (evalmachine.<anonymous>:30:92)
+      at Object.renderInlineAnalysisResult (evalmachine.<anonymous>:67:52)
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/analysis_artifacts.mjs:63:57)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at web/tests/analysis_artifacts.mjs:65:1
+✖ repeated result ids across completed tool items keep one visible table while other ids remain visible (2.482219ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  false !== true
+
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/analysis_artifacts.mjs:66:609)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at web/tests/unified_results.mjs:55:1
+✖ query, read_result and create_chart references share one card and one CSV footer (26.09002ms)
+  AssertionError [ERR_ASSERTION]: supported completed result must return a result host
+      at Object.add (file:///root/Codex/web/tests/unified_results.mjs:45:94)
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/unified_results.mjs:56:62)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at web/tests/unified_results.mjs:59:1
+✖ chart-first events and history replay keep the same mounted result and cached table (5.304584ms)
+  AssertionError [ERR_ASSERTION]: supported completed result must return a result host
+      at Object.add (file:///root/Codex/web/tests/unified_results.mjs:45:94)
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/unified_results.mjs:60:113)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at web/tests/unified_results.mjs:64:1
+✖ different results retain separate cards while repeated result references merge across turns (5.11088ms)
+  AssertionError [ERR_ASSERTION]: supported completed result must return a result host
+      at Object.add (file:///root/Codex/web/tests/unified_results.mjs:45:94)
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/unified_results.mjs:65:138)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

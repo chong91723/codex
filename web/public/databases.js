@@ -42,6 +42,68 @@ async function showDatabaseSchema(connection){const value=await databaseApi('sch
 function databaseTable(columns,rows){const wrap=el('div','db-table-scroll'),table=el('table','db-result-table'),thead=el('thead'),header=el('tr');for(const column of columns)header.append(el('th','',column.name));thead.append(header);table.append(thead);const body=el('tbody');for(const row of rows){const tr=el('tr');for(const column of columns)tr.append(el('td','',row[column.name]==null?'—':String(row[column.name])));body.append(tr);}table.append(body);wrap.append(table);return wrap;}
 async function showDatabaseResults(){const value=await databaseApi('results',{});openDialog('全部查询快照（当前服务）',body=>{body.append(el('p','subtle','这里展示当前服务保存的全部查询快照，包含其他分析。当前分析的结果、图表与下载直接在对应对话中展示。'));if(!value.results.length)body.append(el('p','subtle','尚无查询结果。'));for(const result of value.results){const row=el('div','db-saved-result');row.append(el('strong','',result.connectionName+' · '+result.rowCount.toLocaleString()+' 行'),el('span','subtle',new Date(result.createdAt).toLocaleString()),button('查看明细',()=>showDatabaseResult(result.resultId)),button('清理快照',async()=>{await databaseApi('clear_result',{resultId:result.resultId});row.remove();}));body.append(row);}},async()=>{},'关闭');}
 async function showDatabaseResult(identifier){const data=await databaseApi('result',{resultId:identifier,offset:0,limit:100});if($('#dialog').open)$('#dialog').close();openDialog('完整结果 · '+data.rowCount.toLocaleString()+' 行',body=>{let offset=0;const box=el('div'),pager=el('div','db-toolbar'),label=el('span','subtle');const previous=button('上一页',()=>load(Math.max(0,offset-100))),next=button('下一页',()=>load(offset+100)),download=el('a','small-button','下载完整 CSV');download.href='/api/databases/results/'+identifier+'.csv';download.download='query-result.csv';pager.append(previous,label,next,download);if(data.nativeResponseAvailable){const raw=el('a','small-button','下载原生 JSON');raw.href='/api/databases/results/'+identifier+'.json';raw.download='query-result.json';pager.append(raw);}body.append(box,pager);const present=value=>{box.replaceChildren(databaseTable(value.columns,value.rows));offset=value.offset;label.textContent=(offset+1)+'–'+(offset+value.rows.length)+' / '+value.rowCount;previous.disabled=offset===0;next.disabled=!value.hasMore;};async function load(start){previous.disabled=next.disabled=true;try{present(await databaseApi('result',{resultId:identifier,offset:start,limit:100}));}catch(error){previous.disabled=offset===0;next.disabled=false;throw error;}}present(data);},async()=>{},'关闭');}
-function databaseChart(item){if(item.type!=='mcpToolCall'||item.status!=='completed')return null;const value=item.result?.structuredContent?.codexWebChart;if(value?.version===2&&value.chartId||value?.version===1&&Array.isArray(value.rows)&&value.option?.series)return value;for(const content of item.result?.content||[]){if(content.type==='text'){try{const candidate=JSON.parse(content.text)?.codexWebChart;if(candidate?.version===2&&candidate.chartId||candidate?.version===1&&Array.isArray(candidate.rows)&&candidate.option?.series)return candidate;}catch{}}}return null;}
+function validDatabaseChart(data){return /^[a-f0-9]{32}$/.test(data?.resultId||'')&&(data.version===2?/^[a-f0-9]{32}$/.test(data.chartId||''):data.version===1&&Array.isArray(data.rows)&&!!data.option?.series);}
+function databaseChart(item){if(item.type!=='mcpToolCall'||item.status!=='completed'||item.result?.isError)return null;const value=item.result?.structuredContent?.codexWebChart;if(validDatabaseChart(value))return value;for(const content of item.result?.content||[]){if(content.type==='text'){try{const candidate=JSON.parse(content.text)?.codexWebChart;if(validDatabaseChart(candidate))return candidate;}catch{}}}return null;}
 function downloadDatabaseBlob(blob,name){const link=el('a');link.href=URL.createObjectURL(blob);link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),10000);}
-function renderDatabaseChart(data){if(data.version===2){const placeholder=el('div','db-chart-host message agent');placeholder.dataset.resultId=data.resultId;placeholder.append(el('h3','',data.title),el('p','subtle','正在读取完整图表数据…'));databaseApi('read_chart',{chartId:data.chartId}).then(value=>{if(placeholder.isConnected)placeholder.replaceChildren(renderDatabaseChart(value));}).catch(error=>placeholder.append(el('p','db-error',error.message)));return placeholder;}const card=el('article','db-chart-card message agent');card.dataset.resultId=data.resultId;const head=el('div','db-chart-heading'),text=el('div');text.append(el('span','db-chart-eyebrow','数据分析'),el('h3','',data.title));const exportButton=button('下载 PNG',()=>{if(!chart)throw new Error('图表仍在加载');const link=el('a');link.href=chart.getDataURL({pixelRatio:2,backgroundColor:'#ffffff'});link.download=data.title+'.png';link.click();});head.append(text,exportButton);card.append(head);const plot=el('div','db-chart');plot.setAttribute('role','img');plot.ariaLabel=data.title;card.append(plot);const meta=el('div','db-chart-meta');meta.append(el('span','',data.connectionName+' · '+data.rowCount+' 行'+(data.truncated?'（已截断）':'')),el('span','',new Date(data.createdAt).toLocaleString()));card.append(meta);const details=el('details','db-chart-details');details.append(el('summary','','查看数据与查询语句'));const sql=el('pre','db-chart-sql');sql.textContent=data.query;details.append(sql,databaseTable(data.columns,data.rows));details.append(button('浏览完整明细',()=>showDatabaseResult(data.resultId)));const full=el('a','small-button','下载完整结果 CSV');full.href='/api/databases/results/'+data.resultId+'.csv';full.download='query-result.csv';details.append(full);details.append(button('下载图表数据 CSV',()=>{const quote=value=>'"'+String(value??'').replaceAll('"','""')+'"';const csv=[data.columns.map(c=>quote(c.name)).join(','),...data.rows.map(row=>data.columns.map(c=>{let value=String(row[c.name]??'');if(/^[=+@\t\r]/.test(value)||/^-[^\d.]/.test(value))value="'"+value;return quote(value);}).join(','))].join('\r\n');downloadDatabaseBlob(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),data.title+'.csv');}));card.append(details);let chart=null;const observer=new ResizeObserver(()=>{if(!card.isConnected)return;if(!chart){chart=echarts.init(plot,null,{renderer:'canvas'});chart.setOption(data.option);card.dataset.rendered='true';}else chart.resize();});observer.observe(plot);const removal=new MutationObserver(()=>{if(!card.isConnected){observer.disconnect();chart?.dispose();removal.disconnect();}});requestAnimationFrame(()=>removal.observe(document.body,{subtree:true,childList:true}));return card;}
+function databaseChartPalette(node){
+  const dark=document.documentElement.dataset.theme==='dark',fallback=dark?{ink:'#eceee7',muted:'#92998d',surface:'#252825',border:'#363b35',hover:'#30362e'}:{ink:'#252724',muted:'#81857c',surface:'#fff',border:'#e3e5de',hover:'#e7e9e2'},style=typeof getComputedStyle==='function'?getComputedStyle(node):null;
+  return Object.fromEntries(Object.entries(fallback).map(([name,value])=>[name,style?.getPropertyValue('--'+name).trim()||value]));
+}
+/* Only presentation is patched so the query dataset, series colors and the
+   user's current legend selection / zoom remain owned by the same chart. */
+function databaseChartThemePatch(option,colors){
+  const component=(value,style)=>Array.isArray(value)?value.map(item=>({...((item?.id)?{id:item.id}:{}),...style})):({...((value?.id)?{id:value.id}:{}),...style});
+  const patch={textStyle:{color:colors.ink}};
+  if(option.title)patch.title=component(option.title,{textStyle:{color:colors.ink},subtextStyle:{color:colors.muted}});
+  if(option.legend)patch.legend=component(option.legend,{textStyle:{color:colors.ink},pageTextStyle:{color:colors.ink},pageIconColor:colors.ink,pageIconInactiveColor:colors.border,inactiveColor:colors.muted});
+  if(option.tooltip)patch.tooltip=component(option.tooltip,{textStyle:{color:colors.ink},backgroundColor:colors.surface,borderColor:colors.border,axisPointer:{label:{color:colors.ink,backgroundColor:colors.hover},lineStyle:{color:colors.muted},shadowStyle:{color:colors.hover}}});
+  for(const name of ['xAxis','yAxis','radiusAxis','angleAxis'])if(option[name])patch[name]=component(option[name],{axisLabel:{color:colors.ink},nameTextStyle:{color:colors.ink},axisLine:{lineStyle:{color:colors.border}},axisTick:{lineStyle:{color:colors.border}},splitLine:{lineStyle:{color:colors.border}}});
+  if(option.series)patch.series=component(option.series,{label:{color:colors.ink}});
+  if(option.dataZoom)patch.dataZoom=component(option.dataZoom,{textStyle:{color:colors.ink},backgroundColor:colors.surface,borderColor:colors.border,handleStyle:{color:colors.hover,borderColor:colors.ink},moveHandleStyle:{color:colors.ink}});
+  if(option.toolbox)patch.toolbox=component(option.toolbox,{iconStyle:{borderColor:colors.ink}});
+  return patch;
+}
+/* A plot is one view of a query result. Result cards own tabs, tables and exports. */
+function createDatabaseChartView(data){
+  const node=el('div','db-chart-view'),plot=el('div','db-chart'),status=el('p','subtle','正在加载图表…'),retry=button('重试加载图表',()=>restart());
+  node.dataset.resultId=data?.resultId||'';plot.setAttribute('role','img');plot.ariaLabel=data?.title||'查询结果图表';status.setAttribute('role','status');retry.hidden=true;node.append(plot,status,retry);
+  let value=data?.version===1?data:null,chart=null,request=null,frame=null,disposed=false,connected=false,observing=false,attempt=0,failed=false,themeKey='',ready,resolveReady,rejectReady;
+  function nextReady(){ready=new Promise((resolve,reject)=>{resolveReady=resolve;rejectReady=reject;});ready.catch(()=>{});}
+  nextReady();
+  function fail(error){if(disposed)return;failed=true;node.dataset.rendered='false';status.className='db-error';status.setAttribute('role','alert');status.textContent='图表加载失败：'+(error?.message||String(error));retry.hidden=false;rejectReady(error instanceof Error?error:new Error(String(error)));}
+  function schedule(){if(disposed||frame!==null)return;frame=requestAnimationFrame(()=>{frame=null;draw();});}
+  function applyTheme(){const colors=databaseChartPalette(node),key=JSON.stringify(colors);if(key!==themeKey){chart.setOption(databaseChartThemePatch(value.option,colors),{notMerge:false});themeKey=key;}return colors;}
+  function draw(){
+    if(disposed||failed||!node.isConnected||!plot.isConnected||!value)return;
+    const size=plot.getBoundingClientRect();if(size.width<=0||size.height<=0)return;
+    try{
+      if(!chart){if(typeof echarts==='undefined'||typeof echarts.init!=='function')throw new Error('图表组件尚未加载，请刷新页面后重试。');chart=echarts.init(plot,null,{renderer:'canvas'});chart.setOption(value.option,{notMerge:true});}
+      else chart.resize();
+      applyTheme();
+      node.dataset.rendered='true';status.hidden=true;retry.hidden=true;resolveReady(chart);
+    }catch(error){chart?.dispose();chart=null;themeKey='';fail(error);}
+  }
+  const resize=new ResizeObserver(schedule),removal=new MutationObserver(()=>{if(disposed)return;if(!node.isConnected){if(connected)dispose();}else if(!connected){connected=true;activate();}}),theme=new MutationObserver(schedule);
+  function observe(){if(observing||disposed)return;observing=true;resize.observe(plot);removal.observe(document.body,{subtree:true,childList:true});theme.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});}
+  function activate(){
+    if(disposed)return ready;observe();if(!node.isConnected)return ready;connected=true;
+    if(!validDatabaseChart(data)){if(!failed)fail(new Error('图表引用无效，请重新生成图表。'));return ready;}
+    if(failed)return ready;
+    if(value){schedule();return ready;}
+    if(!request){
+      const generation=attempt;status.textContent='正在读取完整图表数据…';
+      request=databaseApi('read_chart',{chartId:data.chartId}).then(result=>{
+        if(disposed||generation!==attempt)return;
+        if(!node.isConnected){dispose();return;}
+        if(!validDatabaseChart(result)||result.version!==1||result.resultId!==data.resultId)throw new Error('图表与查询结果不匹配，请重新生成图表。');
+        value=result;plot.ariaLabel=result.title||plot.ariaLabel;schedule();
+      }).catch(error=>{if(!disposed&&generation===attempt)fail(error);}).finally(()=>{if(generation===attempt)request=null;});
+    }
+    return ready;
+  }
+  function restart(){if(disposed)return ready;attempt++;request=null;failed=false;status.className='subtle';status.setAttribute('role','status');status.hidden=false;status.textContent='正在加载图表…';retry.hidden=true;nextReady();return activate();}
+  function downloadPNG(){if(disposed)throw new Error('图表已关闭，请重新打开该结果。');if(!chart)throw new Error(failed?status.textContent:'图表仍在加载，请等待图表显示后重试。');return chart.getDataURL({pixelRatio:2,backgroundColor:applyTheme().surface});}
+  function dispose(){if(disposed)return;disposed=true;attempt++;if(frame!==null){cancelAnimationFrame(frame);frame=null;}resize.disconnect();removal.disconnect();theme.disconnect();chart?.dispose();chart=null;resolveReady(null);}
+  return {node,activate,downloadPNG,dispose,get ready(){return ready;}};
+}
+function renderDatabaseChart(data){if(typeof renderStandaloneAnalysisChart==='function')return renderStandaloneAnalysisChart(data);const view=createDatabaseChartView(data);view.activate();return view.node;}

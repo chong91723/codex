@@ -1,6 +1,26 @@
 # 实际验收报告
 
-## 最新批次：数据分析工作台（2026-10-27）
+## 最新增量：统一图表／数据结果区（2026-10-27）
+
+同一结果ID只显示一张卡，在同一区域切换ECharts图表与标准数据表；保留精确快照、分页、CSV、PNG，不把表格改绘成canvas。图表到达时合并原结果，多图在卡内选择；用户已查看数据或翻页时不抢回图表。完整CSV只有底部一处，短表与空表隐藏分页。暗色文字和图表先到的来源名称同时修复。问题、根因和验收见CW-054至CW-057。
+
+| 验证 | 本次实际结果与边界 |
+|---|---|
+| 修前 | [baseline.json](test-results/unified-results-2026-10-27/browser/baseline.json)：真实独立PG＋ECharts输出经明确事件夹具呈现，复现表格卡和图表卡分离、图表内附表、两个CSV及短表分页；原截图保留 |
+| 最终真实浏览器／数据库／图表 | [final/results.json](test-results/unified-results-2026-10-27/browser/final/results.json)：14/14、0pageerror、0模型；独立只读PG实际SQL得到10／247／0行，本机mcp-echarts校验3个图表，真实快照及图表读取；CSV分别实际下载10／247／0行，PNG签名及真实文件通过。表格／图表顺序反转、重复引用、多图及不同结果关联、247行13页及跳页、页码保持、0行、两种请求失败与重试、键盘ARIA、迟到事件／响应隔离均通过；额外验证inProgress回合恢复的completed查询与两图共享一卡，未完成工具不显示成功，后续turn完成不重复 |
+| 历史与模型边界 | 原生线程创建和页面reload真实；工具完成事件及hydrateThread历史是明确fixture，不是Flash输出或模型持久化验收。旧用户历史不读取；本次不调用模型，不将前批手动／自动计划通过数算入此次 |
+| 截图／主题 | [visual-review.json](test-results/unified-results-2026-10-27/browser/visual-review.json)：1440／1024桌面数据／图表／暗色实际查看，无横向溢出；暗色轴与legend实际对比度11.985；同一ECharts实例的legend选择和dataZoom25–65切主题保持。完整页面和结果区截图在final目录，无手机测试 |
+| 确定性行为 | [state/final.tap](test-results/unified-results-2026-10-27/state/final.tap)：64/64＝原产物31＋统一卡15＋图表18。覆盖同轮结论、失败终态、跨会话、视图／页码保留、错误恢复、PNG等待真实canvas及主题切换；是DOM／事件／HTTP／canvas夹具，不代替上行真实浏览器 |
+| 工程／相邻回归 | [engineering/results.json](test-results/unified-results-2026-10-27/engineering/results.json)：89份JS／MJS语法、36份Python AST、174/174行为；174已包含上述64，不重复相加。source pristine、176方法及完整Schema与native一致，diff检查通过。没有前端bundler或TypeScript，构建／类型检查不适用；未重编译核心、未重跑完整后端Python套件 |
+| 后续脚本兼容 | analysis_plan_workflow_desktop、database_desktop、database_results_desktop已按resultId定位统一卡并切图／选择图；五类图从5个独立卡改验同一卡5个选择项。三份语法通过，本次未重新执行这些模型／旧数据库完整流程 |
+| 清理 | [environment-cleanup.json](test-results/unified-results-2026-10-27/browser/environment-cleanup.json)：仅自有10个原生线程、3结果、3图、1连接清理成功，18873及本次PG容器与临时目录已移除，8765用户服务未动 |
+
+首次浏览器第4组是测试器对隐藏旧图的严格选择器匹配失败，相关证据在first-run-selector；修为选择可见图。随后12/12版本在实看截图时发现暗色可读性和chart-first元数据问题，before-contrast-metadata原样保留；强化真实对比度／元数据断言并修复后，最终14/14覆盖主题交互状态。不能用旧12/12替代新增断言。
+
+
+执行中恢复边界在最后代码复核发现并经实际renderItem函数复现：工具已completed但所属回合未完成，entry.done仍false；局部改为按工具实际状态准入，不改变回合状态。修前失败在state/in-progress-restore-before.tap；旧产物测试把done=false等同工具未完成的断言修为明确status=inProgress，旧断言失败在state/in-progress-after-before-assertion.tap。原有失败／pending／报告完成与跨会话保护保持通过。
+
+## 前批次：数据分析工作台（2026-10-27）
 
 起始提交 `19399bf16b472a1b144f1a90b396ca47c78af612`；锁定Codex源码 `970111f6cb62cc02fe36a82ea7d71b37a2889c97` 未修改。用户最终要求：无成果侧栏、无单次数据源选择，数据源主页面由用户完整配置管理，Agent发现全部已配置启用且获授权连接；Skills／MCP入口保留。唯一手动计划入口 `/plan` bare／inline，底部只显示计划状态与退出，不展示原显式开关。历史与中间形态不算最终通过。
 
@@ -25,7 +45,7 @@
 
 真实失败及测试器边界保留：attempt-1批准后等待state.turns终态超时、attempt-2／3遇到未预设澄清问题，按测试驱动等待或答案范围调整，不直接认定产品Bug；先期bare／inline／退出真实通过在attempt-1／2中保留。attempt-4是实际模型策略问题：复杂三问＋图表直接申请SQL，测试未批准即中断，0执行；强化analysisTaskContext的语义规划边界后自动完整链7/7，再以简单Default查询3/3确认未强迫所有问题先规划。语义指引不是权限强制保证。[全部真实模型尝试](test-results/analysis-workspace-2026-10-27/flash-plan/summary.json)确认全部7轮共18个普通turn/start，含4次失败尝试和最终3组成功；不能只报成功两链，不将内部provider HTTP请求算在该数字中。[相同业务问题修前／修后对照](test-results/analysis-workspace-2026-10-27/flash-plan/application-policy-fix.json)核对修前／修后相同业务问题、相同Default与Flash，保留实际应用上下文。
 
-结果呈现回归另见CW-052：自动表格恢复、CSV底部唯一、read_result不新建卡和同ID去重；产出行为从23增至31项。用户讨论的统一ECharts容器／图表与数据切换只是建议，本批没有新增统一tabs或用ECharts替代HTML表格。
+结果呈现回归另见CW-052：自动表格恢复、CSV底部唯一、read_result不新建卡和同ID去重；产出行为从23增至31项。此前工作台批次没有统一tabs；当前统一结果区已在本页最新增量中实现并验证，标准分页数据表仍保留。
 
 最终无模型浏览器使用独立 `/tmp/codex-analysis-final-browser-20261027/`；只创建真实拒绝连接的本机MySQL，不伪造成功库响应。网络异常只中断一次浏览器请求，重试读取实际后端；显式原生事件／transcript夹具不代表模型或查询成功。4个自有会话和失败连接清理，MCP／provider配置保持。此前中间服务的技能状态也已恢复，测试MCP移除；不读取旧业务历史或凭据。
 

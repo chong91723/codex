@@ -250,8 +250,8 @@ function markdown(text) {
 }
 const toolNames = { reasoning:'思考过程', commandExecution:'执行命令', fileChange:'文件更改', mcpToolCall:'MCP 调用', dynamicToolCall:'工具调用', webSearch:'搜索网页', imageView:'查看图片', imageGeneration:'图像', collabAgentToolCall:'子代理', plan:'计划', contextCompaction:'压缩上下文', enteredReviewMode:'开始代码审查', exitedReviewMode:'审查结果' };
 function renderItem(item, done = false) {
-  const chart=databaseChart(item);if(chart)return renderDatabaseChart(chart);
   if(typeof renderAnalysisToolResult==='function'){const result=renderAnalysisToolResult(item,done);if(result)return result;}
+  const chart=databaseChart(item);if(chart)return renderDatabaseChart(chart);
   if(item.type==='agentMessage'&&typeof renderAutomaticAnalysisPlan==='function'){const plan=renderAutomaticAnalysisPlan(item,done);if(plan)return plan;}
   if(item.type==='plan')return renderProposedPlan(item,done);
   if(item.type==='imageGeneration'&&['completed','succeeded'].includes(item.status))return renderGeneratedImage(item);

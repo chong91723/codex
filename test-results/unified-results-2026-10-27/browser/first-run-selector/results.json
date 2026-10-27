@@ -1,0 +1,102 @@
+{
+  "scope": "Real independent PostgreSQL read-only SQL, immutable snapshots, local mcp-echarts option validation and Chromium downloads. All transcript events/history are explicit UI fixtures; no model or user history is used.",
+  "base": "http://127.0.0.1:18873",
+  "home": "/tmp/codex-web-unified-results/home",
+  "workspace": "/tmp/codex-web-unified-results/workspace",
+  "results": [
+    {
+      "name": "独立只读 PostgreSQL 真查询及本机 ECharts MCP 产生真实快照",
+      "status": "passed",
+      "evidence": {
+        "rowCounts": [
+          10,
+          247,
+          0
+        ],
+        "localEChartsMcpValidatedCharts": 3,
+        "allRowsPreserved": true,
+        "modelRequests": 0
+      }
+    },
+    {
+      "name": "查询后图表、重复 read_result 统一一张结果卡和一个底部 CSV",
+      "status": "passed",
+      "evidence": {
+        "cards": 1,
+        "visiblePanels": 1,
+        "rows": 10,
+        "paginationVisible": false,
+        "footerCsvLinks": 1,
+        "csv": {
+          "bytes": 168,
+          "rows": 10,
+          "header": "category_name,rental_count"
+        }
+      }
+    },
+    {
+      "name": "同一区域切换 ECharts 图表，PNG 真下载且无第二张数据表",
+      "status": "passed",
+      "evidence": {
+        "sameResultCard": true,
+        "visibleTables": 0,
+        "canvas": true,
+        "pngBytes": 58613
+      }
+    },
+    {
+      "name": "图表先到、同结果两张图和另一结果保持准确关联",
+      "status": "failed",
+      "error": "locator.waitFor: Error: strict mode violation: locator('#messages [data-analysis-result-id=\"d896ec6cc7a12e8d4607f1066e736437\"]:visible').locator('[data-rendered=\"true\"]') resolved to 2 elements:\n    1) <div hidden=\"\" data-rendered=\"true\" class=\"db-chart-view\" data-result-id=\"d896ec6cc7a12e8d4607f1066e736437\">…</div> aka getByText('正在读取完整图表数据…重试加载图表').first()\n    2) <div data-rendered=\"true\" class=\"db-chart-view\" data-result-id=\"d896ec6cc7a12e8d4607f1066e736437\">…</div> aka getByText('正在读取完整图表数据…重试加载图表').nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('#messages [data-analysis-result-id=\"d896ec6cc7a12e8d4607f1066e736437\"]:visible').locator('[data-rendered=\"true\"]') to be visible\u001b[22m\n\u001b[2m    5 × locator resolved to hidden <div hidden=\"\" data-rendered=\"true\" class=\"db-chart-view\" data-result-id=\"d896ec6cc7a12e8d4607f1066e736437\">…</div>\u001b[22m\n\n    at rendered (/root/Codex/web/tests/unified_results_desktop.mjs:32:78)\n    at /root/Codex/web/tests/unified_results_desktop.mjs:50:591\n    at async check (/root/Codex/web/tests/unified_results_desktop.mjs:24:50)\n    at async file:///root/Codex/web/tests/unified_results_desktop.mjs:49:2"
+    }
+  ],
+  "browserErrors": [],
+  "modelRequests": 0,
+  "cleanup": [
+    {
+      "kind": "owned snapshot",
+      "id": "d896ec6cc7a12e8d4607f1066e736437",
+      "removed": true
+    },
+    {
+      "kind": "owned snapshot",
+      "id": "b29607c39bc9066cd8db1d95dacdbcac",
+      "removed": true
+    },
+    {
+      "kind": "owned snapshot",
+      "id": "2a5021ad197bc5bedf0c1390fadac136",
+      "removed": true
+    },
+    {
+      "kind": "owned chart",
+      "id": "2a238451288e6e1c6817c2c7528b5826",
+      "removed": true
+    },
+    {
+      "kind": "owned chart",
+      "id": "7c716f18817a7a4f9cd65f1bc7329c32",
+      "removed": true
+    },
+    {
+      "kind": "owned chart",
+      "id": "7b0945b9e2f23ea3c2b828b2cc5fc6e9",
+      "removed": true
+    },
+    {
+      "kind": "owned database connection",
+      "id": "fb525dfa04fd165cbe3561e9",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17cdc-9ebc-7132-bee1-c5dcbf24a3f4",
+      "removed": true
+    },
+    {
+      "kind": "owned native thread",
+      "id": "01a17cdc-a5f0-7772-a31e-98bd3a280a65",
+      "removed": true
+    }
+  ]
+}

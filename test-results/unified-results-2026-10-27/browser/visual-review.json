@@ -1,0 +1,47 @@
+{
+  "scope": "Human-visible image review by browser test agent after actual Chromium screenshots. Screenshots use independent SQL fixtures and explicit tool transcript events, not model replies.",
+  "reviewed": [
+    "baseline-separate-table-chart.png",
+    "final/unified-conversation-data-1440.png",
+    "final/unified-conversation-chart-1440.png",
+    "final/data-1024.png",
+    "final/chart-dark-1024.png",
+    "final/large-last-page.png",
+    "final/restored-history-single-card.png",
+    "final/active-history-single-card.png"
+  ],
+  "findings": [
+    {
+      "baseline": "Two vertically separate result areas, 10-row result showing redundant pagination, repeated CSV links.",
+      "status": "Reproduced before changes."
+    },
+    {
+      "final": "Single card switches data/chart in one region; one footer CSV; PNG appears for the chart; no second table inside a chart details area.",
+      "status": "Visually checked."
+    },
+    {
+      "final": "10-row result uses compact rows and omits pagination; 247-row last page shows 7 rows and page 13/13.",
+      "status": "Visually checked and real pagination tested."
+    },
+    {
+      "intermediate": "Dark chart axis labels and legend had low contrast; chart-first late connection metadata was missing.",
+      "status": "Reported to root, fixed, and rerun."
+    },
+    {
+      "final": "Dark chart labels are readable; actual ECharts axis and legend contrast 11.985 on the card background.",
+      "status": "Visually checked and numerical contrast verified."
+    },
+    {
+      "final": "1440/1024 desktop layouts have no horizontal overflow; user sidebar and composer remain visible in full-page screenshots.",
+      "status": "Visually checked plus geometry assertions."
+    },
+    {
+      "final": "During inProgress history hydration, completed query and two completed charts stay in one card with a chart selector and one CSV. Pending tools remain in actual activity display without a successful result card.",
+      "status": "Visually checked final screenshot; subsequent turn completion kept one card in browser assertions."
+    }
+  ],
+  "limitations": [
+    "No mobile checks were requested.",
+    "Restored tool history is an explicitly supplied hydrateThread fixture after an actual page reload; no model-persisted tool transcript was claimed."
+  ]
+}
