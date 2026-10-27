@@ -1,6 +1,25 @@
 # 实际验收报告
 
-## 最新批次：计划模式输入与退出（2026-10-27）
+## 最新批次：精简斜杠菜单与计划开关（2026-10-27）
+
+本轮按用户最新要求把 `/` 菜单和分发限制为 `/init /goal`，聊天改为输入框下方“新建聊天”按钮，计划模式使用显式开关，移除 `/plan` 及带需求形式的快捷触发。压缩继续按设置自动运行，技能页、MCP、模型/权限控件和原生能力保留。本轮起始提交为 `672a96012fefe027fccd53a0ea45522dcba5becd`；下方旧菜单及旧计划命令通过数均属于历史，不能代替本轮验收。
+
+| 验证类别 | 本轮实际结果 |
+|---|---|
+| 修前菜单复现 | [browser/baseline/results.json](test-results/composer-scope-2026-10-27/browser/baseline/results.json)保留按新合约检查旧菜单的预期失败：仍为17项而非2项，且读取技能列表。不是成功测试，0模型 |
+| 菜单及命令分发行为 | [state/results.json](test-results/composer-scope-2026-10-27/state/results.json)及results.tap：35/35（计划/入口28、批准草稿7），生产函数配受控传输夹具，0模型/浏览器/原生运行。覆盖旧命令拒绝、草稿/附件保持、所选mode提交、设置等待/失败和异步导航，不冒充真实集成 |
+| 真实浏览器与原生设置 | [browser/results.json](test-results/composer-scope-2026-10-27/browser/results.json)：12/12、0turn/start、0页面错误。菜单精确2项、不读取技能目录；点击/Tab只填入，发送初始化和目标分别打开对应弹窗后取消，未生成文件或goal/set。24条旧命令尝试含 `/chat /plan` 参数形式全部零能力调用且草稿保持，带附件另测保持。输入框下方“新建聊天”不关联项目、保留cwd，可同时开启计划；计划开关新草稿不发RPC，已有会话收到真实plan/default设置事件；延迟真实ACK保持等待防重和新输入，真实非法thread拒绝不假成功且重试成功。仅本轮自有3个记录，全部清理、配置未改 |
+| 桌面截图 | 1440×960及1024×768菜单和下方控件均无溢出，switch状态可识别；两张截图已实际查看，见[visual-review.json](test-results/composer-scope-2026-10-27/browser/visual-review.json)。不包含手机端，不以截图代替原生状态检查 |
+| DeepSeek Flash真实任务 | 本轮未调用模型，不复用前批 `/plan` 5/5。当前provider/model设置可从原生事件核对为deepseek/deepseek-flash；实际初始化调查与写AGENTS、启动目标、模型生成计划/批准执行和自动压缩阈值触发均未在本轮重测 |
+| 工程及相邻回归 | [engineering/results.json](test-results/composer-scope-2026-10-27/engineering/results.json)：78份JS/MJS语法、36份Python AST通过；58/58相邻行为（入口/计划28、批准草稿7、模式恢复2、上下文6、权限15）。其中含上述状态35，不相加。原生[source完整性](test-results/composer-scope-2026-10-27/engineering/native-integrity.txt)确认源码pristine、176/176方法和完整schema匹配；diff检查通过。首次57/58为旧权限夹具期待只读 `/export` 的失效合约，改为拒绝且归档不显示停止后58/58；`behavior-before.txt`、`results-before.json`保留原失败 |
+
+初始化指令已沿 `/api/init-prompt` 核对为锁定源码 `upstream/codex-rs/tui/assets/prompt_for_init_command.md`：当前目录已有AGENTS.md时不覆盖、不修改。计划开启时弹窗增加“先生成计划，确认后才写”说明；此最后文案经过语法检查，前述浏览器是在加入该提示前完成，不宣称该文字已截图复验。完整模型初始化未执行。后端未改，未重跑72项完整Python套件，未重编译Codex核心。
+
+不修改原生源码、发行包或代理循环，不读取旧用户会话或凭据。手机端及严格国际出口检查仍取消。项目无前端打包或TypeScript；未执行的构建、完整后端套件或模型流程均不能标记通过。
+
+## 前一批次（历史）：计划模式输入与退出（2026-10-27）
+
+> `/plan` 命令入口已按最新要求取消。本节记录前批实现及真实结果，不能作为当前使用说明或本轮开关验证。
 
 修复`/plan`进入后无说明、重复命令反向退出，以及`/plan 具体需求`没有请求原生plan的问题。进入模式、向模型发任务和退出模式分别验证。仅在独立`/tmp`原生配置/工作区使用本轮新建合成数据；模型仅DeepSeek Flash，没有读取已有用户历史或凭据，没有修改原生源码、程序或代理循环。
 
@@ -19,6 +38,8 @@
 本轮静态、相邻行为和原生完整性见独立工程记录；未重跑完整72项Python后端套件，历史结果不代替本轮执行。项目没有前端打包或TypeScript，构建及类型检查不适用；未重编译Codex核心。
 
 ## 前一批次（历史）：输入框会话命令与占用删除（2026-10-27）
+
+> 下述五项会话斜杠入口现已移除；历史测试保留，原生能力仍在，不能将这些通过数算为本轮入口验收。
 
 侧栏右键/“…”只保留重命名、归档/恢复、永久删除；输入框新增 `/compact /fork /export /review /rollback`，点击或Tab仅填入，发送才执行。沿用现有threadAction→原生接口，不新增代理循环，不改变原生自动压缩。仅使用deepseek-flash，新合成数据及独立 `/tmp` Git 工作区；没有读取旧会话、凭据或修改全局配置。
 

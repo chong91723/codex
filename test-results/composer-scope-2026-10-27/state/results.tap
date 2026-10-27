@@ -1,0 +1,220 @@
+TAP version 13
+# Subtest: approved-plan submission sends only approved text and preserves unsent text, attachments and skills
+ok 1 - approved-plan submission sends only approved text and preserves unsent text, attachments and skills
+  ---
+  duration_ms: 5.660791
+  type: 'test'
+  ...
+# Subtest: ordinary submission still sends selected skill and attachment, then clears sent text and attachment
+ok 2 - ordinary submission still sends selected skill and attachment, then clears sent text and attachment
+  ---
+  duration_ms: 1.850001
+  type: 'test'
+  ...
+# Subtest: delayed approved-task acknowledgement cannot overwrite text or attachments entered meanwhile
+ok 3 - delayed approved-task acknowledgement cannot overwrite text or attachments entered meanwhile
+  ---
+  duration_ms: 1.217263
+  type: 'test'
+  ...
+# Subtest: ordinary delayed acknowledgement keeps later edits and newly added attachments
+ok 4 - ordinary delayed acknowledgement keeps later edits and newly added attachments
+  ---
+  duration_ms: 1.464571
+  type: 'test'
+  ...
+# Subtest: repeated confirmation while pending produces exactly one protocol request
+ok 5 - repeated confirmation while pending produces exactly one protocol request
+  ---
+  duration_ms: 1.222613
+  type: 'test'
+  ...
+# Subtest: approved-task transport rejection preserves the original draft sentinel, attachments and skills
+ok 6 - approved-task transport rejection preserves the original draft sentinel, attachments and skills
+  ---
+  duration_ms: 2.891188
+  type: 'test'
+  ...
+# Subtest: ordinary transport rejection also retains its original input and attachment for retry
+ok 7 - ordinary transport rejection also retains its original input and attachment for retry
+  ---
+  duration_ms: 1.223155
+  type: 'test'
+  ...
+# Subtest: slash menu and executable local adapter expose only initialization and goals
+ok 8 - slash menu and executable local adapter expose only initialization and goals
+  ---
+  duration_ms: 4.440467
+  type: 'test'
+  ...
+# Subtest: opening and filtering slash menu never fetches or inserts installed skills
+ok 9 - opening and filtering slash menu never fetches or inserts installed skills
+  ---
+  duration_ms: 2.815285
+  type: 'test'
+  ...
+# Subtest: selecting a retained menu item only fills the composer; sending invokes the real local adapter
+ok 10 - selecting a retained menu item only fills the composer; sending invokes the real local adapter
+  ---
+  duration_ms: 3.702873
+  type: 'test'
+  ...
+# Subtest: removed bare slash commands cannot execute tools, change views, create threads, or become model prompts
+ok 11 - removed bare slash commands cannot execute tools, change views, create threads, or become model prompts
+  ---
+  duration_ms: 19.382758
+  type: 'test'
+  ...
+# Subtest: /plan with whitespace or task text is rejected without changing mode or losing its complete input
+ok 12 - /plan with whitespace or task text is rejected without changing mode or losing its complete input
+  ---
+  duration_ms: 6.34224
+  type: 'test'
+  ...
+# Subtest: old commands with arguments and attachments cannot bypass removal or lose unsent files
+ok 13 - old commands with arguments and attachments cannot bypass removal or lose unsent files
+  ---
+  duration_ms: 4.468158
+  type: 'test'
+  ...
+# Subtest: removed commands remain blocked in an existing Plan conversation and during an active turn
+ok 14 - removed commands remain blocked in an existing Plan conversation and during an active turn
+  ---
+  duration_ms: 2.770146
+  type: 'test'
+  ...
+# Subtest: a read-only archive cannot use the former /export exception to invoke an operation
+ok 15 - a read-only archive cannot use the former /export exception to invoke an operation
+  ---
+  duration_ms: 1.917296
+  type: 'test'
+  ...
+# Subtest: Plan switch on a fresh draft changes only draft mode and leaves the typed task intact
+ok 16 - Plan switch on a fresh draft changes only draft mode and leaves the typed task intact
+  ---
+  duration_ms: 1.360079
+  type: 'test'
+  ...
+# Subtest: an existing-thread Plan switch uses native settings and stays pending until its ACK
+ok 17 - an existing-thread Plan switch uses native settings and stays pending until its ACK
+  ---
+  duration_ms: 1.673119
+  type: 'test'
+  ...
+# Subtest: a rejected native Plan switch preserves default mode and the whole composer, then can be retried
+ok 18 - a rejected native Plan switch preserves default mode and the whole composer, then can be retried
+  ---
+  duration_ms: 1.309247
+  type: 'test'
+  ...
+# Subtest: busy, archived, loading, restoring, and active conversations cannot change Plan mode
+ok 19 - busy, archived, loading, restoring, and active conversations cannot change Plan mode
+  ---
+  duration_ms: 6.35943
+  type: 'test'
+  ...
+# Subtest: repeat switch attempts while pending produce only one settings update
+ok 20 - repeat switch attempts while pending produce only one settings update
+  ---
+  duration_ms: 1.139576
+  type: 'test'
+  ...
+# Subtest: late switch completion updates its original thread without announcing Plan in the newly selected thread
+ok 21 - late switch completion updates its original thread without announcing Plan in the newly selected thread
+  ---
+  duration_ms: 1.125402
+  type: 'test'
+  ...
+# Subtest: ordinary task after explicit Plan switch sends unmodified text and native Plan/model settings
+ok 22 - ordinary task after explicit Plan switch sends unmodified text and native Plan/model settings
+  ---
+  duration_ms: 1.362472
+  type: 'test'
+  ...
+# Subtest: a fresh explicitly enabled Plan draft supplies Plan to thread creation and exactly one task
+ok 23 - a fresh explicitly enabled Plan draft supplies Plan to thread creation and exactly one task
+  ---
+  duration_ms: 1.303503
+  type: 'test'
+  ...
+# Subtest: explicit exit sends no task; the next ordinary task uses default collaboration mode
+ok 24 - explicit exit sends no task; the next ordinary task uses default collaboration mode
+  ---
+  duration_ms: 1.419634
+  type: 'test'
+  ...
+# Subtest: an ordinary task keeps supported text attachments and explicitly selected native skills
+ok 25 - an ordinary task keeps supported text attachments and explicitly selected native skills
+  ---
+  duration_ms: 1.391868
+  type: 'test'
+  ...
+# Subtest: Plan does not bypass Flash image capability checks or lose unsupported input
+ok 26 - Plan does not bypass Flash image capability checks or lose unsupported input
+  ---
+  duration_ms: 1.192817
+  type: 'test'
+  ...
+# Subtest: failed Plan task submission preserves its whole input for retry
+ok 27 - failed Plan task submission preserves its whole input for retry
+  ---
+  duration_ms: 1.285614
+  type: 'test'
+  ...
+# Subtest: pending ordinary Plan submission cannot create a duplicate turn
+ok 28 - pending ordinary Plan submission cannot create a duplicate turn
+  ---
+  duration_ms: 1.449557
+  type: 'test'
+  ...
+# Subtest: late task ACK preserves later text and newly attached files
+ok 29 - late task ACK preserves later text and newly attached files
+  ---
+  duration_ms: 1.236999
+  type: 'test'
+  ...
+# Subtest: approved-plan independent text is not reinterpreted as a composer slash command
+ok 30 - approved-plan independent text is not reinterpreted as a composer slash command
+  ---
+  duration_ms: 0.965655
+  type: 'test'
+  ...
+# Subtest: the visible Plan control reports its confirmed on/off state to assistive technology
+ok 31 - the visible Plan control reports its confirmed on/off state to assistive technology
+  ---
+  duration_ms: 1.41262
+  type: 'test'
+  ...
+# Subtest: Plan on/off settings are idempotent when the native snapshot already confirms that mode
+ok 32 - Plan on/off settings are idempotent when the native snapshot already confirms that mode
+  ---
+  duration_ms: 1.01872
+  type: 'test'
+  ...
+# Subtest: unassigned chat can submit in Plan while retaining its actual working directory
+ok 33 - unassigned chat can submit in Plan while retaining its actual working directory
+  ---
+  duration_ms: 1.096172
+  type: 'test'
+  ...
+# Subtest: unlisted slash words and removed commands with Unicode-separated arguments cannot fall through as tasks
+ok 34 - unlisted slash words and removed commands with Unicode-separated arguments cannot fall through as tasks
+  ---
+  duration_ms: 4.36847
+  type: 'test'
+  ...
+# Subtest: ordinary prose mentioning a former command and absolute file paths remain valid tasks
+ok 35 - ordinary prose mentioning a former command and absolute file paths remain valid tasks
+  ---
+  duration_ms: 2.140161
+  type: 'test'
+  ...
+1..35
+# tests 35
+# suites 0
+# pass 35
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 303.341598

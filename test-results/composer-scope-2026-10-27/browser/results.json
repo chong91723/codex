@@ -1,0 +1,1020 @@
+{
+  "scope": "Real browser and native protocol on an independent /tmp profile. Native user-only fixture records; no existing history, model credentials, model requests or config writes. Pending ACK delivery is delayed without changing the native response; failure uses a genuine native invalid-thread error.",
+  "base": "http://127.0.0.1:18869",
+  "home": "/tmp/codex-composer-scope-browser/home",
+  "workspace": "/tmp/codex-composer-scope-browser/workspace",
+  "results": [
+    {
+      "name": "/ 菜单只有初始化、目标且不读取技能目录",
+      "status": "passed",
+      "evidence": {
+        "options": [
+          {
+            "id": "menu-init",
+            "title": "初始化",
+            "text": "初始化创建包含项目指令的 AGENTS.md 文件"
+          },
+          {
+            "id": "menu-goal",
+            "title": "目标",
+            "text": "目标设置要持续追求的目标"
+          }
+        ],
+        "skillListRequests": 0,
+        "planMenuAbsent": true
+      }
+    },
+    {
+      "name": "点击初始化仅填入，发送才打开原生初始化确认入口",
+      "status": "passed",
+      "evidence": {
+        "selectionOnly": true,
+        "sendOpensConfirmation": true,
+        "cancelledBeforeModel": {
+          "id": null,
+          "mode": "default",
+          "draft": "",
+          "storedDraft": "",
+          "pending": false,
+          "sendDisabled": false,
+          "status": "",
+          "toast": "",
+          "switchRole": "switch",
+          "switchChecked": "false",
+          "switchDisabled": false,
+          "switchLabel": "计划模式关闭",
+          "attachmentCount": 0,
+          "view": "chat"
+        }
+      }
+    },
+    {
+      "name": "目标只在发送后打开目标配置，取消不启动目标",
+      "status": "passed",
+      "evidence": {
+        "selectionOnly": true,
+        "sendOpensConfiguration": true,
+        "cancelledBeforeGoalSet": true,
+        "id": "01a17c46-9368-7a22-9504-487022e65993"
+      }
+    },
+    {
+      "name": "输入框下方显式聊天按钮新建无项目会话并保留工作目录",
+      "status": "passed",
+      "evidence": {
+        "explicitButton": true,
+        "newUnassignedChat": true,
+        "originalCwd": "/tmp/codex-composer-scope-browser/workspace",
+        "cwdPreserved": true,
+        "beforeId": "01a17c46-9368-7a22-9504-487022e65993",
+        "after": {
+          "id": null,
+          "mode": "default",
+          "draft": "",
+          "storedDraft": "",
+          "pending": false,
+          "sendDisabled": false,
+          "status": "",
+          "toast": "新聊天不关联项目，仍使用当前工作目录×",
+          "switchRole": "switch",
+          "switchChecked": "false",
+          "switchDisabled": false,
+          "switchLabel": "计划模式关闭",
+          "attachmentCount": 0,
+          "view": "chat"
+        }
+      }
+    },
+    {
+      "name": "菜单键盘选择、Escape 和中文输入法不会意外提交",
+      "status": "passed",
+      "evidence": {
+        "keyboardSelectionOnly": true,
+        "escapeClosesMenu": true,
+        "compositionEnterDoesNotSend": true,
+        "shiftEnterNewline": true
+      }
+    },
+    {
+      "name": "移除的 /plan 和旧命令被明确拒绝、保留草稿且零任务/能力调用",
+      "status": "passed",
+      "evidence": [
+        {
+          "command": "/chat",
+          "feedback": "请点击输入框下方的「新建聊天」；输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/chat 具体需求",
+          "feedback": "请点击输入框下方的「新建聊天」；输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/plan",
+          "feedback": "计划模式请使用输入框下方的开关；输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/plan 具体需求",
+          "feedback": "计划模式请使用输入框下方的开关；输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/compact",
+          "feedback": "上下文按设置自动压缩，不再提供 /compact 手动入口；输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/compact 压缩",
+          "feedback": "上下文按设置自动压缩，不再提供 /compact 手动入口；输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/fork",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/export",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/review",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/rollback",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/mcp",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/projects",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/reasoning",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/model",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/status",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/skills",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/settings",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/native",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/apps",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/plugins",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/fast",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/feedback",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/image",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        },
+        {
+          "command": "/imagegen",
+          "feedback": "/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。×",
+          "draftPreserved": true,
+          "rpcRequests": 0
+        }
+      ]
+    },
+    {
+      "name": "移除命令带附件也不会进入模型，附件与草稿保留",
+      "status": "passed",
+      "evidence": {
+        "id": null,
+        "mode": "default",
+        "draft": "/plan 附件任务",
+        "storedDraft": "/plan 附件任务",
+        "pending": false,
+        "sendDisabled": false,
+        "status": "",
+        "toast": "计划模式请使用输入框下方的开关；输入已保留，未发送任务。×",
+        "switchRole": "switch",
+        "switchChecked": "false",
+        "switchDisabled": false,
+        "switchLabel": "计划模式关闭",
+        "attachmentCount": 1,
+        "view": "chat",
+        "rpcRequests": 0
+      }
+    },
+    {
+      "name": "新聊天显式计划开关可开关，保留草稿且不创建任务",
+      "status": "passed",
+      "evidence": {
+        "on": {
+          "id": null,
+          "mode": "plan",
+          "draft": "COMPOSER_SWITCH_UNSENT_DRAFT",
+          "storedDraft": "COMPOSER_SWITCH_UNSENT_DRAFT",
+          "pending": false,
+          "nativeModePending": false,
+          "sendDisabled": false,
+          "status": "已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。",
+          "toast": "已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。×",
+          "switchRole": "switch",
+          "switchChecked": "true",
+          "switchDisabled": false,
+          "switchLabel": "计划模式开启",
+          "attachmentCount": 0,
+          "view": "chat"
+        },
+        "off": {
+          "id": null,
+          "mode": "default",
+          "draft": "COMPOSER_SWITCH_UNSENT_DRAFT",
+          "storedDraft": "COMPOSER_SWITCH_UNSENT_DRAFT",
+          "pending": false,
+          "nativeModePending": false,
+          "sendDisabled": false,
+          "status": "",
+          "toast": "已退出计划模式，后续任务按默认模式处理。×",
+          "switchRole": "switch",
+          "switchChecked": "false",
+          "switchDisabled": false,
+          "switchLabel": "计划模式关闭",
+          "attachmentCount": 0,
+          "view": "chat"
+        },
+        "rpcRequests": 0
+      }
+    },
+    {
+      "name": "已有自建会话开关写入真实原生设置并收到 on/off 事件",
+      "status": "passed",
+      "evidence": {
+        "on": {
+          "id": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+          "mode": "plan",
+          "draft": "COMPOSER_EXISTING_UNSENT",
+          "storedDraft": "COMPOSER_EXISTING_UNSENT",
+          "pending": false,
+          "nativeModePending": false,
+          "sendDisabled": false,
+          "status": "已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。",
+          "toast": "已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。×",
+          "switchRole": "switch",
+          "switchChecked": "true",
+          "switchDisabled": false,
+          "switchLabel": "计划模式开启",
+          "attachmentCount": 0,
+          "view": "chat"
+        },
+        "off": {
+          "id": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+          "mode": "default",
+          "draft": "COMPOSER_EXISTING_UNSENT",
+          "storedDraft": "COMPOSER_EXISTING_UNSENT",
+          "pending": false,
+          "nativeModePending": false,
+          "sendDisabled": false,
+          "status": "",
+          "toast": "已退出计划模式，后续任务按默认模式处理。×",
+          "switchRole": "switch",
+          "switchChecked": "false",
+          "switchDisabled": false,
+          "switchLabel": "计划模式关闭",
+          "attachmentCount": 0,
+          "view": "chat"
+        },
+        "nativeEvents": [
+          "plan",
+          "default"
+        ]
+      }
+    },
+    {
+      "name": "原生设置回复等待时开关/发送禁用，迟到确认不丢新输入",
+      "status": "passed",
+      "evidence": {
+        "pending": {
+          "id": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+          "mode": "plan",
+          "draft": "COMPOSER_EXISTING_UNSENT",
+          "storedDraft": "COMPOSER_EXISTING_UNSENT",
+          "pending": false,
+          "nativeModePending": true,
+          "sendDisabled": true,
+          "status": "正在切换模式，请等待原生配置确认",
+          "toast": "",
+          "switchRole": "switch",
+          "switchChecked": "true",
+          "switchDisabled": true,
+          "switchLabel": "计划模式切换中…",
+          "attachmentCount": 0,
+          "view": "chat"
+        },
+        "confirmed": {
+          "id": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+          "mode": "plan",
+          "draft": "COMPOSER_EDIT_DURING_MODE_ACK",
+          "storedDraft": "COMPOSER_EDIT_DURING_MODE_ACK",
+          "pending": false,
+          "nativeModePending": false,
+          "sendDisabled": false,
+          "status": "已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。",
+          "toast": "已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。×",
+          "switchRole": "switch",
+          "switchChecked": "true",
+          "switchDisabled": false,
+          "switchLabel": "计划模式开启",
+          "attachmentCount": 0,
+          "view": "chat"
+        },
+        "originalNativeReplyUnchanged": true
+      }
+    },
+    {
+      "name": "原生拒绝模式开关时显示错误，不假成功且可以重试",
+      "status": "passed",
+      "evidence": {
+        "genuineNativeInvalidThreadError": {
+          "id": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+          "mode": "default",
+          "draft": "COMPOSER_EDIT_DURING_MODE_ACK",
+          "storedDraft": "COMPOSER_EDIT_DURING_MODE_ACK",
+          "pending": false,
+          "nativeModePending": false,
+          "sendDisabled": false,
+          "status": "",
+          "toast": "thread not found: 00000000-0000-7000-8000-000000000001×",
+          "switchRole": "switch",
+          "switchChecked": "false",
+          "switchDisabled": false,
+          "switchLabel": "计划模式关闭",
+          "attachmentCount": 0,
+          "view": "chat"
+        },
+        "retry": {
+          "id": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+          "mode": "plan",
+          "draft": "COMPOSER_EDIT_DURING_MODE_ACK",
+          "storedDraft": "COMPOSER_EDIT_DURING_MODE_ACK",
+          "pending": false,
+          "nativeModePending": false,
+          "sendDisabled": false,
+          "status": "已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。",
+          "toast": "已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。×",
+          "switchRole": "switch",
+          "switchChecked": "true",
+          "switchDisabled": false,
+          "switchLabel": "计划模式开启",
+          "attachmentCount": 0,
+          "view": "chat"
+        }
+      }
+    },
+    {
+      "name": "1440 与 1024 桌面窗口：两项菜单及输入框下方聊天/计划控件可见无溢出",
+      "status": "passed",
+      "evidence": [
+        {
+          "width": 1440,
+          "height": 960,
+          "boxes": {
+            ".composer": {
+              "x": 450,
+              "y": 773,
+              "width": 800,
+              "height": 126
+            },
+            "#command-menu": {
+              "x": 450,
+              "y": 694,
+              "width": 800,
+              "height": 72
+            },
+            "#mode-toggle": {
+              "x": 802.640625,
+              "y": 917,
+              "width": 132,
+              "height": 31
+            },
+            "#unassigned-chat-button": {
+              "x": 722.640625,
+              "y": 917,
+              "width": 68,
+              "height": 31
+            },
+            "#send": {
+              "x": 1201,
+              "y": 854,
+              "width": 34,
+              "height": 34
+            }
+          },
+          "menuEntries": 2,
+          "planSwitchBelowInput": true,
+          "noHorizontalOverflow": true
+        },
+        {
+          "width": 1024,
+          "height": 768,
+          "boxes": {
+            ".composer": {
+              "x": 254,
+              "y": 581,
+              "width": 746,
+              "height": 126
+            },
+            "#command-menu": {
+              "x": 254,
+              "y": 502,
+              "width": 746,
+              "height": 72
+            },
+            "#mode-toggle": {
+              "x": 606.640625,
+              "y": 725,
+              "width": 132,
+              "height": 31
+            },
+            "#unassigned-chat-button": {
+              "x": 526.640625,
+              "y": 725,
+              "width": 68,
+              "height": 31
+            },
+            "#send": {
+              "x": 951,
+              "y": 662,
+              "width": 34,
+              "height": 34
+            }
+          },
+          "menuEntries": 2,
+          "planSwitchBelowInput": true,
+          "noHorizontalOverflow": true
+        }
+      ]
+    }
+  ],
+  "calls": [
+    {
+      "id": 1,
+      "method": "initialize",
+      "params": {
+        "clientInfo": {
+          "name": "codex_web_native",
+          "title": "Codex Web",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "experimentalApi": true
+        }
+      }
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "id": 2,
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "id": 3,
+      "method": "model/list",
+      "params": {
+        "includeHidden": true
+      }
+    },
+    {
+      "id": 4,
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-composer-scope-browser/workspace"
+      }
+    },
+    {
+      "id": 5,
+      "method": "thread/start",
+      "params": {
+        "cwd": "/tmp/codex-composer-scope-browser/workspace",
+        "model": null,
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        }
+      }
+    },
+    {
+      "id": 6,
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "id": 7,
+      "method": "thread/goal/get",
+      "params": {
+        "threadId": "01a17c46-9368-7a22-9504-487022e65993"
+      }
+    },
+    {
+      "id": 8,
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "id": 9,
+      "method": "thread/start",
+      "params": {
+        "cwd": "/tmp/codex-composer-scope-browser/workspace",
+        "model": "deepseek-flash"
+      }
+    },
+    {
+      "id": 10,
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "id": 11,
+      "method": "thread/inject_items",
+      "params": {
+        "threadId": "01a17c46-a1e2-70b1-ad7f-cf33052b7320",
+        "items": [
+          {
+            "type": "message",
+            "role": "user",
+            "content": [
+              {
+                "type": "input_text",
+                "text": "COMPOSER_SCOPE_USER_ONLY_1793086366241 storage fixture. No model work requested."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 12,
+      "method": "thread/fork",
+      "params": {
+        "threadId": "01a17c46-a1e2-70b1-ad7f-cf33052b7320",
+        "model": "deepseek-flash"
+      }
+    },
+    {
+      "id": 13,
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "id": 14,
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "includeTurns": false
+      }
+    },
+    {
+      "id": 15,
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "includeTurns": false
+      }
+    },
+    {
+      "id": 17,
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "collaborationMode": {
+          "mode": "plan",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        }
+      }
+    },
+    {
+      "id": 18,
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        }
+      }
+    },
+    {
+      "id": 19,
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "collaborationMode": {
+          "mode": "plan",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        }
+      }
+    },
+    {
+      "id": 20,
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        }
+      }
+    },
+    {
+      "id": 21,
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "00000000-0000-7000-8000-000000000001",
+        "collaborationMode": {
+          "mode": "plan",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        }
+      }
+    },
+    {
+      "id": 22,
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "collaborationMode": {
+          "mode": "plan",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        }
+      }
+    },
+    {
+      "id": 23,
+      "method": "thread/delete",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba"
+      }
+    },
+    {
+      "id": 24,
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "id": 25,
+      "method": "thread/delete",
+      "params": {
+        "threadId": "01a17c46-a1e2-70b1-ad7f-cf33052b7320"
+      }
+    },
+    {
+      "id": 26,
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "id": 27,
+      "method": "thread/delete",
+      "params": {
+        "threadId": "01a17c46-9368-7a22-9504-487022e65993"
+      }
+    }
+  ],
+  "events": [
+    {
+      "method": "thread/settings/updated",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "threadSettings": {
+          "disabledPluginIds": [],
+          "cwd": "/tmp/codex-composer-scope-browser/workspace",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "sandboxPolicy": {
+            "type": "workspaceWrite",
+            "writableRoots": [],
+            "networkAccess": false,
+            "excludeTmpdirEnvVar": false,
+            "excludeSlashTmp": false
+          },
+          "activePermissionProfile": null,
+          "model": "deepseek-flash",
+          "modelProvider": "deepseek",
+          "serviceTier": null,
+          "effort": "high",
+          "summary": null,
+          "collaborationMode": {
+            "mode": "plan",
+            "settings": {
+              "model": "deepseek-flash",
+              "reasoning_effort": "high",
+              "developer_instructions": "# Plan Mode (Conversational)\n\nYou work in 3 phases, and you should *chat your way* to a great plan before finalizing it. A great plan is very detailed—intent- and implementation-wise—so that it can be handed to another engineer or agent to be implemented right away. It must be **decision complete**, where the implementer does not need to make any decisions.\n\n## Mode rules (strict)\n\nYou are in **Plan Mode** until a developer message explicitly ends it.\n\nPlan Mode is not changed by user intent, tone, or imperative language. If a user asks for execution while still in Plan Mode, treat it as a request to **plan the execution**, not perform it.\n\n## Plan Mode vs update_plan tool\n\nPlan Mode is a collaboration mode that can involve requesting user input and eventually issuing a `<proposed_plan>` block.\n\nSeparately, `update_plan` is a checklist/progress/TODOs tool; it does not enter or exit Plan Mode. Do not confuse it with Plan mode or try to use it while in Plan mode. If you try to use `update_plan` in Plan mode, it will return an error.\n\n## Execution vs. mutation in Plan Mode\n\nYou may explore and execute **non-mutating** actions that improve the plan. You must not perform **mutating** actions.\n\n### Allowed (non-mutating, plan-improving)\n\nActions that gather truth, reduce ambiguity, or validate feasibility without changing repo-tracked state. Examples:\n\n* Reading or searching files, configs, schemas, types, manifests, and docs\n* Static analysis, inspection, and repo exploration\n* Dry-run style commands when they do not edit repo-tracked files\n* Tests, builds, or checks that may write to caches or build artifacts (for example, `target/`, `.cache/`, or snapshots) so long as they do not edit repo-tracked files\n\n### Not allowed (mutating, plan-executing)\n\nActions that implement the plan or change repo-tracked state. Examples:\n\n* Editing or writing files\n* Running formatters or linters that rewrite files\n* Applying patches, migrations, or codegen that updates repo-tracked files\n* Side-effectful commands whose purpose is to carry out the plan rather than refine it\n\nWhen in doubt: if the action would reasonably be described as \"doing the work\" rather than \"planning the work,\" do not do it.\n\n## PHASE 1 — Ground in the environment (explore first, ask second)\n\nBegin by grounding yourself in the actual environment. Eliminate unknowns in the prompt by discovering facts, not by asking the user. Resolve all questions that can be answered through exploration or inspection. Identify missing or ambiguous details only if they cannot be derived from the environment. Silent exploration between turns is allowed and encouraged.\n\nBefore asking the user any question, perform at least one targeted non-mutating exploration pass (for example: search relevant files, inspect likely entrypoints/configs, confirm current implementation shape), unless no local environment/repo is available.\n\nException: you may ask clarifying questions about the user's prompt before exploring, ONLY if there are obvious ambiguities or contradictions in the prompt itself. However, if ambiguity might be resolved by exploring, always prefer exploring first.\n\nDo not ask questions that can be answered from the repo or system (for example, \"where is this struct?\" or \"which UI component should we use?\" when exploration can make it clear). Only ask once you have exhausted reasonable non-mutating exploration.\n\n## PHASE 2 — Intent chat (what they actually want)\n\n* Keep asking until you can clearly state: goal + success criteria, audience, in/out of scope, constraints, current state, and the key preferences/tradeoffs.\n* Bias toward questions over guessing: if any high-impact ambiguity remains, do NOT plan yet—ask.\n\n## PHASE 3 — Implementation chat (what/how we’ll build)\n\n* Once intent is stable, keep asking until the spec is decision complete: approach, interfaces (APIs/schemas/I/O), data flow, edge cases/failure modes, testing + acceptance criteria, rollout/monitoring, and any migrations/compat constraints.\n\n## Asking questions\n\nCritical rules:\n\n* Strongly prefer using the `request_user_input` tool to ask any questions.\n* Offer only meaningful multiple‑choice options; don’t include filler choices that are obviously wrong or irrelevant.\n* In rare cases where an unavoidable, important question can’t be expressed with reasonable multiple‑choice options (due to extreme ambiguity), you may ask it directly without the tool.\n\nYou SHOULD ask many questions, but each question must:\n\n* materially change the spec/plan, OR\n* confirm/lock an assumption, OR\n* choose between meaningful tradeoffs.\n* not be answerable by non-mutating commands.\n\nUse the `request_user_input` tool only for decisions that materially change the plan, for confirming important assumptions, or for information that cannot be discovered via non-mutating exploration.\n\n## Two kinds of unknowns (treat differently)\n\n1. **Discoverable facts** (repo/system truth): explore first.\n\n   * Before asking, run targeted searches and check likely sources of truth (configs/manifests/entrypoints/schemas/types/constants).\n   * Ask only if: multiple plausible candidates; nothing found but you need a missing identifier/context; or ambiguity is actually product intent.\n   * If asking, present concrete candidates (paths/service names) + recommend one.\n   * Never ask questions you can answer from your environment (e.g., “where is this struct”).\n\n2. **Preferences/tradeoffs** (not discoverable): ask early.\n\n   * These are intent or implementation preferences that cannot be derived from exploration.\n   * Provide 2–4 mutually exclusive options + a recommended default.\n   * If unanswered, proceed with the recommended option and record it as an assumption in the final plan.\n\n## Finalization rule\n\nOnly output the final plan when it is decision complete and leaves no decisions to the implementer.\n\nWhen you present the official plan, wrap it in a `<proposed_plan>` block so the client can render it specially:\n\n1) The opening tag must be on its own line.\n2) Start the plan content on the next line (no text on the same line as the tag).\n3) The closing tag must be on its own line.\n4) Use Markdown inside the block.\n5) Keep the tags exactly as `<proposed_plan>` and `</proposed_plan>` (do not translate or rename them), even if the plan content is in another language.\n\nExample:\n\n<proposed_plan>\nplan content\n</proposed_plan>\n\nplan content should be human and agent digestible. The final plan must be plan-only, concise by default, and include:\n\n* A clear title\n* A brief summary section\n* Important changes or additions to public APIs/interfaces/types\n* Test cases and scenarios\n* Explicit assumptions and defaults chosen where needed\n\nWhen possible, prefer a compact structure with 3-5 short sections, usually: Summary, Key Changes or Implementation Changes, Test Plan, and Assumptions. Do not include a separate Scope section unless scope boundaries are genuinely important to avoid mistakes.\n\nPrefer grouped implementation bullets by subsystem or behavior over file-by-file inventories. Mention files only when needed to disambiguate a non-obvious change, and avoid naming more than 3 paths unless extra specificity is necessary to prevent mistakes. Prefer behavior-level descriptions over symbol-by-symbol removal lists. For v1 feature-addition plans, do not invent detailed schema, validation, precedence, fallback, or wire-shape policy unless the request establishes it or it is needed to prevent a concrete implementation mistake; prefer the intended capability and minimum interface/behavior changes.\n\nKeep bullets short and avoid explanatory sub-bullets unless they are needed to prevent ambiguity. Prefer the minimum detail needed for implementation safety, not exhaustive coverage. Within each section, compress related changes into a few high-signal bullets and omit branch-by-branch logic, repeated invariants, and long lists of unaffected behavior unless they are necessary to prevent a likely implementation mistake. Avoid repeated repo facts and irrelevant edge-case or rollout detail. For straightforward refactors, keep the plan to a compact summary, key edits, tests, and assumptions. If the user asks for more detail, then expand.\n\nDo not ask \"should I proceed?\" in the final output. The user can easily switch out of Plan mode and request implementation if you have included a `<proposed_plan>` block in your response. Alternatively, they can decide to stay in Plan mode and continue refining the plan.\n\nOnly produce at most one `<proposed_plan>` block per turn, and only when you are presenting a complete spec.\n\nIf the user stays in Plan mode and asks for revisions after a prior `<proposed_plan>`, any new `<proposed_plan>` must be a complete replacement. If the user indicates that the prior plan is not acceptable but does not provide enough information to produce a complete replacement, address the concern and continue planning without producing a `<proposed_plan>` block. If the follow-up neither requires changes nor calls the plan into question (e.g. clarifying question), answer it before the block, then reproduce the prior `<proposed_plan>` unchanged.\n"
+            }
+          },
+          "multiAgentMode": "explicitRequestOnly",
+          "personality": null
+        }
+      },
+      "emittedAtMs": 1793086366705
+    },
+    {
+      "method": "thread/settings/updated",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "threadSettings": {
+          "disabledPluginIds": [],
+          "cwd": "/tmp/codex-composer-scope-browser/workspace",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "sandboxPolicy": {
+            "type": "workspaceWrite",
+            "writableRoots": [],
+            "networkAccess": false,
+            "excludeTmpdirEnvVar": false,
+            "excludeSlashTmp": false
+          },
+          "activePermissionProfile": null,
+          "model": "deepseek-flash",
+          "modelProvider": "deepseek",
+          "serviceTier": null,
+          "effort": "high",
+          "summary": null,
+          "collaborationMode": {
+            "mode": "default",
+            "settings": {
+              "model": "deepseek-flash",
+              "reasoning_effort": "high",
+              "developer_instructions": "# Collaboration Mode: Default\n\nYou are now in Default mode. Any previous instructions for other modes (e.g. Plan mode) are no longer active.\n\nYour active mode changes only when new developer instructions with a different `<collaboration_mode>...</collaboration_mode>` change it; user requests or tool descriptions do not change mode by themselves. Known mode names are Default and Plan.\n\n## request_user_input availability\n\nUse the `request_user_input` tool only when it is listed in the available tools for this turn.\n\nIn Default mode, strongly prefer making reasonable assumptions and executing the user's request rather than stopping to ask questions.\n\nUse the `request_user_input` tool only for optional questions where the answer would materially improve the quality of the work.\n\nIf `request_user_input` returns no answers, continue with best judgment instead of asking again or treating the turn as blocked.\n\nNever use the `request_user_input` tool for permission requests or permission-related escalations.\n\nIf explicit user input is required for another reason before progress can safely continue, do not use the `request_user_input` tool. Ask the user directly with one concise plain-text question instead. Never write a multiple choice question as a textual assistant message.\n"
+            }
+          },
+          "multiAgentMode": "explicitRequestOnly",
+          "personality": null
+        }
+      },
+      "emittedAtMs": 1793086366768
+    },
+    {
+      "method": "thread/settings/updated",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "threadSettings": {
+          "disabledPluginIds": [],
+          "cwd": "/tmp/codex-composer-scope-browser/workspace",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "sandboxPolicy": {
+            "type": "workspaceWrite",
+            "writableRoots": [],
+            "networkAccess": false,
+            "excludeTmpdirEnvVar": false,
+            "excludeSlashTmp": false
+          },
+          "activePermissionProfile": null,
+          "model": "deepseek-flash",
+          "modelProvider": "deepseek",
+          "serviceTier": null,
+          "effort": "high",
+          "summary": null,
+          "collaborationMode": {
+            "mode": "plan",
+            "settings": {
+              "model": "deepseek-flash",
+              "reasoning_effort": "high",
+              "developer_instructions": "# Plan Mode (Conversational)\n\nYou work in 3 phases, and you should *chat your way* to a great plan before finalizing it. A great plan is very detailed—intent- and implementation-wise—so that it can be handed to another engineer or agent to be implemented right away. It must be **decision complete**, where the implementer does not need to make any decisions.\n\n## Mode rules (strict)\n\nYou are in **Plan Mode** until a developer message explicitly ends it.\n\nPlan Mode is not changed by user intent, tone, or imperative language. If a user asks for execution while still in Plan Mode, treat it as a request to **plan the execution**, not perform it.\n\n## Plan Mode vs update_plan tool\n\nPlan Mode is a collaboration mode that can involve requesting user input and eventually issuing a `<proposed_plan>` block.\n\nSeparately, `update_plan` is a checklist/progress/TODOs tool; it does not enter or exit Plan Mode. Do not confuse it with Plan mode or try to use it while in Plan mode. If you try to use `update_plan` in Plan mode, it will return an error.\n\n## Execution vs. mutation in Plan Mode\n\nYou may explore and execute **non-mutating** actions that improve the plan. You must not perform **mutating** actions.\n\n### Allowed (non-mutating, plan-improving)\n\nActions that gather truth, reduce ambiguity, or validate feasibility without changing repo-tracked state. Examples:\n\n* Reading or searching files, configs, schemas, types, manifests, and docs\n* Static analysis, inspection, and repo exploration\n* Dry-run style commands when they do not edit repo-tracked files\n* Tests, builds, or checks that may write to caches or build artifacts (for example, `target/`, `.cache/`, or snapshots) so long as they do not edit repo-tracked files\n\n### Not allowed (mutating, plan-executing)\n\nActions that implement the plan or change repo-tracked state. Examples:\n\n* Editing or writing files\n* Running formatters or linters that rewrite files\n* Applying patches, migrations, or codegen that updates repo-tracked files\n* Side-effectful commands whose purpose is to carry out the plan rather than refine it\n\nWhen in doubt: if the action would reasonably be described as \"doing the work\" rather than \"planning the work,\" do not do it.\n\n## PHASE 1 — Ground in the environment (explore first, ask second)\n\nBegin by grounding yourself in the actual environment. Eliminate unknowns in the prompt by discovering facts, not by asking the user. Resolve all questions that can be answered through exploration or inspection. Identify missing or ambiguous details only if they cannot be derived from the environment. Silent exploration between turns is allowed and encouraged.\n\nBefore asking the user any question, perform at least one targeted non-mutating exploration pass (for example: search relevant files, inspect likely entrypoints/configs, confirm current implementation shape), unless no local environment/repo is available.\n\nException: you may ask clarifying questions about the user's prompt before exploring, ONLY if there are obvious ambiguities or contradictions in the prompt itself. However, if ambiguity might be resolved by exploring, always prefer exploring first.\n\nDo not ask questions that can be answered from the repo or system (for example, \"where is this struct?\" or \"which UI component should we use?\" when exploration can make it clear). Only ask once you have exhausted reasonable non-mutating exploration.\n\n## PHASE 2 — Intent chat (what they actually want)\n\n* Keep asking until you can clearly state: goal + success criteria, audience, in/out of scope, constraints, current state, and the key preferences/tradeoffs.\n* Bias toward questions over guessing: if any high-impact ambiguity remains, do NOT plan yet—ask.\n\n## PHASE 3 — Implementation chat (what/how we’ll build)\n\n* Once intent is stable, keep asking until the spec is decision complete: approach, interfaces (APIs/schemas/I/O), data flow, edge cases/failure modes, testing + acceptance criteria, rollout/monitoring, and any migrations/compat constraints.\n\n## Asking questions\n\nCritical rules:\n\n* Strongly prefer using the `request_user_input` tool to ask any questions.\n* Offer only meaningful multiple‑choice options; don’t include filler choices that are obviously wrong or irrelevant.\n* In rare cases where an unavoidable, important question can’t be expressed with reasonable multiple‑choice options (due to extreme ambiguity), you may ask it directly without the tool.\n\nYou SHOULD ask many questions, but each question must:\n\n* materially change the spec/plan, OR\n* confirm/lock an assumption, OR\n* choose between meaningful tradeoffs.\n* not be answerable by non-mutating commands.\n\nUse the `request_user_input` tool only for decisions that materially change the plan, for confirming important assumptions, or for information that cannot be discovered via non-mutating exploration.\n\n## Two kinds of unknowns (treat differently)\n\n1. **Discoverable facts** (repo/system truth): explore first.\n\n   * Before asking, run targeted searches and check likely sources of truth (configs/manifests/entrypoints/schemas/types/constants).\n   * Ask only if: multiple plausible candidates; nothing found but you need a missing identifier/context; or ambiguity is actually product intent.\n   * If asking, present concrete candidates (paths/service names) + recommend one.\n   * Never ask questions you can answer from your environment (e.g., “where is this struct”).\n\n2. **Preferences/tradeoffs** (not discoverable): ask early.\n\n   * These are intent or implementation preferences that cannot be derived from exploration.\n   * Provide 2–4 mutually exclusive options + a recommended default.\n   * If unanswered, proceed with the recommended option and record it as an assumption in the final plan.\n\n## Finalization rule\n\nOnly output the final plan when it is decision complete and leaves no decisions to the implementer.\n\nWhen you present the official plan, wrap it in a `<proposed_plan>` block so the client can render it specially:\n\n1) The opening tag must be on its own line.\n2) Start the plan content on the next line (no text on the same line as the tag).\n3) The closing tag must be on its own line.\n4) Use Markdown inside the block.\n5) Keep the tags exactly as `<proposed_plan>` and `</proposed_plan>` (do not translate or rename them), even if the plan content is in another language.\n\nExample:\n\n<proposed_plan>\nplan content\n</proposed_plan>\n\nplan content should be human and agent digestible. The final plan must be plan-only, concise by default, and include:\n\n* A clear title\n* A brief summary section\n* Important changes or additions to public APIs/interfaces/types\n* Test cases and scenarios\n* Explicit assumptions and defaults chosen where needed\n\nWhen possible, prefer a compact structure with 3-5 short sections, usually: Summary, Key Changes or Implementation Changes, Test Plan, and Assumptions. Do not include a separate Scope section unless scope boundaries are genuinely important to avoid mistakes.\n\nPrefer grouped implementation bullets by subsystem or behavior over file-by-file inventories. Mention files only when needed to disambiguate a non-obvious change, and avoid naming more than 3 paths unless extra specificity is necessary to prevent mistakes. Prefer behavior-level descriptions over symbol-by-symbol removal lists. For v1 feature-addition plans, do not invent detailed schema, validation, precedence, fallback, or wire-shape policy unless the request establishes it or it is needed to prevent a concrete implementation mistake; prefer the intended capability and minimum interface/behavior changes.\n\nKeep bullets short and avoid explanatory sub-bullets unless they are needed to prevent ambiguity. Prefer the minimum detail needed for implementation safety, not exhaustive coverage. Within each section, compress related changes into a few high-signal bullets and omit branch-by-branch logic, repeated invariants, and long lists of unaffected behavior unless they are necessary to prevent a likely implementation mistake. Avoid repeated repo facts and irrelevant edge-case or rollout detail. For straightforward refactors, keep the plan to a compact summary, key edits, tests, and assumptions. If the user asks for more detail, then expand.\n\nDo not ask \"should I proceed?\" in the final output. The user can easily switch out of Plan mode and request implementation if you have included a `<proposed_plan>` block in your response. Alternatively, they can decide to stay in Plan mode and continue refining the plan.\n\nOnly produce at most one `<proposed_plan>` block per turn, and only when you are presenting a complete spec.\n\nIf the user stays in Plan mode and asks for revisions after a prior `<proposed_plan>`, any new `<proposed_plan>` must be a complete replacement. If the user indicates that the prior plan is not acceptable but does not provide enough information to produce a complete replacement, address the concern and continue planning without producing a `<proposed_plan>` block. If the follow-up neither requires changes nor calls the plan into question (e.g. clarifying question), answer it before the block, then reproduce the prior `<proposed_plan>` unchanged.\n"
+            }
+          },
+          "multiAgentMode": "explicitRequestOnly",
+          "personality": null
+        }
+      },
+      "emittedAtMs": 1793086366887
+    },
+    {
+      "method": "thread/settings/updated",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "threadSettings": {
+          "disabledPluginIds": [],
+          "cwd": "/tmp/codex-composer-scope-browser/workspace",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "sandboxPolicy": {
+            "type": "workspaceWrite",
+            "writableRoots": [],
+            "networkAccess": false,
+            "excludeTmpdirEnvVar": false,
+            "excludeSlashTmp": false
+          },
+          "activePermissionProfile": null,
+          "model": "deepseek-flash",
+          "modelProvider": "deepseek",
+          "serviceTier": null,
+          "effort": "high",
+          "summary": null,
+          "collaborationMode": {
+            "mode": "default",
+            "settings": {
+              "model": "deepseek-flash",
+              "reasoning_effort": "high",
+              "developer_instructions": "# Collaboration Mode: Default\n\nYou are now in Default mode. Any previous instructions for other modes (e.g. Plan mode) are no longer active.\n\nYour active mode changes only when new developer instructions with a different `<collaboration_mode>...</collaboration_mode>` change it; user requests or tool descriptions do not change mode by themselves. Known mode names are Default and Plan.\n\n## request_user_input availability\n\nUse the `request_user_input` tool only when it is listed in the available tools for this turn.\n\nIn Default mode, strongly prefer making reasonable assumptions and executing the user's request rather than stopping to ask questions.\n\nUse the `request_user_input` tool only for optional questions where the answer would materially improve the quality of the work.\n\nIf `request_user_input` returns no answers, continue with best judgment instead of asking again or treating the turn as blocked.\n\nNever use the `request_user_input` tool for permission requests or permission-related escalations.\n\nIf explicit user input is required for another reason before progress can safely continue, do not use the `request_user_input` tool. Ask the user directly with one concise plain-text question instead. Never write a multiple choice question as a textual assistant message.\n"
+            }
+          },
+          "multiAgentMode": "explicitRequestOnly",
+          "personality": null
+        }
+      },
+      "emittedAtMs": 1793086366969
+    },
+    {
+      "method": "thread/settings/updated",
+      "params": {
+        "threadId": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+        "threadSettings": {
+          "disabledPluginIds": [],
+          "cwd": "/tmp/codex-composer-scope-browser/workspace",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "sandboxPolicy": {
+            "type": "workspaceWrite",
+            "writableRoots": [],
+            "networkAccess": false,
+            "excludeTmpdirEnvVar": false,
+            "excludeSlashTmp": false
+          },
+          "activePermissionProfile": null,
+          "model": "deepseek-flash",
+          "modelProvider": "deepseek",
+          "serviceTier": null,
+          "effort": "high",
+          "summary": null,
+          "collaborationMode": {
+            "mode": "plan",
+            "settings": {
+              "model": "deepseek-flash",
+              "reasoning_effort": "high",
+              "developer_instructions": "# Plan Mode (Conversational)\n\nYou work in 3 phases, and you should *chat your way* to a great plan before finalizing it. A great plan is very detailed—intent- and implementation-wise—so that it can be handed to another engineer or agent to be implemented right away. It must be **decision complete**, where the implementer does not need to make any decisions.\n\n## Mode rules (strict)\n\nYou are in **Plan Mode** until a developer message explicitly ends it.\n\nPlan Mode is not changed by user intent, tone, or imperative language. If a user asks for execution while still in Plan Mode, treat it as a request to **plan the execution**, not perform it.\n\n## Plan Mode vs update_plan tool\n\nPlan Mode is a collaboration mode that can involve requesting user input and eventually issuing a `<proposed_plan>` block.\n\nSeparately, `update_plan` is a checklist/progress/TODOs tool; it does not enter or exit Plan Mode. Do not confuse it with Plan mode or try to use it while in Plan mode. If you try to use `update_plan` in Plan mode, it will return an error.\n\n## Execution vs. mutation in Plan Mode\n\nYou may explore and execute **non-mutating** actions that improve the plan. You must not perform **mutating** actions.\n\n### Allowed (non-mutating, plan-improving)\n\nActions that gather truth, reduce ambiguity, or validate feasibility without changing repo-tracked state. Examples:\n\n* Reading or searching files, configs, schemas, types, manifests, and docs\n* Static analysis, inspection, and repo exploration\n* Dry-run style commands when they do not edit repo-tracked files\n* Tests, builds, or checks that may write to caches or build artifacts (for example, `target/`, `.cache/`, or snapshots) so long as they do not edit repo-tracked files\n\n### Not allowed (mutating, plan-executing)\n\nActions that implement the plan or change repo-tracked state. Examples:\n\n* Editing or writing files\n* Running formatters or linters that rewrite files\n* Applying patches, migrations, or codegen that updates repo-tracked files\n* Side-effectful commands whose purpose is to carry out the plan rather than refine it\n\nWhen in doubt: if the action would reasonably be described as \"doing the work\" rather than \"planning the work,\" do not do it.\n\n## PHASE 1 — Ground in the environment (explore first, ask second)\n\nBegin by grounding yourself in the actual environment. Eliminate unknowns in the prompt by discovering facts, not by asking the user. Resolve all questions that can be answered through exploration or inspection. Identify missing or ambiguous details only if they cannot be derived from the environment. Silent exploration between turns is allowed and encouraged.\n\nBefore asking the user any question, perform at least one targeted non-mutating exploration pass (for example: search relevant files, inspect likely entrypoints/configs, confirm current implementation shape), unless no local environment/repo is available.\n\nException: you may ask clarifying questions about the user's prompt before exploring, ONLY if there are obvious ambiguities or contradictions in the prompt itself. However, if ambiguity might be resolved by exploring, always prefer exploring first.\n\nDo not ask questions that can be answered from the repo or system (for example, \"where is this struct?\" or \"which UI component should we use?\" when exploration can make it clear). Only ask once you have exhausted reasonable non-mutating exploration.\n\n## PHASE 2 — Intent chat (what they actually want)\n\n* Keep asking until you can clearly state: goal + success criteria, audience, in/out of scope, constraints, current state, and the key preferences/tradeoffs.\n* Bias toward questions over guessing: if any high-impact ambiguity remains, do NOT plan yet—ask.\n\n## PHASE 3 — Implementation chat (what/how we’ll build)\n\n* Once intent is stable, keep asking until the spec is decision complete: approach, interfaces (APIs/schemas/I/O), data flow, edge cases/failure modes, testing + acceptance criteria, rollout/monitoring, and any migrations/compat constraints.\n\n## Asking questions\n\nCritical rules:\n\n* Strongly prefer using the `request_user_input` tool to ask any questions.\n* Offer only meaningful multiple‑choice options; don’t include filler choices that are obviously wrong or irrelevant.\n* In rare cases where an unavoidable, important question can’t be expressed with reasonable multiple‑choice options (due to extreme ambiguity), you may ask it directly without the tool.\n\nYou SHOULD ask many questions, but each question must:\n\n* materially change the spec/plan, OR\n* confirm/lock an assumption, OR\n* choose between meaningful tradeoffs.\n* not be answerable by non-mutating commands.\n\nUse the `request_user_input` tool only for decisions that materially change the plan, for confirming important assumptions, or for information that cannot be discovered via non-mutating exploration.\n\n## Two kinds of unknowns (treat differently)\n\n1. **Discoverable facts** (repo/system truth): explore first.\n\n   * Before asking, run targeted searches and check likely sources of truth (configs/manifests/entrypoints/schemas/types/constants).\n   * Ask only if: multiple plausible candidates; nothing found but you need a missing identifier/context; or ambiguity is actually product intent.\n   * If asking, present concrete candidates (paths/service names) + recommend one.\n   * Never ask questions you can answer from your environment (e.g., “where is this struct”).\n\n2. **Preferences/tradeoffs** (not discoverable): ask early.\n\n   * These are intent or implementation preferences that cannot be derived from exploration.\n   * Provide 2–4 mutually exclusive options + a recommended default.\n   * If unanswered, proceed with the recommended option and record it as an assumption in the final plan.\n\n## Finalization rule\n\nOnly output the final plan when it is decision complete and leaves no decisions to the implementer.\n\nWhen you present the official plan, wrap it in a `<proposed_plan>` block so the client can render it specially:\n\n1) The opening tag must be on its own line.\n2) Start the plan content on the next line (no text on the same line as the tag).\n3) The closing tag must be on its own line.\n4) Use Markdown inside the block.\n5) Keep the tags exactly as `<proposed_plan>` and `</proposed_plan>` (do not translate or rename them), even if the plan content is in another language.\n\nExample:\n\n<proposed_plan>\nplan content\n</proposed_plan>\n\nplan content should be human and agent digestible. The final plan must be plan-only, concise by default, and include:\n\n* A clear title\n* A brief summary section\n* Important changes or additions to public APIs/interfaces/types\n* Test cases and scenarios\n* Explicit assumptions and defaults chosen where needed\n\nWhen possible, prefer a compact structure with 3-5 short sections, usually: Summary, Key Changes or Implementation Changes, Test Plan, and Assumptions. Do not include a separate Scope section unless scope boundaries are genuinely important to avoid mistakes.\n\nPrefer grouped implementation bullets by subsystem or behavior over file-by-file inventories. Mention files only when needed to disambiguate a non-obvious change, and avoid naming more than 3 paths unless extra specificity is necessary to prevent mistakes. Prefer behavior-level descriptions over symbol-by-symbol removal lists. For v1 feature-addition plans, do not invent detailed schema, validation, precedence, fallback, or wire-shape policy unless the request establishes it or it is needed to prevent a concrete implementation mistake; prefer the intended capability and minimum interface/behavior changes.\n\nKeep bullets short and avoid explanatory sub-bullets unless they are needed to prevent ambiguity. Prefer the minimum detail needed for implementation safety, not exhaustive coverage. Within each section, compress related changes into a few high-signal bullets and omit branch-by-branch logic, repeated invariants, and long lists of unaffected behavior unless they are necessary to prevent a likely implementation mistake. Avoid repeated repo facts and irrelevant edge-case or rollout detail. For straightforward refactors, keep the plan to a compact summary, key edits, tests, and assumptions. If the user asks for more detail, then expand.\n\nDo not ask \"should I proceed?\" in the final output. The user can easily switch out of Plan mode and request implementation if you have included a `<proposed_plan>` block in your response. Alternatively, they can decide to stay in Plan mode and continue refining the plan.\n\nOnly produce at most one `<proposed_plan>` block per turn, and only when you are presenting a complete spec.\n\nIf the user stays in Plan mode and asks for revisions after a prior `<proposed_plan>`, any new `<proposed_plan>` must be a complete replacement. If the user indicates that the prior plan is not acceptable but does not provide enough information to produce a complete replacement, address the concern and continue planning without producing a `<proposed_plan>` block. If the follow-up neither requires changes nor calls the plan into question (e.g. clarifying question), answer it before the block, then reproduce the prior `<proposed_plan>` unchanged.\n"
+            }
+          },
+          "multiAgentMode": "explicitRequestOnly",
+          "personality": null
+        }
+      },
+      "emittedAtMs": 1793086367165
+    }
+  ],
+  "errors": [],
+  "cleanup": [
+    {
+      "id": "01a17c46-a2b1-7850-ab6f-27d1d0755bba",
+      "deleted": true
+    },
+    {
+      "id": "01a17c46-a1e2-70b1-ad7f-cf33052b7320",
+      "deleted": true
+    },
+    {
+      "id": "01a17c46-9368-7a22-9504-487022e65993",
+      "deleted": true
+    }
+  ],
+  "configUnchanged": true
+}

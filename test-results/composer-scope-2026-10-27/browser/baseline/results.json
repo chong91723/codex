@@ -1,0 +1,71 @@
+{
+  "scope": "Real browser and native protocol on an independent /tmp profile. Native user-only fixture records; no existing history, model credentials, model requests or config writes. Pending ACK delivery is delayed without changing the native response; failure uses a genuine native invalid-thread error.",
+  "base": "http://127.0.0.1:18869",
+  "home": "/tmp/codex-composer-scope-browser/home",
+  "workspace": "/tmp/codex-composer-scope-browser/workspace",
+  "results": [
+    {
+      "name": "/ 菜单只有初始化、目标且不读取技能目录",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   'menu-compact',\n+   'menu-fork',\n+   'menu-export',\n+   'menu-review',\n+   'menu-rollback',\n+   'menu-mcp',\n    'menu-init',\n+   'menu-projects',\n+   'menu-reasoning',\n+   'menu-model',\n+   'menu-status',\n    'menu-goal',\n+   'menu-chat',\n+   'menu-plan',\n+   'menu-skills',\n+   'menu-settings',\n+   'menu-native'\n  ]\n\n    at file:///root/Codex/web/tests/composer_scope_desktop.mjs:31:390\n    at async check (file:///root/Codex/web/tests/composer_scope_desktop.mjs:21:51)\n    at async file:///root/Codex/web/tests/composer_scope_desktop.mjs:31:2"
+    }
+  ],
+  "calls": [
+    {
+      "id": 1,
+      "method": "initialize",
+      "params": {
+        "clientInfo": {
+          "name": "codex_web_native",
+          "title": "Codex Web",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "experimentalApi": true
+        }
+      }
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "id": 2,
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "id": 3,
+      "method": "model/list",
+      "params": {
+        "includeHidden": true
+      }
+    },
+    {
+      "id": 4,
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-composer-scope-browser/workspace"
+      }
+    },
+    {
+      "id": 5,
+      "method": "skills/list",
+      "params": {
+        "cwds": [
+          "/tmp/codex-composer-scope-browser/workspace"
+        ],
+        "forceReload": true
+      }
+    }
+  ],
+  "events": [],
+  "errors": [],
+  "cleanup": [],
+  "configUnchanged": true
+}

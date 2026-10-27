@@ -506,7 +506,7 @@ function setCwd(path) { state.selectedCwd = path; localStorage.setItem('codex.cw
 function threadRoute(){const params=new URLSearchParams(location.search);return {id:params.get('thread'),archived:params.get('archived')==='1'};}
 function setThreadRoute(id=null,archived=false,replace=false){const url=new URL(location.href);url.searchParams.delete('token');url.searchParams.delete('thread');url.searchParams.delete('archived');if(id){url.searchParams.set('thread',id);if(archived)url.searchParams.set('archived','1');}if(url.href!==location.href)history[replace?'replaceState':'pushState'](null,'',url);}
 function resetChat(route=true) {closeThreadMenu(false);rememberScroll();const fresh=state.composerKey==='new'&&composerState().pending;switchComposer('new',fresh);restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.hydration=null;state.historyPage=null;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='输入任务，或输入 / 查看功能'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false;$('#jump-latest').hidden=true;  $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; renderContextUsage(); renderThreadList(); renderRequests(); updateSend(); resetNativeUI(); }
-function adoptThread(thread,archived=false,busy=false) { state.knownThreads.set(thread.id,thread);if(state.composerKey!==thread.id)switchComposer(thread.id);if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=false;$('#prompt').placeholder=busy?'会话只读：可用 /export 导出；请关闭占用页面后重试继续对话':archived?'会话已归档：可用 /export 导出，或在侧栏恢复后继续对话':'询问任何问题';$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); adoptNativeUI(thread); }
+function adoptThread(thread,archived=false,busy=false) { state.knownThreads.set(thread.id,thread);if(state.composerKey!==thread.id)switchComposer(thread.id);if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=busy||archived;$('#prompt').placeholder=busy?'会话只读：请关闭占用页面后重试继续对话':archived?'会话已归档：请在侧栏恢复后继续对话':'询问任何问题';$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); adoptNativeUI(thread); }
 async function restoreThreadRoute(){const route=threadRoute();if(route.id){setArchiveScope(route.archived);await openThread(route.id,{archived:route.archived,replace:true});loadThreads().catch(report);}else resetChat(false);}
 async function openThread(id,{archived=state.archived&&state.threads.some(thread=>thread.id===id),replace=false}={}) {
   closeThreadMenu(false);rememberScroll();saveComposer();const generation=++state.navigationGeneration;state.hydration={threadId:id,generation,events:[]};state.historyPage=null;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
@@ -597,14 +597,13 @@ async function ensureThread(context=null) {
 function updateSend() {
   refreshThreadMenu();
   if(typeof renderPermissions==='function')renderPermissions();
-  const readOnlyExport=!!state.thread&&(state.threadBusy||state.threadArchived)&&$('#prompt').value.trim()==='/export';
-  const permissionBlocked=!readOnlyExport&&typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked(),modeBlocked=state.nativeModePending&&!readOnlyExport;
+  const permissionBlocked=typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked(),modeBlocked=state.nativeModePending;
   const stop=[...state.stopOperations.values()].find(op=>op.threadId===state.thread?.id&&op.status==='pending');
   const turn=state.activeTurns.get(state.thread?.id),running=!state.threadBusy&&!state.threadArchived&&!!turn,stopping=!!stop||state.interrupting.has(turn),pending=composerState().pending;
-  $('#send').disabled=((permissionBlocked||modeBlocked)&&!running)||!state.ready||state.threadLoading||state.restoreError||(state.threadBusy&&!readOnlyExport)||stopping||(!running&&(pending||(state.threadArchived&&!readOnlyExport)||state.attachmentLoads>0));
+  $('#send').disabled=((permissionBlocked||modeBlocked)&&!running)||!state.ready||state.threadLoading||state.restoreError||state.threadBusy||stopping||(!running&&(pending||state.threadArchived||state.attachmentLoads>0));
   $('#send').classList.toggle('running',running);const label=stopping?'正在停止并回收命令…':running?'中断当前任务':pending?'正在发送…':state.attachmentLoads>0?'正在读取附件':'发送任务';
   $('#send').title=label;$('#send').ariaLabel=label;$('#send').setAttribute('aria-busy',String(stopping||pending));
-  $('#composer-status').textContent=modeBlocked?'正在切换模式，请等待原生配置确认':permissionBlocked?'权限更改正在确认或尚未确认，请核对原生状态后再发送任务':stopping?'正在等待回合结束并回收本轮命令…':pending?'正在发送，输入内容会保留至请求确认':state.attachmentLoads>0?'正在读取附件…':!state.ready?'连接尚未就绪，草稿已保留':state.threadBusy?'此会话被其他页面或 Codex 进程占用，当前只读；可用 /export 导出，关闭占用方后重试继续':state.threadArchived?'此会话已归档，只能查看或 /export 导出；在侧栏恢复后可继续对话':!running&&typeof currentMode==='function'&&currentMode()==='plan'?'已进入计划模式，请输入需要规划的任务后发送；点击下方「计划模式」可退出。':'';
+  $('#composer-status').textContent=modeBlocked?'正在切换模式，请等待原生配置确认':permissionBlocked?'权限更改正在确认或尚未确认，请核对原生状态后再发送任务':stopping?'正在等待回合结束并回收本轮命令…':pending?'正在发送，输入内容会保留至请求确认':state.attachmentLoads>0?'正在读取附件…':!state.ready?'连接尚未就绪，草稿已保留':state.threadBusy?'此会话被其他页面或 Codex 进程占用，当前只读；关闭占用方后重试继续':state.threadArchived?'此会话已归档，只能查看；在侧栏恢复后可继续对话':!running&&typeof currentMode==='function'&&currentMode()==='plan'?'已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。':'';
   if(typeof renderExecutionProgressBanner==='function')renderExecutionProgressBanner();
 }
 // A turn can finish while its resumable unified-exec commands remain alive.
@@ -659,19 +658,19 @@ async function interruptTurn(threadId=state.thread?.id,turnId=state.activeTurns.
     finally{clearTimeout(timer);op.connection.removeEventListener('close',connectionClosed);delete op.resolveCompletion;delete op.rejectCompletion;state.interrupting.delete(turnId);updateSend();renderStopResult(op);}
   })();return op.promise;
 }
-function parsePlanPrompt(text){const match=text.match(/^\/plan\s+([\s\S]+)$/);return match&&match[1].trim()?match[1].trim():null;}
+function validateComposerCommand(text){
+  if(!/^\/[a-z][\w-]*(?:\s|$)/i.test(text)||Object.hasOwn(nativeSlashActions(),text))return;
+  if(/^\/plan(?:\s|$)/i.test(text))throw new Error('计划模式请使用输入框下方的开关；输入已保留，未发送任务。');
+  if(/^\/chat(?:\s|$)/i.test(text))throw new Error('请点击输入框下方的「新建聊天」；输入已保留，未发送任务。');
+  if(/^\/compact(?:\s|$)/i.test(text))throw new Error('上下文按设置自动压缩，不再提供 /compact 手动入口；输入已保留，未发送任务。');
+  throw new Error('/ 菜单仅保留初始化 /init 和目标 /goal；此功能不再从这里触发。输入已保留，未发送任务。');
+}
 async function submitPrompt(submission=null) {
   const preserveDraft=submission?.preserveDraft===true;
   if(preserveDraft&&typeof submission.text!=='string')throw new Error('独立任务缺少消息文本');
   closeCommandMenu();
   if(!state.ready)return toast('请等待原生运行时连接');
-  if(!preserveDraft&&state.thread&&(state.threadBusy||state.threadArchived)&&$('#prompt').value.trim()==='/export'){
-    if(state.threadLoading||state.restoreError)return toast('请先完成当前会话的恢复');
-    const draft=saveComposer();if(draft.pending)return;
-    if(draft.attachments.length)throw new Error('此本地命令不接收附件，请先移除附件再执行。输入与附件已保留。');
-    if(draft.loads)throw new Error('附件正在读取，请稍候');
-    draft.pending=true;updateSend();try{await nativeSlashCommand('/export');}finally{draft.pending=false;updateSend();}return;
-  }
+
   if(state.nativeModePending)throw new Error('模式正在切换，请稍候再发送；输入已保留。');
   if(typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked())throw new Error('权限更改尚未确认，请重新打开会话核对后再发送任务');
   if(state.threadLoading||state.restoreError)return toast('请先完成当前会话的恢复');
@@ -680,14 +679,11 @@ async function submitPrompt(submission=null) {
   if(state.attachmentLoads)return toast('附件正在读取，请稍候');
   if([...state.stopOperations.values()].some(op=>op.threadId===state.thread?.id&&op.status==='pending'))return toast('本轮命令仍在回收，请等待停止结果。');
   const draft=saveComposer();if(draft.pending)return;
-  const raw=preserveDraft?submission.text:draft.text,revision=draft.revision||0,sourceText=raw.trim(),planPrompt=preserveDraft?null:parsePlanPrompt(sourceText),text=planPrompt??sourceText,attachments=preserveDraft?[]:[...draft.attachments];if(!text&&!attachments.length)return;
-  if(planPrompt!==null&&state.activeTurns.has(state.thread?.id))throw new Error('请先停止当前任务，再按计划模式发送新任务；输入已保留。');
-  const context={thread:state.thread,generation:state.navigationGeneration,cwd:state.selectedCwd,model:$('#model').value,effort:$('#effort').value,provider:selectedModelProvider(),projectId:state.selectedProject,mode:planPrompt!==null?'plan':currentMode(),draft};
-  if(['/fast','/feedback','/image','/imagegen'].includes(text))throw new Error('此功能已移除；输入已保留。');
+  const raw=preserveDraft?submission.text:draft.text,revision=draft.revision||0,text=raw.trim(),attachments=preserveDraft?[]:[...draft.attachments];if(!text&&!attachments.length)return;
+  if(!preserveDraft)validateComposerCommand(text);
+  const context={thread:state.thread,generation:state.navigationGeneration,cwd:state.selectedCwd,model:$('#model').value,effort:$('#effort').value,provider:selectedModelProvider(),projectId:state.selectedProject,mode:currentMode(),draft};
   if(state.thread&&isRemovedModel(state.threadSettings.get(state.thread.id)?.model,modelProvider()))throw new Error('此历史会话使用的模型已移除。请新建 DeepSeek 会话；历史内容仍可查看。');
-  if(['/apps','/plugins'].includes(text))throw new Error('插件管理入口已隐藏；输入已保留。');
-  const commands={'/skills':'skills','/mcp':'mcp','/settings':'settings','/native':'protocol'};
-  if(planPrompt===null&&attachments.length&&(Object.hasOwn(nativeSlashActions(),text)||Object.hasOwn(commands,text)||text==='/'))throw new Error('此本地命令不接收附件，请先移除附件再执行。输入与附件已保留。');
+  if(attachments.length&&(Object.hasOwn(nativeSlashActions(),text)||text==='/'))throw new Error('此本地命令不接收附件，请先移除附件再执行。输入与附件已保留。');
   const metadata=state.modelDetails?.find(model=>model.model===(context.model||state.runtimeDefaults?.model));
   const unsupported=metadata?.inputModalities?.length?attachments.filter(a=>['image','audio'].includes(a.input.type)&&!metadata.inputModalities.includes(a.input.type)):[];
   if(unsupported.length)throw new Error('当前模型 '+(context.model||state.runtimeDefaults?.model)+' 未声明支持这些附件：'+unsupported.map(a=>a.name).join('、')+'。请选择支持的模型或移除附件；输入与附件已保留。');
@@ -696,8 +692,8 @@ async function submitPrompt(submission=null) {
   draft.pending=true;updateSend();
   try{
     if(skills.length){const result=await rpc('skills/list',{cwds:[context.cwd],forceReload:true}),available=(result.data||[]).flatMap(group=>group.skills||[]);for(const skill of skills)if(!available.some(item=>item.path===skill.path&&item.name===skill.name&&item.enabled!==false))throw new Error('所选技能已停用或不可用：'+skill.name+'。输入已保留，请重新选择。');}
-    if(planPrompt===null&&!preserveDraft&&!attachments.length&&await nativeSlashCommand(text))return;
-    if(planPrompt===null&&!preserveDraft&&text.startsWith('/')&&!attachments.length){if(commands[text]){$('#prompt').value='';saveComposer();return showView(commands[text]);}if(text==='/')return showNativeMenu();}
+    if(!preserveDraft&&!attachments.length&&await nativeSlashCommand(text))return;
+    if(!preserveDraft&&text==='/'&&!attachments.length)return showNativeMenu();
     const thread=await ensureThread(context),running=state.activeTurns.get(thread.id);
     const result=running?await rpc('turn/steer',{threadId:thread.id,expectedTurnId:running,input}):await rpc('turn/start',{threadId:thread.id,input,model:context.model||null,effort:context.effort||null,collaborationMode,additionalContext:runtimeModelContext(thread.id,context)});
     if(result.turn&&!state.finishedTurns.has(result.turn.id)&&result.turn.status==='inProgress')state.activeTurns.set(thread.id,result.turn.id);
@@ -761,7 +757,7 @@ function skillPresentation(skill){
 }
 async function renderSkills(){
   const data=await rpc('skills/list',{cwds:[state.selectedCwd],forceReload:true});if(state.view!=='skills')return;
-  const root=panelHeading('技能','仅保留本版本 Codex 源码自带的技能。启用后可输入 / 选择，或在对话中说明任务。','skill');
+  const root=panelHeading('技能','仅保留本版本 Codex 源码自带的技能。启用后可在对话中说明任务，由 Codex 按技能说明使用。','skill');
   const toolbar=el('div','skills-toolbar'),search=el('input','field-input');search.type='search';search.ariaLabel=search.placeholder='搜索技能名称或用途';search.value=state.skillQuery;
   toolbar.append(search);root.append(toolbar);
   const seen=new Set(),skills=[];

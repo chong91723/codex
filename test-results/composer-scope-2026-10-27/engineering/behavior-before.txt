@@ -1,0 +1,89 @@
+✔ approved-plan submission sends only approved text and preserves unsent text, attachments and skills (5.741688ms)
+✔ ordinary submission still sends selected skill and attachment, then clears sent text and attachment (1.963229ms)
+✔ delayed approved-task acknowledgement cannot overwrite text or attachments entered meanwhile (1.295179ms)
+✔ ordinary delayed acknowledgement keeps later edits and newly added attachments (1.513682ms)
+✔ repeated confirmation while pending produces exactly one protocol request (1.246338ms)
+✔ approved-task transport rejection preserves the original draft sentinel, attachments and skills (3.055995ms)
+✔ ordinary transport rejection also retains its original input and attachment for retry (1.307995ms)
+✔ sandbox confirmation ignores JSON field order (3.592157ms)
+✔ native custom read-only permissions never masquerade as a workspace preset (1.100296ms)
+✔ matching native notification settles before a held acknowledgement and cancels deadline (1.626086ms)
+✔ fresh native resume snapshot can confirm an operation without replaying old notifications (1.256087ms)
+✔ another conversation snapshot cannot settle a pending update (1.218062ms)
+✔ deadline ends UI waiting even while acknowledgement remains pending, without replaying request (1.716435ms)
+✔ disconnect settles once, blocks new submission, and a later genuine snapshot restores known state (2.573433ms)
+✔ native rejection keeps previous permissions and does not fabricate success (1.084221ms)
+✔ reviewer-only changes preserve native permission-profile provenance (1.34454ms)
+✔ new native thread permission mismatch blocks task submission and retains requested choice (1.818859ms)
+✔ matching new-thread receipt clears only its pending choice after native confirmation (0.999016ms)
+✔ uncertain permission changes block sending but keep an active task stoppable (2.415746ms)
+✔ command cleanup keeps permission changes disabled after its turn has already ended (1.056862ms)
+✔ fresh global defaults refresh only a new chat summary, preserving existing native thread snapshots (1.122844ms)
+✖ archived history with a stale in-progress turn remains exportable without a stop action (2.770597ms)
+✔ usage before the final turns page survives resume without embedded turns (4.857225ms)
+✔ snapshot-covered deltas are not replayed; full terminal items and turns remain idempotent (1.227686ms)
+✔ settings use the resume snapshot boundary rather than the later turn-page boundary (1.016771ms)
+✔ navigation generation change cancels an old hydration even when the same thread is selected again (1.108343ms)
+✔ embedded native recent page renders chronologically without another history request (1.122152ms)
+✔ plan progress survives a later history snapshot that has no progress field (0.995994ms)
+✔ late native resume reply cannot overwrite a newer navigation mode cache (4.526781ms)
+✔ a real later settings event replay keeps priority over the successful resume snapshot (1.268507ms)
+✔ slash menu and executable local adapter expose only initialization and goals (4.455673ms)
+✔ opening and filtering slash menu never fetches or inserts installed skills (2.921735ms)
+✔ selecting a retained menu item only fills the composer; sending invokes the real local adapter (3.830952ms)
+✔ removed bare slash commands cannot execute tools, change views, create threads, or become model prompts (20.024474ms)
+✔ /plan with whitespace or task text is rejected without changing mode or losing its complete input (6.323596ms)
+✔ old commands with arguments and attachments cannot bypass removal or lose unsent files (4.560648ms)
+✔ removed commands remain blocked in an existing Plan conversation and during an active turn (2.829938ms)
+✔ a read-only archive cannot use the former /export exception to invoke an operation (1.990701ms)
+✔ Plan switch on a fresh draft changes only draft mode and leaves the typed task intact (1.370621ms)
+✔ an existing-thread Plan switch uses native settings and stays pending until its ACK (1.681054ms)
+✔ a rejected native Plan switch preserves default mode and the whole composer, then can be retried (1.25096ms)
+✔ busy, archived, loading, restoring, and active conversations cannot change Plan mode (6.87975ms)
+✔ repeat switch attempts while pending produce only one settings update (1.159244ms)
+✔ late switch completion updates its original thread without announcing Plan in the newly selected thread (1.152637ms)
+✔ ordinary task after explicit Plan switch sends unmodified text and native Plan/model settings (1.49563ms)
+✔ a fresh explicitly enabled Plan draft supplies Plan to thread creation and exactly one task (1.315854ms)
+✔ explicit exit sends no task; the next ordinary task uses default collaboration mode (1.527923ms)
+✔ an ordinary task keeps supported text attachments and explicitly selected native skills (1.488904ms)
+✔ Plan does not bypass Flash image capability checks or lose unsupported input (1.263017ms)
+✔ failed Plan task submission preserves its whole input for retry (1.310862ms)
+✔ pending ordinary Plan submission cannot create a duplicate turn (1.48535ms)
+✔ late task ACK preserves later text and newly attached files (1.234451ms)
+✔ approved-plan independent text is not reinterpreted as a composer slash command (1.053331ms)
+✔ the visible Plan control reports its confirmed on/off state to assistive technology (1.47529ms)
+✔ Plan on/off settings are idempotent when the native snapshot already confirms that mode (1.021433ms)
+✔ unassigned chat can submit in Plan while retaining its actual working directory (1.097763ms)
+✔ unlisted slash words and removed commands with Unicode-separated arguments cannot fall through as tasks (4.253898ms)
+✔ ordinary prose mentioning a former command and absolute file paths remain valid tasks (2.151603ms)
+ℹ tests 58
+ℹ suites 0
+ℹ pass 57
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 555.851094
+
+✖ failing tests:
+
+test at web/tests/composer_permissions_state.mjs:82:1
+✖ archived history with a stale in-progress turn remains exportable without a stop action (2.770597ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  true !== false
+
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/composer_permissions_state.mjs:86:65)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

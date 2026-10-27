@@ -101,7 +101,13 @@ function turnCollaborationMode(mode=currentMode()){
   return {mode,settings:{model:$('#model').value||settings.model||state.runtimeDefaults?.model,
     reasoning_effort:$('#effort').value||settings.effort||state.modelDetails?.find(m=>m.model===($('#model').value||settings.model||state.runtimeDefaults?.model))?.defaultReasoningEffort||null,developer_instructions:null}};
 }
-function renderNativeMode(){const node=$('#mode-toggle');if(!node)return;const plan=currentMode()==='plan';node.textContent=state.nativeModePending?'正在切换模式…':plan?'计划模式':'默认模式';node.classList.toggle('plan-active',plan);node.title=plan?'当前为计划模式；点击切回默认模式':'当前为默认模式；点击进入计划模式';node.ariaLabel=plan?'退出计划模式，切回默认模式':'进入计划模式';node.disabled=state.nativeModePending||state.threadLoading||state.threadArchived||state.threadBusy||state.activeTurns.has(state.thread?.id);renderContextUsage();}
+function renderNativeMode(){
+  const node=$('#mode-toggle');if(!node)return;const plan=currentMode()==='plan';
+  node.classList.toggle('plan-active',plan);node.setAttribute('role','switch');node.setAttribute('aria-checked',String(plan));node.setAttribute('aria-busy',String(!!state.nativeModePending));node.ariaLabel='计划模式';
+  node.querySelector('.plan-switch-state').textContent=state.nativeModePending?'切换中…':plan?'开启':'关闭';
+  node.title=plan?'关闭计划模式，后续任务按默认模式处理':'开启计划模式，先规划并确认后执行';
+  node.disabled=state.nativeModePending||state.threadLoading||state.restoreError||state.threadArchived||state.threadBusy||state.activeTurns.has(state.thread?.id);renderContextUsage();
+}
 async function setNativeMode(mode){
   if(state.nativeModePending)throw new Error('模式正在切换，请稍候');
   if(state.threadLoading||state.restoreError)throw new Error('请先完成当前会话的恢复，再切换模式');
@@ -125,39 +131,22 @@ function nativeUIEvent(msg){
   if(msg.method==='thread/project/updated'&&p.threadId===state.thread?.id){state.thread.projectId=p.projectId;state.selectedProject=p.projectId;}
   if(['thread/settings/updated','turn/started','turn/completed','thread/goal/updated','thread/goal/cleared'].includes(msg.method))queueMicrotask(()=>{renderNativeMode();renderGoalBanner();if(msg.method==='turn/completed')restoreExecutionPlans();renderExecutionProgressBanner();});
 }
-function composerThreadAction(action){if(!state.thread)throw new Error('请先选择已有会话，再使用此命令；没有创建会话或发送任务。');return threadAction(action);}
 async function changeModeWithFeedback(mode){
   const threadId=state.thread?.id,generation=state.navigationGeneration,draft=composerState();
   await setNativeMode(mode);
   if(threadId!==state.thread?.id||generation!==state.navigationGeneration||draft!==composerState())return;
-  toast(mode==='plan'?'已进入计划模式，请输入需要规划的任务后发送；点击下方「计划模式」可退出。':'已退出计划模式，后续任务按默认模式处理。');
+  toast(mode==='plan'?'已进入计划模式，请输入需要规划的任务后发送；关闭下方「计划模式」开关可退出。':'已退出计划模式，后续任务按默认模式处理。');
 }
-async function enterPlanMode(){await changeModeWithFeedback('plan');}
-function nativeSlashActions(){return {'/compact':()=>composerThreadAction('compact'),'/fork':()=>composerThreadAction('fork'),'/export':()=>composerThreadAction('export'),'/review':()=>composerThreadAction('review'),'/rollback':()=>composerThreadAction('revert'),'/plan':enterPlanMode,'/status':showNativeStatus,'/init':initializeWorkspace,'/goal':showGoalDialog,'/projects':showProjects,'/chat':unassignedChat,'/model':()=>showComposerSetting('model'),'/reasoning':()=>showComposerSetting('effort')};}
+function nativeSlashActions(){return {'/init':initializeWorkspace,'/goal':showGoalDialog};}
 async function nativeSlashCommand(text){
   const actions=nativeSlashActions();if(!Object.hasOwn(actions,text))return false;
   const draft=saveComposer(),raw=draft.text,revision=draft.revision||0;await actions[text]();
   if(draft.text===raw&&(draft.revision||0)===revision){draft.text='';persistDrafts();if(composerState()===draft){$('#prompt').value='';resizePrompt();closeCommandMenu();}}return true;
 }
-// Commands and installed skills share the composer's selection/focus lifecycle.
+// The slash menu only exposes the two explicitly supported local actions.
 function commandEntries(){return [
-  {command:'/compact',title:'压缩上下文',description:'手动压缩当前会话的上下文',icon:'code'},
-  {command:'/fork',title:'分叉会话',description:'从当前会话创建新的分支',icon:'chat'},
-  {command:'/export',title:'导出会话',description:'下载当前会话的完整 JSON 历史',icon:'file'},
-  {command:'/review',title:'审查未提交更改',description:'审查当前工作区的未提交代码修改',icon:'check'},
-  {command:'/rollback',title:'回退用户任务',description:'选择要移除的会话任务，不撤销磁盘文件',icon:'file'},
-  {command:'/mcp',title:'MCP',description:'显示 MCP 服务器状态',icon:'mcp'},
   {command:'/init',title:'初始化',description:'创建包含项目指令的 AGENTS.md 文件',icon:'file'},
-  {command:'/projects',title:'在项目中使用',description:'为聊天选择或管理项目',icon:'folder'},
-  {command:'/reasoning',title:'推理',description:'选择下一次任务的思考强度',icon:'code'},
-  {command:'/model',title:'模型',description:'选择下一次任务的模型',icon:'grid'},
-  {command:'/status',title:'状态',description:'显示聊天 ID、上下文用量和权限',icon:'code'},
-  {command:'/goal',title:'目标',description:'设置要持续追求的目标',icon:'check'},
-  {command:'/chat',title:'聊天',description:'新建不关联项目的会话',icon:'chat'},
-  {command:'/plan',title:'计划模式',description:'进入计划模式；也可输入 /plan 具体任务',icon:'code'},
-  {command:'/skills',title:'技能管理',description:'查看、启用或停用内置技能',icon:'skill'},
-  {command:'/settings',title:'设置',description:'工作区、模型提供方和原生配置',icon:'settings'},
-  {command:'/native',title:'原生协议',description:'查看可用范围和完整定义',icon:'code'}
+  {command:'/goal',title:'目标',description:'设置要持续追求的目标',icon:'check'}
 ].map(entry=>({...entry,id:'menu-'+entry.command.slice(1),kind:'command'}));}
 function showComposerSetting(id){
   const source=$('#'+id),model=id==='model';
@@ -170,41 +159,27 @@ function closeCommandMenu(){const menu=$('#command-menu');if(!menu)return;menu.h
 function positionCommandMenu(){const menu=$('#command-menu');if(!menu||menu.hidden)return;const top=$('.composer').getBoundingClientRect().top;let available=top-80;if($('#view-chat').classList.contains('empty'))available=Math.min(available,top-$('#welcome h1').getBoundingClientRect().bottom-32);menu.style.maxHeight=Math.max(80,Math.min(340,available))+'px';}
 function chooseCommand(entry){
   const menu=state.commandMenu;if(!entry||!menu||menu.draft!==composerState()||menu.text!==$('#prompt').value)return closeCommandMenu();
-  const draft=composerState();
-  if(entry.kind==='skill'){
-    draft.skills=[...(draft.skills||[]).filter(skill=>skill.name!==entry.skill.name),{name:entry.skill.name,path:entry.skill.path}];$('#prompt').value='$'+entry.skill.name+' ';
-  }else $('#prompt').value=entry.command;
+  if(entry.kind!=='command'||!Object.hasOwn(nativeSlashActions(),entry.command))return closeCommandMenu();
+  const draft=composerState();$('#prompt').value=entry.command;
   saveComposer();draft.revision=(draft.revision||0)+1;resizePrompt();updateSend();closeCommandMenu();$('#prompt').focus();const end=$('#prompt').value.length;$('#prompt').setSelectionRange(end,end);
 }
 function renderCommandMenu(){
   const value=state.commandMenu,menu=$('#command-menu');if(!value)return closeCommandMenu();
-  const scroll=menu.scrollTop;menu.replaceChildren();let skillsHeading=false;
+  const scroll=menu.scrollTop;menu.replaceChildren();
   value.entries.forEach((entry,index)=>{
-    if(entry.kind==='skill'&&!skillsHeading){menu.append(el('div','command-section','技能'));skillsHeading=true;}
-    const option=button('',()=>chooseCommand(entry),'command-option');option.id=entry.id;if(entry.skill)option.dataset.skillName=entry.skill.name;option.title=entry.command||entry.skill.name;option.setAttribute('role','option');option.setAttribute('aria-selected',String(index===value.index));option.onmousedown=event=>event.preventDefault();
-    option.append(icon(entry.icon||'skill'),el('span','command-title',entry.title),el('span','command-description',entry.description));if(entry.kind==='skill')option.append(el('span','command-scope',entry.scope));menu.append(option);
+    const option=button('',()=>chooseCommand(entry),'command-option');option.id=entry.id;option.title=entry.command;option.setAttribute('role','option');option.setAttribute('aria-selected',String(index===value.index));option.onmousedown=event=>event.preventDefault();
+    option.append(icon(entry.icon),el('span','command-title',entry.title),el('span','command-description',entry.description));menu.append(option);
   });
-  if(value.catalog.loading)menu.append(el('p','command-notice','正在读取当前工作区的技能…'));
-  if(value.catalog.error){const error=el('div','command-notice');error.append(el('span','','技能读取失败：'+value.catalog.error),button('重试',()=>{value.catalog=null;updateCommandMenu();},'text-button'));menu.append(error);}
-  if(!value.entries.length&&!value.catalog.loading&&!value.catalog.error)menu.append(el('p','command-notice','没有匹配的命令或已启用技能'));
+  if(!value.entries.length)menu.append(el('p','command-notice','仅支持初始化 /init 和目标 /goal'));
   menu.hidden=false;$('#view-chat').classList.add('command-menu-open');menu.scrollTop=scroll;$('#prompt').setAttribute('aria-expanded','true');
   const active=value.entries[value.index];if(active){$('#prompt').setAttribute('aria-activedescendant',active.id);document.getElementById(active.id)?.scrollIntoView({block:'nearest'});}else $('#prompt').removeAttribute('aria-activedescendant');positionCommandMenu();
 }
 function updateCommandMenu(){
   const text=$('#prompt').value;if(state.commandComposing||state.view!=='chat'||!/^\/[^\s]*$/.test(text))return closeCommandMenu();
-  const previous=state.commandMenu,query=text.slice(1).toLocaleLowerCase();let catalog=previous?.catalog;
-  if(!catalog||catalog.connection!==state.ws||catalog.cwd!==state.selectedCwd){
-    catalog={connection:state.ws,cwd:state.selectedCwd,loading:true,skills:[]};
-    rpc('skills/list',{cwds:[catalog.cwd],forceReload:true}).then(result=>{
-      const seen=new Set();catalog.skills=(result.data||[]).flatMap(group=>group.skills||[]).filter(skill=>{if(skill.enabled===false||!isRetainedNativeSkill(skill)||seen.has(skill.path))return false;seen.add(skill.path);return true;});
-      const failures=(result.data||[]).flatMap(group=>group.errors||[]);if(failures.length)catalog.error=failures.map(error=>error.message).join('；');
-    }).catch(error=>{catalog.error=nativeErrorMessage(error);}).finally(()=>{catalog.loading=false;if(state.commandMenu?.catalog===catalog&&catalog.connection===state.ws)updateCommandMenu();});
-  }
-  const skills=catalog.skills.map((skill,index)=>{const p=skillPresentation(skill);return {kind:'skill',id:'menu-skill-'+index,skill,title:p.title,description:state.skillCatalog?.[skill.name]?p.description:(skill.shortDescription||skill.description||p.description),scope:skill.scope==='repo'?'项目':skill.scope==='system'?'内置':'个人'};});
-  const score=entry=>!query?0:([entry.command,entry.title,entry.skill?.name].filter(Boolean).join(' ')).toLocaleLowerCase().includes(query)?0:1;
-  const entries=[...commandEntries(),...skills].filter(entry=>([entry.command,entry.title,entry.description,entry.skill?.name].filter(Boolean).join(' ')).toLocaleLowerCase().includes(query)).sort((a,b)=>score(a)-score(b));
+  const previous=state.commandMenu,query=text.slice(1).toLocaleLowerCase();
+  const entries=commandEntries().filter(entry=>[entry.command,entry.title,entry.description].join(' ').toLocaleLowerCase().includes(query));
   const active=previous?.text===text?previous.entries[previous.index]?.id:null;
-  state.commandMenu={text,entries,index:Math.max(0,entries.findIndex(entry=>entry.id===active)),draft:composerState(),catalog};renderCommandMenu();
+  state.commandMenu={text,entries,index:Math.max(0,entries.findIndex(entry=>entry.id===active)),draft:composerState()};renderCommandMenu();
 }
 function showNativeMenu(){if(!$('#prompt').value){$('#prompt').value='/';saveComposer();resizePrompt();}updateCommandMenu();$('#prompt').focus();}
 function commandMenuKey(event){
@@ -219,7 +194,7 @@ function commandMenuKey(event){
   return false;
 }
 async function initializeWorkspace(){
-  openDialog('初始化工作区',root=>{root.append(el('p','','Codex 将检查当前工作区，再按官方初始化指令生成 AGENTS.md。已有 AGENTS.md 不会覆盖。'),el('p','subtle',state.selectedCwd));},async()=>{const {prompt}=await fetchJSON('/api/init-prompt');showView('chat');$('#prompt').value=prompt;await submitPrompt();},'开始初始化');
+  openDialog('初始化工作区',root=>{root.append(el('p','','Codex 将检查当前工作区，再按官方初始化指令生成 AGENTS.md。已有 AGENTS.md 不会覆盖。'),el('p','subtle',state.selectedCwd));if(currentMode()==='plan')root.append(el('p','subtle','计划模式已开启：先生成初始化计划，确认执行后才写入文件。'));},async()=>{const {prompt}=await fetchJSON('/api/init-prompt');showView('chat');$('#prompt').value=prompt;await submitPrompt();},'开始初始化');
 }
 async function showNativeStatus(){
   const id=state.thread?.id,settings=state.threadSettings.get(id)||{},snapshot=contextSnapshot(),provider=id?modelProvider():selectedModelProvider();
@@ -361,5 +336,6 @@ document.addEventListener('pointerdown',event=>{if(!event.target.closest('.compo
 window.addEventListener('resize',positionCommandMenu);
 $('#prompt').addEventListener('compositionstart',()=>{state.commandComposing=true;closeCommandMenu();});
 $('#prompt').addEventListener('compositionend',()=>{state.commandComposing=false;updateCommandMenu();});
+$('#unassigned-chat-button').onclick=()=>unassignedChat();
 $('#mode-toggle').onclick=()=>changeModeWithFeedback(currentMode()==='plan'?'default':'plan').catch(report);
 renderNativeMode();renderGoalBanner();

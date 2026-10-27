@@ -9,8 +9,8 @@ const submitStart=source.indexOf('async function submitPrompt('),submitEnd=sourc
 const draftsStart=source.indexOf('function composerState('),draftsEnd=source.indexOf('\nfunction resizePrompt(',draftsStart);
 const saveStart=source.indexOf('function saveComposer('),saveEnd=source.indexOf('\nfunction rememberScroll(',saveStart);
 assert(submitStart>=0&&submitEnd>submitStart&&draftsStart>=0&&draftsEnd>draftsStart&&saveEnd>saveStart,'Exercise actual submission and draft functions');
-const parseStart=source.indexOf('function parsePlanPrompt(');assert(parseStart>=0&&parseStart<submitStart);
-const implementation=[source.slice(parseStart,submitStart),source.slice(draftsStart,draftsEnd),source.slice(saveStart,saveEnd),source.slice(submitStart,submitEnd)].join('\n');
+const commandStart=source.indexOf('function validateComposerCommand(');assert(commandStart>=0&&commandStart<submitStart);
+const implementation=[source.slice(commandStart,submitStart),source.slice(draftsStart,draftsEnd),source.slice(saveStart,saveEnd),source.slice(submitStart,submitEnd)].join('\n');
 const approved='APPROVED_PLAN_SENTINEL: use $openai-docs only if this approved task needs it.';
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};}
 function fixture(transport=async()=>({turn:{id:'turn-approved',status:'inProgress'}})){
@@ -24,7 +24,7 @@ function fixture(transport=async()=>({turn:{id:'turn-approved',status:'inProgres
   const context={state,$:selector=>{assert(nodes[selector],'Unexpected DOM access '+selector);return nodes[selector];},
     sessionStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
     closeCommandMenu(){},toast:message=>notifications.push(message),selectedModelProvider:()=> 'deepseek',modelProvider:()=> 'deepseek',isRemovedModel:()=>false,currentMode:()=> 'default',
-    nativeSlashActions:()=>({}),nativeSlashCommand:async()=>false,turnCollaborationMode:mode=>({mode,settings:{model:'deepseek-flash'}}),ensureThread:async captured=>captured.thread,
+    nativeSlashActions:()=>({'/init':()=>{},'/goal':()=>{}}),nativeSlashCommand:async()=>false,turnCollaborationMode:mode=>({mode,settings:{model:'deepseek-flash'}}),ensureThread:async captured=>captured.thread,
     runtimeModelContext:()=>undefined,updateSend(){},renderNativeMode(){},resizePrompt(){},renderAttachments(){},scrollMessages(){},
     rpc:async(method,params)=>{calls.push({method,params});if(method==='skills/list')return {data:[{skills:[{...skill,enabled:true}]}]};assert(['turn/start','turn/steer'].includes(method),'Unexpected RPC '+method);return transport(method,params);},
   };
