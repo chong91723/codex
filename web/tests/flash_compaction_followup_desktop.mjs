@@ -1,4 +1,5 @@
 // Real Flash compaction via existing UI. Global threshold is restored in finally.
+import {threadAction} from './thread_menu_helpers.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
@@ -34,7 +35,7 @@ try{
   await prompt(page,'请记住唯一测试标记 '+marker+'，只回复“已记住”，不要调用工具，不要复述填充。下面是无业务重复文本：\n'+('alpha beta gamma delta epsilon '.repeat(1400)),false,240000);
   const id=await page.evaluate(()=>state.thread.id),before=await page.evaluate(()=>contextSnapshot());
   const old=await page.evaluate(()=>[...state.items.keys()]);const start=sent.length;
-  await page.locator('#thread-action').selectOption('compact');
+  await threadAction(page,'compact');
   await page.waitForFunction(old=>[...state.items.values()].some(entry=>entry.item.type==='contextCompaction'&&entry.done&&!old.includes(entry.item.id)),old,{timeout:240000});
   await page.waitForFunction(()=>!state.activeTurns.has(state.thread.id),null,{timeout:240000});
   assert(sent.slice(start).some(message=>message.method==='thread/compact/start'));

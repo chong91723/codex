@@ -78,6 +78,7 @@ function sendResponse(request,result) {
 }
 function setConnection(status, text) { $('#connection').className = 'connection ' + status; $('#connection').replaceChildren(el('i'), document.createTextNode(text)); }
 async function connect() {
+  if(typeof cancelPermissionUpdates==='function')cancelPermissionUpdates('原生连接正在重建，请重新打开会话核对权限');
   const connectionGeneration=state.connectionGeneration=(state.connectionGeneration||0)+1;
   clearTimeout(state.reconnect);state.threadLoading=!!threadRoute().id;state.ready=false;state.requests.clear();state.activeTurns.clear();state.interrupting.clear();renderRequests();renderThreadList();updateSend();setConnection('', '连接中');
   if (state.ws && state.ws.readyState !== WebSocket.CLOSED) { state.ws.onclose=null; state.ws.close(); for(const pending of state.pending.values()){clearTimeout(pending.timer);pending.reject(new Error('原生连接正在重建'));}state.pending.clear(); }
@@ -120,6 +121,7 @@ async function connect() {
   };
   ws.onclose = () => {
     if (state.ws !== ws) return;
+    if(typeof cancelPermissionUpdates==='function')cancelPermissionUpdates('连接已断开，请重连后核对原生会话权限');
     state.ready = false; state.requests.clear();state.activeTurns.clear();state.interrupting.clear(); renderRequests();renderThreadList();updateSend();setConnection('offline', '连接已断开');showConnectionError('连接已断开，执行状态将在重连后恢复；不会自动重发任务。');
     for (const pending of state.pending.values()) { clearTimeout(pending.timer); pending.reject(new Error('连接已断开，请重连后检查原生执行状态')); } state.pending.clear();
     state.reconnect = setTimeout(connect, 4000);
@@ -138,11 +140,14 @@ function handleEvent(msg) {
     if(method==='turn/completed'){state.finishedTurns.add(p.turn.id);state.activeTurns.delete(p.threadId);if(!state.stopOperations.has(p.turn.id))state.interrupting.delete(p.turn.id);}
     renderThreadList();updateSend();return;
   }
+  if(method==='thread/status/changed'&&p.status){for(const thread of [state.thread,...state.threads,state.knownThreads.get(p.threadId)])if(thread?.id===p.threadId)thread.status=p.status;refreshThreadMenu();}
+  if(method==='thread/deleted'&&state.threadMenu?.target.thread.id===p.threadId)closeThreadMenu(false);
   nativeUIEvent(msg);
   if(method==='mcpServer/startupStatus/updated'){invalidateMcpCache();state.mcpViewUpdate?.(p);}
   if(method==='mcpServer/oauthLogin/completed')receiveMcpOAuth(p);
   if (method === 'serverRequest/resolved') { state.requests.delete(String(p.requestId)); renderRequests(); }
   if (method === 'thread/settings/updated') {state.threadSettings.set(p.threadId,p.threadSettings);if(p.threadId===state.thread?.id&&state.view==='settings')renderSettings().catch(report);}
+  if(typeof permissionsEvent==='function')permissionsEvent(msg);
   if(method==='thread/started'){if(p.thread)state.knownThreads.set(p.thread.id,p.thread);loadThreads().catch(report);}
   if (method === 'thread/deleted') {state.knownThreads.delete(p.threadId);state.activeTurns.delete(p.threadId);if(state.thread?.id===p.threadId)resetChat();forgetThreadDraft(p.threadId);state.threadSettings.delete(p.threadId);if(typeof nativeContextUsage!=='undefined')nativeContextUsage.delete(p.threadId);loadThreads().catch(report);}
   if (method === 'turn/started') { state.activeTurns.set(p.threadId, p.turn.id);renderThreadList(); updateSend(); }
@@ -381,8 +386,7 @@ function renderThreadArchiveControls() {
   $('#archive-list-help').hidden=!state.archived;
   const archived=!!state.thread&&state.threadArchived;
   $('#thread-archive-status').hidden=!archived;
-  $('#thread-action option[value=archive]').hidden=archived;
-  $('#thread-action option[value=unarchive]').hidden=!archived;
+
 }
 function setArchiveScope(archived) {
   state.archived=archived;
@@ -390,6 +394,7 @@ function setArchiveScope(archived) {
   renderThreadArchiveControls();
 }
 async function switchArchiveScope(archived,{reload=false}={}) {
+  closeThreadMenu(false);
   if(state.archived===archived&&!reload)return;
   setArchiveScope(archived);state.threads=[];state.cursor=null;
   $('#thread-list').replaceChildren(el('div','empty-small subtle',archived?'正在读取已归档会话…':'正在读取最近会话…'));
@@ -407,10 +412,71 @@ async function switchArchiveScope(archived,{reload=false}={}) {
 }
 function showHistoryHelp() {
   openDialog('归档与永久删除',root=>{
-    root.append(el('p','','归档：从「最近会话」移入左侧「已归档」，保留全部对话历史；可随时打开查看并恢复。'));
-    root.append(el('p','','永久删除：打开要删除的会话，在右上角「会话操作」中选择「永久删除历史…」，确认后删除原生会话历史及其创建的子代理会话，无法恢复。已归档会话也可以直接永久删除。'));
+    root.append(el('p','','归档：从「最近会话」移入左侧「已归档」，保留全部对话历史；可随时打开查看，或在会话右键及「…」菜单中恢复。'));
+    root.append(el('p','','永久删除：在左侧对要删除的会话点击右键或「…」，选择「永久删除历史…」，确认后删除原生会话历史及其创建的子代理会话，无法恢复。已归档会话也可以直接永久删除。'));
     root.append(el('p','','归档或删除会话不会回滚工作区内已修改的文件，也不会删除数据库中的业务数据。'));
   },async()=>{},'知道了');
+}
+// Sidebar menu targets are snapshots, independent of the selected conversation.
+state.threadActionPending=new Set();
+function threadMenuOrigin(menu){return document.querySelector('[data-thread-menu="'+CSS.escape(menu.target.thread.id)+'"]')||menu.origin;}
+function closeThreadMenu(restoreFocus=true){
+  const menu=state.threadMenu;if(!menu)return;state.threadMenu=null;$('#thread-context-menu').hidden=true;
+  for(const trigger of $$('[data-thread-menu]'))trigger.setAttribute('aria-expanded','false');
+  if(restoreFocus){const origin=threadMenuOrigin(menu);if(origin?.isConnected)origin.focus();}
+}
+function dismissMovedThreadMenu(){
+  const menu=state.threadMenu;if(!menu)return;
+  const row=document.querySelector('.thread-row[data-thread-id="'+CSS.escape(menu.target.thread.id)+'"]'),box=row?.getBoundingClientRect();
+  if(!box||menu.viewport.width!==innerWidth||menu.viewport.height!==innerHeight||['left','top','width','height'].some(key=>box[key]!==menu.anchorRect[key]))closeThreadMenu(false);
+}
+function threadActionReason(action,target){
+  const id=target.thread.id,current=state.thread?.id===id;
+  if(!state.ready)return '原生连接尚未就绪';
+  if(state.threadActionPending.has(id))return '该会话的操作正在处理，请稍候';
+  const thread=state.threads.find(thread=>thread.id===id)||state.knownThreads.get(id)||target.thread;
+  const running=state.activeTurns.has(id)||thread.status?.type==='active';
+  if(['compact','review','revert'].includes(action)&&(!current||state.threadLoading||state.threadBusy))return '请先打开此会话，恢复为可编辑状态后使用';
+  if(target.archived&&['fork','compact','review','revert','archive'].includes(action))return '请先恢复已归档会话后使用';
+  if(running&&['fork','compact','review','revert','archive'].includes(action))return '请先停止此会话中正在执行的任务';
+  if(action==='delete'&&current&&state.threadBusy)return '请先关闭正在使用此会话的其他页面';
+  return '';
+}
+async function performThreadAction(id,work){
+  if(state.threadActionPending.has(id))throw new Error('该会话的操作正在处理，请稍候');
+  state.threadActionPending.add(id);refreshThreadMenu();
+  try{return await work();}finally{state.threadActionPending.delete(id);refreshThreadMenu();}
+}
+function refreshThreadMenu(){
+  const menu=state.threadMenu;if(!menu)return;
+  for(const item of $$('[data-thread-action]',$('#thread-context-menu'))){const reason=threadActionReason(item.dataset.threadAction,menu.target);item.disabled=!!reason;item.title=reason;item.setAttribute('aria-disabled',String(!!reason));}
+}
+function openThreadMenu(target,origin,point=null){
+  closeThreadMenu(false);const root=$('#thread-context-menu'),thread=target.thread;
+  state.threadMenu={target:{thread:{...thread},archived:target.archived},origin};root.dataset.threadId=thread.id;root.replaceChildren();
+  const name=thread.name||thread.preview||'未命名会话',heading=el('div','thread-menu-name',name);heading.title=name;root.append(heading);
+  const entries=[['rename','重命名'],['fork','分叉会话'],['export','导出会话'],null,['compact','压缩上下文'],['review','审查未提交更改'],['revert','回退用户任务'],null,target.archived?['unarchive','恢复到最近会话']:['archive','归档（保留历史）'],null,['delete','永久删除历史…']];
+  for(const entry of entries){
+    if(!entry){const separator=el('div','thread-menu-separator');separator.setAttribute('role','separator');root.append(separator);continue;}
+    const [action,label]=entry,item=button(label,()=>{const selected=state.threadMenu?.target;if(!selected)return;const reason=threadActionReason(action,selected);if(reason)throw new Error(reason);closeThreadMenu();return threadAction(action,selected);},'thread-menu-item'+(action==='delete'?' danger':''));
+    item.dataset.threadAction=action;item.setAttribute('role','menuitem');root.append(item);
+  }
+  refreshThreadMenu();root.hidden=false;root.style.left='0px';root.style.top='0px';
+  const box=root.getBoundingClientRect(),anchor=origin.getBoundingClientRect(),x=point?.x??anchor.right,y=point?.y??anchor.bottom;
+  root.style.left=Math.max(8,Math.min(x,innerWidth-box.width-8))+'px';root.style.top=Math.max(8,Math.min(y,innerHeight-box.height-8))+'px';
+  const trigger=document.querySelector('[data-thread-menu="'+CSS.escape(thread.id)+'"]');trigger?.setAttribute('aria-expanded','true');
+  root.querySelector('[role=menuitem]:not(:disabled)')?.focus();
+  const row=document.querySelector('.thread-row[data-thread-id="'+CSS.escape(thread.id)+'"]'),rowBox=(row||origin).getBoundingClientRect();
+  state.threadMenu.anchorRect=Object.fromEntries(['left','top','width','height'].map(key=>[key,rowBox[key]]));
+  state.threadMenu.viewport={width:innerWidth,height:innerHeight};
+}
+function threadMenuKey(event){
+  if(!state.threadMenu)return;const root=$('#thread-context-menu');
+  if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeThreadMenu();return;}
+  if(event.key==='Tab'){closeThreadMenu();return;}
+  if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;
+  const items=$$('[role=menuitem]:not(:disabled)',root);if(!items.length)return;
+  event.preventDefault();const index=items.indexOf(document.activeElement),next=event.key==='Home'?0:event.key==='End'?items.length-1:(index+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;items[next].focus();
 }
 function renderThreadList() {
   renderThreadArchiveControls();
@@ -421,18 +487,29 @@ function renderThreadList() {
   const selected=state.thread,query=$('#thread-search').value.toLowerCase();
   if(selected&&state.threadArchived===state.archived&&!state.threads.some(thread=>thread.id===selected.id)&&(!query||(selected.name||selected.preview||'').toLowerCase().includes(query)))state.threads.unshift(selected);
   const list = $('#thread-list'); list.replaceChildren();
-  for (const thread of state.threads) { const row = button('', () => openThread(thread.id), 'thread-row' + (state.thread?.id === thread.id ? ' active' : '')); row.dataset.threadId=thread.id;const dot=el('span','thread-dot'+(state.activeTurns.has(thread.id)?' running':''));if(state.activeTurns.has(thread.id))dot.title='此页面正在执行任务';row.append(dot, el('span', '', thread.name || thread.preview || '未命名会话')); const date = new Date(thread.updatedAt * 1000); row.title=(thread.name||thread.preview||'未命名会话')+' · '+date.toLocaleString();row.append(el('time', '', date.toLocaleDateString('zh-CN', { month:'numeric', day:'numeric' }))); list.append(row); }
+  for(const thread of state.threads){
+    const row=el('div','thread-row'+(state.thread?.id===thread.id?' active':''));row.dataset.threadId=thread.id;
+    const name=thread.name||thread.preview||'未命名会话',target={thread:{...thread},archived:state.archived};
+    const open=button('',()=>{closeThreadMenu(false);return openThread(thread.id);},'thread-open');open.dataset.threadOpen=thread.id;
+    const dot=el('span','thread-dot'+(state.activeTurns.has(thread.id)?' running':''));if(state.activeTurns.has(thread.id))dot.title='此页面正在执行任务';
+    open.append(dot,el('span','thread-name',name));const date=new Date(thread.updatedAt*1000);open.title=name+' · '+date.toLocaleString();open.append(el('time','',date.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'})));
+    const trigger=button('…',()=>openThreadMenu(target,trigger),'menu-trigger');trigger.dataset.threadMenu=thread.id;trigger.ariaLabel='会话操作：'+name;trigger.title='会话操作';trigger.setAttribute('aria-haspopup','menu');trigger.setAttribute('aria-expanded',String(state.threadMenu?.target.thread.id===thread.id));
+    row.oncontextmenu=event=>{event.preventDefault();openThreadMenu(target,event.target.closest('button')||open,{x:event.clientX,y:event.clientY});};
+    row.onkeydown=event=>{if(event.key==='ContextMenu'||event.key==='F10'&&event.shiftKey){event.preventDefault();openThreadMenu(target,event.target.closest('button')||open);}};
+    row.append(open,trigger);list.append(row);
+  }
+  if(state.threadMenu&&!state.threads.some(thread=>thread.id===state.threadMenu.target.thread.id))closeThreadMenu(false);
   if (!state.threads.length) list.append(el('div', 'empty-small subtle', query?'当前列表中没有匹配的会话。':state.archived?'暂无已归档会话。归档会保留历史，可在这里恢复。':'从一次新会话开始。'));
   $('#threads-more').hidden = !state.cursor;
 }
 function setCwd(path) { state.selectedCwd = path; localStorage.setItem('codex.cwd', path); const name = path.split('/').filter(Boolean).pop() || path; $('#project-name').textContent = name; $('#breadcrumb').textContent = name; $('#cwd-label').textContent = path; }
 function threadRoute(){const params=new URLSearchParams(location.search);return {id:params.get('thread'),archived:params.get('archived')==='1'};}
 function setThreadRoute(id=null,archived=false,replace=false){const url=new URL(location.href);url.searchParams.delete('token');url.searchParams.delete('thread');url.searchParams.delete('archived');if(id){url.searchParams.set('thread',id);if(archived)url.searchParams.set('archived','1');}if(url.href!==location.href)history[replace?'replaceState':'pushState'](null,'',url);}
-function resetChat(route=true) {rememberScroll();const fresh=state.composerKey==='new'&&composerState().pending;switchComposer('new',fresh);restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.hydration=null;state.historyPage=null;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='输入任务，或输入 / 查看功能'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false;$('#jump-latest').hidden=true; $('#chat-toolbar').hidden = true; $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; renderContextUsage(); renderThreadList(); renderRequests(); updateSend(); resetNativeUI(); }
-function adoptThread(thread,archived=false,busy=false) { state.knownThreads.set(thread.id,thread);if(state.composerKey!==thread.id)switchComposer(thread.id);if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请点击「恢复会话」继续':'询问任何问题';$('#chat-toolbar').hidden=false;$('#thread-info').textContent=thread.id;$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); adoptNativeUI(thread); }
+function resetChat(route=true) {closeThreadMenu(false);rememberScroll();const fresh=state.composerKey==='new'&&composerState().pending;switchComposer('new',fresh);restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.hydration=null;state.historyPage=null;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='输入任务，或输入 / 查看功能'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false;$('#jump-latest').hidden=true;  $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; renderContextUsage(); renderThreadList(); renderRequests(); updateSend(); resetNativeUI(); }
+function adoptThread(thread,archived=false,busy=false) { state.knownThreads.set(thread.id,thread);if(state.composerKey!==thread.id)switchComposer(thread.id);if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请在左侧会话菜单中恢复后继续':'询问任何问题';$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); adoptNativeUI(thread); }
 async function restoreThreadRoute(){const route=threadRoute();if(route.id){setArchiveScope(route.archived);await openThread(route.id,{archived:route.archived,replace:true});loadThreads().catch(report);}else resetChat(false);}
 async function openThread(id,{archived=state.archived&&state.threads.some(thread=>thread.id===id),replace=false}={}) {
-  rememberScroll();saveComposer();const generation=++state.navigationGeneration;state.hydration={threadId:id,generation,events:[]};state.historyPage=null;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
+  closeThreadMenu(false);rememberScroll();saveComposer();const generation=++state.navigationGeneration;state.hydration={threadId:id,generation,events:[]};state.historyPage=null;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
   showView('chat');$('#jump-latest').hidden=true;$('#view-chat').classList.remove('empty');$('#prompt').disabled=true;$('#welcome').hidden=true;$('#messages').replaceChildren(el('div','loading','读取原生会话…'));state.items.clear();state.live.clear();
   try {
     let result,busy=false;
@@ -440,11 +517,11 @@ async function openThread(id,{archived=state.archived&&state.threads.some(thread
       try{const provider=state.threadSettings.get(id)?.modelProvider||state.threads.find(t=>t.id===id)?.modelProvider||(await rpc('thread/read',{threadId:id,includeTurns:false})).thread.modelProvider;result=await rpc(archived?'thread/read':'thread/resume',{threadId:id,...(archived?{includeTurns:false}:{config:threadRuntimeConfig(provider),excludeTurns:true,initialTurnsPage:{limit:20,sortDirection:'desc',itemsView:'full'}})});break;}
       catch(error){if(archived||!/already has an active writer/i.test(error.message))throw error;if(generation!==state.navigationGeneration)return;if(attempt<3){await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));if(generation!==state.navigationGeneration)return;}else{result=await rpc('thread/read',{threadId:id,includeTurns:false});busy=true;}}
     }
-    if(generation!==state.navigationGeneration)return;if(result.collaborationMode)state.nativeModes.set(id,result.collaborationMode.mode);if(result.model)state.threadSettings.set(id,{model:result.model,modelProvider:result.modelProvider,serviceTier:result.serviceTier,collaborationMode:result.collaborationMode,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread,archived,busy);
+    if(generation!==state.navigationGeneration)return;if(result.collaborationMode)state.nativeModes.set(id,result.collaborationMode.mode);if(result.model)state.threadSettings.set(id,{model:result.model,modelProvider:result.modelProvider,serviceTier:result.serviceTier,collaborationMode:result.collaborationMode,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread,archived,busy);if(typeof permissionsFromSnapshot==='function'&&result.model)permissionsFromSnapshot(id,state.threadSettings.get(id));
     await hydrateThread(result.thread,generation,state.responseSequence.get(result)||0,result.initialTurnsPage||null);
     if(generation!==state.navigationGeneration)return;if(busy){const notice=el('div','panel-error');notice.dataset.threadBusy='';notice.append(el('p','','此会话正在另一个页面中使用，当前显示历史记录。关闭该页面后，可重试继续会话。'),button('重试继续会话',()=>openThread(id,{archived,replace:true})));$('#messages').prepend(notice);}renderThreadList();
   } catch(error) {
-    if(generation!==state.navigationGeneration)return;state.restoreError=true;state.thread=null;$('#chat-toolbar').hidden=true;
+    if(generation!==state.navigationGeneration)return;state.restoreError=true;state.thread=null;
     $('#messages').replaceChildren(el('div','panel-error','无法恢复此会话：'+nativeErrorMessage(error)),button('重试恢复会话',()=>openThread(id,{archived,replace:true})),button('新建会话',()=>resetChat()));
   } finally {if(generation===state.navigationGeneration){state.hydration=null;state.threadLoading=false;$('#prompt').disabled=state.threadArchived||state.threadBusy||state.restoreError;updateSend();restoreScroll();}}
 }
@@ -493,7 +570,7 @@ async function hydrateThread(thread,generation=state.navigationGeneration,snapsh
   try{for (const turn of turns) { if (turn.status === 'inProgress'&&!state.finishedTurns.has(turn.id)) state.activeTurns.set(thread.id, turn.id); for (const item of turn.items || []) upsertItem(item, turn.status !== 'inProgress', turn.id); renderTurnOutcome(turn); }}
   finally{state.renderingHistory=false;}
   finishHistoryRender();renderHistoryMore();
-  $('#welcome').hidden = turns.length > 0;$('#view-chat').classList.toggle('empty',turns.length===0); $('#chat-toolbar').hidden = false; $('#page-title').textContent = thread.name || thread.preview || '新会话'; $('#thread-info').textContent = thread.id; const buffered=state.hydration?.generation===generation?state.hydration.events:[];state.hydration=null;
+  $('#welcome').hidden = turns.length > 0;$('#view-chat').classList.toggle('empty',turns.length===0);  $('#page-title').textContent = thread.name || thread.preview || '新会话';  const buffered=state.hydration?.generation===generation?state.hydration.events:[];state.hydration=null;
   // Full terminal items/outcomes are idempotent. Deltas already included in a
   // snapshot must not be appended a second time.
   // Turn pages do not contain usage/settings snapshots. Keep their independent
@@ -507,23 +584,26 @@ async function ensureThread(context=null) {
   if(target.thread)return target.thread;
   if(!draft.creation)draft.creation=(async()=>{
     const config={...threadRuntimeConfig(target.provider),...(target.provider!==(state.runtimeDefaults?.model_provider||'openai')?{model_provider:target.provider}:{})};
-    const result=await rpc('thread/start',{cwd:target.cwd,model:target.model||null,config,projectId:target.projectId||undefined});
+    const permissions=typeof permissionStartParams==='function'?permissionStartParams(draft):{};
+    const result=await rpc('thread/start',{cwd:target.cwd,model:target.model||null,...permissions,config:{...config,...permissions.config},projectId:target.projectId||undefined});
     state.nativeModes.set(result.thread.id,target.mode);
     state.threadSettings.set(result.thread.id,{model:result.model,modelProvider:result.modelProvider,serviceTier:result.serviceTier,collaborationMode:result.collaborationMode,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});
     state.composers.set(result.thread.id,draft);
     if(target.generation===state.navigationGeneration&&composerState()===draft){adoptThread(result.thread);state.composers.set('new',{text:'',attachments:[],loads:0,pending:false,follow:true,scrollTop:null});persistDrafts();}
-    loadThreads().catch(report);return result.thread;
+    loadThreads().catch(report);if(typeof confirmStartedPermissions==='function')confirmStartedPermissions(draft,result);return result.thread;
   })().finally(()=>{delete draft.creation;});
   return draft.creation;
 }
 function updateSend() {
-  const deletion=$('#thread-action option[value=delete]');if(deletion)deletion.disabled=state.threadBusy;
+  refreshThreadMenu();
+  if(typeof renderPermissions==='function')renderPermissions();
+  const permissionBlocked=typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked();
   const stop=[...state.stopOperations.values()].find(op=>op.threadId===state.thread?.id&&op.status==='pending');
   const turn=state.activeTurns.get(state.thread?.id),running=!state.threadBusy&&!!turn,stopping=!!stop||state.interrupting.has(turn),pending=composerState().pending;
-  $('#send').disabled=!state.ready||state.threadLoading||state.restoreError||state.threadBusy||stopping||(!running&&(pending||state.threadArchived||state.attachmentLoads>0));
+  $('#send').disabled=(permissionBlocked&&!running)||!state.ready||state.threadLoading||state.restoreError||state.threadBusy||stopping||(!running&&(pending||state.threadArchived||state.attachmentLoads>0));
   $('#send').classList.toggle('running',running);const label=stopping?'正在停止并回收命令…':running?'中断当前任务':pending?'正在发送…':state.attachmentLoads>0?'正在读取附件':'发送任务';
   $('#send').title=label;$('#send').ariaLabel=label;$('#send').setAttribute('aria-busy',String(stopping||pending));
-  $('#composer-status').textContent=stopping?'正在等待回合结束并回收本轮命令…':pending?'正在发送，输入内容会保留至请求确认':state.attachmentLoads>0?'正在读取附件…':!state.ready?'连接尚未就绪，草稿已保留':'';
+  $('#composer-status').textContent=permissionBlocked?'权限更改正在确认或尚未确认，请核对原生状态后再发送任务':stopping?'正在等待回合结束并回收本轮命令…':pending?'正在发送，输入内容会保留至请求确认':state.attachmentLoads>0?'正在读取附件…':!state.ready?'连接尚未就绪，草稿已保留':'';
   if(typeof renderExecutionProgressBanner==='function')renderExecutionProgressBanner();
 }
 // A turn can finish while its resumable unified-exec commands remain alive.
@@ -583,6 +663,7 @@ async function submitPrompt(submission=null) {
   if(preserveDraft&&typeof submission.text!=='string')throw new Error('独立任务缺少消息文本');
   closeCommandMenu();
   if(!state.ready)return toast('请等待原生运行时连接');
+  if(typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked())throw new Error('权限更改尚未确认，请重新打开会话核对后再发送任务');
   if(state.threadLoading||state.restoreError)return toast('请先完成当前会话的恢复');
   if(state.threadArchived)return toast('请先取消归档，再继续这个会话');
   if(state.threadBusy)return toast('请先关闭使用此会话的其他页面，再重试继续会话');
@@ -625,7 +706,7 @@ function runtimeModelContext(threadId,context=null){
 }
 async function loadModels() {
   const [result,configuration]=await Promise.all([rpc('model/list',{includeHidden:true}),rpc('config/read',{includeLayers:false,cwd:state.selectedCwd})]);
-  state.runtimeDefaults=configuration.config;state.modelDetails=(result.data||[]).filter(model=>!isRemovedModel(model.model,configuration.config?.model_provider||'openai'));state.models=state.modelDetails.filter(model=>!model.hidden);
+  state.runtimeDefaults=configuration.config;if(typeof refreshPermissionDefaults==='function')refreshPermissionDefaults(configuration.config);state.modelDetails=(result.data||[]).filter(model=>!isRemovedModel(model.model,configuration.config?.model_provider||'openai'));state.models=state.modelDetails.filter(model=>!model.hidden);
   const configured=configuration.config?.model,provider=configuration.config?.model_provider||'openai',model=isRemovedModel(configured,provider)?null:configured||state.models.find(model=>model.isDefault)?.model;
   $('#model').replaceChildren(new Option(model?'默认 · '+model:'默认模型',''));
   $('#model').title='模型提供方：'+(configuration.config?.model_provider||'原生默认提供方');
@@ -649,8 +730,9 @@ function panelError(error) { $('#panel-content').replaceChildren(el('div', 'pane
 function panelHeading(title, description, iconName) { const header = el('div', 'panel-heading'), text = el('div'); text.append(el('h1', '', title), el('p', '', description)); header.append(text, icon(iconName)); $('#panel-content').replaceChildren(header); return $('#panel-content'); }
 function showJSON(title, data) { openDialog(title, root => root.append(el('pre', '', pretty(redact(data)))), async () => {}, '关闭'); }
 function openDialog(title, build, submit, submitLabel = '保存') {
-  $('#dialog-title').textContent = title; $('#dialog-body').replaceChildren(); build($('#dialog-body')); $('#dialog-submit').textContent = submitLabel;
-  $('#dialog-form').onsubmit = async event => { event.preventDefault(); $('#dialog-submit').disabled = true; try { await submit($('#dialog-body')); $('#dialog').close(); } catch(error) { report(error); } finally { $('#dialog-submit').disabled=false; } };
+  const generation=state.dialogGeneration=(state.dialogGeneration||0)+1;let submitting=false;
+  $('#dialog-submit').disabled=false;$('#dialog-title').textContent = title; $('#dialog-body').replaceChildren(); build($('#dialog-body')); $('#dialog-submit').textContent = submitLabel;
+  $('#dialog-form').onsubmit = async event => {event.preventDefault();if(submitting)return;submitting=true;$('#dialog-submit').disabled=true;try{await submit($('#dialog-body'));if(generation===state.dialogGeneration)$('#dialog').close();}catch(error){report(error);}finally{submitting=false;if(generation===state.dialogGeneration)$('#dialog-submit').disabled=false;}};
   $('#dialog').showModal();
 }
 function askText(title, label, value, submit, { secret=false, multiline=false } = {}) { openDialog(title, root => { root.append(el('label', '', label)); const input = el(multiline ? 'textarea' : 'input', multiline ? 'code-editor' : 'field-input'); input.id='dialog-value'; if (secret) input.type='password'; input.value=value; input.required=true; root.append(input); }, root => submit($('#dialog-value', root).value)); }
@@ -814,7 +896,7 @@ async function renderProtocol(){
 }
 function renderEvents(){const log=$('#event-log');if(!log)return;log.replaceChildren();for(const event of state.events.slice(-100).reverse()){const row=el('details','event-row');row.append(el('summary','',event.at+'  '+event.method),el('pre','',pretty(redact(event.params))));log.append(row);}if(!state.events.length)log.append(el('p','subtle','等待原生运行时事件…'));}
 async function renderSettings(){
-  const result=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});if(state.view!=='settings')return;state.config=result;const config=result.config||{};
+  const result=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});if(state.view!=='settings')return;state.config=result;const config=result.config||{};if(typeof refreshPermissionDefaults==='function')refreshPermissionDefaults(config);
   const root=panelHeading('按照你的方式工作','设置写入 Codex 的配置，不修改上游源码。当前运行时保留原生权限与沙箱。','settings');
   const appearance=el('div','section-card');appearance.append(el('h3','','工作区与外观'));root.append(appearance);
   settingRow(appearance,'工作区目录',state.selectedCwd,button('更改',editProject));settingRow(appearance,'外观','跟随你的偏好，保存在当前浏览器。',button(document.documentElement.dataset.theme==='dark'?'深色':'浅色',()=>{toggleTheme();return renderSettings();}));
@@ -831,7 +913,24 @@ async function renderSettings(){
   const about=el('div','section-card');about.append(el('h3','','源码与运行时'),el('pre','protocol-result',pretty(state.status)));if(state.status?.baseline?.sourceCommit)about.append(el('p','subtle','原生程序由此官方提交直接构建。启动时核对源码、程序校验值和完整协议；可通过官方更新脚本升级。'));root.append(about);
 }
 function settingRow(root,label,description,control){const row=el('div','settings-row'),text=el('div');text.append(el('label','',label),el('small','',description));row.append(text,control);root.append(row);}
-async function rollbackThread(id){const turns=await paged('thread/turns/list',{threadId:id,itemsView:'full',sortDirection:'desc',limit:100});const candidates=turns.filter(turn=>turn.items?.some(item=>item.type==='userMessage')&&!turn.items?.some(item=>['enteredReviewMode','exitedReviewMode','contextCompaction'].includes(item.type)));if(!candidates.length)throw new Error('没有可回退的普通用户任务');openDialog('回退用户任务',root=>{root.append(el('p','','将移除所选用户任务及其后的会话记录。磁盘文件不会因此撤销。'));const select=el('select','field-input');select.id='rollback-turn';select.ariaLabel='回退起点';for(const turn of candidates){const user=turn.items.find(item=>item.type==='userMessage');const text=(user.content||[]).map(item=>item.text||'').join(' ').slice(0,110)||turn.id;select.append(new Option(text,turn.id));}root.append(select);},async root=>{await rpc('thread/revert',{threadId:id,beforeTurnId:$('#rollback-turn',root).value});await openThread(id);},'回退');}
+async function rollbackThread(id){
+  const generation=state.navigationGeneration,current=()=>state.thread?.id===id&&state.navigationGeneration===generation;
+  const turns=await performThreadAction(id,()=>paged('thread/turns/list',{threadId:id,itemsView:'full',sortDirection:'desc',limit:100}));
+  if(!current())return;
+  const candidates=turns.filter(turn=>turn.items?.some(item=>item.type==='userMessage')&&!turn.items?.some(item=>['enteredReviewMode','exitedReviewMode','contextCompaction'].includes(item.type)));
+  if(!candidates.length)throw new Error('没有可回退的普通用户任务');
+  openDialog('回退用户任务',root=>{
+    root.append(el('p','','将移除所选用户任务及其后的会话记录。磁盘文件不会因此撤销。'));
+    const select=el('select','field-input');select.id='rollback-turn';select.ariaLabel='回退起点';
+    for(const turn of candidates){const user=turn.items.find(item=>item.type==='userMessage');const text=(user.content||[]).map(item=>item.text||'').join(' ').slice(0,110)||turn.id;select.append(new Option(text,turn.id));}
+    root.append(select);
+  },async root=>{
+    if(!current())throw new Error('当前会话已切换，请重新打开目标会话后选择回退');
+    const reason=threadActionReason('revert',{thread:state.thread,archived:state.threadArchived});if(reason)throw new Error(reason);
+    await performThreadAction(id,()=>rpc('thread/revert',{threadId:id,beforeTurnId:$('#rollback-turn',root).value}));
+    if(current())await openThread(id);
+  },'回退');
+}
 async function renderAccount(){
   const result=await rpc('config/read',{includeLayers:false,cwd:state.selectedCwd});if(state.view!=='account')return;
   const config=result.config||{},provider=config.model_provider||'openai',details=config.model_providers?.[provider]||{};
@@ -893,34 +992,37 @@ async function readAttachments(files,draft=composerState()) {
 }
 
 async function fileBrowser(path=state.selectedCwd){const data=await rpc('fs/readDirectory',{path});$('#file-panel').hidden=false;$('#file-path').textContent=path;$('#file-tree').replaceChildren(button('..',()=>fileBrowser(path.split('/').slice(0,-1).join('/')||'/'),'file-row'));$('#file-preview').hidden=true;for(const entry of data.entries||[]){const name=typeof entry==='string'?entry:entry.fileName||entry.name;const full=path.replace(/\/$/,'')+'/'+name;const isDirectory=entry.isDirectory||entry.type==='directory';const row=button('',async()=>{if(isDirectory)return fileBrowser(full);{const result=await rpc('fs/readFile',{path:full});const pre=$('#file-preview');pre.textContent=result.text||result.content||(result.dataBase64?new TextDecoder().decode(Uint8Array.from(atob(result.dataBase64),c=>c.charCodeAt(0))):pretty(result));pre.hidden=false;}},'file-row');row.append(icon(isDirectory?'folder':'file'),document.createTextNode(name));$('#file-tree').append(row);}}
-async function threadAction(action){
-  const thread=state.thread,id=thread?.id,generation=state.navigationGeneration;if(!id)return;
+async function threadAction(action,target=null){
+  target=target||{thread:state.thread,archived:state.threadArchived};
+  const thread=target.thread,id=thread?.id,generation=state.navigationGeneration;if(!id)return;
+  const reason=threadActionReason(action,target);if(reason)throw new Error(reason);
+  const perform=work=>performThreadAction(id,work);
   switch(action){
     case'delete':
-      if(state.threadBusy)throw new Error('请先关闭使用此会话的其他页面，再执行永久删除');
+      if(state.thread?.id===id&&state.threadBusy)throw new Error('请先关闭使用此会话的其他页面，再执行永久删除');
       return openDialog('永久删除会话',root=>{
         root.append(el('p','','将永久删除“'+(thread.name||thread.preview||id)+'”的会话历史及其创建的子代理会话，无法撤销。'));
         root.append(el('p','','如果只是想从最近会话中收起，请取消后选择「归档（保留历史）」。永久删除不会回滚工作区文件或删除业务数据库。'));
-        if(state.activeTurns.has(id))root.append(el('p','','此会话中的当前任务会被停止。'));
+        if(state.activeTurns.has(id)||thread.status?.type==='active')root.append(el('p','','此会话中的当前任务会被停止。'));
       },async()=>{
-        try{await rpc('thread/delete',{threadId:id});}
+        try{await perform(()=>rpc('thread/delete',{threadId:id}));}
         catch(error){
           if(/forked history still references it/i.test(error.message))throw new Error('此会话仍被分叉会话引用。请先删除相关分叉会话，再重试永久删除；历史尚未删除。原生原因：'+nativeErrorMessage(error));
           throw error;
         }
         if(state.thread?.id===id)resetChat();forgetThreadDraft(id);await loadThreads();toast('会话历史已永久删除，无法恢复。');
       },'永久删除');
-    case'rename':return askText('重命名会话','会话名称',thread.name||'',async name=>{await rpc('thread/name/set',{threadId:id,name});if(state.thread?.id===id){state.thread.name=name;$('#page-title').textContent=name;}await loadThreads();});
-    case'fork':{const result=await rpc('thread/fork',{threadId:id});return openThread(result.thread.id);}
-    case'compact':await rpc('thread/compact/start',{threadId:id});return toast('已请求原生上下文压缩');
-    case'review':await rpc('review/start',{threadId:id,target:{type:'uncommittedChanges'}});return;
+    case'rename':return askText('重命名会话','会话名称',thread.name||'',async name=>{await perform(()=>rpc('thread/name/set',{threadId:id,name}));if(state.thread?.id===id){state.thread.name=name;$('#page-title').textContent=name;}await loadThreads();});
+    case'fork':{const result=await perform(()=>rpc('thread/fork',{threadId:id}));if(generation===state.navigationGeneration)return openThread(result.thread.id);await loadThreads();return toast('分叉会话已创建，可从侧栏打开。');}
+    case'compact':await perform(()=>rpc('thread/compact/start',{threadId:id}));return toast('已请求原生上下文压缩');
+    case'review':await perform(()=>rpc('review/start',{threadId:id,target:{type:'uncommittedChanges'}}));return;
     case'revert':return rollbackThread(id);
     case'unarchive':
-      await rpc('thread/unarchive',{threadId:id});
+      await perform(()=>rpc('thread/unarchive',{threadId:id}));
       if(state.thread?.id===id&&generation===state.navigationGeneration){setArchiveScope(false);await openThread(id,{archived:false,replace:true});}
       await loadThreads();toast('已恢复到「最近会话」，可以继续对话。');return;
     case'archive':
-      await rpc('thread/archive',{threadId:id});if(state.thread?.id===id)resetChat();
+      await perform(()=>rpc('thread/archive',{threadId:id}));if(state.thread?.id===id)resetChat();
       await loadThreads();toast('已归档，历史仍保留。可在左侧「已归档」中恢复或永久删除。');return;
     case'export':{const result={thread,turns:await paged('thread/turns/list',{threadId:id,itemsView:'full',sortDirection:'asc',limit:100})};const url=URL.createObjectURL(new Blob([pretty(result)],{type:'application/json'}));const link=el('a');link.href=url;link.download='codex-'+id+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;}
   }
@@ -971,12 +1073,15 @@ async function init(){
   $('#jump-latest').onclick=()=>{composerState().follow=true;restoreScroll();};
   window.addEventListener('pagehide',saveComposer);window.addEventListener('resize',positionToast);
   $$('[data-prompt]').forEach(node=>node.onclick=()=>{$('#prompt').value=node.dataset.prompt;$('#prompt').focus();});
-  $('#thread-search').oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadThreads().catch(report),300);};$('#threads-more').onclick=()=>loadThreads(true).catch(report);
+  $('#thread-search').oninput=()=>{closeThreadMenu(false);clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadThreads().catch(report),300);};$('#threads-more').onclick=()=>loadThreads(true).catch(report);
   $('#recent-toggle').onclick=()=>switchArchiveScope(false).catch(report);$('#archive-toggle').onclick=()=>switchArchiveScope(true).catch(report);
-  $('#history-help').onclick=showHistoryHelp;$('#thread-restore').onclick=()=>threadAction('unarchive').catch(report);
+  $('#history-help').onclick=showHistoryHelp;
   $('#model').onchange=()=>{const model=$('#model').value,provider=selectedModelProvider();localStorage.setItem(modelPreferenceKey(provider),model);loadEfforts();if(state.thread&&provider!==modelProvider())startProviderChat(model||state.runtimeDefaults.model,provider).catch(error=>{selectThreadModel(state.thread.id);report(error);});else $('#model').title='模型提供方：'+provider;};$('#effort').onchange=()=>localStorage.setItem('codex.effort',$('#effort').value);
   $('#attach-button').onclick=()=>$('#file-input').click();$('#file-input').onchange=()=>{const files=Array.from($('#file-input').files);$('#file-input').value='';const draft=composerState();draft.loads++;state.attachmentLoads=draft.loads;updateSend();readAttachments(files,draft).catch(report).finally(()=>{draft.loads--;if(composerState()===draft)state.attachmentLoads=draft.loads;updateSend();});};
-  $('#thread-action').onchange=()=>{const action=$('#thread-action').value;$('#thread-action').value='';threadAction(action).catch(report);};
+  document.addEventListener('pointerdown',event=>{if(state.threadMenu&&!event.target.closest('#thread-context-menu')&&!event.target.closest('[data-thread-menu]'))closeThreadMenu(false);});
+  document.addEventListener('keydown',threadMenuKey);
+  window.addEventListener('resize',dismissMovedThreadMenu);
+  document.addEventListener('scroll',event=>{if(state.threadMenu&&!$('#thread-context-menu').contains(event.target))dismissMovedThreadMenu();},true);
   $('#files-toggle').onclick=()=>{if(!$('#file-panel').hidden)$('#file-panel').hidden=true;else fileBrowser().catch(report);};$('#files-close').onclick=()=>$('#file-panel').hidden=true;
   $('#terminal-toggle').onclick=openTerminal;$('#terminal-start').onclick=()=>{try{startTerminal();}catch(error){report(error);}};$('#terminal-expand').onclick=expandTerminal;$('#terminal-close').onclick=()=>{termWS?.close();$('#terminal-panel').hidden=true;$('.main').classList.remove('terminal-expanded');$('#terminal-expand').textContent='展开';terminalStatus('未启动');};
   document.addEventListener('keydown',event=>{if((event.metaKey||event.ctrlKey)&&event.key==='k'){event.preventDefault();resetChat();showView('chat');}});

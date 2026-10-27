@@ -1,5 +1,6 @@
 // Regression for forks created through native stdio before the Web has seen them.
 // The only model task is a disposable Flash parent; no storage writes/repair by Web.
+import {threadAction} from './thread_menu_helpers.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -78,10 +79,10 @@ try{
   return{newContextNoSharedStorage:true,nameSearch:true,nativeHistoryRestored:true,refreshSameThread:true};
  });
  await check('旧分叉归档恢复删除保持一致，父历史未变',async()=>{
-  await page.evaluate(()=>showView('chat'));await page.locator('#thread-action').selectOption('archive');await page.waitForFunction(()=>!state.thread);await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),childId);
+  await page.evaluate(()=>showView('chat'));await threadAction(page,'archive');await page.waitForFunction(()=>!state.thread);await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),childId);
   await page.locator('#archive-toggle').click();await row(childId).waitFor();await row(childId).click();await page.waitForFunction(id=>state.thread?.id===id&&!state.threadLoading,childId);assert(await page.locator('#prompt').isDisabled());
-  await page.locator('#thread-action').selectOption('unarchive');await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,childId,{timeout:45000});
-  await page.locator('#thread-action').selectOption('delete');await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await page.waitForFunction(()=>!state.thread);await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),childId);
+  await threadAction(page,'unarchive');await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,childId,{timeout:45000});
+  await threadAction(page,'delete');await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await page.waitForFunction(()=>!state.thread);await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),childId);
   const response=await page.evaluate(async()=>{const r=await fetch('/api/known-forks');return r.json();});assert(!response.threadIds.includes(childId));assert.equal(digest(parentPath),parentHash);
   cleanup.push({entity:'ownedChild',id:childId,removed:true});owned.splice(owned.indexOf(childId),1);
   return{archivedReadOnly:true,unarchiveSameId:true,permanentDeleteRemovesDiscovery:true,parentNativeHistoryUnchanged:true};

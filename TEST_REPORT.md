@@ -1,6 +1,27 @@
 # 实际验收报告
 
-## 最新批次：历史、归档删除及进度可见性
+## 最新批次：侧栏菜单与输入框Agent权限（2026-10-27）
+
+本批在18866独立原生配置及测试工作区执行，只使用`deepseek-flash`，不读取密钥或ChatGPT授权，不修改Codex源码、发行程序或代理循环。实际浏览器、真实原生存储/事件、受控交付顺序以及模型工作流分别报告。
+
+| 验证 | 实际结果与证据 |
+|---|---|
+| 侧栏会话右键/省略号菜单 | [context-menu/results.json](test-results/sidebar-menu-2026-10-27/context-menu/results.json)：12/12，0模型提交、0浏览器错误；非当前目标ID、项目/模型/草稿/附件保持，键盘和焦点，真实重命名/归档/恢复/删除/分叉及重复确认仅1RPC；1024/1280/1440与深色菜单不越界。此组用户消息夹具的导出为空turns，不作为非空历史导出证据 |
+| 迁移后的归档相邻流程 | [archive/summary.json](test-results/session-menu-2026-10-27/archive/summary.json)：11/11，0新模型、0浏览器错误；最近/已归档、原生归档文件保留、恢复、拒绝/取消/成功永久删除、搜索/刷新/范围晚到、已有独立Flash历史分叉内容保持，源SHA不变；自有夹具清理 |
+| 新建合成真实历史的导出与回退 | [synthetic-history/results.json](test-results/sidebar-menu-2026-10-27/synthetic-history/results.json)：4/4、0浏览器错误；仅本轮新夹具调用1次Flash并回复SIDEBAR_EXPORT_FIXTURE_OK，无工具。非当前分叉导出含真实用户/助手且与native read一致；延迟真实历史读取不覆盖新重命名框，延迟已确认revert不抢新导航，只删除目标回合；菜单本身0模型提交、自有seed/fork清理 |
+| 输入框权限入口及原生状态 | [browser/summary.json](test-results/composer-permissions-2026-10-27/browser/summary.json)：8/8、0浏览器错误；实际三档快照、取消0RPC、受控pre-wire失败保留草稿、真实空ACK后等待真实通知、A/B迟到隔离、加载/归档禁用、自定义只读不假标、新草稿选择保持。仅1次普通Flash，原生start配置与所选auto一致、运行中入口禁用；全局配置SHA一致、自有会话清理 |
+| 权限三档真实工作流 | [首轮](test-results/composer-permissions-2026-10-27/flash/results.json)2通过1测试失败，3个新父回合：auto原生审核approved→exit0/stdout，full无审批/审核→实际文件/stdout→恢复ask；ask已出现真实审批，但测试误等完成历史数组中的“开始”，30秒后清理中断，未计拒绝通过。[增量](test-results/composer-permissions-2026-10-27/flash-ask-followup/results.json)2/2：ask实际点击拒绝发decline、文件不存在、回答说明拒绝；筛选文字重叠多跑的full也通过。合计5父回合，0浏览器错误、自有会话/目录全清理；三模式有效覆盖齐全，不称单次3/3。现提供PERMISSION_MODES=ask精确补验 |
+| 新增权限边界协议/状态回归 | [after-review/summary.json](test-results/composer-permissions-2026-10-27/browser/final-review/summary.json)：9通过、1明确跳过（此前新草稿真实Flash用例不重复），0模型、0浏览器错误、3个自有seed清理、配置SHA不变。真实通知先于被延迟ACK仍能结束确认；原生resume快照可结束等待，释放旧通知不重开pending；原有7组协议/界面相邻用例复验。ask↔auto实际请求不含sandboxPolicy，保留既有原生配置来源；没有单独展示或逐项测试命名profile |
+| 权限桌面布局 | [layout/summary.json](test-results/composer-permissions-2026-10-27/layout/summary.json)：1024/1280/1440 × 明暗主题共6/6，输入框内权限按钮、发送按钮及选择框均未溢出；12张截图实际查看。仅预选新草稿模式，不创建会话、不发送任务、不写全局配置 |
+| 本批单元、静态及核心完整性 | [engineering/results.json](test-results/composer-permissions-2026-10-27/engineering/results.json)：权限状态14/14、模式2/2、批准草稿7/7、上下文恢复6/6，进度13个状态用例通过（node:test包装计1个脚本）；JS/MJS语法71份、Python AST36份、diff通过。原生pristine=true、176/176方法完整Schema匹配，无上游/原生重编译。没有前端打包或TypeScript，构建/类型检查不适用；本轮未重跑72项完整Python后端套件 |
+
+权限状态14项为确定性单元夹具，覆盖JSON字段顺序、通知/ACK顺序与计时清理、resume确认、错线程、超时、断线、原生拒绝分支、新会话权限不符阻发及未确认时保留停止能力；另验证命令仍在回收时禁改权限、新默认值更新不改已有会话。初次仅最小DOM夹具漏dataset，修测试夹具后通过；单元构造的失败不冒充真实模型或服务器拒绝。
+
+模型计数分开：菜单合成夹具1个父回合、权限界面1个父回合、权限三模式5个父回合；原生审核内部模型调用另计，未独立抓取出站HTTP请求体。“帮我批准”使用原生风险评估而非无条件放行，不要求ChatGPT登录；完全访问不提供多租户隔离。
+
+原始失败均保留：菜单最初的空预览用户夹具未被native list发现、空布局不构成滚动条件、归档搜索输入scroll误关菜单（真实产品Bug）、后续冗余scrollIntoView遇真实重绘脱离，以及权限ask等待条件错误。旧历史导出增强曾被自动审批拒绝而未执行，改用本轮新建合成Flash夹具完成安全替代，不将未执行路径计通过。当前桌面右键菜单的实际条目和顺序尚无截图；已检查网页桌面尺寸，不能据此宣称与桌面产品精确一致。手机端和严格国际出口测试保持取消。
+
+## 前一批次（历史）：历史、归档删除及进度可见性
 
 证据目录：`test-results/history-usability-2026-10-26/`。仅deepseek-flash，未改原生内核。日常实例8765只检查启动和元数据，不恢复或执行用户任务；完整新后端18868使用独立配置和工作区。
 

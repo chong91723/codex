@@ -1,4 +1,5 @@
 // Actual DeepSeek/browser regression: compact activity groups, streaming and history.
+import {threadAction} from './thread_menu_helpers.mjs';
 import fs from 'node:fs';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const directory=process.env.REPORT_DIR||'/tmp/codex-activity-desktop';fs.mkdirSync(directory,{recursive:true});
@@ -47,7 +48,7 @@ try{
     expect(JSON.stringify(order.dom)===JSON.stringify(order.native),'Activity grouping changed the original item order');return{...collapsed,expandedHeight,nativeOrderPreserved:true};
   });
   await check('刷新恢复历史后仍默认合并折叠',async()=>{
-    await page.locator('#thread-action').selectOption('rename');await page.locator('#dialog-value').fill(name);await page.locator('#dialog-submit').click();await page.waitForFunction(name=>document.querySelector('#page-title').textContent===name,name,{timeout:15000});
+    await threadAction(page,'rename');await page.locator('#dialog-value').fill(name);await page.locator('#dialog-submit').click();await page.waitForFunction(name=>document.querySelector('#page-title').textContent===name,name,{timeout:15000});
     await reopen();const state=await snapshot();expect(state.groups.length===1&&state.groups.every(group=>!group.open&&group.height<=40),'Hydrated history is not compact by default');
     expect(await page.locator('#messages > .tool-item').count()===0,'History has ungrouped thought/command rows');
     const group=groupFor(firstTurn).first();await group.locator(':scope > summary').click();const command=group.locator('.tool-item').filter({hasText:'ACTIVITY_STEP_THREE'}).first();await command.locator(':scope > summary').click();
@@ -74,10 +75,10 @@ try{
     await page.goBack();await page.waitForFunction(id=>state.thread?.id===id&&!state.threadLoading,original,{timeout:45000});return{backAndForward:true,newChatClearsRoute:true};
   });
   await check('归档会话刷新后恢复且保持只读',async()=>{
-    const original=await page.evaluate(()=>state.thread.id);await page.locator('#thread-action').selectOption('archive');await page.waitForFunction(()=>!state.thread,null,{timeout:15000});
+    const original=await page.evaluate(()=>state.thread.id);await threadAction(page,'archive');await page.waitForFunction(()=>!state.thread,null,{timeout:15000});
     await page.locator('#archive-toggle').click();await page.locator('.thread-row').filter({hasText:name}).first().click();await page.waitForFunction(()=>state.threadArchived&&!state.threadLoading,null,{timeout:15000});
     expect(new URL(page.url()).searchParams.get('archived')==='1','Archived state absent from URL');await page.reload();await page.waitForFunction(id=>state.thread?.id===id&&state.threadArchived&&!state.threadLoading,original,{timeout:45000});
-    expect(await page.locator('#prompt').isDisabled()&&await page.locator('#send').isDisabled(),'Archived restore became writable');await page.locator('#thread-action').selectOption('unarchive');await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,original,{timeout:45000});expect(!(await page.locator('#prompt').isDisabled()),'Unarchived conversation remained read-only');return{archivedRouteRestored:true,readOnly:true,unarchiveResumesSameConversation:true};
+    expect(await page.locator('#prompt').isDisabled()&&await page.locator('#send').isDisabled(),'Archived restore became writable');await threadAction(page,'unarchive');await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,original,{timeout:45000});expect(!(await page.locator('#prompt').isDisabled()),'Unarchived conversation remained read-only');return{archivedRouteRestored:true,readOnly:true,unarchiveResumesSameConversation:true};
   });
   await check('无效会话链接显示恢复错误，禁止静默新建',async()=>{
     const url=new URL(page.url());url.searchParams.set('thread','00000000-0000-0000-0000-000000000000');await page.goto(url.href);await page.getByRole('button',{name:'重试恢复会话',exact:true}).waitFor({timeout:45000});

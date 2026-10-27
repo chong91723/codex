@@ -1,0 +1,57 @@
+{
+  "origin": "Real browser, native storage APIs and permission snapshots. Zero model requests; real Flash case explicitly skipped. Failure case is an explicitly injected pre-wire client transport error; notification/acknowledgement gates hold genuine native messages without fabricating success.",
+  "currentProductRegression": true,
+  "results": "results.json",
+  "passed": 9,
+  "failed": 0,
+  "skipped": [
+    {
+      "name": "新草稿权限不写全局配置，实际新建Flash任务采用该档且运行中禁用",
+      "reason": "Explicit SKIP_REAL_FLASH=1; previous real-model evidence remains separate and is not rerun or recounted"
+    }
+  ],
+  "newModelRequests": 0,
+  "browserErrors": [],
+  "globalConfigUnchanged": true,
+  "allOwnedFixturesRemoved": true,
+  "newGates": [
+    {
+      "name": "真实权限通知已确认时，无需等待迟到的空受理响应",
+      "status": "passed",
+      "evidence": {
+        "genuineAcknowledgementHeld": true,
+        "genuineMatchingNotificationPassed": true,
+        "previousReviewer": "user",
+        "currentReviewer": "auto_review",
+        "dialogClosedAndSubmissionEnabledBeforeAckRelease": true
+      }
+    },
+    {
+      "name": "原生恢复快照可结束待确认，无须等待旧权限通知重放",
+      "status": "passed",
+      "evidence": {
+        "genuineOldNotificationHeld": true,
+        "genuineResumeSnapshotConfirmed": true,
+        "pendingClearedBeforeOldNotificationRelease": true,
+        "noUnconfirmedMarker": true,
+        "submissionEnabled": true,
+        "lateOriginalNotificationDoesNotReopenPending": true
+      }
+    }
+  ],
+  "priorRealModelEvidence": "../final/results.json",
+  "counting": "This run passes 9 protocol/browser groups and explicitly skips the model group. Earlier 8-group/one-Flash-turn evidence is preserved separately; the model turn was not rerun or recounted.",
+  "syntaxCheck": {
+    "file": "web/tests/composer_permissions_desktop.mjs",
+    "passed": true
+  },
+  "sha256": {
+    "controlled-permission-failure.png": "863a3c20f98509eeeb6e9f80d40a6e35538cb22dce2d62e335148191de03be33",
+    "custom-readonly-permissions.png": "bb8a3a8896a4fc5c66825e5ee8d3d74e34f394458c54e1f4109b581a24567cc9",
+    "full-access-explicit-choice.png": "20d991d4de4e10f97a420c93a835c15564e91c3ebe149653399eb2f74ccb87d7",
+    "notification-confirms-before-delayed-ack.png": "264d38d5b105b2943dfeede4c7fbe6fbbd1c105ded5c98e4847cbfadbecb63ab",
+    "permission-entry.png": "42a48474a8ce1bffbad1fbc6120b5d74dc7b9866b7806b0fdb66d6d133872a71",
+    "results.json": "776cb82df8dc182e0b478e6b6512ac5e08c9b47322fea1b4250f89f7946e958f",
+    "resume-snapshot-confirms-with-old-notification-held.png": "a511352de4a4a6cc1b82eb599b7ca50a065ef6aeed8ea847fcb27ab155fe2549"
+  }
+}

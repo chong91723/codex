@@ -1,4 +1,5 @@
 // Real native storage and browser controls; no model calls or user conversations.
+import {openThreadMenu,threadAction} from './thread_menu_helpers.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -25,8 +26,8 @@ page.on('websocket',socket=>{if(!socket.url().includes('/ws/rpc'))return;socket.
 async function check(name,run){try{results.push({name,status:'passed',evidence:await run()});console.log('PASS '+name);}catch(error){results.push({name,status:'failed',error:error.message});try{await page.screenshot({path:path.join(out,'failure-'+results.length+'.png')});}catch{}throw error;}finally{save();}}
 async function choose(id){await row(id).waitFor();await row(id).click();await page.waitForFunction(id=>state.thread?.id===id&&!state.threadLoading,id,{timeout:45000});}
 async function missing(id){try{await read(id);return false;}catch(error){assert.match(error.message,/not found|thread not loaded|no rollout|cannot find/i);return true;}}
-async function archiveSelected(id){await page.locator('#thread-action').selectOption('archive');await page.waitForFunction(()=>!state.thread,null,{timeout:30000});await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),id);}
-async function deleteSelected(id){await page.locator('#thread-action').selectOption('delete');await page.getByRole('heading',{name:'永久删除会话',exact:true}).waitFor();await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await page.waitForFunction(()=>!state.thread);await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),id);assert(await missing(id));owned.delete(id);cleanup.push({entity:'ownedThread',id,removed:true,through:'visible permanent-delete control'});}
+async function archiveSelected(id){await threadAction(page,'archive',{threadId:id});await page.waitForFunction(()=>!state.thread,null,{timeout:30000});await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),id);}
+async function deleteSelected(id){await threadAction(page,'delete',{threadId:id});await page.getByRole('heading',{name:'永久删除会话',exact:true}).waitFor();await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await page.waitForFunction(()=>!state.thread);await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),id);assert(await missing(id));owned.delete(id);cleanup.push({entity:'ownedThread',id,removed:true,through:'visible permanent-delete control'});}
 try{
   await page.goto(base);await ready();
   assert.equal(await page.evaluate(()=>state.runtimeInfo.codexHome),home);
@@ -53,29 +54,33 @@ try{
     assert.equal(calls.filter(c=>c.method==='turn/start').length,0);
     return{parent,first,second,nativeUserRecordPersisted:true,zeroModelRequests:true};
   });
-  await check('归档真实保留文件，已归档列表可见、只读且提供恢复按钮',async()=>{
+  await check('归档真实保留文件，已归档列表可见、只读且侧栏菜单可恢复',async()=>{
     await archiveSelected(first);await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('已归档，历史仍保留'));
     const actual=(await read(first)).thread;assert(actual.path.startsWith(home+'/archived_sessions/'));assert(!fs.existsSync(fixturePath));assert(fs.readFileSync(actual.path,'utf8').includes(marker));
     await page.locator('#archive-toggle').click();await choose(first);
     assert.equal(await page.locator('#archive-toggle').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('#thread-list-label').innerText(),'已归档');
-    assert(await page.locator('#archive-list-help').isVisible());assert(await page.locator('#thread-archive-status').isVisible());assert(await page.locator('#thread-restore').isVisible());
+    assert(await page.locator('#archive-list-help').isVisible());assert(await page.locator('#thread-archive-status').isVisible());assert.equal(await page.locator('#thread-restore').count(),0);
+    assert.equal(await page.locator('#prompt').getAttribute('placeholder'),'会话已归档，请在左侧会话菜单中恢复后继续');
     assert(await page.locator('#prompt').isDisabled());assert(await page.locator('#send').isDisabled());
-    assert.equal(await page.locator('#thread-action option[value=archive]').evaluate(n=>n.hidden),true);
+    const menu=await openThreadMenu(page,{threadId:first});
+    assert.equal(await menu.locator('[data-thread-action=archive]').count(),0);assert(await menu.locator('[data-thread-action=unarchive]').isEnabled());assert(await menu.locator('[data-thread-action=delete]').isEnabled());await page.keyboard.press('Escape');
     await page.screenshot({path:path.join(out,'archived-1440.png')});
-    return{nativeArchivedPath:true,userRecordPreserved:true,readOnly:true,restoreControlVisible:true,permanentDeleteStillAvailable:true};
+    return{nativeArchivedPath:true,userRecordPreserved:true,readOnly:true,restoreAvailableInSidebarMenu:true,permanentDeleteStillAvailable:true};
   });
   await check('归档路由刷新和搜索准确，1024桌面入口未被遮挡',async()=>{
     await page.reload();await ready();assert.equal(await page.evaluate(()=>state.thread.id),first);assert.equal(await page.evaluate(()=>state.archived),true);
     await page.locator('#thread-search').fill('没有匹配的归档 '+marker);await page.waitForFunction(()=>document.querySelector('#thread-list').textContent.includes('没有匹配'));
     await page.locator('#thread-search').fill(marker);await row(first).waitFor();
     await page.setViewportSize({width:1024,height:768});
-    for(const selector of ['#recent-toggle','#archive-toggle','#thread-action','#thread-restore']){const box=await page.locator(selector).boundingBox();assert(box&&box.x>=0&&box.y>=0&&box.x+box.width<=1024&&box.y+box.height<=768,selector+' outside viewport');}
-    const restore=page.locator('#thread-restore');assert.equal(await restore.evaluate(n=>{const r=n.getBoundingClientRect();return n.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),true);
+    await openThreadMenu(page,{threadId:first});
+    for(const selector of ['#recent-toggle','#archive-toggle',`.thread-row[data-thread-id="${first}"] .menu-trigger`,'#thread-context-menu']){const box=await page.locator(selector).boundingBox();assert(box&&box.x>=0&&box.y>=0&&box.x+box.width<=1024&&box.y+box.height<=768,selector+' outside viewport');}
+    await page.keyboard.press('Escape');
+    const trigger=row(first).locator('.menu-trigger');await row(first).hover();assert.equal(await trigger.evaluate(n=>{const r=n.getBoundingClientRect();return n.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),true);
     await page.screenshot({path:path.join(out,'archived-1024.png')});
-    return{archivedRouteRefresh:true,scopeAndSearchPreserved:true,width:1024,restoreHitTargetVisible:true};
+    return{archivedRouteRefresh:true,scopeAndSearchPreserved:true,width:1024,sidebarMenuHitTargetVisible:true};
   });
   await check('恢复同一会话和记录，可继续输入；恢复后刷新列表一致',async()=>{
-    await page.locator('#thread-restore').click();await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,first,{timeout:45000});
+    await threadAction(page,'unarchive',{threadId:first});await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,first,{timeout:45000});
     assert.equal(await page.evaluate(()=>state.archived),false);assert.equal(await page.locator('#recent-toggle').getAttribute('aria-pressed'),'true');
     assert.equal(await page.locator('#prompt').isDisabled(),false);assert.equal(await page.locator('#thread-archive-status').isVisible(),false);
     const actual=(await read(first)).thread;assert(actual.path.startsWith(home+'/sessions/'));assert(fs.readFileSync(actual.path,'utf8').includes(marker));
@@ -125,7 +130,7 @@ try{
   await check('原生拒绝删除仍被分叉引用的父会话时，中文说明原因和处理方式且不丢数据',async()=>{
     await page.evaluate(id=>openThread(id),parent);await ready();
     await page.locator('#prompt').fill(marker+'_PARENT_UNSENT_DRAFT');
-    await page.locator('#thread-action').selectOption('delete');await page.locator('#dialog-submit').click();
+    await threadAction(page,'delete');await page.locator('#dialog-submit').click();
     await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('此会话仍被分叉会话引用'));
     const message=await page.locator('#toast').innerText();assert(message.includes('请先删除相关分叉会话'));assert(message.includes('历史尚未删除'));assert.match(message,/forked history still references it/);
     assert(await page.locator('#dialog').isVisible());assert.equal(await page.locator('#dialog-submit').isDisabled(),false);
@@ -141,9 +146,9 @@ try{
     await page.locator('#file-input').setInputFiles({name:'archive-unsent-draft.txt',mimeType:'text/plain',buffer:Buffer.from(marker+' — unsent local attachment')});
     await page.waitForFunction(()=>state.attachments.length===1&&!state.attachmentLoads);
     const initialDraft=await draftSnapshot(second);assert.equal(initialDraft.text,marker+'_DELETE_THREAD_DRAFT');assert.equal(initialDraft.storedText,initialDraft.text);assert.equal(initialDraft.attachments,1);
-    assert.equal(await page.locator('#thread-action option[value=""]').textContent(),'会话操作');
+    assert.equal(await page.locator('#thread-action').count(),0);assert(await row(second).locator('.menu-trigger').isVisible());
     const before=calls.filter(c=>c.method==='thread/delete').length;
-    await page.locator('#thread-action').selectOption('delete');await page.getByRole('heading',{name:'永久删除会话',exact:true}).waitFor();
+    await threadAction(page,'delete');await page.getByRole('heading',{name:'永久删除会话',exact:true}).waitFor();
     assert((await page.locator('#dialog-body').innerText()).includes('无法撤销'));await page.locator('#dialog-cancel').click();
     assert.equal(calls.filter(c=>c.method==='thread/delete').length,before);assert.equal(await missing(second),false);
     assert.deepEqual(await draftSnapshot(second),initialDraft);
@@ -178,7 +183,7 @@ try{
     await page.setViewportSize({width:1024,height:768});if(await page.locator('#toast').isVisible())await page.locator('#toast .toast-close').click();
     await page.screenshot({path:path.join(out,'archived-real-history-1024.png')});
     await page.reload();await ready();assert.equal(await page.evaluate(()=>state.thread.id),child);assert.deepEqual(await visibleHistory(),before);
-    await page.locator('#thread-restore').click();await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,child,{timeout:45000});
+    await threadAction(page,'unarchive',{threadId:child});await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,child,{timeout:45000});
     assert.deepEqual(await visibleHistory(),before);assert.equal(await page.locator('#prompt').isDisabled(),false);
     await deleteSelected(child);assert.equal(await missing(sourceId),false);assert.equal(digest(source.path),sourceHash);
     assert.equal(calls.filter(c=>c.method==='turn/start').length,0);assert.equal(errors.length,0);

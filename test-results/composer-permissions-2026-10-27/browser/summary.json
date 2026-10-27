@@ -1,0 +1,59 @@
+{
+  "origin": "Real browser, native storage APIs and permission snapshots. Exactly one ordinary deepseek-flash turn. Failure case is an explicitly injected pre-wire client transport error; notification gates hold genuine native events without fabricating success.",
+  "results": "final/results.json",
+  "passed": 8,
+  "failed": 0,
+  "newModelRequests": 1,
+  "browserErrors": [],
+  "globalConfigUnchanged": true,
+  "configSha256": "4c8e7fbbce1e0d6dea9e6da8be0c03f52c1cc2063f987a7091866b3170d1407d",
+  "allOwnedFixturesRemoved": true,
+  "controlledFault": "Pre-wire TEST_PERMISSION_TRANSPORT_FAILURE. Only this diagnostic path uses an injected rejection; it does not simulate a native success or claim native rejection.",
+  "notificationGate": "Real thread/settings/updated notifications held and released without changing their content; real empty settings/update RPC acknowledgement delivered normally.",
+  "limits": "The real model turn validates native start permissions and running-state UI. It does not exercise an automatic risk-review approval decision or a dangerous/full-access command.",
+  "realModelTurn": {
+    "threadId": "01a17b33-b036-7632-8f54-9224d9195a1e",
+    "nativeStartRequest": {
+      "cwd": "/tmp/codex-web-final-fixes/workspace",
+      "model": "deepseek-flash",
+      "approvalPolicy": "on-request",
+      "sandbox": "workspace-write",
+      "config": {
+        "model_auto_compact_token_limit_scope": "total",
+        "model_post_turn_compact_threshold_percent": 100,
+        "approvals_reviewer": "auto_review"
+      }
+    },
+    "nativeStartSettings": {
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "approvalPolicy": "on-request",
+      "approvalsReviewer": "auto_review",
+      "sandboxPolicy": {
+        "type": "workspaceWrite",
+        "writableRoots": [],
+        "networkAccess": false,
+        "excludeTmpdirEnvVar": false,
+        "excludeSlashTmp": false
+      }
+    },
+    "nativeTurnStatus": "completed",
+    "finalMarkerObserved": true,
+    "oneOrdinaryFlashTurn": true,
+    "runningDisabled": true,
+    "globalConfigUnchanged": true
+  },
+  "syntaxCheck": {
+    "file": "web/tests/composer_permissions_desktop.mjs",
+    "passed": true
+  },
+  "sha256": {
+    "final/controlled-permission-failure.png": "44d9b4baee52706b35ce4583e6688c2f1e24837f54faeccbb06f7819350eef62",
+    "final/custom-readonly-permissions.png": "2d00850155176ed152e6110e9891ed2da6bcecc3d7cc2ce78e9cd8762544642c",
+    "final/full-access-explicit-choice.png": "955ab02b86d316157dfdbedf7097985a4b0845d140d9ddf114a2019d3d253123",
+    "final/permission-entry.png": "080f75b5267891c193b3c742d9b41b96b4fae23d2b5cc023da524fee39c4439b",
+    "final/real-flash-completed.png": "f3d63d0131156282a3704dca0214ab99c6ca36f05053361ada34c32a09f7d138",
+    "final/real-flash-running-permission-disabled.png": "4daf60d1812289a19fc6ba5f163445b36beccc8b18ff1cf6533d1107c61f1318",
+    "final/results.json": "1df951cabb9d0b9eb1bd950534f80e98d3acd044c862c784723b68656cc26dd9"
+  }
+}

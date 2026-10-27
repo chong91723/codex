@@ -1,0 +1,285 @@
+{
+  "origin": "Real native storage API and browser controls. User-only fixtures plus a read-only fork of completed real Flash history from an earlier independent audit. No simulated Agent answer or new model request.",
+  "results": [
+    {
+      "name": "桌面会话列表显示文字归档入口和归档/删除说明",
+      "status": "passed",
+      "evidence": {
+        "recentAndArchivedVisible": true,
+        "reversibleArchiveExplained": true,
+        "permanentDeletePathExplained": true
+      }
+    },
+    {
+      "name": "通过原生存储API建立临时用户记录和两个分叉，无模型请求",
+      "status": "passed",
+      "evidence": {
+        "parent": "01a17b22-2af9-7be0-8036-2eedf98ef39a",
+        "first": "01a17b22-2bec-7631-8b23-9821d1bd1bca",
+        "second": "01a17b22-2c74-7963-96ff-25042ffc44de",
+        "nativeUserRecordPersisted": true,
+        "zeroModelRequests": true
+      }
+    },
+    {
+      "name": "归档真实保留文件，已归档列表可见、只读且侧栏菜单可恢复",
+      "status": "passed",
+      "evidence": {
+        "nativeArchivedPath": true,
+        "userRecordPreserved": true,
+        "readOnly": true,
+        "restoreAvailableInSidebarMenu": true,
+        "permanentDeleteStillAvailable": true
+      }
+    },
+    {
+      "name": "归档路由刷新和搜索准确，1024桌面入口未被遮挡",
+      "status": "failed",
+      "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#thread-context-menu[role=\"menu\"]') to be visible\u001b[22m\n\u001b[2m    63 × locator resolved to hidden <div hidden=\"\" role=\"menu\" aria-label=\"会话操作\" id=\"thread-context-menu\" class=\"thread-context-menu\" data-thread-id=\"01a17b22-2bec-7631-8b23-9821d1bd1bca\">…</div>\u001b[22m\n"
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "threadId": null
+    },
+    {
+      "method": "initialized",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "model/list",
+      "threadId": null
+    },
+    {
+      "method": "config/read",
+      "threadId": null
+    },
+    {
+      "method": "thread/start",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17b22-2af9-7be0-8036-2eedf98ef39a"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17b22-2af9-7be0-8036-2eedf98ef39a"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17b22-2af9-7be0-8036-2eedf98ef39a"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2c74-7963-96ff-25042ffc44de"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17b22-2c74-7963-96ff-25042ffc44de"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17b22-2c74-7963-96ff-25042ffc44de"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2c74-7963-96ff-25042ffc44de"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/archive",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2c74-7963-96ff-25042ffc44de"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2c74-7963-96ff-25042ffc44de"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "initialize",
+      "threadId": null
+    },
+    {
+      "method": "initialized",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "model/list",
+      "threadId": null
+    },
+    {
+      "method": "config/read",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2c74-7963-96ff-25042ffc44de"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2c74-7963-96ff-25042ffc44de"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2c74-7963-96ff-25042ffc44de"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b22-2c74-7963-96ff-25042ffc44de"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17b22-2c74-7963-96ff-25042ffc44de"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17b22-2bec-7631-8b23-9821d1bd1bca"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null,
+      "limit": 40
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17b22-2af9-7be0-8036-2eedf98ef39a"
+    }
+  ],
+  "browserErrors": [],
+  "cleanup": [
+    {
+      "entity": "ownedThread",
+      "id": "01a17b22-2c74-7963-96ff-25042ffc44de",
+      "removed": true,
+      "through": "test cleanup"
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a17b22-2bec-7631-8b23-9821d1bd1bca",
+      "removed": true,
+      "through": "test cleanup"
+    },
+    {
+      "entity": "ownedThread",
+      "id": "01a17b22-2af9-7be0-8036-2eedf98ef39a",
+      "removed": true,
+      "through": "test cleanup"
+    }
+  ]
+}

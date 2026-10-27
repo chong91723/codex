@@ -1,4 +1,5 @@
 // Real browser/native empty-fork discovery; no turn/model request is allowed.
+import {threadAction} from './thread_menu_helpers.mjs';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {ready,call} from './skills_mcp_helpers.mjs';
@@ -23,9 +24,9 @@ try{
  assert(eligible.length,'No persisted Flash audit parent available');const parent=eligible.find(t=>t.name)||eligible.at(-1);parentId=parent.id;parentBefore={id:parent.id,name:parent.name??null,updatedAt:parent.updatedAt,previewLength:parent.preview.length};
  await page.goto(base+'/?thread='+encodeURIComponent(parentId));await ready(page);assert.equal(await page.evaluate(()=>state.thread.id),parentId);assert.equal(await page.evaluate(()=>state.thread.modelProvider),'deepseek');
  await check('原生空预览分叉通过会话操作创建，并写入Web发现索引',async()=>{
-  await page.locator('#thread-action').selectOption('fork');await page.waitForFunction(parent=>state.thread?.id&&state.thread.id!==parent&&!state.threadLoading,parentId,{timeout:45000});childId=await page.evaluate(()=>state.thread.id);
+  await threadAction(page,'fork');await page.waitForFunction(parent=>state.thread?.id&&state.thread.id!==parent&&!state.threadLoading,parentId,{timeout:45000});childId=await page.evaluate(()=>state.thread.id);
   const actual=await call(page,'thread/read',{threadId:childId,includeTurns:false});assert.equal(actual.thread.preview,'');assert.equal(actual.thread.forkedFromId,parentId);assert((await index()).threadIds.includes(childId));
-  await page.evaluate(()=>showView('chat'));await page.locator('#thread-action').selectOption('rename');await page.locator('#dialog-value').fill(childName);await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await row(page,childId).waitFor();await screenshot('created');return{createdBy:'thread-action fork',nativePreviewEmpty:true,nativeParentId:parentId,indexContainsFork:true};
+  await page.evaluate(()=>showView('chat'));await threadAction(page,'rename');await page.locator('#dialog-value').fill(childName);await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await row(page,childId).waitFor();await screenshot('created');return{createdBy:'sidebar menu fork',nativePreviewEmpty:true,nativeParentId:parentId,indexContainsFork:true};
  });
  await check('离开当前分叉、刷新及全新浏览器上下文仍能发现',async()=>{
   await page.locator('#new-chat').click();await row(page,childId).waitFor();assert.equal(await page.evaluate(()=>state.thread),null);
@@ -38,9 +39,9 @@ try{
   await search(childName);await chooseChild();assert.equal(await page.locator('#page-title').innerText(),childName);return{renamePersisted:true,matchingSearchFindsFork:true,nonmatchingSearchExcludesFork:true};
  });
  await check('归档过滤、取消归档与删除均保持原生状态一致',async()=>{
-  await page.locator('#thread-action').selectOption('archive');await page.waitForFunction(()=>!state.thread);await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),childId);assert.equal(await row(page,childId).count(),0);
+  await threadAction(page,'archive');await page.waitForFunction(()=>!state.thread);await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),childId);assert.equal(await row(page,childId).count(),0);
   await page.locator('#archive-toggle').click();await row(page,childId).waitFor();await chooseChild();assert(await page.locator('#prompt').isDisabled());const archivedPath=await page.evaluate(()=>state.thread.path);assert(archivedPath.split('/').includes('archived_sessions'));await screenshot('archived');
-  await page.locator('#thread-action').selectOption('unarchive');await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,childId);assert.equal(await page.locator('#prompt').isDisabled(),false);assert(!(await page.evaluate(()=>state.thread.path)).split('/').includes('archived_sessions'));assert.equal(await row(page,childId).count(),1);
+  await threadAction(page,'unarchive');await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,childId);assert.equal(await page.locator('#prompt').isDisabled(),false);assert(!(await page.evaluate(()=>state.thread.path)).split('/').includes('archived_sessions'));assert.equal(await row(page,childId).count(),1);
   return{archiveAbsentFromNormal:true,archiveVisibleInArchiveList:true,archivedInputDisabled:true,unarchiveResumesSameId:true,indexRetainsDiscoverableId:(await index()).threadIds.includes(childId)};
  });
  await check('晚到的真实列表响应不会把旧归档状态写回新列表',async()=>{
@@ -51,7 +52,7 @@ try{
   await page.locator('#recent-toggle').click();await row(page,childId).waitFor();await page.evaluate(()=>window.__releaseForkNativeList());await page.waitForFunction(()=>window.__delayedForkListSettled);assert.equal(await page.evaluate(()=>state.archived),false);assert.equal(await row(page,childId).count(),1);assert.equal(await page.locator('#thread-list-label').innerText(),'最近会话');return{genuineNativeResultDelayed:true,currentArchiveSelectionPreserved:true,noDuplicateRows:true};
  });
  await check('永久删除移除原生历史和索引，原父会话保留',async()=>{
-  await search(childName);await chooseChild();await page.locator('#thread-action').selectOption('delete');await page.getByRole('heading',{name:'永久删除会话',exact:true}).waitFor();await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await page.waitForFunction(()=>!state.thread);await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),childId);deleted=true;assert(!(await index()).threadIds.includes(childId));
+  await search(childName);await chooseChild();await threadAction(page,'delete');await page.getByRole('heading',{name:'永久删除会话',exact:true}).waitFor();await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await page.waitForFunction(()=>!state.thread);await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),childId);deleted=true;assert(!(await index()).threadIds.includes(childId));
   let absent=false;try{await call(page,'thread/read',{threadId:childId,includeTurns:false});}catch(error){assert(/thread not loaded|thread not found|no rollout|cannot find/i.test(error.message));absent=true;}assert(absent);
   const actualParent=(await call(page,'thread/read',{threadId:parentId,includeTurns:false})).thread;assert.equal(actualParent.id,parentBefore.id);assert.equal(actualParent.name??null,parentBefore.name);assert.equal(actualParent.preview.length,parentBefore.previewLength);assert.equal(actualParent.updatedAt,parentBefore.updatedAt);await page.evaluate(()=>showView('chat'));await screenshot('deleted');return{nativeChildReadFails:true,indexRetired:true,parentMetadataUnchanged:true};
  });

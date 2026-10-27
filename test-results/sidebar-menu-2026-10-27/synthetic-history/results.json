@@ -1,0 +1,205 @@
+{
+  "origin": "One newly created synthetic deepseek-flash turn, its owned native fork, real visible sidebar controls and genuine response gates. No existing source conversations are read or exported. Menu actions add no model requests.",
+  "base": "http://127.0.0.1:18866",
+  "home": "/tmp/codex-web-final-fixes/home",
+  "workspace": "/tmp/codex-web-final-fixes/workspace",
+  "prompt": "Reply exactly SIDEBAR_EXPORT_FIXTURE_OK. Do not use tools.",
+  "results": [
+    {
+      "name": "本轮新建完全合成Flash回合，只发一次真实模型请求",
+      "status": "passed",
+      "evidence": {
+        "ownedSeedId": "01a17b2c-b79c-7dc2-b559-6a0e43974dec",
+        "ownedForkId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389",
+        "actualProvider": "deepseek",
+        "actualModel": "deepseek-flash",
+        "nativeStatus": "completed",
+        "syntheticResponse": "SIDEBAR_EXPORT_FIXTURE_OK",
+        "fixtureModelRequests": 1,
+        "toolsUsed": 0
+      }
+    },
+    {
+      "name": "非当前新建分叉导出包含真实本轮用户与助手历史，没有新增模型调用",
+      "status": "passed",
+      "evidence": {
+        "exportedId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389",
+        "realHistoricalTurns": 1,
+        "syntheticUserAndAssistantPresent": true,
+        "equalsIndependentNativeRead": true,
+        "currentDraftPreserved": true,
+        "menuModelRequests": 0
+      }
+    },
+    {
+      "name": "回退读取晚到时不切换当前会话，也不覆盖随后打开的重命名对话框",
+      "status": "passed",
+      "evidence": {
+        "genuineNativeTurnListResponseHeld": true,
+        "subsequentRenameDialogPreserved": true,
+        "currentThreadAndDraftPreserved": true,
+        "noRevertWithoutConfirmation": true,
+        "menuModelRequests": 0
+      }
+    },
+    {
+      "name": "确认真实回退后响应晚到不抢走新选择，只移除目标会话任务",
+      "status": "passed",
+      "evidence": {
+        "confirmedNativeRevertTarget": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389",
+        "removedTurnId": "01a17b2c-b809-7952-9a78-86542b7020bd",
+        "targetBefore": 1,
+        "targetAfter": 0,
+        "seedHistoryPreserved": true,
+        "genuineRevertResponseHeld": true,
+        "subsequentSelectionAndDraftPreserved": true,
+        "noLateResumeOfOldTarget": true,
+        "fixtureModelRequests": 1,
+        "menuModelRequests": 0,
+        "browserErrors": 0
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "threadId": null
+    },
+    {
+      "method": "initialized",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "model/list",
+      "threadId": null
+    },
+    {
+      "method": "config/read",
+      "threadId": null
+    },
+    {
+      "method": "thread/start",
+      "threadId": null,
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a17b2c-b79c-7dc2-b559-6a0e43974dec",
+      "model": "deepseek-flash",
+      "inputText": "Reply exactly SIDEBAR_EXPORT_FIXTURE_OK. Do not use tools."
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17b2c-b79c-7dc2-b559-6a0e43974dec"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17b2c-b79c-7dc2-b559-6a0e43974dec"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17b2c-b79c-7dc2-b559-6a0e43974dec"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/revert",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17b2c-b79c-7dc2-b559-6a0e43974dec"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17b2c-b79c-7dc2-b559-6a0e43974dec"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17b2c-b79c-7dc2-b559-6a0e43974dec"
+    }
+  ],
+  "browserErrors": [],
+  "cleanup": [
+    {
+      "id": "01a17b2c-bd9e-7c72-9cf8-38dd29b46389",
+      "removed": true,
+      "through": "owned current-run fixture cleanup"
+    },
+    {
+      "id": "01a17b2c-b79c-7dc2-b559-6a0e43974dec",
+      "removed": true,
+      "through": "owned current-run fixture cleanup"
+    }
+  ]
+}
