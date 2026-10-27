@@ -47,11 +47,11 @@ try{
  });
  await check('右键非当前会话不切换会话、工作区、模型、草稿或附件',async()=>{
   const start=calls.length;await openThreadMenu(page,{threadId:b,via:'contextmenu'});assert.equal(await menu().getAttribute('data-thread-id'),b);await assertUnchanged();assertNoTaskOrNavigation(start);
-  for(const action of ['compact','review','revert']){const item=menu().locator(`[data-thread-action="${action}"]`);assert(await item.isDisabled());assert.match(await item.getAttribute('title')||'',/打开|当前/);}
-  for(const action of ['rename','fork','archive','export','delete'])assert(await menu().locator(`[data-thread-action="${action}"]`).isEnabled());
+  for(const action of ['compact','fork','export','review','revert'])assert.equal(await menu().locator(`[data-thread-action="${action}"]`).count(),0);
+  for(const action of ['rename','archive','delete'])assert(await menu().locator(`[data-thread-action="${action}"]`).isEnabled());
   await page.keyboard.press('Escape');await menu().waitFor({state:'hidden'});await assertUnchanged();
   assert.equal(await page.evaluate(()=>document.activeElement.closest('[data-thread-id]')?.dataset.threadId),b);
-  return{targetId:b,selectedId:a,unsentTextAndAttachmentPreserved:true,zeroResumeInterruptOrTurnRequests:true,currentOnlyActionsDisabledWithExplanation:true,escapeRestoresRowFocus:true};
+  return{targetId:b,selectedId:a,unsentTextAndAttachmentPreserved:true,zeroResumeInterruptOrTurnRequests:true,sessionCommandsBelongToComposer:true,escapeRestoresRowFocus:true};
  });
  await check('省略号、Shift+F10及方向键可操作菜单，关闭后焦点回到所属会话',async()=>{
   await row(a).locator('[data-thread-open]').focus();await page.keyboard.press('Shift+F10');await menu().waitFor({state:'visible'});assert.equal(await menu().getAttribute('data-thread-id'),a);
@@ -59,10 +59,6 @@ try{
   await page.keyboard.press('Escape');await menu().waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>document.activeElement.closest('[data-thread-id]')?.dataset.threadId),a);
   await row(b).locator('[data-thread-menu]').focus();await page.keyboard.press('Enter');await menu().waitFor({state:'visible'});assert.equal(await menu().getAttribute('data-thread-id'),b);await page.locator('#page-title').click();await menu().waitFor({state:'hidden'});await assertUnchanged();
   return{shiftF10:true,arrowAndHomeEnd:true,ellipsisEnter:true,outsideClickDismisses:true,ownershipAndDraftPreserved:true};
- });
- await check('非当前会话导出读取目标历史，保持当前会话和草稿',async()=>{
-  const start=calls.length,expected=await page.evaluate(id=>paged('thread/turns/list',{threadId:id,itemsView:'full',sortDirection:'asc',limit:100}),b);const downloading=page.waitForEvent('download');await threadAction(page,'export',{threadId:b});const download=await downloading,target=path.join(out,'owned-b-export.json');await download.saveAs(target);const actual=JSON.parse(fs.readFileSync(target,'utf8'));assert.equal(actual.thread.id,b);assert.deepEqual(actual.turns,expected);assert.notEqual(actual.thread.id,a);await assertUnchanged();assertNoTaskOrNavigation(start);
-  return{exportedThreadId:actual.thread.id,actualTurnCount:actual.turns.length,equalsIndependentNativeRead:true,selectedThreadAndDraftUntouched:true};
  });
  await check('非当前重命名精准提交，原生响应等待期间重复确认不重复执行',async()=>{
   const start=calls.length;await threadAction(page,'rename',{threadId:b});assert.equal(await page.locator('#dialog-value').inputValue(),nonce+'_B');await page.locator('#dialog-value').fill(nonce+'_B_RENAMED');await gate('thread/name/set');await page.locator('#dialog-submit').click();await page.waitForFunction(()=>window.__menuGate.held);assert(await page.locator('#dialog-submit').isDisabled());
@@ -78,20 +74,17 @@ try{
   return{archivedTargetId:b,nativeArchivedFileExists:true,userRecordPreserved:true,currentThreadAndDraftUntouched:true};
  });
  await check('已归档行只提供恢复，恢复非当前会话不导航、不抢当前输入',async()=>{
-  await page.locator('#archive-toggle').click();await row(c).waitFor();const start=calls.length;await openThreadMenu(page,{threadId:c});assert.equal(await menu().locator('[data-thread-action=archive]').count(),0);assert(await menu().locator('[data-thread-action=unarchive]').isEnabled());for(const action of ['compact','review','revert'])assert(await menu().locator(`[data-thread-action="${action}"]`).isDisabled());
+  await page.locator('#archive-toggle').click();await row(c).waitFor();const start=calls.length;await openThreadMenu(page,{threadId:c});assert.equal(await menu().locator('[data-thread-action=archive]').count(),0);assert(await menu().locator('[data-thread-action=unarchive]').isEnabled());for(const action of ['compact','fork','export','review','revert'])assert.equal(await menu().locator(`[data-thread-action="${action}"]`).count(),0);
   await menu().locator('[data-thread-action=unarchive]').click();await menu().waitFor({state:'hidden'});await page.waitForFunction(id=>!state.threads.some(thread=>thread.id===id),c);assert((await read(c)).path.startsWith(home+'/sessions/'));await assertUnchanged();assertNoTaskOrNavigation(start);
-  return{restoredTargetId:c,archiveActionAbsent:true,readOnlyActionsRespectArchivedTarget:true,zeroResumeRequests:true,selectedThreadRemains:a};
+  return{restoredTargetId:c,archiveActionAbsent:true,composerCommandsAbsentFromArchivedRows:true,zeroResumeRequests:true,selectedThreadRemains:a};
  });
  await check('非当前归档会话永久删除可取消，确认后仅删除目标原生历史',async()=>{
   const start=calls.length;await threadAction(page,'delete',{threadId:b});const description=await page.locator('#dialog-body').innerText();assert(description.includes(nonce+'_B_RENAMED'));assert(description.includes('无法撤销'));assert(!description.includes(nonce+'_A_UNSENT'));await page.locator('#dialog-cancel').click();assert.equal(calls.slice(start).filter(value=>value.method==='thread/delete').length,0);assert.equal(await notFound(b),false);await assertUnchanged();
   await threadAction(page,'delete',{threadId:b});await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await page.waitForFunction(id=>!state.threads.some(thread=>thread.id===id),b);assert(await notFound(b));owned.delete(b);cleanup.push({id:b,removed:true,through:'visible non-current permanent-delete menu'});assert.equal(await notFound(a),false);assert.equal(await notFound(c),false);await assertUnchanged();assertNoTaskOrNavigation(start);
   return{cancelMakesZeroDeleteRequests:true,confirmedNativeTargetDeleted:b,currentThreadAndDraftPreserved:true,otherNativeConversationPreserved:true};
  });
- await check('空闲非当前会话分叉成功后打开新会话，真实父会话关联正确',async()=>{
-  await page.locator('#recent-toggle').click();await row(c).waitFor();await threadAction(page,'fork',{threadId:c});await page.waitForFunction(({a,c})=>state.thread?.id&&state.thread.id!==a&&state.thread.id!==c&&!state.threadLoading,{a,c},{timeout:45000});child=await page.evaluate(()=>state.thread.id);owned.add(child);const actual=await read(child);assert.equal(actual.forkedFromId,c);assert.notEqual(child,a);assert.equal((await read(a)).name,nonce+'_A');await choose(a);assert.equal(await page.locator('#prompt').inputValue(),baseline.text);assert.deepEqual((await snapshot()).attachments,baseline.attachments);baseline=await snapshot();
-  return{createdThreadId:child,realForkedFromId:actual.forkedFromId,parentAndOtherConversationPreserved:true,returningToOriginalRestoresDraftAndAttachment:true};
- });
  await check('桌面尺寸和深色菜单不越界，主页面不被会话管理操作遮挡',async()=>{
+  await page.locator('#recent-toggle').click();await row(c).waitFor();
   // Presentation-only scroll content. It is never sent to native/model storage.
   await page.evaluate(()=>{const view=document.querySelector('#view-chat'),welcome=document.querySelector('#welcome');window.__menuScrollPresentation={empty:view.classList.contains('empty'),welcomeHidden:welcome.hidden};view.classList.remove('empty');welcome.hidden=true;const fixture=document.createElement('div');fixture.dataset.menuScrollFixture='';fixture.textContent='仅用于菜单滚动布局检查，非会话消息。';fixture.style.height='1800px';document.querySelector('#messages').append(fixture);});
   await openThreadMenu(page,{threadId:c,via:'contextmenu'});
@@ -105,7 +98,7 @@ try{
   await threadAction(page,'delete',{threadId:a});await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await page.waitForFunction(()=>!state.thread&&!state.threadLoading);assert(await notFound(a));owned.delete(a);cleanup.push({id:a,removed:true,through:'visible current permanent-delete menu'});assert.equal(await page.evaluate(id=>state.composers.has(id),a),false);assert.equal(await page.evaluate(id=>Object.hasOwn(JSON.parse(sessionStorage.getItem('codex.drafts')||'{}'),id),a),false);await choose(c);assert.equal(await page.evaluate(()=>state.thread.id),c);assert.equal(calls.filter(value=>['turn/start','turn/steer','turn/interrupt','review/start','thread/compact/start'].includes(value.method)).length,0);assert.equal(errors.length,0);
   return{currentNativeHistoryDeleted:true,deletedDraftAndAttachmentsRemoved:true,otherConversationSelectable:true,newModelRequests:0,browserErrors:0};
  });
-}catch(error){console.error(error.stack);process.exitCode=1;}
+}catch(error){if(!results.some(value=>value.status==='failed'))results.push({name:'浏览器或测试环境初始化',status:'failed',error:error.message});console.error(error.stack);process.exitCode=1;}
 finally{
  await release().catch(()=>{});if(await page.locator('#dialog[open]').count())await page.locator('#dialog-cancel').click().catch(()=>{});
  for(const id of [...owned].reverse()){try{await rpc('thread/delete',{threadId:id});cleanup.push({id,removed:true,through:'owned fixture cleanup'});}catch(error){cleanup.push({id,removed:false,error:error.message});process.exitCode=1;}}

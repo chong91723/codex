@@ -1,6 +1,26 @@
 # 实际验收报告
 
-## 最新批次：侧栏菜单与输入框Agent权限（2026-10-27）
+## 最新批次：输入框会话命令与占用删除（2026-10-27）
+
+侧栏右键/“…”只保留重命名、归档/恢复、永久删除；输入框新增 `/compact /fork /export /review /rollback`，点击或Tab仅填入，发送才执行。沿用现有threadAction→原生接口，不新增代理循环，不改变原生自动压缩。仅使用deepseek-flash，新合成数据及独立 `/tmp` Git 工作区；没有读取旧会话、凭据或修改全局配置。
+
+| 验证 | 实际结果与证据 |
+|---|---|
+| 无模型侧栏管理 | [sidebar-final/results.json](test-results/composer-thread-commands-2026-10-27/sidebar-final/results.json)：10/10，0turn/start、0浏览器错误。仅管理入口、目标ID绑定、非当前草稿/附件/目录保持，真实重命名/归档/恢复/删除、确认防重、键盘/焦点/桌面边界；自有存储夹具清理 |
+| 无模型输入框命令及只读保护 | [composer-final/results.json](test-results/composer-thread-commands-2026-10-27/composer-final/results.json)：10/10，0turn/start、0浏览器错误。选择零执行；无会话/带附件/真实在途操作失败保留输入，原生export/fork及迟到响应不抢导航，真正另一页面writer占用时/export下载等于native，普通任务和执行命令仍拒绝；三桌面尺寸及中文输入法通过 |
+| 新合成Flash历史相邻回归 | [synthetic-history-final/results.json](test-results/composer-thread-commands-2026-10-27/synthetic-history-final/results.json)：4/4，1个全新合成普通Flash回合、无工具。非空导出与native一致，回退读取/结果被真实响应门延迟时不覆盖新对话框或导航，源历史保持；自有会话清理。以上三组[汇总](test-results/composer-thread-commands-2026-10-27/summary.json)共24项，不能称全部零模型 |
+| 五命令完整Flash真实链 | [flash/results.json](test-results/session-actions-2026-10-27/flash/results.json)：最终6/6、0浏览器错误。新seed非空历史且无工具；5项选择零执行；/compact收到真实contextCompaction item/completed且任务结束；/review原生uncommittedChanges审查完成并指出测试代码ZeroDivisionError；/fork继承全部turn，/export下载含用户/助手且严格等于fork原生分页结果；/rollback确认前无revert，确认后fork由4回合变0，源会话和磁盘文件未变。最终普通turn/start、compact、review各1次；本地命令未增加普通turn/start；自有数据全部清理 |
+| 占用删除原生行为 | [native-writer-probe.json](test-results/session-actions-2026-10-27/native-writer-probe.json)：两个未修改原生进程+新独立存储，0模型；另一进程resume/delete/archive均被active writer拒绝；持有方自行删除成功，另一场景持有方退出后观察方删除成功。不是“前端放开即可跨进程删”，不绕过写入锁 |
+| 占用删除界面及原地重试 | [busy-delete/results.json](test-results/session-actions-2026-10-27/busy-delete/results.json)：5/5，0模型、0浏览器错误；真实两页面写入占用，删除可打开说明、取消0RPC；确认1RPC被原生拒绝，弹窗持久显示未删除/原因，原历史和owner草稿保持，未中断owner；只关闭测试自有owner后，同弹窗1次重试删除成功，无须observer恢复会话，自有数据清理 |
+| 权限及归档相邻浏览器 | [adjacent-permissions](test-results/session-actions-2026-10-27/adjacent-permissions/results.json)：9通过、1个已验证模型项明确跳过；[adjacent-archive](test-results/session-actions-2026-10-27/adjacent-archive/results.json)：10通过、1个旧source历史项明确跳过。两组均0模型、0浏览器错误，各3个自有seed清理，全局配置SHA不变；跳过项不计通过 |
+| 相邻状态单元 | 批准草稿7/7、权限15/15、上下文恢复6/6、模式2/2，共30项通过；另补归档/占用状态残留activeTurns不误显示停止；不替代真实模型或写入锁验证 |
+| 本批最终工程检查 | [engineering/results.json](test-results/session-actions-2026-10-27/engineering/results.json)：74份JS/MJS语法、36份Python AST、diff均通过，0语法错误；[behavior.txt](test-results/session-actions-2026-10-27/engineering/behavior.txt)30项通过；[native-integrity.txt](test-results/session-actions-2026-10-27/engineering/native-integrity.txt)pristine=true、176/176方法完整Schema匹配。没有重编译核心，没有前端打包或TypeScript；本批未重跑完整72项Python后端套件，上一批结果仅作历史 |
+
+[Flash各次执行](test-results/session-actions-2026-10-27/flash/attempt-summary.json)保留原始失败：18866起初离线，0模型/原生请求；首次真实流程4通过、1个脚本断言失败，源/分叉原生索引对review父/内部turn排序不同。修正继承比较为按turn ID逐条核对完整字段，导出仍逐项等于fork自身原生顺序，随后6/6通过；未改模型或产品数据。两次真实运行普通任务/手动压缩/审查请求累计各2，另外的新合成历史专项另1次普通seed；内部模型HTTP请求没有独立计数。
+
+无模型入口组的首轮夹具问题也保留于其汇总：独立服务未启动、用例迁移漏显式切回最近范围、等待action解锁却未等待原composer.pending结束。均修正测试前提再重跑，不当作产品成功或覆盖原失败。最终完成3张压缩/审查/回退截图、输入框和侧栏桌面截图与功能结果分开记录；已归档和writer占用会话只可/export，普通聊天及执行命令受原生和前端守卫限制，权限入口仍禁用。手机端、严格国际出口检查按用户要求不做；未获得原生桌面右键菜单的精确条目参考，不声称完全一致。
+
+## 前一批次（历史）：侧栏菜单与输入框Agent权限（2026-10-27）
 
 本批在18866独立原生配置及测试工作区执行，只使用`deepseek-flash`，不读取密钥或ChatGPT授权，不修改Codex源码、发行程序或代理循环。实际浏览器、真实原生存储/事件、受控交付顺序以及模型工作流分别报告。
 

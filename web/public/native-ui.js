@@ -123,7 +123,8 @@ function nativeUIEvent(msg){
   if(msg.method==='thread/project/updated'&&p.threadId===state.thread?.id){state.thread.projectId=p.projectId;state.selectedProject=p.projectId;}
   if(['thread/settings/updated','turn/started','turn/completed','thread/goal/updated','thread/goal/cleared'].includes(msg.method))queueMicrotask(()=>{renderNativeMode();renderGoalBanner();if(msg.method==='turn/completed')restoreExecutionPlans();renderExecutionProgressBanner();});
 }
-function nativeSlashActions(){return {'/plan':()=>setNativeMode(currentMode()==='plan'?'default':'plan'),'/status':showNativeStatus,'/init':initializeWorkspace,'/goal':showGoalDialog,'/projects':showProjects,'/chat':unassignedChat,'/model':()=>showComposerSetting('model'),'/reasoning':()=>showComposerSetting('effort')};}
+function composerThreadAction(action){if(!state.thread)throw new Error('请先选择已有会话，再使用此命令；没有创建会话或发送任务。');return threadAction(action);}
+function nativeSlashActions(){return {'/compact':()=>composerThreadAction('compact'),'/fork':()=>composerThreadAction('fork'),'/export':()=>composerThreadAction('export'),'/review':()=>composerThreadAction('review'),'/rollback':()=>composerThreadAction('revert'),'/plan':()=>setNativeMode(currentMode()==='plan'?'default':'plan'),'/status':showNativeStatus,'/init':initializeWorkspace,'/goal':showGoalDialog,'/projects':showProjects,'/chat':unassignedChat,'/model':()=>showComposerSetting('model'),'/reasoning':()=>showComposerSetting('effort')};}
 async function nativeSlashCommand(text){
   const actions=nativeSlashActions();if(!Object.hasOwn(actions,text))return false;
   const draft=saveComposer(),raw=draft.text,revision=draft.revision||0;await actions[text]();
@@ -131,6 +132,11 @@ async function nativeSlashCommand(text){
 }
 // Commands and installed skills share the composer's selection/focus lifecycle.
 function commandEntries(){return [
+  {command:'/compact',title:'压缩上下文',description:'手动压缩当前会话的上下文',icon:'code'},
+  {command:'/fork',title:'分叉会话',description:'从当前会话创建新的分支',icon:'chat'},
+  {command:'/export',title:'导出会话',description:'下载当前会话的完整 JSON 历史',icon:'file'},
+  {command:'/review',title:'审查未提交更改',description:'审查当前工作区的未提交代码修改',icon:'check'},
+  {command:'/rollback',title:'回退用户任务',description:'选择要移除的会话任务，不撤销磁盘文件',icon:'file'},
   {command:'/mcp',title:'MCP',description:'显示 MCP 服务器状态',icon:'mcp'},
   {command:'/init',title:'初始化',description:'创建包含项目指令的 AGENTS.md 文件',icon:'file'},
   {command:'/projects',title:'在项目中使用',description:'为聊天选择或管理项目',icon:'folder'},
@@ -159,7 +165,7 @@ function chooseCommand(entry){
   if(entry.kind==='skill'){
     draft.skills=[...(draft.skills||[]).filter(skill=>skill.name!==entry.skill.name),{name:entry.skill.name,path:entry.skill.path}];$('#prompt').value='$'+entry.skill.name+' ';
   }else $('#prompt').value=entry.command;
-  saveComposer();draft.revision=(draft.revision||0)+1;resizePrompt();closeCommandMenu();$('#prompt').focus();const end=$('#prompt').value.length;$('#prompt').setSelectionRange(end,end);
+  saveComposer();draft.revision=(draft.revision||0)+1;resizePrompt();updateSend();closeCommandMenu();$('#prompt').focus();const end=$('#prompt').value.length;$('#prompt').setSelectionRange(end,end);
 }
 function renderCommandMenu(){
   const value=state.commandMenu,menu=$('#command-menu');if(!value)return closeCommandMenu();

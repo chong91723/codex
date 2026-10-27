@@ -1,0 +1,3271 @@
+{
+  "origin": "Real browser, native storage APIs and permission snapshots. Zero model requests; real Flash case explicitly skipped. Failure case is an explicitly injected pre-wire client transport error; notification/acknowledgement gates hold genuine native messages without fabricating success.",
+  "results": [
+    {
+      "name": "独立原生用户存储分叉，权限入口在输入框左下方",
+      "status": "passed",
+      "evidence": {
+        "parent": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+        "a": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "b": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "composerLeft": true,
+        "newModelRequests": 0
+      }
+    },
+    {
+      "name": "取消选择及完全访问确认前均零权限更新，三档映射真实原生通知一致",
+      "status": "passed",
+      "evidence": {
+        "cancelSendsNoUpdate": true,
+        "fullRequiresExplicitSubmission": true,
+        "modes": [
+          {
+            "mode": "auto",
+            "actual": {
+              "approvalPolicy": "on-request",
+              "approvalsReviewer": "auto_review",
+              "sandboxPolicy": {
+                "type": "workspaceWrite",
+                "writableRoots": [],
+                "networkAccess": false,
+                "excludeTmpdirEnvVar": false,
+                "excludeSlashTmp": false
+              }
+            },
+            "nativeEvent": true,
+            "request": {
+              "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+              "approvalPolicy": "on-request",
+              "approvalsReviewer": "auto_review"
+            }
+          },
+          {
+            "mode": "ask",
+            "actual": {
+              "approvalPolicy": "on-request",
+              "approvalsReviewer": "user",
+              "sandboxPolicy": {
+                "type": "workspaceWrite",
+                "writableRoots": [],
+                "networkAccess": false,
+                "excludeTmpdirEnvVar": false,
+                "excludeSlashTmp": false
+              }
+            },
+            "nativeEvent": true,
+            "request": {
+              "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+              "approvalPolicy": "on-request",
+              "approvalsReviewer": "user"
+            }
+          },
+          {
+            "mode": "full",
+            "actual": {
+              "approvalPolicy": "never",
+              "approvalsReviewer": "user",
+              "sandboxPolicy": {
+                "type": "dangerFullAccess"
+              }
+            },
+            "nativeEvent": true,
+            "request": {
+              "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+              "approvalPolicy": "never",
+              "approvalsReviewer": "user",
+              "sandboxPolicy": {
+                "type": "dangerFullAccess"
+              }
+            }
+          },
+          {
+            "mode": "ask",
+            "actual": {
+              "approvalPolicy": "on-request",
+              "approvalsReviewer": "user",
+              "sandboxPolicy": {
+                "type": "workspaceWrite",
+                "writableRoots": [],
+                "networkAccess": false,
+                "excludeTmpdirEnvVar": false,
+                "excludeSlashTmp": false
+              }
+            },
+            "nativeEvent": true,
+            "request": {
+              "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+              "approvalPolicy": "on-request",
+              "approvalsReviewer": "user",
+              "sandboxPolicy": {
+                "type": "workspaceWrite",
+                "writableRoots": [],
+                "networkAccess": false,
+                "excludeTmpdirEnvVar": false,
+                "excludeSlashTmp": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "受控权限请求失败保留旧实值、草稿和可操作错误",
+      "status": "passed",
+      "evidence": {
+        "fault": "Explicit controlled pre-wire client transport rejection, not a native rejection",
+        "oldNativeSnapshotPreserved": true,
+        "draftPreserved": true,
+        "dialogRetriable": true,
+        "noFalseSuccess": true
+      }
+    },
+    {
+      "name": "原生空受理响应不提前成功，真实通知到来前禁止提交任务",
+      "status": "passed",
+      "evidence": {
+        "realEmptyAcknowledgement": true,
+        "genuineNotificationHeld": true,
+        "previousValueUntilNotification": true,
+        "submissionBlockedUntilActualSnapshot": true
+      }
+    },
+    {
+      "name": "会话切换独立回显，迟到权限通知不覆盖另一会话",
+      "status": "passed",
+      "evidence": {
+        "a": "auto",
+        "b": "full",
+        "lateAEventKeepsSelectedB": true,
+        "privateDraftPreserved": true
+      }
+    },
+    {
+      "name": "加载中及已归档会话禁用权限入口，恢复后可用",
+      "status": "passed",
+      "evidence": {
+        "genuineResumeResponseHeld": true,
+        "loadingDisabled": true,
+        "nativeArchivedDisabled": true,
+        "restoreEnabled": true
+      }
+    },
+    {
+      "name": "原生自定义只读权限如实展示，不伪装为需要批准档",
+      "status": "passed",
+      "evidence": {
+        "nativeReadOnly": true,
+        "noPresetFalselySelected": true
+      }
+    },
+    {
+      "name": "真实权限通知已确认时，无需等待迟到的空受理响应",
+      "status": "passed",
+      "evidence": {
+        "genuineAcknowledgementHeld": true,
+        "genuineMatchingNotificationPassed": true,
+        "previousReviewer": "user",
+        "currentReviewer": "auto_review",
+        "dialogClosedAndSubmissionEnabledBeforeAckRelease": true
+      }
+    },
+    {
+      "name": "原生恢复快照可结束待确认，无须等待旧权限通知重放",
+      "status": "passed",
+      "evidence": {
+        "genuineOldNotificationHeld": true,
+        "genuineResumeSnapshotConfirmed": true,
+        "pendingClearedBeforeOldNotificationRelease": true,
+        "noUnconfirmedMarker": true,
+        "submissionEnabled": true,
+        "lateOriginalNotificationDoesNotReopenPending": true
+      }
+    },
+    {
+      "name": "新草稿权限不写全局配置，实际新建Flash任务采用该档且运行中禁用",
+      "status": "skipped",
+      "reason": "Explicit SKIP_REAL_FLASH=1; previous real-model evidence remains separate and is not rerun or recounted"
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "params": {
+        "clientInfo": {
+          "name": "codex_web_native",
+          "title": "Codex Web",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "experimentalApi": true
+        }
+      }
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "model/list",
+      "params": {
+        "includeHidden": true
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "thread/start",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "model": "deepseek-flash",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandbox": "workspace-write"
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/inject_items",
+      "params": {
+        "threadId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+        "items": [
+          {
+            "type": "message",
+            "role": "user",
+            "content": [
+              {
+                "type": "input_text",
+                "text": "PERMISSION_STORAGE_ONLY_1793082891723"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "thread/fork",
+      "params": {
+        "threadId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek"
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/name/set",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "name": "权限回归 A 1793082891723"
+      }
+    },
+    {
+      "method": "thread/fork",
+      "params": {
+        "threadId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek"
+      }
+    },
+    {
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "includeTurns": false
+      }
+    },
+    {
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "includeTurns": false
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/name/set",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "name": "权限回归 B 1793082891723"
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "includeTurns": false
+      }
+    },
+    {
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "includeTurns": false
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review"
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user"
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "never",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "dangerFullAccess"
+        }
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        }
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review"
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "approvalPolicy": "never",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "dangerFullAccess"
+        }
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user"
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "thread/archive",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87"
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": true,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "includeTurns": false
+      }
+    },
+    {
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c11-b23c-7211-8449-96de0048c8b0",
+        "includeTurns": false
+      }
+    },
+    {
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c11-b3fa-76d2-8f42-c671bd5def5a",
+        "includeTurns": false
+      }
+    },
+    {
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "includeTurns": false
+      }
+    },
+    {
+      "method": "thread/turns/list",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "itemsView": "full",
+        "sortDirection": "desc",
+        "limit": 20
+      }
+    },
+    {
+      "method": "thread/unarchive",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "includeTurns": false
+      }
+    },
+    {
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c11-b23c-7211-8449-96de0048c8b0",
+        "includeTurns": false
+      }
+    },
+    {
+      "method": "thread/read",
+      "params": {
+        "threadId": "01a17c11-b3fa-76d2-8f42-c671bd5def5a",
+        "includeTurns": false
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "readOnly",
+          "networkAccess": false
+        }
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        }
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user"
+      }
+    },
+    {
+      "method": "config/read",
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-web-final-fixes/workspace"
+      }
+    },
+    {
+      "method": "configRequirements/read",
+      "params": {}
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "permissionProfile/list",
+      "params": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "limit": 100,
+        "cursor": null
+      }
+    },
+    {
+      "method": "experimentalFeature/list",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "limit": 100,
+        "cursor": "100"
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "thread/resume",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      }
+    },
+    {
+      "method": "thread/delete",
+      "params": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87"
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/delete",
+      "params": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe"
+      }
+    },
+    {
+      "method": "thread/list",
+      "params": {
+        "limit": 40,
+        "archived": false,
+        "searchTerm": null,
+        "sortKey": "updated_at"
+      }
+    },
+    {
+      "method": "thread/delete",
+      "params": {
+        "threadId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3"
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "method": "thread/start",
+      "request": {
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "model": "deepseek-flash",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandbox": "workspace-write"
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "forkedFromId": null,
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082893,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-52-01a17c11-a2ba-7a90-ae7e-2b1147d085b3.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": null,
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandbox": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "multiAgentMode": "explicitRequestOnly"
+      }
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082893,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a46c-7521-9de1-0eafe50e9cfe.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 A 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandbox": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review"
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user"
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "never",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "dangerFullAccess"
+        }
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        }
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review"
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a64d-7d21-84a1-c139369ded87",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082894,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a64d-7d21-84a1-c139369ded87.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 B 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandbox": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "approvalPolicy": "never",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "dangerFullAccess"
+        }
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082901,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a46c-7521-9de1-0eafe50e9cfe.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 A 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review",
+        "sandbox": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user"
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review"
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a64d-7d21-84a1-c139369ded87",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082903,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a64d-7d21-84a1-c139369ded87.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 B 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "never",
+        "approvalsReviewer": "user",
+        "sandbox": {
+          "type": "dangerFullAccess"
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082905,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a46c-7521-9de1-0eafe50e9cfe.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 A 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review",
+        "sandbox": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a64d-7d21-84a1-c139369ded87",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082903,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a64d-7d21-84a1-c139369ded87.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 B 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "never",
+        "approvalsReviewer": "user",
+        "sandbox": {
+          "type": "dangerFullAccess"
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a64d-7d21-84a1-c139369ded87",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082907,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a64d-7d21-84a1-c139369ded87.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 B 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "never",
+        "approvalsReviewer": "user",
+        "sandbox": {
+          "type": "dangerFullAccess"
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082905,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a46c-7521-9de1-0eafe50e9cfe.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 A 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review",
+        "sandbox": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "readOnly",
+          "networkAccess": false
+        }
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082908,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a46c-7521-9de1-0eafe50e9cfe.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 A 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandbox": {
+          "type": "readOnly",
+          "networkAccess": false
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        }
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review"
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082910,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a46c-7521-9de1-0eafe50e9cfe.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 A 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review",
+        "sandbox": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user"
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/settings/update",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review"
+      },
+      "result": {}
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a64d-7d21-84a1-c139369ded87",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082907,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a64d-7d21-84a1-c139369ded87.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 B 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "never",
+        "approvalsReviewer": "user",
+        "sandbox": {
+          "type": "dangerFullAccess"
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    },
+    {
+      "method": "thread/resume",
+      "request": {
+        "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+        "config": {
+          "model_auto_compact_token_limit_scope": "total",
+          "model_post_turn_compact_threshold_percent": 100
+        },
+        "excludeTurns": true,
+        "initialTurnsPage": {
+          "limit": 20,
+          "sortDirection": "desc",
+          "itemsView": "full"
+        }
+      },
+      "result": {
+        "thread": {
+          "id": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-web-final-fixes/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-web-final-fixes/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+          "forkedFromId": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+          "parentThreadId": null,
+          "preview": "",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793082893,
+          "updatedAt": 1793082912,
+          "recencyAt": 1793082893,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-web-final-fixes/home/sessions/2026/10/27/rollout-2026-10-27T14-34-53-01a17c11-a46c-7521-9de1-0eafe50e9cfe.jsonl",
+          "cwd": "/tmp/codex-web-final-fixes/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_native",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "权限回归 A 1793082891723",
+          "daybreakEnabled": null,
+          "turns": []
+        },
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "runtimeWorkspaceRoots": [
+          "/tmp/codex-web-final-fixes/workspace"
+        ],
+        "instructionSources": [],
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review",
+        "sandbox": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "reasoningEffort": "high",
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "initialTurnsPage": {
+          "data": [],
+          "nextCursor": null,
+          "backwardsCursor": null
+        },
+        "turnsBackwardsCursor": null,
+        "itemsBackwardsCursor": null
+      }
+    }
+  ],
+  "notifications": [
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "never",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "dangerFullAccess"
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a64d-7d21-84a1-c139369ded87",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "never",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "dangerFullAccess"
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "readOnly",
+          "networkAccess": false
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    },
+    {
+      "threadId": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "threadSettings": {
+        "disabledPluginIds": [],
+        "cwd": "/tmp/codex-web-final-fixes/workspace",
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "auto_review",
+        "sandboxPolicy": {
+          "type": "workspaceWrite",
+          "writableRoots": [],
+          "networkAccess": false,
+          "excludeTmpdirEnvVar": false,
+          "excludeSlashTmp": false
+        },
+        "activePermissionProfile": null,
+        "model": "deepseek-flash",
+        "modelProvider": "deepseek",
+        "serviceTier": null,
+        "effort": "high",
+        "summary": null,
+        "collaborationMode": {
+          "mode": "default",
+          "settings": {
+            "model": "deepseek-flash",
+            "reasoning_effort": "high",
+            "developer_instructions": null
+          }
+        },
+        "multiAgentMode": "explicitRequestOnly",
+        "personality": null
+      }
+    }
+  ],
+  "browserErrors": [],
+  "cleanup": [
+    {
+      "id": "01a17c11-a64d-7d21-84a1-c139369ded87",
+      "removed": true
+    },
+    {
+      "id": "01a17c11-a46c-7521-9de1-0eafe50e9cfe",
+      "removed": true
+    },
+    {
+      "id": "01a17c11-a2ba-7a90-ae7e-2b1147d085b3",
+      "removed": true
+    }
+  ],
+  "configSha256Before": "a8b5b83f80d5c82ebd9ecf523657c836fda3fc0ed2753a4f1c0bc4eeee02dc0e",
+  "configSha256After": "a8b5b83f80d5c82ebd9ecf523657c836fda3fc0ed2753a4f1c0bc4eeee02dc0e",
+  "modelRequests": 0
+}

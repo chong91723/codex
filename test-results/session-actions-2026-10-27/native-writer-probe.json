@@ -1,0 +1,51 @@
+{
+  "origin": "Pristine native app-server executable, two stdio instances, fresh isolated profile, synthetic user-only native records, no model requests",
+  "root": "/tmp/codex-writer-delete-audit-_lq9s3gb",
+  "modelRequests": 0,
+  "records": [
+    {
+      "scenario": "native-owner-delete",
+      "threadId": "01a17c00-a0d2-7892-87f1-c9fc217bafdc",
+      "foreignErrors": {
+        "thread/resume": {
+          "code": -32600,
+          "message": "thread 01a17c00-a0d2-7892-87f1-c9fc217bafdc already has an active writer"
+        },
+        "thread/delete": {
+          "code": -32600,
+          "message": "thread 01a17c00-a0d2-7892-87f1-c9fc217bafdc already has an active writer"
+        },
+        "thread/archive": {
+          "code": -32600,
+          "message": "thread 01a17c00-a0d2-7892-87f1-c9fc217bafdc already has an active writer"
+        }
+      },
+      "ownerDeleteSucceeded": true,
+      "historyFileRemoved": true
+    },
+    {
+      "scenario": "release-then-observer-delete",
+      "threadId": "01a17c00-a23b-7031-8036-33695e0eb241",
+      "foreignErrors": {
+        "thread/resume": {
+          "code": -32600,
+          "message": "thread 01a17c00-a23b-7031-8036-33695e0eb241 already has an active writer"
+        },
+        "thread/delete": {
+          "code": -32600,
+          "message": "thread 01a17c00-a23b-7031-8036-33695e0eb241 already has an active writer"
+        },
+        "thread/archive": {
+          "code": -32600,
+          "message": "thread 01a17c00-a23b-7031-8036-33695e0eb241 already has an active writer"
+        }
+      },
+      "observerDeleteAfterOwnerExitSucceeded": true,
+      "historyFileRemoved": true
+    }
+  ],
+  "ownedThreadsDeleted": [
+    "01a17c00-a0d2-7892-87f1-c9fc217bafdc",
+    "01a17c00-a23b-7031-8036-33695e0eb241"
+  ]
+}

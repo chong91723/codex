@@ -436,10 +436,10 @@ function threadActionReason(action,target){
   if(state.threadActionPending.has(id))return '该会话的操作正在处理，请稍候';
   const thread=state.threads.find(thread=>thread.id===id)||state.knownThreads.get(id)||target.thread;
   const running=state.activeTurns.has(id)||thread.status?.type==='active';
-  if(['compact','review','revert'].includes(action)&&(!current||state.threadLoading||state.threadBusy))return '请先打开此会话，恢复为可编辑状态后使用';
+  if(['compact','fork','review','revert'].includes(action)&&(!current||state.threadLoading||state.threadBusy))return '请先打开此会话，恢复为可编辑状态后使用';
+  if(['compact','fork','review','revert'].includes(action)&&[...state.stopOperations.values()].some(operation=>operation.threadId===id&&operation.status==='pending'))return '本轮命令仍在回收，请等待停止结果后使用';
   if(target.archived&&['fork','compact','review','revert','archive'].includes(action))return '请先恢复已归档会话后使用';
   if(running&&['fork','compact','review','revert','archive'].includes(action))return '请先停止此会话中正在执行的任务';
-  if(action==='delete'&&current&&state.threadBusy)return '请先关闭正在使用此会话的其他页面';
   return '';
 }
 async function performThreadAction(id,work){
@@ -455,7 +455,7 @@ function openThreadMenu(target,origin,point=null){
   closeThreadMenu(false);const root=$('#thread-context-menu'),thread=target.thread;
   state.threadMenu={target:{thread:{...thread},archived:target.archived},origin};root.dataset.threadId=thread.id;root.replaceChildren();
   const name=thread.name||thread.preview||'未命名会话',heading=el('div','thread-menu-name',name);heading.title=name;root.append(heading);
-  const entries=[['rename','重命名'],['fork','分叉会话'],['export','导出会话'],null,['compact','压缩上下文'],['review','审查未提交更改'],['revert','回退用户任务'],null,target.archived?['unarchive','恢复到最近会话']:['archive','归档（保留历史）'],null,['delete','永久删除历史…']];
+  const entries=[['rename','重命名'],target.archived?['unarchive','恢复到最近会话']:['archive','归档（保留历史）'],null,['delete','永久删除历史…']];
   for(const entry of entries){
     if(!entry){const separator=el('div','thread-menu-separator');separator.setAttribute('role','separator');root.append(separator);continue;}
     const [action,label]=entry,item=button(label,()=>{const selected=state.threadMenu?.target;if(!selected)return;const reason=threadActionReason(action,selected);if(reason)throw new Error(reason);closeThreadMenu();return threadAction(action,selected);},'thread-menu-item'+(action==='delete'?' danger':''));
@@ -506,7 +506,7 @@ function setCwd(path) { state.selectedCwd = path; localStorage.setItem('codex.cw
 function threadRoute(){const params=new URLSearchParams(location.search);return {id:params.get('thread'),archived:params.get('archived')==='1'};}
 function setThreadRoute(id=null,archived=false,replace=false){const url=new URL(location.href);url.searchParams.delete('token');url.searchParams.delete('thread');url.searchParams.delete('archived');if(id){url.searchParams.set('thread',id);if(archived)url.searchParams.set('archived','1');}if(url.href!==location.href)history[replace?'replaceState':'pushState'](null,'',url);}
 function resetChat(route=true) {closeThreadMenu(false);rememberScroll();const fresh=state.composerKey==='new'&&composerState().pending;switchComposer('new',fresh);restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.hydration=null;state.historyPage=null;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='输入任务，或输入 / 查看功能'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false;$('#jump-latest').hidden=true;  $('#page-title').textContent = '新建会话'; $('#plan-summary').hidden = true; renderContextUsage(); renderThreadList(); renderRequests(); updateSend(); resetNativeUI(); }
-function adoptThread(thread,archived=false,busy=false) { state.knownThreads.set(thread.id,thread);if(state.composerKey!==thread.id)switchComposer(thread.id);if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=archived||busy;$('#prompt').placeholder=busy?'此会话正在另一个页面中使用，请先关闭该页面再重试':archived?'会话已归档，请在左侧会话菜单中恢复后继续':'询问任何问题';$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); adoptNativeUI(thread); }
+function adoptThread(thread,archived=false,busy=false) { state.knownThreads.set(thread.id,thread);if(state.composerKey!==thread.id)switchComposer(thread.id);if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=false;$('#prompt').placeholder=busy?'会话只读：可用 /export 导出；请关闭占用页面后重试继续对话':archived?'会话已归档：可用 /export 导出，或在侧栏恢复后继续对话':'询问任何问题';$('#page-title').textContent=thread.name||thread.preview||'新会话';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); adoptNativeUI(thread); }
 async function restoreThreadRoute(){const route=threadRoute();if(route.id){setArchiveScope(route.archived);await openThread(route.id,{archived:route.archived,replace:true});loadThreads().catch(report);}else resetChat(false);}
 async function openThread(id,{archived=state.archived&&state.threads.some(thread=>thread.id===id),replace=false}={}) {
   closeThreadMenu(false);rememberScroll();saveComposer();const generation=++state.navigationGeneration;state.hydration={threadId:id,generation,events:[]};state.historyPage=null;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
@@ -523,7 +523,7 @@ async function openThread(id,{archived=state.archived&&state.threads.some(thread
   } catch(error) {
     if(generation!==state.navigationGeneration)return;state.restoreError=true;state.thread=null;
     $('#messages').replaceChildren(el('div','panel-error','无法恢复此会话：'+nativeErrorMessage(error)),button('重试恢复会话',()=>openThread(id,{archived,replace:true})),button('新建会话',()=>resetChat()));
-  } finally {if(generation===state.navigationGeneration){state.hydration=null;state.threadLoading=false;$('#prompt').disabled=state.threadArchived||state.threadBusy||state.restoreError;updateSend();restoreScroll();}}
+  } finally {if(generation===state.navigationGeneration){state.hydration=null;state.threadLoading=false;$('#prompt').disabled=state.restoreError;updateSend();restoreScroll();}}
 }
 function finishHistoryRender(){for(const group of $$('.activity-group',$('#messages')))updateActivityGroup(group);}
 function renderHistoryMore(){
@@ -597,13 +597,14 @@ async function ensureThread(context=null) {
 function updateSend() {
   refreshThreadMenu();
   if(typeof renderPermissions==='function')renderPermissions();
-  const permissionBlocked=typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked();
+  const readOnlyExport=!!state.thread&&(state.threadBusy||state.threadArchived)&&$('#prompt').value.trim()==='/export';
+  const permissionBlocked=!readOnlyExport&&typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked();
   const stop=[...state.stopOperations.values()].find(op=>op.threadId===state.thread?.id&&op.status==='pending');
-  const turn=state.activeTurns.get(state.thread?.id),running=!state.threadBusy&&!!turn,stopping=!!stop||state.interrupting.has(turn),pending=composerState().pending;
-  $('#send').disabled=(permissionBlocked&&!running)||!state.ready||state.threadLoading||state.restoreError||state.threadBusy||stopping||(!running&&(pending||state.threadArchived||state.attachmentLoads>0));
+  const turn=state.activeTurns.get(state.thread?.id),running=!state.threadBusy&&!state.threadArchived&&!!turn,stopping=!!stop||state.interrupting.has(turn),pending=composerState().pending;
+  $('#send').disabled=(permissionBlocked&&!running)||!state.ready||state.threadLoading||state.restoreError||(state.threadBusy&&!readOnlyExport)||stopping||(!running&&(pending||(state.threadArchived&&!readOnlyExport)||state.attachmentLoads>0));
   $('#send').classList.toggle('running',running);const label=stopping?'正在停止并回收命令…':running?'中断当前任务':pending?'正在发送…':state.attachmentLoads>0?'正在读取附件':'发送任务';
   $('#send').title=label;$('#send').ariaLabel=label;$('#send').setAttribute('aria-busy',String(stopping||pending));
-  $('#composer-status').textContent=permissionBlocked?'权限更改正在确认或尚未确认，请核对原生状态后再发送任务':stopping?'正在等待回合结束并回收本轮命令…':pending?'正在发送，输入内容会保留至请求确认':state.attachmentLoads>0?'正在读取附件…':!state.ready?'连接尚未就绪，草稿已保留':'';
+  $('#composer-status').textContent=permissionBlocked?'权限更改正在确认或尚未确认，请核对原生状态后再发送任务':stopping?'正在等待回合结束并回收本轮命令…':pending?'正在发送，输入内容会保留至请求确认':state.attachmentLoads>0?'正在读取附件…':!state.ready?'连接尚未就绪，草稿已保留':state.threadBusy?'此会话被其他页面或 Codex 进程占用，当前只读；可用 /export 导出，关闭占用方后重试继续':state.threadArchived?'此会话已归档，只能查看或 /export 导出；在侧栏恢复后可继续对话':'';
   if(typeof renderExecutionProgressBanner==='function')renderExecutionProgressBanner();
 }
 // A turn can finish while its resumable unified-exec commands remain alive.
@@ -663,10 +664,17 @@ async function submitPrompt(submission=null) {
   if(preserveDraft&&typeof submission.text!=='string')throw new Error('独立任务缺少消息文本');
   closeCommandMenu();
   if(!state.ready)return toast('请等待原生运行时连接');
+  if(!preserveDraft&&state.thread&&(state.threadBusy||state.threadArchived)&&$('#prompt').value.trim()==='/export'){
+    if(state.threadLoading||state.restoreError)return toast('请先完成当前会话的恢复');
+    const draft=saveComposer();if(draft.pending)return;
+    if(draft.attachments.length)throw new Error('此本地命令不接收附件，请先移除附件再执行。输入与附件已保留。');
+    if(draft.loads)throw new Error('附件正在读取，请稍候');
+    draft.pending=true;updateSend();try{await nativeSlashCommand('/export');}finally{draft.pending=false;updateSend();}return;
+  }
   if(typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked())throw new Error('权限更改尚未确认，请重新打开会话核对后再发送任务');
   if(state.threadLoading||state.restoreError)return toast('请先完成当前会话的恢复');
   if(state.threadArchived)return toast('请先取消归档，再继续这个会话');
-  if(state.threadBusy)return toast('请先关闭使用此会话的其他页面，再重试继续会话');
+  if(state.threadBusy)return toast('会话被其他页面或 Codex 进程占用，当前只读；请关闭占用方后重试继续会话。输入已保留。');
   if(state.attachmentLoads)return toast('附件正在读取，请稍候');
   if([...state.stopOperations.values()].some(op=>op.threadId===state.thread?.id&&op.status==='pending'))return toast('本轮命令仍在回收，请等待停止结果。');
   const draft=saveComposer();if(draft.pending)return;
@@ -999,16 +1007,18 @@ async function threadAction(action,target=null){
   const perform=work=>performThreadAction(id,work);
   switch(action){
     case'delete':
-      if(state.thread?.id===id&&state.threadBusy)throw new Error('请先关闭使用此会话的其他页面，再执行永久删除');
       return openDialog('永久删除会话',root=>{
         root.append(el('p','','将永久删除“'+(thread.name||thread.preview||id)+'”的会话历史及其创建的子代理会话，无法撤销。'));
         root.append(el('p','','如果只是想从最近会话中收起，请取消后选择「归档（保留历史）」。永久删除不会回滚工作区文件或删除业务数据库。'));
-        if(state.activeTurns.has(id)||thread.status?.type==='active')root.append(el('p','','此会话中的当前任务会被停止。'));
-      },async()=>{
+        if(state.thread?.id===id&&state.threadBusy)root.append(el('p','','打开此历史时检测到其他页面或 Codex 进程占用。请关闭占用方，再点击「永久删除」重新检查；原生确认释放后才能删除，网页不会强制关闭其他连接。'));
+        else if(state.activeTurns.has(id)||thread.status?.type==='active')root.append(el('p','','此会话中的当前任务会被停止。'));
+        const error=el('p','thread-removal-error panel-error');error.hidden=true;error.setAttribute('role','alert');root.append(error);
+      },async root=>{
+        const notice=$('.thread-removal-error',root);notice.hidden=true;
         try{await perform(()=>rpc('thread/delete',{threadId:id}));}
         catch(error){
-          if(/forked history still references it/i.test(error.message))throw new Error('此会话仍被分叉会话引用。请先删除相关分叉会话，再重试永久删除；历史尚未删除。原生原因：'+nativeErrorMessage(error));
-          throw error;
+          const message=/already has an active writer/i.test(error.message)?'此会话仍被其他页面或 Codex 进程占用，历史尚未删除。请关闭占用方后，在此窗口再次点击「永久删除」重试。原生原因：'+nativeErrorMessage(error):/forked history still references it/i.test(error.message)?'此会话仍被分叉会话引用。请先删除相关分叉会话，再重试永久删除；历史尚未删除。原生原因：'+nativeErrorMessage(error):nativeErrorMessage(error);
+          notice.textContent=message;notice.hidden=false;throw new Error(message);
         }
         if(state.thread?.id===id)resetChat();forgetThreadDraft(id);await loadThreads();toast('会话历史已永久删除，无法恢复。');
       },'永久删除');
@@ -1022,7 +1032,7 @@ async function threadAction(action,target=null){
       if(state.thread?.id===id&&generation===state.navigationGeneration){setArchiveScope(false);await openThread(id,{archived:false,replace:true});}
       await loadThreads();toast('已恢复到「最近会话」，可以继续对话。');return;
     case'archive':
-      await perform(()=>rpc('thread/archive',{threadId:id}));if(state.thread?.id===id)resetChat();
+      try{await perform(()=>rpc('thread/archive',{threadId:id}));}catch(error){if(/already has an active writer/i.test(error.message))throw new Error('此会话被其他页面或 Codex 进程占用，尚未归档。请关闭占用方后重试。原生原因：'+nativeErrorMessage(error));throw error;}if(state.thread?.id===id)resetChat();
       await loadThreads();toast('已归档，历史仍保留。可在左侧「已归档」中恢复或永久删除。');return;
     case'export':{const result={thread,turns:await paged('thread/turns/list',{threadId:id,itemsView:'full',sortDirection:'asc',limit:100})};const url=URL.createObjectURL(new Blob([pretty(result)],{type:'application/json'}));const link=el('a');link.href=url;link.download='codex-'+id+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;}
   }
@@ -1066,9 +1076,9 @@ async function init(){
   $('#collapse').onclick=()=>document.body.classList.add('sidebar-hidden');$('#show-sidebar').onclick=()=>document.body.classList.remove('sidebar-hidden');$('#theme-toggle').onclick=toggleTheme;
   $('#project-edit').onclick=()=>editProject().catch(report);$('#project-button').onclick=$('#project-edit').onclick;$('#cwd-button').onclick=$('#project-edit').onclick;
   $('#dialog-close').onclick=()=>$('#dialog').close();$('#dialog-cancel').onclick=()=>$('#dialog').close();
-  $('#send').onclick=()=>{const active=state.activeTurns.get(state.thread?.id);Promise.resolve(active?interruptTurn():submitPrompt()).catch(report);};
+  $('#send').onclick=()=>{const active=!state.threadBusy&&!state.threadArchived&&state.activeTurns.get(state.thread?.id);Promise.resolve(active?interruptTurn():submitPrompt()).catch(report);};
   $('#prompt').onkeydown=event=>{if(commandMenuKey(event))return;if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&event.keyCode!==229){event.preventDefault();submitPrompt().catch(report);}};
-  $('#prompt').oninput=()=>{const draft=saveComposer();draft.revision=(draft.revision||0)+1;resizePrompt();updateCommandMenu();};
+  $('#prompt').oninput=()=>{const draft=saveComposer();draft.revision=(draft.revision||0)+1;resizePrompt();updateSend();updateCommandMenu();};
   $('#conversation-scroll').onscroll=()=>{rememberScroll();updateScrollControl();};
   $('#jump-latest').onclick=()=>{composerState().follow=true;restoreScroll();};
   window.addEventListener('pagehide',saveComposer);window.addEventListener('resize',positionToast);

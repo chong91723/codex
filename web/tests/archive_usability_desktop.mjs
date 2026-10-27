@@ -9,6 +9,8 @@ const base=process.env.CODEX_WEB_URL,home=process.env.CODEX_TEST_HOME,workspace=
 assert(base&&home&&workspace,'Explicit independent Web URL, home and workspace are required');
 assert(home.startsWith('/tmp/')&&workspace.startsWith('/tmp/'),'Use disposable /tmp fixtures only');
 const out=process.env.REPORT_DIR||'test-results/history-usability-2026-10-26/archive';
+const skipRealHistory=process.env.SKIP_REAL_HISTORY==='1';
+const realHistoryCase='已有真实Flash历史的独立分叉在归档、刷新、恢复后仍显示同一用户和助手内容';
 fs.mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_BIN,args:['--no-sandbox']});
 const page=await browser.newPage({viewport:{width:1440,height:960}}),results=[],calls=[],errors=[],owned=new Set(),cleanup=[];
@@ -20,10 +22,10 @@ const read=id=>rpc('thread/read',{threadId:id,includeTurns:false});
 const draftSnapshot=id=>page.evaluate(id=>({inMemory:state.composers.has(id),text:state.composers.get(id)?.text||null,attachments:state.composers.get(id)?.attachments.length||0,persisted:Object.hasOwn(JSON.parse(sessionStorage.getItem('codex.drafts')||'{}'),id),storedText:JSON.parse(sessionStorage.getItem('codex.drafts')||'{}')[id]||null}),id);
 const digest=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const visibleHistory=()=>page.evaluate(()=>({user:[...document.querySelectorAll('#messages .message.user')].map(n=>n.textContent.trim()).filter(Boolean),assistant:[...document.querySelectorAll('#messages .message.agent .markdown')].map(n=>n.textContent.trim()).filter(Boolean)}));
-const save=()=>fs.writeFileSync(path.join(out,'results.json'),JSON.stringify({origin:'Real native storage API and browser controls. User-only fixtures plus a read-only fork of completed real Flash history from an earlier independent audit. No simulated Agent answer or new model request.',results,calls,browserErrors:errors,cleanup},null,2));
+const save=()=>fs.writeFileSync(path.join(out,'results.json'),JSON.stringify({origin:'Real native storage API and browser controls. '+(skipRealHistory?'Only user-only fixtures owned by this invocation; earlier-history case explicitly skipped without reading or forking its source.':'User-only fixtures plus a read-only fork of completed real Flash history from an earlier independent audit.')+' No simulated Agent answer or new model request.',skipRealHistory,results,calls,browserErrors:errors,cleanup},null,2));
 page.on('pageerror',error=>errors.push(error.message));
 page.on('websocket',socket=>{if(!socket.url().includes('/ws/rpc'))return;socket.on('framesent',frame=>{try{const value=JSON.parse(String(frame.payload));if(value.method)calls.push({method:value.method,threadId:value.params?.threadId||null,...(value.method==='thread/list'?{limit:value.params?.limit}:{} )});}catch{}});});
-async function check(name,run){try{results.push({name,status:'passed',evidence:await run()});console.log('PASS '+name);}catch(error){results.push({name,status:'failed',error:error.message});try{await page.screenshot({path:path.join(out,'failure-'+results.length+'.png')});}catch{}throw error;}finally{save();}}
+async function check(name,run){if(skipRealHistory&&name===realHistoryCase){results.push({name,status:'skipped',reason:'Explicit SKIP_REAL_HISTORY=1: do not read, export or fork any earlier source history; prior evidence remains separate.'});save();console.log('SKIP '+name);return;}try{results.push({name,status:'passed',evidence:await run()});console.log('PASS '+name);}catch(error){results.push({name,status:'failed',error:error.message});try{await page.screenshot({path:path.join(out,'failure-'+results.length+'.png')});}catch{}throw error;}finally{save();}}
 async function choose(id){await row(id).waitFor();await row(id).click();await page.waitForFunction(id=>state.thread?.id===id&&!state.threadLoading,id,{timeout:45000});}
 async function missing(id){try{await read(id);return false;}catch(error){assert.match(error.message,/not found|thread not loaded|no rollout|cannot find/i);return true;}}
 async function archiveSelected(id){await threadAction(page,'archive',{threadId:id});await page.waitForFunction(()=>!state.thread,null,{timeout:30000});await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),id);}
@@ -60,8 +62,8 @@ try{
     await page.locator('#archive-toggle').click();await choose(first);
     assert.equal(await page.locator('#archive-toggle').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('#thread-list-label').innerText(),'已归档');
     assert(await page.locator('#archive-list-help').isVisible());assert(await page.locator('#thread-archive-status').isVisible());assert.equal(await page.locator('#thread-restore').count(),0);
-    assert.equal(await page.locator('#prompt').getAttribute('placeholder'),'会话已归档，请在左侧会话菜单中恢复后继续');
-    assert(await page.locator('#prompt').isDisabled());assert(await page.locator('#send').isDisabled());
+    assert.equal(await page.locator('#prompt').getAttribute('placeholder'),'会话已归档：可用 /export 导出，或在侧栏恢复后继续对话');
+    assert(await page.locator('#prompt').isEnabled());assert(await page.locator('#send').isDisabled());
     const menu=await openThreadMenu(page,{threadId:first});
     assert.equal(await menu.locator('[data-thread-action=archive]').count(),0);assert(await menu.locator('[data-thread-action=unarchive]').isEnabled());assert(await menu.locator('[data-thread-action=delete]').isEnabled());await page.keyboard.press('Escape');
     await page.screenshot({path:path.join(out,'archived-1440.png')});
@@ -169,7 +171,7 @@ try{
     assert.equal(calls.filter(c=>c.method==='turn/start').length,0);assert.equal(errors.length,0);
     return{archivedPermanentDeleteRemovesFile:true,archivedComposerAndSessionDraftRemoved:true,otherParentDraftPreserved:true,refreshNoResurrection:true,scopePersistsWithoutSelectedThread:true,recentTabReturnsExplicitly:true,zeroModelRequests:true};
   });
-  await check('已有真实Flash历史的独立分叉在归档、刷新、恢复后仍显示同一用户和助手内容',async()=>{
+  await check(realHistoryCase,async()=>{
     const sourceId=process.env.CODEX_HISTORY_SOURCE_THREAD;assert(sourceId,'Set CODEX_HISTORY_SOURCE_THREAD to a completed real-model thread in the independent test home');
     assert(!owned.has(sourceId),'The source must remain untouched and outside this run\'s cleanup');
     const source=(await read(sourceId)).thread;assert(source.path.startsWith(home+'/sessions/'));assert.equal(source.model,'deepseek-flash');
@@ -179,7 +181,7 @@ try{
     await page.locator('#thread-search').fill(name);await row(child).waitFor();await choose(child);
     const before=await visibleHistory();assert(before.user.length>0,'A real user message must be visible');assert(before.assistant.length>0,'A real assistant response must be visible');
     await archiveSelected(child);await page.locator('#archive-toggle').click();await choose(child);
-    assert.deepEqual(await visibleHistory(),before);assert(await page.locator('#prompt').isDisabled());
+    assert.deepEqual(await visibleHistory(),before);assert(await page.locator('#prompt').isEnabled());assert(await page.locator('#send').isDisabled());
     await page.setViewportSize({width:1024,height:768});if(await page.locator('#toast').isVisible())await page.locator('#toast .toast-close').click();
     await page.screenshot({path:path.join(out,'archived-real-history-1024.png')});
     await page.reload();await ready();assert.equal(await page.evaluate(()=>state.thread.id),child);assert.deepEqual(await visibleHistory(),before);
@@ -196,5 +198,5 @@ finally{
   if(await page.locator('#dialog[open]').count())await page.locator('#dialog-cancel').click();
   // Native forks retain references: remove child fixtures before their parent.
   for(const id of [...owned].reverse()){try{await rpc('thread/delete',{threadId:id});cleanup.push({entity:'ownedThread',id,removed:true,through:'test cleanup'});}catch(error){cleanup.push({entity:'ownedThread',id,removed:false,error:error.message});process.exitCode=1;}}
-  save();await browser.close();console.log(JSON.stringify({passed:results.filter(r=>r.status==='passed').length,failed:results.filter(r=>r.status==='failed').length,browserErrors:errors,cleanup}));
+  save();await browser.close();console.log(JSON.stringify({passed:results.filter(r=>r.status==='passed').length,failed:results.filter(r=>r.status==='failed').length,skipped:results.filter(r=>r.status==='skipped').length,browserErrors:errors,cleanup}));
 }

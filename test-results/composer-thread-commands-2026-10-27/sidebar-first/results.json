@@ -1,0 +1,386 @@
+{
+  "origin": "Real native storage API, visible sidebar context/ellipsis menu and genuine response gates. User-only storage fixtures; no simulated Agent answers, successful events or new model requests.",
+  "base": "http://127.0.0.1:18868",
+  "home": "/tmp/codex-web-final-fixes/home",
+  "workspace": "/tmp/codex-web-final-fixes/workspace",
+  "results": [
+    {
+      "name": "在独立原生存储中建立三个仅用户消息的会话，不调用模型",
+      "status": "passed",
+      "evidence": {
+        "ownedUserOnlyThreadIds": [
+          "01a17c08-1f33-7032-bce3-2b164ac45f3c",
+          "01a17c08-2033-7c63-b4fb-354a207ac936",
+          "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+        ],
+        "archivedFixture": "01a17c08-2139-78d2-9ee4-1824afdeb3ed",
+        "newModelRequests": 0
+      }
+    },
+    {
+      "name": "页面右上操作入口已移至侧栏，每行主按钮与菜单按钮互为兄弟",
+      "status": "passed",
+      "evidence": {
+        "oldPageActionsAbsent": true,
+        "noNestedButtons": true,
+        "eachThreadHasAccessibleMenu": true
+      }
+    },
+    {
+      "name": "右键非当前会话不切换会话、工作区、模型、草稿或附件",
+      "status": "passed",
+      "evidence": {
+        "targetId": "01a17c08-2033-7c63-b4fb-354a207ac936",
+        "selectedId": "01a17c08-1f33-7032-bce3-2b164ac45f3c",
+        "unsentTextAndAttachmentPreserved": true,
+        "zeroResumeInterruptOrTurnRequests": true,
+        "sessionCommandsBelongToComposer": true,
+        "escapeRestoresRowFocus": true
+      }
+    },
+    {
+      "name": "省略号、Shift+F10及方向键可操作菜单，关闭后焦点回到所属会话",
+      "status": "passed",
+      "evidence": {
+        "shiftF10": true,
+        "arrowAndHomeEnd": true,
+        "ellipsisEnter": true,
+        "outsideClickDismisses": true,
+        "ownershipAndDraftPreserved": true
+      }
+    },
+    {
+      "name": "非当前重命名精准提交，原生响应等待期间重复确认不重复执行",
+      "status": "passed",
+      "evidence": {
+        "renamedTargetId": "01a17c08-2033-7c63-b4fb-354a207ac936",
+        "currentThreadUnchanged": true,
+        "genuineNativeResponseHeld": true,
+        "duplicateFormSubmissionIgnored": true,
+        "allDisabledPendingMenuEscapeAndTabDismiss": true,
+        "newModelRequests": 0
+      }
+    },
+    {
+      "name": "归档非当前会话保留真实历史，不改变当前选中会话和草稿",
+      "status": "passed",
+      "evidence": {
+        "archivedTargetId": "01a17c08-2033-7c63-b4fb-354a207ac936",
+        "nativeArchivedFileExists": true,
+        "userRecordPreserved": true,
+        "currentThreadAndDraftUntouched": true
+      }
+    },
+    {
+      "name": "已归档行只提供恢复，恢复非当前会话不导航、不抢当前输入",
+      "status": "passed",
+      "evidence": {
+        "restoredTargetId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed",
+        "archiveActionAbsent": true,
+        "composerCommandsAbsentFromArchivedRows": true,
+        "zeroResumeRequests": true,
+        "selectedThreadRemains": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+      }
+    },
+    {
+      "name": "非当前归档会话永久删除可取消，确认后仅删除目标原生历史",
+      "status": "passed",
+      "evidence": {
+        "cancelMakesZeroDeleteRequests": true,
+        "confirmedNativeTargetDeleted": "01a17c08-2033-7c63-b4fb-354a207ac936",
+        "currentThreadAndDraftPreserved": true,
+        "otherNativeConversationPreserved": true
+      }
+    },
+    {
+      "name": "桌面尺寸和深色菜单不越界，主页面不被会话管理操作遮挡",
+      "status": "failed",
+      "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.thread-row[data-thread-id=\"01a17c08-2139-78d2-9ee4-1824afdeb3ed\"]') to be visible\u001b[22m\n"
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "threadId": null
+    },
+    {
+      "method": "initialized",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "model/list",
+      "threadId": null
+    },
+    {
+      "method": "config/read",
+      "threadId": null
+    },
+    {
+      "method": "thread/start",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17c08-1e48-7cd3-b720-cc38885458d8"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17c08-1e48-7cd3-b720-cc38885458d8"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17c08-1e48-7cd3-b720-cc38885458d8"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17c08-1e48-7cd3-b720-cc38885458d8"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/archive",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/archive",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/unarchive",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2f6c-72b1-be05-47e74ea5deeb"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2f6c-72b1-be05-47e74ea5deeb"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-30ea-7262-8795-8bfc6df3c4cf"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2033-7c63-b4fb-354a207ac936"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17c08-2139-78d2-9ee4-1824afdeb3ed"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-1f33-7032-bce3-2b164ac45f3c"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17c08-1e48-7cd3-b720-cc38885458d8"
+    }
+  ],
+  "browserErrors": [],
+  "cleanup": [
+    {
+      "id": "01a17c08-2033-7c63-b4fb-354a207ac936",
+      "removed": true,
+      "through": "visible non-current permanent-delete menu"
+    },
+    {
+      "id": "01a17c08-2139-78d2-9ee4-1824afdeb3ed",
+      "removed": true,
+      "through": "owned fixture cleanup"
+    },
+    {
+      "id": "01a17c08-1f33-7032-bce3-2b164ac45f3c",
+      "removed": true,
+      "through": "owned fixture cleanup"
+    },
+    {
+      "id": "01a17c08-1e48-7cd3-b720-cc38885458d8",
+      "removed": true,
+      "through": "owned fixture cleanup"
+    }
+  ]
+}

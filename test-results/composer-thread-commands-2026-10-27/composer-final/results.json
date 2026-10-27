@@ -1,0 +1,473 @@
+{
+  "origin": "Native user-only storage fixtures owned by this invocation. Visible / command selection and send paths; zero Agent or model requests. Response gates hold actual native replies without replacing data.",
+  "base": "http://127.0.0.1:18868",
+  "home": "/tmp/codex-web-final-fixes/home",
+  "workspace": "/tmp/codex-web-final-fixes/workspace",
+  "results": [
+    {
+      "name": "建立本轮自有用户存储会话，不调用模型或读取既有用户历史",
+      "status": "passed",
+      "evidence": {
+        "seed": "01a17c08-b7dd-7681-9f14-6750714cb4de",
+        "a": "01a17c08-b8b1-74d1-a546-ccc589b7ded8",
+        "b": "01a17c08-b9a7-77e1-bdb4-a42e27f634e8",
+        "newModelRequests": 0
+      }
+    },
+    {
+      "name": "五项功能只在输入框/选择中出现，点击及键盘选择均不执行",
+      "status": "passed",
+      "evidence": {
+        "commands": [
+          {
+            "command": "compact",
+            "selectionDoesNotExecute": true
+          },
+          {
+            "command": "fork",
+            "selectionDoesNotExecute": true
+          },
+          {
+            "command": "export",
+            "selectionDoesNotExecute": true
+          },
+          {
+            "command": "review",
+            "selectionDoesNotExecute": true
+          },
+          {
+            "command": "rollback",
+            "selectionDoesNotExecute": true
+          }
+        ],
+        "keyboardTabOnlySelects": true,
+        "sidebarHasNoComposerActions": true
+      }
+    },
+    {
+      "name": "新会话发送本地功能不会隐式新建模型任务，命令失败后保留",
+      "status": "passed",
+      "evidence": {
+        "allFiveRequireExistingConversation": true,
+        "noImplicitThreadStart": true,
+        "noModelTurn": true,
+        "commandsPreserved": true
+      }
+    },
+    {
+      "name": "带附件发送五项本地功能明确拒绝并保留命令及附件",
+      "status": "passed",
+      "evidence": {
+        "allFiveRejectAttachments": true,
+        "textAndAttachmentRetained": true,
+        "zeroTaskOrThreadActionRequests": true
+      }
+    },
+    {
+      "name": "当前/export读取真实原生分页结果并下载，成功才消费输入",
+      "status": "passed",
+      "evidence": {
+        "nativeTarget": "01a17c08-b8b1-74d1-a546-ccc589b7ded8",
+        "turnCount": 0,
+        "equalsNativeRead": true,
+        "commandConsumedAfterSuccess": true
+      }
+    },
+    {
+      "name": "没有用户回合时/rollback显示可诊断错误，不假成功或丢失输入",
+      "status": "passed",
+      "evidence": {
+        "realEmptyHistoryRead": true,
+        "noFakeRevert": true,
+        "commandRetained": true
+      }
+    },
+    {
+      "name": "原生操作在途时/fork拒绝重复提交，仍保留命令",
+      "status": "passed",
+      "evidence": {
+        "genuineNativeRenameReplyHeld": true,
+        "noDuplicateForkDuringPending": true,
+        "commandRetained": true
+      }
+    },
+    {
+      "name": "发送/fork发出真实分叉，迟到响应不抢走另一个会话及草稿",
+      "status": "passed",
+      "evidence": {
+        "realForkParent": "01a17c08-b8b1-74d1-a546-ccc589b7ded8",
+        "child": "01a17c08-c70d-7392-9841-a0cd2a694e29",
+        "genuineNativeForkReplyHeld": true,
+        "newSelectionAndUnsentTextPreserved": true,
+        "oldCommandConsumedOnlyInOriginalComposer": true,
+        "modelRequests": 0
+      }
+    },
+    {
+      "name": "第二页面只读会话仍可通过/export导出，执行命令受到真实占用守卫",
+      "status": "passed",
+      "evidence": {
+        "genuineConcurrentWriter": true,
+        "readonlyExportEqualsNativeRead": true,
+        "executionCommandsAndOrdinaryMessageRejectedWithoutRPC": true,
+        "noModelRequests": true
+      }
+    },
+    {
+      "name": "桌面尺寸斜杠菜单边界正常，中文输入法不误选功能",
+      "status": "passed",
+      "evidence": {
+        "dimensions": [
+          {
+            "viewport": {
+              "width": 1024,
+              "height": 768
+            },
+            "menu": {
+              "x": 254,
+              "y": 343,
+              "width": 746,
+              "height": 242
+            }
+          },
+          {
+            "viewport": {
+              "width": 1280,
+              "height": 720
+            },
+            "menu": {
+              "x": 370,
+              "y": 319,
+              "width": 800,
+              "height": 218
+            }
+          },
+          {
+            "viewport": {
+              "width": 1440,
+              "height": 960
+            },
+            "menu": {
+              "x": 450,
+              "y": 439,
+              "width": 800,
+              "height": 338
+            }
+          }
+        ],
+        "imeEnterDoesNotExecuteOrChoose": true,
+        "newModelRequests": 0,
+        "browserErrors": 0
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "initialize",
+      "threadId": null
+    },
+    {
+      "method": "initialized",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "model/list",
+      "threadId": null
+    },
+    {
+      "method": "config/read",
+      "threadId": null
+    },
+    {
+      "method": "thread/start",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/inject_items",
+      "threadId": "01a17c08-b7dd-7681-9f14-6750714cb4de"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17c08-b7dd-7681-9f14-6750714cb4de"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17c08-b7dd-7681-9f14-6750714cb4de"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17c08-b9a7-77e1-bdb4-a42e27f634e8"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-b9a7-77e1-bdb4-a42e27f634e8"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "thread/name/set",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-b9a7-77e1-bdb4-a42e27f634e8"
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/fork",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-c70d-7392-9841-a0cd2a694e29"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17c08-b9a7-77e1-bdb4-a42e27f634e8"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-b9a7-77e1-bdb4-a42e27f634e8"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-c70d-7392-9841-a0cd2a694e29"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-c70d-7392-9841-a0cd2a694e29"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "thread/resume",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "thread/turns/list",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "skills/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17c08-c70d-7392-9841-a0cd2a694e29"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17c08-b9a7-77e1-bdb4-a42e27f634e8"
+    },
+    {
+      "method": "thread/read",
+      "threadId": "01a17c08-b9a7-77e1-bdb4-a42e27f634e8"
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17c08-b8b1-74d1-a546-ccc589b7ded8"
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/list",
+      "threadId": null
+    },
+    {
+      "method": "thread/delete",
+      "threadId": "01a17c08-b7dd-7681-9f14-6750714cb4de"
+    }
+  ],
+  "browserErrors": [],
+  "cleanup": [
+    {
+      "id": "01a17c08-c70d-7392-9841-a0cd2a694e29",
+      "removed": true,
+      "through": "owned current-run fixture cleanup"
+    },
+    {
+      "id": "01a17c08-b9a7-77e1-bdb4-a42e27f634e8",
+      "removed": true,
+      "through": "owned current-run fixture cleanup"
+    },
+    {
+      "id": "01a17c08-b8b1-74d1-a546-ccc589b7ded8",
+      "removed": true,
+      "through": "owned current-run fixture cleanup"
+    },
+    {
+      "id": "01a17c08-b7dd-7681-9f14-6750714cb4de",
+      "removed": true,
+      "through": "owned current-run fixture cleanup"
+    }
+  ]
+}

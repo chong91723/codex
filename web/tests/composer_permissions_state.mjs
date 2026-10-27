@@ -78,3 +78,11 @@ test('fresh global defaults refresh only a new chat summary, preserving existing
  f.context.refreshPermissionDefaults({sandbox_mode:'danger-full-access',approval_policy:'never',approvals_reviewer:'user'});
  assert.equal(f.context.permissionMode(f.context.currentPermissionSettings()),'full');
 });
+
+test('archived history with a stale in-progress turn remains exportable without a stop action',()=>{
+ const f=fixture();Object.assign(f.state,{stopOperations:new Map(),interrupting:new Set(),restoreError:false,threadBusy:false,threadArchived:true,attachmentLoads:0});
+ f.context.refreshThreadMenu=()=>{};f.context.renderPermissions=()=>{};f.node('#prompt').value='/export';
+ const app=fs.readFileSync(new URL('../public/app.js',import.meta.url),'utf8'),start=app.indexOf('function updateSend() {'),end=app.indexOf('\n// A turn can finish',start);vm.runInContext(app.slice(start,end),f.context);
+ f.state.activeTurns.set('A','T');f.context.updateSend();assert.equal(f.node('#send').disabled,false);assert.equal(f.node('#send').ariaLabel,'发送任务');
+ f.node('#prompt').value='Do not send this archived draft';f.context.updateSend();assert.equal(f.node('#send').disabled,true);
+});

@@ -1,0 +1,38 @@
+✔ approved-plan submission sends only approved text and preserves unsent text, attachments and skills (9.08964ms)
+✔ ordinary submission still sends selected skill and attachment, then clears sent text and attachment (1.853185ms)
+✔ delayed approved-task acknowledgement cannot overwrite text or attachments entered meanwhile (1.270927ms)
+✔ ordinary delayed acknowledgement keeps later edits and newly added attachments (1.489157ms)
+✔ repeated confirmation while pending produces exactly one protocol request (1.24148ms)
+✔ approved-task transport rejection preserves the original draft sentinel, attachments and skills (3.058962ms)
+✔ ordinary transport rejection also retains its original input and attachment for retry (1.256422ms)
+✔ sandbox confirmation ignores JSON field order (3.721413ms)
+✔ native custom read-only permissions never masquerade as a workspace preset (1.103293ms)
+✔ matching native notification settles before a held acknowledgement and cancels deadline (1.576073ms)
+✔ fresh native resume snapshot can confirm an operation without replaying old notifications (1.34139ms)
+✔ another conversation snapshot cannot settle a pending update (1.183083ms)
+✔ deadline ends UI waiting even while acknowledgement remains pending, without replaying request (3.012113ms)
+✔ disconnect settles once, blocks new submission, and a later genuine snapshot restores known state (1.27732ms)
+✔ native rejection keeps previous permissions and does not fabricate success (1.162146ms)
+✔ reviewer-only changes preserve native permission-profile provenance (1.378639ms)
+✔ new native thread permission mismatch blocks task submission and retains requested choice (1.895142ms)
+✔ matching new-thread receipt clears only its pending choice after native confirmation (0.951396ms)
+✔ uncertain permission changes block sending but keep an active task stoppable (2.337728ms)
+✔ command cleanup keeps permission changes disabled after its turn has already ended (1.133119ms)
+✔ fresh global defaults refresh only a new chat summary, preserving existing native thread snapshots (1.230057ms)
+✔ archived history with a stale in-progress turn remains exportable without a stop action (1.855855ms)
+✔ usage before the final turns page survives resume without embedded turns (4.949104ms)
+✔ snapshot-covered deltas are not replayed; full terminal items and turns remain idempotent (1.258314ms)
+✔ settings use the resume snapshot boundary rather than the later turn-page boundary (1.076492ms)
+✔ navigation generation change cancels an old hydration even when the same thread is selected again (1.201452ms)
+✔ embedded native recent page renders chronologically without another history request (1.054801ms)
+✔ plan progress survives a later history snapshot that has no progress field (1.069829ms)
+✔ late native resume reply cannot overwrite a newer navigation mode cache (4.697062ms)
+✔ a real later settings event replay keeps priority over the successful resume snapshot (1.323924ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 375.440789

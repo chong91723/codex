@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-27",
+  "scope": "Visible sidebar management plus composer /compact /fork /export /review /rollback relocation. Every storage target belongs to the current invocation. No existing conversation exported or mutated.",
+  "groups": [
+    {
+      "report": "sidebar-final/results.json",
+      "origin": "No model; own native storage fixture operations",
+      "base": "http://127.0.0.1:18868",
+      "passed": 10,
+      "failed": 0,
+      "browserErrors": [],
+      "cleanupComplete": true,
+      "turnStartRequests": 0
+    },
+    {
+      "report": "composer-final/results.json",
+      "origin": "No model; composer selection, storage/export/fork, true writer-lock guard",
+      "base": "http://127.0.0.1:18868",
+      "passed": 10,
+      "failed": 0,
+      "browserErrors": [],
+      "cleanupComplete": true,
+      "turnStartRequests": 0
+    },
+    {
+      "report": "synthetic-history-final/results.json",
+      "origin": "One new synthetic deepseek-flash ordinary turn; current export and rollback",
+      "base": "http://127.0.0.1:18866",
+      "passed": 4,
+      "failed": 0,
+      "browserErrors": [],
+      "cleanupComplete": true,
+      "turnStartRequests": 1
+    }
+  ],
+  "totalPassed": 24,
+  "totalFailed": 0,
+  "ordinaryFlashFixtureRequests": 1,
+  "remaining": [
+    "This batch did not actually invoke successful /compact or /review model work; prior evidence and any separate new tests must be reported separately."
+  ],
+  "firstRunRecords": [
+    {
+      "report": "sidebar-startup-unavailable/results.json",
+      "reason": "Independent 18866 was stopped; ERR_CONNECTION_REFUSED before any fixture or model request. Native-only suites were run on newly started 18868; later synthetic suite used safely restored 18866."
+    },
+    {
+      "report": "sidebar-first/results.json",
+      "reason": "Test migration removed the fork case that had implicitly switched from archived to recent scope. Layout case now explicitly selects Recent before opening a restored row."
+    },
+    {
+      "report": "composer-first/results.json",
+      "reason": "Test waited for native RPC transaction unlock but not the original composer submission lifecycle. It now waits for both action lock and original composer.pending to finish before checking successful command consumption."
+    }
+  ],
+  "visuallyInspected": [
+    "composer-final/composer-commands-1440.png",
+    "sidebar-final/sidebar-menu-1440.png"
+  ],
+  "syntaxChecks": "Five changed/new .mjs checked with Node 24; git diff --check passed."
+}

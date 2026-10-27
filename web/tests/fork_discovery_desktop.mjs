@@ -26,7 +26,7 @@ try{
  await check('原生空预览分叉通过会话操作创建，并写入Web发现索引',async()=>{
   await threadAction(page,'fork');await page.waitForFunction(parent=>state.thread?.id&&state.thread.id!==parent&&!state.threadLoading,parentId,{timeout:45000});childId=await page.evaluate(()=>state.thread.id);
   const actual=await call(page,'thread/read',{threadId:childId,includeTurns:false});assert.equal(actual.thread.preview,'');assert.equal(actual.thread.forkedFromId,parentId);assert((await index()).threadIds.includes(childId));
-  await page.evaluate(()=>showView('chat'));await threadAction(page,'rename');await page.locator('#dialog-value').fill(childName);await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await row(page,childId).waitFor();await screenshot('created');return{createdBy:'sidebar menu fork',nativePreviewEmpty:true,nativeParentId:parentId,indexContainsFork:true};
+  await page.evaluate(()=>showView('chat'));await threadAction(page,'rename');await page.locator('#dialog-value').fill(childName);await page.locator('#dialog-submit').click();await page.locator('#dialog').waitFor({state:'hidden'});await row(page,childId).waitFor();await screenshot('created');return{createdBy:'composer /fork selection then send',nativePreviewEmpty:true,nativeParentId:parentId,indexContainsFork:true};
  });
  await check('离开当前分叉、刷新及全新浏览器上下文仍能发现',async()=>{
   await page.locator('#new-chat').click();await row(page,childId).waitFor();assert.equal(await page.evaluate(()=>state.thread),null);
@@ -40,9 +40,9 @@ try{
  });
  await check('归档过滤、取消归档与删除均保持原生状态一致',async()=>{
   await threadAction(page,'archive');await page.waitForFunction(()=>!state.thread);await page.waitForFunction(id=>!state.threads.some(t=>t.id===id),childId);assert.equal(await row(page,childId).count(),0);
-  await page.locator('#archive-toggle').click();await row(page,childId).waitFor();await chooseChild();assert(await page.locator('#prompt').isDisabled());const archivedPath=await page.evaluate(()=>state.thread.path);assert(archivedPath.split('/').includes('archived_sessions'));await screenshot('archived');
+  await page.locator('#archive-toggle').click();await row(page,childId).waitFor();await chooseChild();assert(await page.locator('#prompt').isEnabled());assert(await page.locator('#send').isDisabled());const archivedPath=await page.evaluate(()=>state.thread.path);assert(archivedPath.split('/').includes('archived_sessions'));await screenshot('archived');
   await threadAction(page,'unarchive');await page.waitForFunction(id=>state.thread?.id===id&&!state.threadArchived&&!state.threadLoading,childId);assert.equal(await page.locator('#prompt').isDisabled(),false);assert(!(await page.evaluate(()=>state.thread.path)).split('/').includes('archived_sessions'));assert.equal(await row(page,childId).count(),1);
-  return{archiveAbsentFromNormal:true,archiveVisibleInArchiveList:true,archivedInputDisabled:true,unarchiveResumesSameId:true,indexRetainsDiscoverableId:(await index()).threadIds.includes(childId)};
+  return{archiveAbsentFromNormal:true,archiveVisibleInArchiveList:true,archivedAllowsLocalCommandsButChatSendDisabled:true,unarchiveResumesSameId:true,indexRetainsDiscoverableId:(await index()).threadIds.includes(childId)};
  });
  await check('晚到的真实列表响应不会把旧归档状态写回新列表',async()=>{
   await page.locator('#new-chat').click();await page.locator('#thread-search').fill('');await page.waitForFunction(()=>document.querySelector('#thread-search').value==='');
