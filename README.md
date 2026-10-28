@@ -57,7 +57,7 @@ supports_websockets = false
 
 准备成果按数据源 ID 存成结构档案和业务知识：物理表／字段／约束保留原样，用户及 Agent 的解释先作为候选，明确采用后才供分析使用。同对象同主题出现不同内容时暂停采用，用户选择或合并；保存来源、决定依据和版本，结构或连接变化后需重新确认。Agent 在分析时按表、字段和主题分层检索，只取相关的已确认知识，不把整个库和所有候选常驻提示词。业务说明不会自动成为可执行指标公式，也不会改变数据库权限。
 
-支持现有 MySQL、PostgreSQL、ClickHouse、Elasticsearch 连接；不同引擎按实际能力表示关系，不将 ClickHouse 排序键当唯一约束或将 Elasticsearch nested/join 当 SQL 外键。完整操作、存储位置、设计参考与预算见[数据库探索指南](DATABASE_EXPLORATION.md)。本批真实数据库／MCP 与浏览器测试独立记录，未以工具直连冒称真实 DeepSeek 自主探索通过。前端刷新加载入口；驻留的旧 MCP 需要重新加载，不强制中断现有用户任务。
+支持现有 MySQL、PostgreSQL、ClickHouse、Elasticsearch 连接；不同引擎按实际能力表示关系，不将 ClickHouse 排序键当唯一约束或将 Elasticsearch nested/join 当 SQL 外键。完整操作、存储位置、设计参考与预算见[数据库探索指南](DATABASE_EXPLORATION.md)。真实数据库／MCP、浏览器夹具和模型测试独立记录。2026-10-28新增真实DeepSeek Flash自主探索与确认后新会话查询，限独立虚构PostgreSQL场景；日常8765已按授权原位重启，实际新连接加载入口、MCP工具和模型均通过。已打开页面需刷新；其他驻留旧MCP仍须重新加载。
 
 ## 指标口径与数据推导证明（2026-10-28）
 

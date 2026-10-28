@@ -1,6 +1,26 @@
 # 实际验收报告
 
-## 最新增量：用户主动准备、四引擎探索与跨会话知识（2026-10-28）
+## 最新增量：真实 DeepSeek 自主探索与日常服务重启（2026-10-28）
+
+基线 `f3cffc0`。本轮使用日常 `8765` 的真实 `deepseek-flash`／原生 app-server／MCP，但数据库为自建临时 PostgreSQL 只读虚构夹具，不读取用户业务库。先完成真实探索与新会话知识复用，再按用户明确授权原位重启服务；模型鉴权由现有服务正常使用，重启时环境仅在内存继承，密钥／令牌不显示、不落盘。
+
+| 验证 | 实际结果与边界 |
+|---|---|
+| 新入口与原生MCP重载 | [flash/results.json](test-results/deepseek-discovery-2026-10-28/flash/results.json)最终4/4、0页面错误。实际`config/mcpServer/reload`后发现`explore_database/read_database_context/propose_database_knowledge`，没有用独立stdio测试冒称日常MCP已更新 |
+| 自主探索与候选 | 用户点击“让Agent探索业务含义”触发真实采集并发送；模型自主按表读取结构、读取现有知识、执行只读验证，并生成9条业务候选，全部保持pending，没有自行采用。最终两个业务原生回合均为deepseek／deepseek-flash，无模型回退 |
+| 用户明确确认 | 浏览器以普通文字补充有效订单状态和金额单位／税额／退款处理，保存后仍为候选；显式填写依据并采用后成为有效知识。用户决定由测试操作页面完成，不冒称模型自己批准 |
+| 新会话实际使用 | 新建独立原生会话，模型自主调用`read_database_context`取得两条确认定义；实际SQL只统计completed状态，合计52.30、订单数2，与固定虚构源数据一致。通过`publish_answer`发布并用实际worker核验verified；明确说明无确认指标规则、金额为含税订单金额且不扣退款，不冒称净收入或治理公式证明。准备快照ID和revision未变，不重复采集 |
+| 原位重启与重启后模型 | [restart.json](test-results/deepseek-discovery-2026-10-28/restart.json)：8765进程1441377→3162632，原启动参数、工作目录、配置和环境保留，优雅停止后HTTP恢复；其他端口不操作。[post-restart.json](test-results/deepseek-discovery-2026-10-28/post-restart.json)：新PID、新前端与numeric-evidence后台标识均实测，重新加载MCP后16项分析工具包含新增知识和指标工具；再完成真实Flash回合并返回“服务重启验证通过”，测试会话已删除 |
+| 展示与清理 | 实际查看确认窗口和新任务答案截图，无主要遮挡；侧栏在截图采集时已遮盖，只有虚构源内容入库。两个业务测试会话、查询结果和临时连接均删除，自有PG容器停止、临时凭据文件删除；源绑定知识历史按现有保留策略留下，报告不称其已物理删除。重启后冒烟会话另行删除 |
+
+最终探索原生回合有两次真实工具校验失败：SQL使用未允许的JSON聚合函数，候选aspect误用中文；模型根据工具错误在同一原生回合内自行改正并完成，没有吞错或人为代写候选。新会话分析回合没有工具错误。此结果证明本虚构PostgreSQL场景能完成，不保证任意陌生数据库语义理解始终正确；其他三引擎仍以此前工具／数据库集成为准，本轮没有各自真实模型验证。
+
+测试器早期有两项兼容错误，原始失败保留：状态响应误读为mcpServers而实际为data，导致零模型回合退出；随后直接使用旧后台尚无的verify_answer端点，改走网页已有worker兼容入口后复跑通过。保留[状态解析失败](test-results/deepseek-discovery-2026-10-28/before-status-parser-fix/results.json)和[旧接口不兼容](test-results/deepseek-discovery-2026-10-28/before-verification-compatibility-fix/results.json)，均不是通过修改产品协议规避。最终业务回归2个普通原生回合，重启后1个冒烟回合；早期兼容失败另外产生2个业务回合，总计5个普通原生模型回合，不等同HTTP请求数或首次成功率。
+
+本轮没有产品逻辑修改；新增可复跑的真实模型脚本、回执与文档，因此没有把上一批238项JS／183项Python重跑记作本轮。新增脚本JS语法、Python AST及无授权开关提前拒绝检查通过。复跑需要明确允许日常服务模型调用：`CODEX_CONFIRM_LIVE_MODEL_TEST=1 python3 web/tests/run_deepseek_discovery_live.py`；它创建独立PG和临时只读数据源，不读取模型密钥。运行中的网页需刷新以加载新脚本；本次已验证新连接加载成功，不声称替用户刷新了所有已打开的标签页。
+
+
+## 前一批次：用户主动准备、四引擎探索与跨会话知识（2026-10-28）
 
 基线 `d5073ac`。新增功能沿现有数据源管理、私有 SQLite 和原生 MCP 实现；不改 Codex 核心、不新增模型代理循环。用户主动在“数据源 → 数据库探索”中准备；日常分析仅按需读取成果，未准备的 MCP 请求不会自动扫描。新建会话代表新分析任务，已有配置和按数据源保存的有效知识继续生效。操作说明及开源设计参考见[数据库探索指南](DATABASE_EXPLORATION.md)。
 
