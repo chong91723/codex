@@ -1,0 +1,51 @@
+{
+  "scope": "Final four-engine isolated runtime and real browser/MCP regression; Agent tool calls are scripted test actions, not model generations.",
+  "finalGroupsPassed": 9,
+  "finalGroupsTotal": 9,
+  "pageErrors": [],
+  "modelRequests": 0,
+  "versions": {
+    "postgresql": "17.11 (Debian 17.11-1.pgdg13+2)",
+    "mysql": "8.4.13",
+    "clickhouse": "25.8.33.6",
+    "elasticsearch": "8.19.0, Build docker/93788a8c2882eb5b606510680fac214cff1c7a22, JVM 24"
+  },
+  "versionMethod": "Read-only --version from the same cached images with --pull=never, --network=none and --rm; no database services launched for version inspection. Elasticsearch version inspection emitted a local hostname resolution warning under --network=none and exited zero; the actual fixture database tests passed.",
+  "screenshotsActuallyViewed": [
+    "browser/discovery-structure-1440.png",
+    "browser/discovery-structure-1024.png",
+    "browser/discovery-knowledge-dark-1024.png"
+  ],
+  "screenshotObservation": "Actual structure fields and long comments fit the dialog at 1440 and 1024 desktop widths. The dark 1024 knowledge form is readable, with a fixed Close footer and independently scrollable body. No page horizontal overflow or covered main controls observed. Full lower records are reached by scrolling.",
+  "preparationBoundary": {
+    "unpreparedMcpDoesNotCollect": true,
+    "explicitBrowserCollection": true,
+    "explicitLauncherPreparesBeforeDraft": true,
+    "draftBlocksCollection": true,
+    "noAutomaticSend": true
+  },
+  "nativeTasks": {
+    "count": 2,
+    "sharedPreparedSourceKnowledge": true,
+    "rescanRequired": false,
+    "priorPythonTaskResultRejectedInSecondTask": true
+  },
+  "runtimeElasticsearch": "Separate real collector + knowledge.scan passed with 531 unique fields including runtime shadow, mappedField retention and runtimeDefinitionHash.",
+  "earlierHarnessAttempts": [
+    "ES read_result on all 530 fields exceeded existing 5000-character result context budget; harness now requests _id and amount only.",
+    "Deleting a native thread without any persisted item returned no rollout; harness now persists a clearly marked user fixture before cleanup.",
+    "One ES fixture setup request exceeded the test admin HTTP timeout of 5 seconds; fixture timeout raised to 20 seconds, product timeouts unchanged.",
+    "An earlier 9-group pass used the superseded automatic-preparation behavior; final run explicitly validates user-only preparation."
+  ],
+  "limits": [
+    "No DeepSeek Flash model call: configured secret absent from this execution environment. Agent comprehension, spontaneous tool choice and live analysis answers were not retested.",
+    "Real tests use independent synthetic local instances, not production remote database services.",
+    "No claim of semantic contradiction detection beyond the documented topic and content rules."
+  ],
+  "cleanup": {
+    "ownedFourEngineContainersStopped": true,
+    "runtimeElasticsearchContainerStopped": true,
+    "runningDiscoveryContainersAfterInspection": 0,
+    "user8765Restarted": false
+  }
+}

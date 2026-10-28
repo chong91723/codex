@@ -1,0 +1,300 @@
+{
+  "scope": "Actual own four-engine fixtures, strict read-only accounts, web and MCP. No model calls. User decisions are browser actions; Agent proposals are actual tool calls authored by the test.",
+  "results": [
+    {
+      "name": "四引擎真实只读连接与MCP探索，超过五百字段仍完整保存",
+      "status": "passed",
+      "engines": [
+        {
+          "engine": "postgresql",
+          "tableCount": 37,
+          "columnCount": 554,
+          "complete": true
+        },
+        {
+          "engine": "mysql",
+          "tableCount": 37,
+          "columnCount": 554,
+          "complete": true
+        },
+        {
+          "engine": "clickhouse",
+          "tableCount": 35,
+          "columnCount": 549,
+          "complete": true
+        },
+        {
+          "engine": "elasticsearch",
+          "tableCount": 1,
+          "columnCount": 530,
+          "complete": true
+        }
+      ],
+      "noDataRowsReadByDiscovery": true
+    },
+    {
+      "name": "MCP对象和字段分页、复合外键顺序、ClickHouse非唯一键、Elasticsearch映射范围",
+      "status": "passed",
+      "tablePagination": true,
+      "fieldPaginationPastFiveHundred": true,
+      "compositeOrder": true,
+      "physicalKeySemantics": true,
+      "scopedIndex": true
+    },
+    {
+      "name": "界面手工补充只保存候选，Agent提议不能自动采用",
+      "status": "passed",
+      "manualPending": true,
+      "agentPending": true,
+      "agentCannotSetAccepted": true,
+      "conflictNotSilentlyUsed": true
+    },
+    {
+      "name": "用户明确选择一项，其他同主题候选保留历史且不再作为上下文",
+      "status": "passed",
+      "explicitAdoption": true,
+      "unchangedSchemaRefreshPreservesDecision": true,
+      "rejectedProposalCannotResurrect": true,
+      "sourceIsolation": true
+    },
+    {
+      "name": "用户合并冲突为新知识，保留来源；并发旧版本保存被拒绝",
+      "status": "passed",
+      "mergedUserAccepted": true,
+      "historyPreserved": true,
+      "optimisticConcurrency": true
+    },
+    {
+      "name": "真实结构变更让旧知识退出上下文，用户复核后生成当前版本",
+      "status": "passed",
+      "realOwnedDdl": true,
+      "oldKnowledgeExcluded": true,
+      "explicitReconfirmationCreatesVersion": true
+    },
+    {
+      "name": "探索与知识管理后四引擎普通只读查询仍可使用",
+      "status": "passed",
+      "actualQueries": [
+        {
+          "engine": "postgresql",
+          "rows": 1
+        },
+        {
+          "engine": "mysql",
+          "rows": 1
+        },
+        {
+          "engine": "clickhouse",
+          "rows": 1
+        },
+        {
+          "engine": "elasticsearch",
+          "rows": 2
+        }
+      ]
+    },
+    {
+      "name": "桌面结构和冲突管理窗口可滚动，刷新保留用户决定",
+      "status": "passed",
+      "widths": [
+        1440,
+        1024
+      ],
+      "dark": true,
+      "persisted": true
+    },
+    {
+      "name": "发起Agent探索保留已有草稿，空输入时只填任务不自动发送",
+      "status": "passed",
+      "existingDraftPreserved": true,
+      "taskPreparedOnly": true,
+      "modelRequests": 0
+    }
+  ],
+  "errors": [
+    "Owned cleanup: page.evaluate: Error: no rollout found for thread id 01a180c5-a205-7fe1-9783-490bddb9fd3b\n    at ws.onmessage (http://127.0.0.1:48469/app.js:102:289)"
+  ],
+  "modelRequests": 0,
+  "toolCalls": [
+    {
+      "name": "explore_database",
+      "elapsedMs": 187.998,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 198.995,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 67.595,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 57.797,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 58.132,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.59,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.255,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.06,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.311,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.231,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 7.993,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.746,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.882,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.15,
+      "rejected": true
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 41.809,
+      "rejected": false
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 7.603,
+      "rejected": false
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 5.127,
+      "rejected": true
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 16.884,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 20.067,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 64.582,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 16.463,
+      "rejected": false
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 4.681,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 16.781,
+      "rejected": false
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 8.308,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 17.948,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 77.4,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 17.951,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 18.384,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 902.921,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 24.606,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 136.134,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 76.977,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 155.714,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 15.233,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 315.581,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 37.409,
+      "rejected": false
+    }
+  ]
+}

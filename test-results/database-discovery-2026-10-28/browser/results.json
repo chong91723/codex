@@ -1,0 +1,347 @@
+{
+  "scope": "Actual own four-engine fixtures, strict read-only accounts, web and MCP. No model calls. User decisions are browser actions; Agent proposals are actual tool calls authored by the test.",
+  "results": [
+    {
+      "name": "四引擎真实只读连接与MCP探索，超过五百字段仍完整保存",
+      "status": "passed",
+      "engines": [
+        {
+          "engine": "postgresql",
+          "tableCount": 37,
+          "columnCount": 554,
+          "complete": true
+        },
+        {
+          "engine": "mysql",
+          "tableCount": 37,
+          "columnCount": 554,
+          "complete": true
+        },
+        {
+          "engine": "clickhouse",
+          "tableCount": 35,
+          "columnCount": 549,
+          "complete": true
+        },
+        {
+          "engine": "elasticsearch",
+          "tableCount": 1,
+          "columnCount": 530,
+          "complete": true
+        }
+      ],
+      "noDataRowsReadByDiscovery": true,
+      "unpreparedMcpDoesNotScan": true,
+      "explicitUserPreparation": true,
+      "ordinaryQueryBeforePreparation": true
+    },
+    {
+      "name": "MCP对象和字段分页、复合外键顺序、ClickHouse非唯一键、Elasticsearch映射范围",
+      "status": "passed",
+      "tablePagination": true,
+      "fieldPaginationPastFiveHundred": true,
+      "compositeOrder": true,
+      "physicalKeySemantics": true,
+      "scopedIndex": true
+    },
+    {
+      "name": "界面手工补充只保存候选，Agent提议不能自动采用",
+      "status": "passed",
+      "manualPending": true,
+      "agentPending": true,
+      "agentCannotSetAccepted": true,
+      "conflictNotSilentlyUsed": true
+    },
+    {
+      "name": "用户明确选择一项，其他同主题候选保留历史且不再作为上下文",
+      "status": "passed",
+      "newNativeTaskSharesPreparedKnowledge": true,
+      "newTaskDoesNotRescan": true,
+      "priorPythonTaskResultIsolated": true,
+      "distinctNativeThreads": 2,
+      "explicitAdoption": true,
+      "unchangedSchemaRefreshPreservesDecision": true,
+      "rejectedProposalCannotResurrect": true,
+      "sourceIsolation": true
+    },
+    {
+      "name": "用户合并冲突为新知识，保留来源；并发旧版本保存被拒绝",
+      "status": "passed",
+      "mergedUserAccepted": true,
+      "historyPreserved": true,
+      "optimisticConcurrency": true
+    },
+    {
+      "name": "真实结构变更让旧知识退出上下文，用户复核后生成当前版本",
+      "status": "passed",
+      "realOwnedDdl": true,
+      "oldKnowledgeExcluded": true,
+      "explicitReconfirmationCreatesVersion": true
+    },
+    {
+      "name": "探索与知识管理后四引擎普通只读查询仍可使用",
+      "status": "passed",
+      "actualQueries": [
+        {
+          "engine": "postgresql",
+          "rows": 1
+        },
+        {
+          "engine": "mysql",
+          "rows": 1
+        },
+        {
+          "engine": "clickhouse",
+          "rows": 1
+        },
+        {
+          "engine": "elasticsearch",
+          "rows": 2
+        }
+      ]
+    },
+    {
+      "name": "桌面结构和冲突管理窗口可滚动，刷新保留用户决定",
+      "status": "passed",
+      "widths": [
+        1440,
+        1024
+      ],
+      "dark": true,
+      "persisted": true
+    },
+    {
+      "name": "发起Agent探索保留已有草稿，空输入时只填任务不自动发送",
+      "status": "passed",
+      "existingDraftPreserved": true,
+      "existingDraftDoesNotScan": true,
+      "explicitLauncherPreparesMissingSnapshot": true,
+      "taskPreparedOnly": true,
+      "modelRequests": 0
+    }
+  ],
+  "errors": [],
+  "modelRequests": 0,
+  "toolCalls": [
+    {
+      "name": "explore_database",
+      "elapsedMs": 2.686,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 809.421,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 20.941,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 12.213,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 3.751,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 12.537,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 1.822,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 9.294,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 2.764,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 9.277,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 14.475,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.942,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.75,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.844,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.519,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.449,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 9.163,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.679,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.599,
+      "rejected": true
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 18.494,
+      "rejected": false
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 7.241,
+      "rejected": false
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 4.262,
+      "rejected": true
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 16.896,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 18.047,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 18.292,
+      "rejected": false
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 4.169,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 17.279,
+      "rejected": false
+    },
+    {
+      "name": "run_python",
+      "elapsedMs": 228.192,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 19.195,
+      "rejected": false
+    },
+    {
+      "name": "list_databases",
+      "elapsedMs": 125.142,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 1.395,
+      "rejected": true
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 8.937,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 19.591,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 36.347,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 18.098,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 20.135,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 15.958,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 56.7,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 41.87,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 133.321,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 15.528,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 302.046,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 36.53,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 10.573,
+      "rejected": false
+    }
+  ]
+}

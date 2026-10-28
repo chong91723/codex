@@ -1,0 +1,253 @@
+{
+  "scope": "Actual own four-engine fixtures, strict read-only accounts, web and MCP. No model calls. User decisions are browser actions; Agent proposals are actual tool calls authored by the test.",
+  "results": [
+    {
+      "name": "四引擎真实只读连接与MCP探索，超过五百字段仍完整保存",
+      "status": "passed",
+      "engines": [
+        {
+          "engine": "postgresql",
+          "tableCount": 37,
+          "columnCount": 554,
+          "complete": true
+        },
+        {
+          "engine": "mysql",
+          "tableCount": 37,
+          "columnCount": 554,
+          "complete": true
+        },
+        {
+          "engine": "clickhouse",
+          "tableCount": 35,
+          "columnCount": 549,
+          "complete": true
+        },
+        {
+          "engine": "elasticsearch",
+          "tableCount": 1,
+          "columnCount": 530,
+          "complete": true
+        }
+      ],
+      "noDataRowsReadByDiscovery": true
+    },
+    {
+      "name": "MCP对象和字段分页、复合外键顺序、ClickHouse非唯一键、Elasticsearch映射范围",
+      "status": "passed",
+      "tablePagination": true,
+      "fieldPaginationPastFiveHundred": true,
+      "compositeOrder": true,
+      "physicalKeySemantics": true,
+      "scopedIndex": true
+    },
+    {
+      "name": "界面手工补充只保存候选，Agent提议不能自动采用",
+      "status": "passed",
+      "manualPending": true,
+      "agentPending": true,
+      "agentCannotSetAccepted": true,
+      "conflictNotSilentlyUsed": true
+    },
+    {
+      "name": "用户明确选择一项，其他同主题候选保留历史且不再作为上下文",
+      "status": "passed",
+      "explicitAdoption": true,
+      "rejectedProposalCannotResurrect": true,
+      "sourceIsolation": true
+    },
+    {
+      "name": "用户合并冲突为新知识，保留来源；并发旧版本保存被拒绝",
+      "status": "passed",
+      "mergedUserAccepted": true,
+      "historyPreserved": true,
+      "optimisticConcurrency": true
+    },
+    {
+      "name": "真实结构变更让旧知识退出上下文，用户复核后生成当前版本",
+      "status": "passed",
+      "realOwnedDdl": true,
+      "oldKnowledgeExcluded": true,
+      "explicitReconfirmationCreatesVersion": true
+    },
+    {
+      "name": "探索与知识管理后四引擎普通只读查询仍可使用",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: 本页明细超过上下文单次预算。请减少行数或字段；完整结果仍保留，可在网页查看和下载。\n\ntrue !== false\n\n    at tool (file:///root/Codex/web/tests/database_discovery_desktop.mjs:15:317)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///root/Codex/web/tests/database_discovery_desktop.mjs:66:342\n    at async check (file:///root/Codex/web/tests/database_discovery_desktop.mjs:20:48)\n    at async file:///root/Codex/web/tests/database_discovery_desktop.mjs:64:2"
+    }
+  ],
+  "errors": [],
+  "modelRequests": 0,
+  "toolCalls": [
+    {
+      "name": "explore_database",
+      "elapsedMs": 207.175,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 213.096,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 71.615,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 60.854,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 57.281,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.133,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.533,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.57,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.332,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.102,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 7.604,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.333,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 8.478,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 7.913,
+      "rejected": true
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 31.554,
+      "rejected": false
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 10.299,
+      "rejected": false
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 4.215,
+      "rejected": true
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 17.105,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 17.767,
+      "rejected": false
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 6.867,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 17.923,
+      "rejected": false
+    },
+    {
+      "name": "propose_database_knowledge",
+      "elapsedMs": 14.999,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 16.997,
+      "rejected": false
+    },
+    {
+      "name": "explore_database",
+      "elapsedMs": 65.576,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 24.056,
+      "rejected": false
+    },
+    {
+      "name": "read_database_context",
+      "elapsedMs": 20.938,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 1117.524,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 30.079,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 58.587,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 44.324,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 187.538,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 14.844,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 430.883,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 190.629,
+      "rejected": true
+    }
+  ]
+}

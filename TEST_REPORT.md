@@ -1,5 +1,29 @@
 # 实际验收报告
 
+## 最新增量：用户主动准备、四引擎探索与跨会话知识（2026-10-28）
+
+基线 `d5073ac`。新增功能沿现有数据源管理、私有 SQLite 和原生 MCP 实现；不改 Codex 核心、不新增模型代理循环。用户主动在“数据源 → 数据库探索”中准备；日常分析仅按需读取成果，未准备的 MCP 请求不会自动扫描。新建会话代表新分析任务，已有配置和按数据源保存的有效知识继续生效。操作说明及开源设计参考见[数据库探索指南](DATABASE_EXPLORATION.md)。
+
+| 验证类别 | 实际结果和边界 |
+|---|---|
+| 真实四引擎结构采集 | [collector/results.json](test-results/database-discovery-2026-10-28/collector/results.json)：本机独立 `postgres:17`、`mysql:8.4`、`clickhouse/clickhouse-server:25.8`、`elasticsearch:8.19.0` 镜像，无拉取／生产服务请求。只读账号分别读取37/37/35/1个对象、554/554/549/530个字段，完整目录超过旧501限制；验证PG/MySQL复合外键顺序及注释/视图、CH排序键不是唯一键、ES nested/object/multi-field/alias/join和配置索引范围。实际二进制版本见[validation-notes.json](test-results/database-discovery-2026-10-28/validation-notes.json)：PG17.11、MySQL8.4.13、CH25.8.33.6、ES8.19.0；只证明这些测试版本与配置 |
+| 真实 Web／MCP／用户操作 | [browser/results.json](test-results/database-discovery-2026-10-28/browser/results.json)：最终9/9、0页面错误、0模型请求。用户显式采集、未准备请求不自动scan、未准备也可普通查询、手工保存pending、实际MCP提交候选但不能自行确认、用户选择与合并、CAS、刷新持久化、真实PG DDL导致旧知识退出上下文和重新确认；管理后四引擎普通只读查询继续成功。提议文本由测试编写，不冒称模型自主理解 |
+| 新会话复用／任务归属 | 同一实际集成创建两个原生thread：新任务读到相同数据源及已确认知识、快照不变、不重采；另一任务的Python结果读取被既有归属检查拒绝。实际SQLite另测不同Gateway复用知识、指标与时效，其他源不混，停用/时效修改跨会话可见。Skills/MCP继续共享配置另沿newThread→ensureThread→原生config链代码审查，未以此冒称本批模型调用所有Skills/MCP通过。SQL历史快照仍可按既有来源／时效规则显式复用，不宣称多租户隔离 |
+| Elasticsearch runtime专项 | [runtime-elasticsearch/collector/results.json](test-results/database-discovery-2026-10-28/runtime-elasticsearch/collector/results.json)：真实同名runtime覆盖、额外runtime字段共531个唯一字段，保留mappedField原映射及定义指纹，真实知识scan成功；不执行定义脚本。针对代码审查发现的初版同名重复字段拒绝风险完成修复和实测 |
+| 后端与协议回归 | [test_database_knowledge.py](web/tests/test_database_knowledge.py)28/28（实际SQLite、mock collector）：审批生命周期、冲突/去重/历史、源和结构变化、并发CAS、取消、容量、合法带空格名称、注释异常及跨会话；[test_database_exploration_tools.py](web/tests/test_database_exploration_tools.py)14/14（明确mock）：不自动采集、拒绝refresh/审批参数、有限冲突预览、确认全文不截断、超预算明确错误；[test_metadata_catalog.py](web/tests/test_metadata_catalog.py)7/7：分页完整性、预算、中断、ES覆盖、连接变化与资源关闭 |
+| 单独UI与截图 | [ui/database-exploration-ui.json](test-results/database-exploration-2026-10-28/ui/database-exploration-ui.json)：10/10、0页面错误，真实Chromium搭配明确fixtureAPI；普通文本、失败保留、冲突、CAS、作用域、launcher不覆盖/不自动发送、显式首次采集与切换保护。1440/1024桌面明暗截图；根代理实际查看最新fixture1024明色和真实集成1024结构截图，显示与滚动正常，手机不测试 |
+| 完整工程回归 | [engineering/results.json](test-results/database-discovery-2026-10-28/engineering/results.json)：14套JS行为238/238；Python183项中179通过、4原有条件跳过，包含上面新回归而非另加次数。104份JS/MJS语法和59份Python AST通过；锁定源码pristine、176/176方法及完整schema/资源一致。纯JS/CSS，无TypeScript/bundler构建；未重新编译核心 |
+| 资源与生效 | [integration-cleanup.json](test-results/database-discovery-2026-10-28/integration-cleanup.json)：四个自有容器全部停止、自有临时环境清理；ES专项另一个容器同样清理。用户8765未重启，不读取其凭据或业务数据。刷新前端可见入口；驻留旧MCP须重新加载获得新工具，不能单靠网页刷新推断后端升级 |
+
+初次四引擎查询回归中，ES测试读取超过五百字段的完整一行，触发现有`read_result`单次上下文预算；改为明确选择所需字段后真实查询通过，这是测试请求调整，不放宽产品预算。另一次断言9/9完成后，测试清理空原生线程遇到“no rollout found”，已在独立夹具加入明确标记的用户测试条目后复跑，最终errors为空；前一结果保留在[superseded-before-manual-preparation.json](test-results/database-discovery-2026-10-28/superseded-before-manual-preparation.json)。ES专项初次管理员初始化HTTP五秒超时，增加的是测试夹具就绪预算，没有修改产品请求超时；重跑成功，所有自有环境均清理。
+
+准备结果存入源绑定的版本化记录，Agent按表／主题读取；单次返回限制16,000序列化字符，确认正文与物理元数据超预算时报错要求缩小范围，不静默截断。冲突仅有限明确预览，完整原文在管理页。不会每次分析增加全库扫描，也没有新增模型校验回合；但准备期元数据、模型解释、连接探测和检索都有成本，本批没有模型端到端A/B，不能量化生产等待或保证分析更快。
+
+完整性只指当前配置和权限范围内枚举完成，非跨DDL原子快照；结构变更须主动重采。自然语言跨主题冲突检测、组织角色核验、多租户隔离、生产规模性能、ClickHouse元数据取消后的服务器终止时刻均未证明。正常MCP无确认工具，但宿主完全访问权限不构成对本地状态的安全隔离。本批未配置独立测试用DeepSeek凭据，**未运行真实deepseek-flash自主探索、解释质量或选用知识的模型回归**；不能将9/9工具页面测试替代它。严格国际出口和手机按用户要求不测。
+
+复跑：`python3 web/tests/run_database_discovery.py`（需四个已缓存镜像、Playwright和项目运行环境，不需要模型密钥），`python3 web/tests/run_database_discovery.py --elasticsearch-only --collector-only --runtime-fixture`；后端可用`.toolchains/databases/bin/python -B -m unittest discover -s web/tests`。
+
+
 
 ## 最新增量：通用指标规则、精确推导与用户确认（2026-10-28）
 

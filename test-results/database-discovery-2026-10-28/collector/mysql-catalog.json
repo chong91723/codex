@@ -1,0 +1,4991 @@
+{
+  "engine": "mysql",
+  "database": "fixture",
+  "namespace": "fixture",
+  "sourceId": "79fb184b669f2265fc4d46d4",
+  "sourceVersion": 1,
+  "observedAt": "2026-10-28T04:19:31.996977+00:00",
+  "completedAt": "2026-10-28T04:19:32.109911+00:00",
+  "complete": true,
+  "capabilities": {
+    "columns": true,
+    "comments": true,
+    "primaryKeys": true,
+    "foreignKeys": true,
+    "indexes": true
+  },
+  "warnings": [],
+  "tables": [
+    {
+      "name": "customers",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "tenant_id",
+          "dataType": "int",
+          "nullable": false,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "customer_id",
+          "dataType": "int",
+          "nullable": false,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "customer_name",
+          "dataType": "varchar(80)",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        }
+      ],
+      "primaryKey": [
+        "tenant_id",
+        "customer_id"
+      ],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "columns": [
+            "tenant_id",
+            "customer_id"
+          ],
+          "unique": true,
+          "expression": [
+            null,
+            null
+          ]
+        }
+      ],
+      "properties": {}
+    },
+    {
+      "name": "order_amounts",
+      "namespace": "fixture",
+      "kind": "view",
+      "comment": "VIEW",
+      "columns": [
+        {
+          "name": "tenant_id",
+          "dataType": "int",
+          "nullable": false,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "order_id",
+          "dataType": "int",
+          "nullable": false,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "amount",
+          "dataType": "decimal(20,2)",
+          "nullable": false,
+          "default": null,
+          "comment": "Synthetic amount, not a confirmed business definition",
+          "position": 3
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "orders",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "Synthetic orders for metadata discovery",
+      "columns": [
+        {
+          "name": "tenant_id",
+          "dataType": "int",
+          "nullable": false,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "order_id",
+          "dataType": "int",
+          "nullable": false,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "customer_id",
+          "dataType": "int",
+          "nullable": false,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "amount",
+          "dataType": "decimal(20,2)",
+          "nullable": false,
+          "default": null,
+          "comment": "Synthetic amount, not a confirmed business definition",
+          "position": 4
+        }
+      ],
+      "primaryKey": [
+        "tenant_id",
+        "order_id"
+      ],
+      "uniqueKeys": [],
+      "foreignKeys": [
+        {
+          "name": "fk_orders_customer",
+          "columns": [
+            "tenant_id",
+            "customer_id"
+          ],
+          "targetNamespace": "fixture",
+          "targetTable": "customers",
+          "targetColumns": [
+            "tenant_id",
+            "customer_id"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "name": "fk_orders_customer",
+          "columns": [
+            "tenant_id",
+            "customer_id"
+          ],
+          "unique": false,
+          "expression": [
+            null,
+            null
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "columns": [
+            "tenant_id",
+            "order_id"
+          ],
+          "unique": true,
+          "expression": [
+            null,
+            null
+          ]
+        }
+      ],
+      "properties": {}
+    },
+    {
+      "name": "wide_00",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_01",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_02",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_03",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_04",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_05",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_06",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_07",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_08",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_09",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_10",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_11",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_12",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_13",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_14",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_15",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_16",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_17",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_18",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_19",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_20",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_21",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_22",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_23",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_24",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_25",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_26",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_27",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_28",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_29",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_30",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_31",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_32",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    },
+    {
+      "name": "wide_33",
+      "namespace": "fixture",
+      "kind": "base_table",
+      "comment": "",
+      "columns": [
+        {
+          "name": "field_0",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 1
+        },
+        {
+          "name": "field_1",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 2
+        },
+        {
+          "name": "field_2",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 3
+        },
+        {
+          "name": "field_3",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 4
+        },
+        {
+          "name": "field_4",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 5
+        },
+        {
+          "name": "field_5",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 6
+        },
+        {
+          "name": "field_6",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 7
+        },
+        {
+          "name": "field_7",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 8
+        },
+        {
+          "name": "field_8",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 9
+        },
+        {
+          "name": "field_9",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 10
+        },
+        {
+          "name": "field_10",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 11
+        },
+        {
+          "name": "field_11",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 12
+        },
+        {
+          "name": "field_12",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 13
+        },
+        {
+          "name": "field_13",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 14
+        },
+        {
+          "name": "field_14",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 15
+        },
+        {
+          "name": "field_15",
+          "dataType": "int",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "position": 16
+        }
+      ],
+      "primaryKey": [],
+      "uniqueKeys": [],
+      "foreignKeys": [],
+      "indexes": [],
+      "properties": {}
+    }
+  ]
+}
