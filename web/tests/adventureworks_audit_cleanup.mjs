@@ -1,0 +1,15 @@
+import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';
+assert.equal(process.env.CODEX_CONFIRM_LIVE_MODEL_TEST,'1');const out=process.env.REPORT_DIR,receipt=process.env.CODEX_AUDIT_SOURCE;assert(out&&receipt?.startsWith('/tmp/'));const sourceId=JSON.parse(fs.readFileSync(receipt,'utf8')).sourceId;
+const resultIds=new Set(),chartIds=new Set(),threadIds=new Set();
+function walk(v){if(!v||typeof v!=='object')return;for(const [k,x]of Object.entries(v))if(['threadId','ownerThreadId','parentThreadId'].includes(k)&&typeof x==='string')threadIds.add(x);if(v.type==='mcpToolCall'){let d=v.result?.structuredContent;try{d??=JSON.parse(v.result?.content?.find(c=>c.type==='text')?.text||'{}');}catch{}if(d){if(d.resultId)resultIds.add(d.resultId);for(const r of d.results||[])if(r.resultId)resultIds.add(r.resultId);if(d.codexWebChart?.chartId)chartIds.add(d.codexWebChart.chartId);}}for(const x of Object.values(v))walk(x);}
+for(const name of fs.readdirSync(out,{recursive:true}))if(name.endsWith('.json'))try{walk(JSON.parse(fs.readFileSync(path.join(out,name),'utf8')));}catch{}
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'/root/Codex/.toolchains/playwright/node_modules/playwright/index.mjs'),browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_BIN||'/root/Codex/.toolchains/playwright-browsers/chromium-1248/chrome-linux64/chrome',args:['--no-sandbox']}),page=await browser.newPage();
+try{
+ await page.goto(process.env.CODEX_WEB_URL);await page.waitForFunction(()=>state.ready&&state.models.length&&!state.threadLoading);
+ const api=(action,payload)=>page.evaluate(({action,payload})=>databaseApi(action,payload),{action,payload});
+ const status=await api('',undefined),directory=status.mcpConfig.env.CODEX_WEB_DB_STATE;assert(path.isAbsolute(directory)&&directory!=='/');let removedResults=0,removedCharts=0;
+ for(const id of resultIds){assert(/^[a-f0-9]{32}$/.test(id));const file=path.join(directory,'results',id+'.json');if(!fs.existsSync(file))continue;const meta=JSON.parse(fs.readFileSync(file,'utf8'));assert(meta.connectionId===sourceId||threadIds.has(meta.ownerThreadId),'Refusing unrelated result');await api('clear_result',{resultId:id});removedResults++;}
+ for(const id of chartIds){assert(/^[a-f0-9]{32}$/.test(id));const file=path.join(directory,'charts',id+'.json');if(!fs.existsSync(file))continue;const meta=JSON.parse(fs.readFileSync(file,'utf8'));assert(meta.connectionId===sourceId||resultIds.has(meta.resultId),'Refusing unrelated chart');fs.unlinkSync(file);removedCharts++;}
+ await api('remove',{id:sourceId});
+ fs.writeFileSync(out+'/cleanup.json',JSON.stringify({ownedSourceRemoved:true,knowledgeHistoryRetained:true,knownResultIds:resultIds.size,remainingOwnedResultsRemoved:removedResults,ownedChartsRemoved:removedCharts,modelRequests:0,productionDatabasesUsed:false},null,2)+'\n');console.log(JSON.stringify({sourceRemoved:true,remainingOwnedResultsRemoved:removedResults,ownedChartsRemoved:removedCharts}));
+}finally{await browser.close();}

@@ -1,0 +1,70 @@
+{
+  "scope": "Real current web, native DeepSeek Flash, own read-only public MySQL AdventureWorks. Explicit browser actions simulate this test user. No old user threads read. Stop/continue is a new turn, not a transaction checkpoint.",
+  "sourceId": "d405332778c1c12116333a1b",
+  "phase": "configuration",
+  "checks": [
+    {
+      "name": "实际MCP新增工具可见，原生保留技能可读取",
+      "passed": true,
+      "evidence": {
+        "managedToolNames": [
+          "describe_database",
+          "publish_answer",
+          "describe_result",
+          "read_database_context",
+          "explore_database",
+          "analyze_result",
+          "fetch_data",
+          "read_result",
+          "create_chart",
+          "execute_metric",
+          "propose_database_knowledge",
+          "propose_database_correction",
+          "list_databases",
+          "query_database",
+          "run_python",
+          "list_metric_rules",
+          "import_data_file"
+        ],
+        "retainedNativeSkills": [
+          {
+            "name": "openai-docs",
+            "enabled": true,
+            "scope": "system"
+          },
+          {
+            "name": "review-agent",
+            "enabled": true,
+            "scope": "system"
+          },
+          {
+            "name": "skill-creator",
+            "enabled": true,
+            "scope": "system"
+          },
+          {
+            "name": "skill-installer",
+            "enabled": true,
+            "scope": "system"
+          }
+        ],
+        "configurationNotChanged": true,
+        "skillExecutionNotTested": true
+      }
+    },
+    {
+      "name": "重新探索相同数据库后保留已采用纠正与业务定义",
+      "passed": true,
+      "evidence": {
+        "previousSnapshot": "27e54089781646ad9d1d434a1b4f41c7",
+        "newSnapshot": "2ef06509ce5be8684165f482c9d8ed05",
+        "sameSchemaHash": true,
+        "userDecisionsPreserved": true
+      }
+    }
+  ],
+  "errors": [],
+  "events": [],
+  "calls": [],
+  "approvals": []
+}

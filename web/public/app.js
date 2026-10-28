@@ -517,9 +517,14 @@ async function openThread(id,{archived=state.archived&&state.threads.some(thread
   closeThreadMenu(false);rememberScroll();saveComposer();const generation=++state.navigationGeneration;state.hydration={threadId:id,generation,events:[]};state.historyPage=null;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
   showView('chat');$('#jump-latest').hidden=true;$('#view-chat').classList.remove('empty');$('#prompt').disabled=true;$('#welcome').hidden=true;$('#messages').replaceChildren(el('div','loading','读取原生会话…'));state.items.clear();state.live.clear();
   try {
+    // Each WebSocket owns a new native process and identity guard. UI caches
+    // survive reconnects, but cannot attest a thread to that new connection.
+    const identity=await rpc('thread/read',{threadId:id,includeTurns:false});
+    if(generation!==state.navigationGeneration)return;
+    const provider=identity.thread.modelProvider;
     let result,busy=false;
     for(let attempt=0;attempt<4;attempt++){
-      try{const provider=state.threadSettings.get(id)?.modelProvider||state.threads.find(t=>t.id===id)?.modelProvider||(await rpc('thread/read',{threadId:id,includeTurns:false})).thread.modelProvider;result=await rpc(archived?'thread/read':'thread/resume',{threadId:id,...(archived?{includeTurns:false}:{config:threadRuntimeConfig(provider),excludeTurns:true,initialTurnsPage:{limit:20,sortDirection:'desc',itemsView:'full'}})});break;}
+      try{result=archived?identity:await rpc('thread/resume',{threadId:id,config:threadRuntimeConfig(provider),excludeTurns:true,initialTurnsPage:{limit:20,sortDirection:'desc',itemsView:'full'}});break;}
       catch(error){if(archived||!/already has an active writer/i.test(error.message))throw error;if(generation!==state.navigationGeneration)return;if(attempt<3){await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));if(generation!==state.navigationGeneration)return;}else{result=await rpc('thread/read',{threadId:id,includeTurns:false});busy=true;}}
     }
     if(generation!==state.navigationGeneration)return;if(result.collaborationMode)state.nativeModes.set(id,result.collaborationMode.mode);if(result.model)state.threadSettings.set(id,{model:result.model,modelProvider:result.modelProvider,serviceTier:result.serviceTier,collaborationMode:result.collaborationMode,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread,archived,busy);if(typeof permissionsFromSnapshot==='function'&&result.model)permissionsFromSnapshot(id,state.threadSettings.get(id));

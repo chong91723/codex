@@ -1,0 +1,50 @@
+{
+  "scope": "Real current web, native DeepSeek Flash, own read-only public MySQL AdventureWorks. Explicit browser actions simulate this test user. No old user threads read. Stop/continue is a new turn, not a transaction checkpoint.",
+  "sourceId": "d405332778c1c12116333a1b",
+  "phase": "resilience",
+  "checks": [
+    {
+      "name": "自然语言生成实际订单明细，分页跳转并下载完整CSV",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a1826f-9572-7e03-97ad-7341dc1f231c",
+        "turnId": "01a1826f-9b51-7483-a4e3-3ac3c00acc84",
+        "answer": "数据已经准备好，您可以在下方结果卡片翻页并下载完整 CSV。",
+        "plans": [],
+        "resultId": "382302f34a6aaa5d391b0217ca809710",
+        "rows": 65,
+        "pageSize": 20,
+        "lastPageRows": 5,
+        "invalidPagePreservesData": true,
+        "csvRows": 65
+      }
+    },
+    {
+      "name": "刷新和断线重连恢复同一分析，草稿保留且不重发模型任务",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- '01a1826f-9572-7e03-97ad-7341dc1f231c'\n\n    at file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:157:190\n    at async check (file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:20:50)\n    at async file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:155:3"
+    }
+  ],
+  "errors": [],
+  "approvals": [
+    {
+      "threadId": "01a1826f-9572-7e03-97ad-7341dc1f231c",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT SalesOrderNumber, OrderDate, CustomerID, SubTotal FROM salesorderheader WHERE Status = 5 AND OnlineOrderFlag = 1 ORDER BY SubTotal DESC, SalesOrderNumber ASC LIMIT 65;"
+      },
+      "decision": "accept"
+    }
+  ],
+  "rawArchive": {
+    "file": "reconnect-cached-identity.raw.json.gz",
+    "sha256Uncompressed": "d65f4a954670d6e34e4c2f607c96d18cd14c3f9ddd8166e0865f1745ccef7a6d",
+    "bytesUncompressed": 553659,
+    "bytesCompressed": 44766
+  },
+  "protocolCounts": {
+    "events": 40,
+    "calls": 1,
+    "completedTurns": 1
+  }
+}

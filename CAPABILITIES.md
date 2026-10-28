@@ -1,5 +1,11 @@
 # 能力与范围对照表
 
+## 最新核验：源资料纠正与实际分析工作流（2026-10-28）
+
+当前网页分析 MCP 在原有工具上增加 `propose_database_correction`（待审批修订），不改原生 Codex 协议。与 `read_database_context`、`explore_database` 及管理页组成原文关联、冲突暂停采用、用户采信／拒绝／合并、历史及新会话复用链路。模型不能确认知识或指标公式；工具检查解释不覆盖真实物理结构。
+
+真实 Flash／MySQL 验收覆盖自主和手动计划、复杂多问题、用户修改和审批、实际执行进度、停止与继续、数据／图表／报告、刷新重连。技能仅核验保留入口读取，不把任意技能执行或所有 MCP 组合标为通过。范围与证据见 [AdventureWorks 审计](ADVENTUREWORKS_AUDIT.md)。
+
 ## 最新增量：一键数据库探索与源级业务补充（2026-10-28）
 
 在 `c6499f3` 上增量接入 SchemaCrawler CLI 17.16.0，Codex 锁定源码、二进制、代理循环和第三方模型路径未更改。未安装外部 Skill 或 AI MCP，没有 DataHub／DBHub／SchemaSpy 常驻平台。

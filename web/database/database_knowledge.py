@@ -112,17 +112,29 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                  'noteIds': [note['id'] for note in group], 'reason': 'different_content'}
                 for key, group in groups.items() if len({note['content'] for note in group}) > 1]
 
+    @staticmethod
+    def _finding_id(finding):
+        # Stable across identical re-explorations; review never edits observations.
+        return digest(finding)
+
+    @staticmethod
+    def _business_key():
+        return digest({'target': {}, 'aspect': 'business_context'})
+
     def _state(self, database, source_id):
         source, head = self._source(database, source_id), self._head(database, source_id)
         require(source or head['snapshotId'], '数据源不存在。')
         snapshot = self._snapshot(database, head['snapshotId'])
         stale = bool(snapshot and (source is None or snapshot['sourceVersion'] != source['version']))
         notes = [dict(note, stale=self._stale(note, source, snapshot)) for note in self._notes(database, source_id)]
-        conflicts = self._conflicts(notes)
         row = database.execute('SELECT record FROM database_business_context WHERE source_id=?', (source_id,)).fetchone()
         business = json.loads(row[0]) if row else {'revision': 0, 'content': ''}
         business['stale'] = bool(business.get('content') and (source is None or business.get('sourceVersion') != source['version'] or
                                  business.get('schemaHash') is not None and (snapshot is None or business['schemaHash'] != snapshot['schemaHash'])))
+        for note in notes:
+            if 'businessRevision' in note:
+                note['stale'] = note['stale'] or note['businessRevision'] != business['revision'] or business['stale']
+        conflicts = self._conflicts(notes)
         return {'sourceId': source_id, 'sourceVersion': source['version'] if source else None, 'revision': head['revision'],
                 'businessContext': business,
                 'snapshot': self._summary(snapshot, stale), 'notes': notes, 'conflicts': conflicts, 'stale': stale,
@@ -294,6 +306,8 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
             state = self._state(database, source_id)
             require(state['businessContext']['revision'] == expected_revision, '业务补充已在其他页面更新，请刷新后核对；草稿已保留。')
             previous_business = state['businessContext']
+            require(not any(c['key'] == self._business_key() for c in state['conflicts']),
+                    '业务补充存在待处理的纠正冲突，请先对照原文和修订内容作出决定。当前输入未保存。')
             if previous_business.get('updatedAt') and not previous_business['stale'] and previous_business.get('content') == content.strip():
                 return state
             record = dict(revision=expected_revision + 1, content=content.strip(), sourceVersion=source['version'],
@@ -311,6 +325,84 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                              (source_id, canonical(record)))
             return self._state(database, source_id)
 
+    def correct(self, source_id, snapshot_id, reference, content, expected_revision=None, origin='user'):
+        """Create a pending revision linked to its exact original, never approve it.
+
+        Both model proposals and management edits use this transaction. Physical
+        schema remains immutable. User review is handled by the existing decision
+        path, including compare-and-swap, history and stale-schema checks.
+        """
+        require(isinstance(snapshot_id, str) and snapshot_id, '请提供已查看的结构快照编号。')
+        require(isinstance(reference, dict), '请选择要纠正的原始记录。')
+        content = text(content)
+        with self.gateway.cancel.commit(), self.store.connect() as database:
+            database.execute('BEGIN IMMEDIATE')
+            source, head, snapshot = self._guard(database, source_id, expected_revision, snapshot_id)
+            notes = self._notes(database, source_id)
+            kind = reference.get('kind')
+            business_revision = None
+            if kind == 'note':
+                shape(reference, ('kind', 'id'))
+                original = next((n for n in notes if n['id'] == reference['id']), None)
+                require(original and original['status'] in ACTIVE and not self._stale(original, source, snapshot),
+                        '原始说明不存在、已关闭或已过期，请刷新后选择当前记录。')
+                candidate = {k: original[k] for k in ('target', 'aspect', 'evidence')}
+                business_revision = original.get('businessRevision')
+                if business_revision is not None:
+                    require(business_revision == self._state(database, source_id)['businessContext']['revision'], '业务补充版本已变化，请重新核对。')
+            elif kind == 'business':
+                shape(reference, ('kind', 'revision'))
+                state = self._state(database, source_id)
+                business = state['businessContext']
+                require(revision(reference['revision']) == business['revision'] and business.get('content') and not business['stale'],
+                        '业务补充不存在、已更新或需复核，请读取最新内容后重新纠正。')
+                business_revision = business['revision']
+                candidate = dict(target={}, aspect='business_context', evidence=[])
+                original_candidate = self._candidate(dict(candidate, content=business['content']), snapshot)
+                original = next((n for n in notes if n.get('businessRevision') == business_revision and n['key'] == self._business_key() and n['content'] == business['content'] and n['status'] == 'accepted'), None)
+                if original is None:
+                    self._capacity(notes, 2)
+                    original = self._new_note(original_candidate, snapshot, 'user', 'accepted')
+                    original.update(businessRevision=business_revision, correctionOf=dict(reference), decision='savedByUser')
+                    self._write_note(database, original)
+                    notes.append(original)
+            elif kind == 'finding':
+                shape(reference, ('kind', 'id'))
+                finding = next((f for f in snapshot.get('exploration', {}).get('findings', []) if self._finding_id(f) == reference['id']), None)
+                require(finding is not None, '检查建议不属于当前数据源和结构记录。')
+                target = {'table': finding['table']} if finding.get('table') else {}
+                candidate = dict(target=target, aspect='finding_' + reference['id'][:48], evidence=[target] if target else [])
+                original_content = str(finding['message']) + ('：' + str(finding['detail']) if finding.get('detail') else '')
+                original_candidate = self._candidate(dict(candidate, content=original_content), snapshot)
+                if not self._same(notes, original_candidate, snapshot, True):
+                    self._capacity(notes, 2)
+                    original = self._new_note(original_candidate, snapshot, 'explorer')
+                    original['correctionOf'] = dict(reference)
+                    self._write_note(database, original)
+                    notes.append(original)
+            else:
+                raise ValueError('只支持纠正已有业务补充、说明候选或结构检查建议。')
+            candidate = self._candidate(dict(candidate, content=content), snapshot)
+            if origin == 'agent':
+                require(not any(n['key'] == candidate['key'] and n['content'] == content and n['status'] in ('rejected', 'superseded')
+                                and not self._stale(n, source, snapshot) and n.get('businessRevision') == business_revision for n in notes),
+                        '此修订已由用户拒绝或替代，Agent 不能重新打开。请尊重现有决定，或请用户主动提出新修订。')
+            existing = next((n for n in reversed(notes) if n['key'] == candidate['key'] and n['content'] == content
+                             and not self._stale(n, source, snapshot) and n['status'] in ACTIVE
+                             and n.get('businessRevision') == business_revision), None)
+            if existing:
+                require(existing['content'] != original_content if kind == 'finding' else existing['id'] != original['id'], '修订内容与原文相同，无需提交。')
+                return self._state(database, source_id)
+            self._capacity(notes)
+            note = self._new_note(candidate, snapshot, origin)
+            note['correctionOf'] = dict(reference)
+            if business_revision is not None:
+                note['businessRevision'] = business_revision
+            self._write_note(database, note)
+            self._advance(database, source_id, head)
+            self.gateway.cancel.check()
+            return self._state(database, source_id)
+
     def _save(self, payload, origin='user'):
         source_id = payload['sourceId']
         revision(payload['expectedRevision'])
@@ -319,6 +411,7 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
             database.execute('BEGIN IMMEDIATE')
             source, head, snapshot = self._guard(database, source_id, payload['expectedRevision'], payload['snapshotId'])
             candidate = self._candidate({key: payload[key] for key in ('target', 'aspect', 'content', 'evidence') if key in payload}, snapshot)
+            require(candidate['aspect'] != 'business_context' and not candidate['aspect'].startswith('finding_'), '请通过纠正入口关联原始业务补充或检查建议。')
             notes = self._notes(database, source_id)
             changed = self._materialize_comment(database, notes, candidate, snapshot)
             if not self._same(notes, candidate, snapshot):
@@ -357,6 +450,9 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
             require(len(chosen) == len(ids) and all(note['status'] in ACTIVE for note in chosen), '候选不属于此数据源或已关闭，请刷新。')
             require(len({note['key'] for note in chosen}) == 1, '只能合并同一对象、同一主题的知识，不能覆盖其他结构对象。')
             first = chosen[0]
+            business_revision = first.get('businessRevision')
+            if business_revision is not None and operation != 'reject':
+                require(business_revision == self._state(database, source_id)['businessContext']['revision'], '业务补充已更新，请重新核对当前版本。')
             if operation == 'reject':
                 self._decision(database, first, 'rejected', reason)
             else:
@@ -371,6 +467,8 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                         candidate['evidence'] = list({canonical(evidence): evidence for note in chosen for evidence in note['evidence']}.values())
                     candidate = self._candidate({key: candidate[key] for key in ('target', 'aspect', 'content', 'evidence')}, snapshot)
                     winner = self._new_note(candidate, snapshot, 'user', 'accepted', reason, ids)
+                    if first.get('correctionOf'):
+                        winner['correctionOf'] = first['correctionOf']
                     self._write_note(database, winner)
                 else:
                     winner = first
@@ -378,9 +476,33 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                 for note in notes:
                     if note['key'] == first['key'] and note['id'] != winner['id'] and note['status'] in ACTIVE:
                         self._decision(database, note, 'superseded' if note['status'] == 'accepted' else 'rejected', reason, winner['id'])
+                if business_revision is not None:
+                    business = self._state(database, source_id)['businessContext']
+                    new_revision = self._adopt_business_correction(database, source_id, source, snapshot, business, winner['content'], reason)
+                    winner['businessRevision'] = new_revision
+                    self._write_note(database, winner)
+            if operation == 'reject' and business_revision is not None:
+                business = self._state(database, source_id)['businessContext']
+                # Stopping an adopted supplement must stop the virtual context too.
+                if business['revision'] == business_revision and first['content'] == business.get('content'):
+                    self._adopt_business_correction(database, source_id, source, snapshot, business, '', reason)
             self._advance(database, source_id, head)
             self.gateway.cancel.check()
             return self._state(database, source_id)
+
+    @staticmethod
+    def _adopt_business_correction(database, source_id, source, snapshot, business, content, reason):
+        if business.get('content') == content and not business.get('stale'):
+            return business['revision']
+        previous = {k: v for k, v in business.items() if k != 'stale'}
+        database.execute('INSERT OR IGNORE INTO database_business_context_history VALUES (?,?,?)', (source_id, business['revision'], canonical(previous)))
+        count = database.execute('SELECT COUNT(*) FROM database_business_context_history WHERE source_id=?', (source_id,)).fetchone()[0]
+        require(count < MAX_NOTES, '业务补充历史已达到容量上限；未删除旧记录。')
+        record = dict(revision=business['revision'] + 1, content=content, sourceVersion=source['version'], schemaHash=snapshot['schemaHash'],
+                      updatedAt=now(), origin='user', decision='correctionReview', reason=reason)
+        database.execute('INSERT INTO database_business_context_history VALUES (?,?,?)', (source_id, record['revision'], canonical(record)))
+        database.execute('UPDATE database_business_context SET record=? WHERE source_id=?', (canonical(record), source_id))
+        return record['revision']
 
     def propose(self, source_id, snapshot_id, items):
         require(isinstance(items, list) and 1 <= len(items) <= MAX_ITEMS, 'Agent 每次只能提出一至十条知识候选。')
@@ -392,6 +514,7 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
             changed, proposed, outcomes = False, [], []
             for item in items:
                 candidate = self._candidate(item, snapshot)
+                require(candidate['aspect'] != 'business_context' and not candidate['aspect'].startswith('finding_'), '请使用 propose_database_correction 关联原始内容，不能绕过纠正审批。')
                 changed = self._materialize_comment(database, notes, candidate, snapshot) or changed
                 existing = self._same(notes, candidate, snapshot, True)
                 if existing:
@@ -438,7 +561,20 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
             findings = snapshot.get('exploration', {}).get('findings', [])
             # Insights are explicit hypotheses/checks, never declared SQL FKs.
             selected_names = {entry['name'] for entry in output}
-            relevant = [item for item in findings if item.get('table') in selected_names or table is None and offset == 0 and item.get('table') is None]
+            relevant = []
+            blocked_keys = {c['key'] for c in state['conflicts']}
+            for item in findings:
+                if item.get('table') not in selected_names and not (table is None and offset == 0 and item.get('table') is None):
+                    continue
+                identifier = self._finding_id(item)
+                target = {'table': item['table']} if item.get('table') else {}
+                key = digest({'target': target, 'aspect': 'finding_' + identifier[:48]})
+                notes = [n for n in state['notes'] if n['key'] == key and not n['stale']]
+                accepted = next((n for n in reversed(notes) if n['status'] == 'accepted'), None)
+                status = 'conflict' if key in blocked_keys else 'reviewed' if accepted else 'pending' if any(n['status'] == 'pending' for n in notes) else 'dismissed' if notes else 'unreviewed'
+                review = {'status': status, 'effectiveContent': accepted['content'] if accepted and status == 'reviewed' else None,
+                          'instruction': '保留原始观察；有争议或已停用的解释不得作为事实。用户决定只改变资料解释，不改数据库结构。'}
+                relevant.append(dict(item, id=identifier, review=review))
             return {'sourceId': source_id, 'sourceVersion': state['sourceVersion'], 'revision': state['revision'], 'snapshot': state['snapshot'],
                     'findings': relevant[:30], 'findingsTotal': len(relevant), 'findingsTruncated': len(relevant) > 30,
                     'tables': output, 'total': total, 'offset': offset, 'limit': limit, 'hasMore': offset + limit < total, 'pageKind': kind,
@@ -452,16 +588,18 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
         state = self.state(source_id)
         require(state['sourceAvailable'] and state['sourceVersion'] == source['version'], '读取知识期间连接配置或可用状态已变化，请重新连接后再读取。')
         needle = search.strip().casefold()
-        scoped = lambda note: (table is None or not note['target'] or note['target'].get('table') == table) and (not needle or needle in (note['content'] + ' ' + note['aspect'] + ' ' + canonical(note['target'])).casefold())
+        # Source-wide business rules (and their disputes) apply to every table.
+        # A model's search phrase must never silently remove mandatory context.
+        scoped = lambda note: note['key'] == self._business_key() or ((table is None or not note['target'] or note['target'].get('table') == table) and (not needle or needle in (note['content'] + ' ' + note['aspect'] + ' ' + canonical(note['target'])).casefold()))
         if table is not None and state['snapshot']:
             self.catalog(source_id, table, limit=1)
         blocked_keys = {conflict['key'] for conflict in state['conflicts']}
         accepted = [note for note in state['notes'] if note['status'] == 'accepted' and not note['stale'] and note['key'] not in blocked_keys and scoped(note)]
         business = state['businessContext']
-        if business.get('content') and not business['stale'] and (not needle or needle in business['content'].casefold()):
+        if business.get('content') and not business['stale'] and self._business_key() not in blocked_keys and not any(n['key'] == self._business_key() and n.get('businessRevision') == business['revision'] for n in accepted):
             accepted.insert(0, dict(id='business:' + source_id + ':' + str(business['revision']), target={}, aspect='business_context',
                                    content=business['content'], origin='user', decision='savedByUser', sourceVersion=business['sourceVersion'],
-                                   schemaHash=business.get('schemaHash'), snapshotId=(state['snapshot'] or {}).get('id')))
+                                   schemaHash=business.get('schemaHash'), snapshotId=(state['snapshot'] or {}).get('id'), businessRevision=business['revision']))
         notes_by_id = {note['id']: note for note in state['notes']}
         conflicts = [conflict for conflict in state['conflicts'] if any(scoped(notes_by_id[identifier]) for identifier in conflict['noteIds'])]
         blocked = []
@@ -478,6 +616,7 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
         if conflicts:
             warnings.append('同一对象与主题存在不同内容，相关知识暂停采用，须由用户明确选择、拒绝或合并。')
         return {'sourceId': source_id, 'sourceVersion': state['sourceVersion'], 'revision': state['revision'], 'snapshot': state['snapshot'],
+                'businessContextRevision': business['revision'],
                 'notes': accepted[offset:offset + limit], 'total': len(accepted), 'offset': offset, 'limit': limit, 'hasMore': offset + limit < len(accepted),
                 'blockedConflicts': blocked, 'conflictsTotal': len(conflicts), 'conflictsHasMore': offset + limit < len(conflicts),
                 'warnings': warnings, 'requiresScan': state['snapshot'] is None or state['stale'],
@@ -509,13 +648,17 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                 require(snapshot, '尚无完整探索资料可下载。')
                 return {'sourceId': source_id, 'snapshotId': snapshot['id'], 'stale': state['stale'],
                         'catalog': snapshot['catalog'], 'exploration': snapshot.get('exploration'),
-                        'businessContext': state['businessContext'], 'notes': state['notes'],
+                        'businessContext': state['businessContext'], 'notes': state['notes'], 'conflicts': state['conflicts'],
                         'notice': '结构为采集记录；业务补充和解释为上下文资料，推测与检查建议不是已确认业务事实。'}
         if operation == 'scan':
             return self.scan(source_id, payload['expectedRevision'])
         if operation == 'save_business':
             shape(payload, ('operation', 'sourceId', 'expectedRevision', 'content'))
             return self.save_business(source_id, payload['expectedRevision'], payload['content'])
+        if operation == 'correct':
+            shape(payload, ('operation', 'sourceId', 'expectedRevision', 'snapshotId', 'reference', 'content'))
+            revision(payload['expectedRevision'])
+            return self.correct(source_id, payload['snapshotId'], payload['reference'], payload['content'], payload['expectedRevision'])
         if operation in ('start_exploration', 'exploration_status', 'cancel_exploration'):
             from exploration_jobs import ExplorationJobs
             jobs = ExplorationJobs(self.gateway)

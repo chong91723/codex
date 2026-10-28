@@ -1,0 +1,193 @@
+{
+  "scope": "Real current web, native DeepSeek Flash, own read-only public MySQL AdventureWorks. Explicit browser actions simulate this test user. No old user threads read. Stop/continue is a new turn, not a transaction checkpoint.",
+  "sourceId": "d405332778c1c12116333a1b",
+  "phase": "corrections",
+  "checks": [
+    {
+      "name": "真实Agent关联错误用户补充提出待审批修订",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a18257-6f17-7c80-864d-09a901bb7c08",
+        "turnId": "01a18257-7621-79c0-a6e0-967b5cb2b034",
+        "answer": "已登记修订，状态为 `pendingUserReview`。未自行批准，也未执行任何经营数据查询。\n\n请前往：**数据源 → 数据库探索 → 待处理冲突**，对照原始业务补充与修订内容，选择批准、拒绝或合并。`salesorderheader` 的结构已读取，修订涉及的订单状态、线上标志、金额、日期和区域字段均已确认存在。冲突处理完成前，相关业务定义不应被采用。",
+        "plans": [],
+        "businessUnchangedBeforeApproval": true,
+        "conflicts": [
+          {
+            "key": "93c5a6363a734ba43a162cb5cdfce008ad420386301e52eb53fdd68b9598ab40",
+            "target": {
+              "column": "SalesOrderDetailID",
+              "table": "salesorderdetail"
+            },
+            "aspect": "row_identity",
+            "noteIds": [
+              "51c4c86129c20d4122233b4319910990",
+              "9f0dd48d43509b124f613c7d0d33fe28"
+            ],
+            "reason": "different_content"
+          },
+          {
+            "key": "d826878ac417859115f741628c17b8048c73e76c7f278026f643c8773b93030a",
+            "target": {},
+            "aspect": "business_context",
+            "noteIds": [
+              "08d60cdfdf8185bd96522c7a2a9ef860",
+              "0081acaa89a2f7f392825a3dadc4f1b4"
+            ],
+            "reason": "different_content"
+          }
+        ]
+      }
+    },
+    {
+      "name": "用户对照原文审批修订，业务新版本和历史同步生效",
+      "passed": true,
+      "evidence": {
+        "before": {
+          "content": "独立体验测试的待纠错输入：所有订单都应统计为线上有效订单，销售收入应使用含税费和运费的 TotalDue。此说法故意与稍后确认的业务定义不同。",
+          "decision": "savedByUser",
+          "origin": "user",
+          "revision": 3,
+          "schemaHash": "7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952",
+          "sourceVersion": 1,
+          "updatedAt": "2026-10-28T11:48:50.442706+00:00",
+          "stale": false
+        },
+        "after": {
+          "content": "本独立 AdventureWorks 分析中，有效线上订单仅指 salesorderheader.Status=5 且 OnlineOrderFlag=1；订单收入按订单头 SubTotal 汇总，不含 TaxAmt 和 Freight；分类收入按订单行 LineTotal 汇总；日期使用 OrderDate，区域使用订单头 TerritoryID；不能连接明细后再次累加头金额；保留未分类产品和未知区域。样例未确认统一币种，不能声称这些金额是人民币。",
+          "decision": "correctionReview",
+          "origin": "user",
+          "reason": "模拟数据负责人核对字段与演示分析目标，明确采信本次完整修订。",
+          "revision": 4,
+          "schemaHash": "7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952",
+          "sourceVersion": 1,
+          "updatedAt": "2026-10-28T11:49:09.431357+00:00",
+          "stale": false
+        },
+        "history": [
+          {
+            "content": "本独立 AdventureWorks 分析中，有效线上订单仅指 salesorderheader.Status=5 且 OnlineOrderFlag=1；订单收入按订单头 SubTotal 汇总，不含 TaxAmt 和 Freight；分类收入按订单行 LineTotal 汇总；日期使用 OrderDate，区域使用订单头 TerritoryID；不能连接明细后再次累加头金额；保留未分类产品和未知区域。样例未确认统一币种，不能声称这些金额是人民币。",
+            "decision": "correctionReview",
+            "origin": "user",
+            "reason": "模拟数据负责人核对字段与演示分析目标，明确采信本次完整修订。",
+            "revision": 4,
+            "schemaHash": "7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952",
+            "sourceVersion": 1,
+            "updatedAt": "2026-10-28T11:49:09.431357+00:00"
+          },
+          {
+            "content": "独立体验测试的待纠错输入：所有订单都应统计为线上有效订单，销售收入应使用含税费和运费的 TotalDue。此说法故意与稍后确认的业务定义不同。",
+            "decision": "savedByUser",
+            "origin": "user",
+            "revision": 3,
+            "schemaHash": "7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952",
+            "sourceVersion": 1,
+            "updatedAt": "2026-10-28T11:48:50.442706+00:00"
+          },
+          {
+            "content": "本独立 AdventureWorks 分析中，有效线上订单仅指 salesorderheader.Status=5 且 OnlineOrderFlag=1；订单收入按订单头 SubTotal 汇总，不含 TaxAmt 和 Freight；分类收入按订单行 LineTotal 汇总；日期使用 OrderDate，区域使用订单头 TerritoryID；不能连接明细后再次累加头金额；保留未分类产品和未知区域。样例未确认统一币种，不能声称这些金额是人民币。",
+            "decision": "correctionReview",
+            "origin": "user",
+            "reason": "模拟数据负责人核对字段与演示分析目标，明确采信本次完整修订。",
+            "revision": 2,
+            "schemaHash": "7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952",
+            "sourceVersion": 1,
+            "updatedAt": "2026-10-28T11:46:37.193798+00:00"
+          },
+          {
+            "content": "独立体验测试的待纠错输入：所有订单都应统计为线上有效订单，销售收入应使用含税费和运费的 TotalDue。此说法故意与稍后确认的业务定义不同，不能擅自更改数据库。",
+            "decision": "savedByUser",
+            "origin": "user",
+            "revision": 1,
+            "schemaHash": null,
+            "sourceVersion": 1,
+            "updatedAt": "2026-10-28T11:37:32.236271+00:00"
+          }
+        ]
+      }
+    },
+    {
+      "name": "用户纠正实际Agent探索候选，保留原文并明确采用",
+      "passed": true,
+      "evidence": {
+        "original": {
+          "aspect": "row_identity",
+          "content": "候选建议：订单行按 SalesOrderID 与 SalesOrderDetailID 的组合识别，不单独把 SalesOrderDetailID 当全局唯一键去重或关联。现有结构将两者共同声明为订单行主键；最终去重粒度待确认。",
+          "createdAt": "2026-10-28T11:38:39.576949+00:00",
+          "evidence": [
+            {
+              "column": "SalesOrderID",
+              "table": "salesorderdetail"
+            },
+            {
+              "column": "SalesOrderDetailID",
+              "table": "salesorderdetail"
+            }
+          ],
+          "history": [],
+          "id": "51c4c86129c20d4122233b4319910990",
+          "key": "93c5a6363a734ba43a162cb5cdfce008ad420386301e52eb53fdd68b9598ab40",
+          "origin": "agent",
+          "schemaHash": "7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952",
+          "snapshotId": "fd1e6e64e2a2568bcd15d8d10a6be1bf",
+          "sourceId": "d405332778c1c12116333a1b",
+          "sourceVersion": 1,
+          "status": "pending",
+          "target": {
+            "column": "SalesOrderDetailID",
+            "table": "salesorderdetail"
+          },
+          "trust": "untrusted_data",
+          "stale": false
+        },
+        "corrected": "复合主键保证 SalesOrderID 与 SalesOrderDetailID 的组合唯一；仅凭该声明，不能认定 SalesOrderDetailID 在现有数据中一定重复，也不能认定它有独立唯一约束。订单行分析保留组合标识；如需单字段关联，须另核实约束与实际重复情况。",
+        "snapshotUnchanged": true
+      }
+    },
+    {
+      "name": "用户纠正自动工具检查的解释，不改写实际结构",
+      "passed": true,
+      "evidence": {
+        "findingId": "4c34d4a6a8e36a8e85dcca6f21a9c21588197a0b6dcc10e412893741648c609a",
+        "original": "column with same name but different data types：Description [MEDIUMTEXT, VARCHAR]",
+        "corrected": "本项只作为结构维护建议，不能据此断言业务数据错误，也不能据此修改表或增加约束。分析仍以真实声明结构和已确认业务补充为准。原建议保留备查。",
+        "physicalObservationPreserved": true
+      }
+    },
+    {
+      "name": "错误人工修订可拒绝，确认后的补充保持有效",
+      "passed": true,
+      "evidence": {
+        "rejected": true,
+        "currentDefinitionPreserved": true
+      }
+    }
+  ],
+  "errors": [],
+  "approvals": [
+    {
+      "threadId": "01a18257-6f17-7c80-864d-09a901bb7c08",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "snapshot_id": "fd1e6e64e2a2568bcd15d8d10a6be1bf",
+        "reference": {
+          "kind": "business",
+          "revision": 3
+        },
+        "content": "本独立 AdventureWorks 分析中，有效线上订单仅指 salesorderheader.Status=5 且 OnlineOrderFlag=1；订单收入按订单头 SubTotal 汇总，不含 TaxAmt 和 Freight；分类收入按订单行 LineTotal 汇总；日期使用 OrderDate，区域使用订单头 TerritoryID；不能连接明细后再次累加头金额；保留未分类产品和未知区域。样例未确认统一币种，不能声称这些金额是人民币。"
+      },
+      "decision": "accept"
+    }
+  ],
+  "rawArchive": {
+    "file": "corrections.raw.json.gz",
+    "sha256Uncompressed": "ad75f1f4de7678f055a436ae31fef7e7d7cb3a9172169a2742799ab575f862cd",
+    "bytesUncompressed": 106003,
+    "bytesCompressed": 18674
+  },
+  "protocolCounts": {
+    "events": 26,
+    "calls": 1,
+    "completedTurns": 1
+  }
+}

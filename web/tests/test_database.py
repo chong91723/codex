@@ -133,6 +133,20 @@ class ReadOnlySqlTests(unittest.TestCase):
             with self.subTest(query=query),self.assertRaises(ReadOnlyError):
                 validate_queries(query,config)
 
+    def test_mysql_calendar_functions_allow_parser_date_node_but_check_children(self):
+        from sql_guard import validate_query, ReadOnlyError
+        connection = {'engine':'mysql','database':'adventureworks'}
+        for name in ('YEAR','MONTH','DAY'):
+            sql = validate_query('SELECT '+name+'(OrderDate) AS period, COUNT(*) FROM salesorderheader GROUP BY '+name+'(OrderDate)', connection)
+            self.assertIn('OrderDate', sql)
+            for unsafe in ("SLEEP(1)","LOAD_FILE('/etc/passwd')","unknown_unsafe(OrderDate)"):
+                with self.assertRaises(ReadOnlyError):
+                    validate_query('SELECT '+name+'('+unsafe+') FROM salesorderheader', connection)
+
+        # An internal parser spelling is not a permit for an anonymous UDF.
+        with self.assertRaises(ReadOnlyError):
+            validate_query('SELECT untrusted.TS_OR_DS_TO_DATE(OrderDate) FROM salesorderheader', connection)
+
     def test_date_format_arguments_are_allowed_but_unsafe_children_are_not(self):
         from sql_guard import validate_queries,ReadOnlyError
         import sqlglot

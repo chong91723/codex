@@ -1,0 +1,55 @@
+{
+  "scope": "Real current web, native DeepSeek Flash, own read-only public MySQL AdventureWorks. Explicit browser actions simulate this test user. No old user threads read. Stop/continue is a new turn, not a transaction checkpoint.",
+  "sourceId": "d405332778c1c12116333a1b",
+  "phase": "resilience",
+  "checks": [
+    {
+      "name": "自然语言生成实际订单明细，分页跳转并下载完整CSV",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a18274-e7ea-7411-bba7-a040cb8ba8d7",
+        "turnId": "01a18274-ec12-74c1-a83e-64d77d85c100",
+        "answer": "数据已经准备好，可在结果卡片中翻页查看并下载完整 CSV。",
+        "plans": [],
+        "resultId": "b77fdbbf1ee0f5f9129b2ceb33f058da",
+        "rows": 65,
+        "pageSize": 20,
+        "lastPageRows": 5,
+        "invalidPagePreservesData": true,
+        "csvRows": 65
+      }
+    },
+    {
+      "name": "刷新和断线重连恢复同一分析，草稿保留且不重发模型任务",
+      "passed": true,
+      "evidence": {
+        "sameThread": true,
+        "draftPreserved": true,
+        "noRepeatedSubmission": true,
+        "resultRecovered": true
+      }
+    }
+  ],
+  "errors": [],
+  "approvals": [
+    {
+      "threadId": "01a18274-e7ea-7411-bba7-a040cb8ba8d7",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT SalesOrderNumber, OrderDate, CustomerID, SubTotal\nFROM salesorderheader\nWHERE Status = 5\n  AND OnlineOrderFlag = 1\nORDER BY SubTotal DESC, SalesOrderNumber ASC\nLIMIT 65;"
+      },
+      "decision": "accept"
+    }
+  ],
+  "rawArchive": {
+    "file": "resilience.raw.json.gz",
+    "sha256Uncompressed": "a33ede83895e19fc0717e890f464f43e680592c17a0f2dd2d9d513b8703f3825",
+    "bytesUncompressed": 462701,
+    "bytesCompressed": 35675
+  },
+  "protocolCounts": {
+    "events": 34,
+    "calls": 1,
+    "completedTurns": 1
+  }
+}

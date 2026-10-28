@@ -1,0 +1,65 @@
+{
+  "scope": "Real current web, native DeepSeek Flash, own read-only public MySQL AdventureWorks. Explicit browser actions simulate this test user. No old user threads read. Stop/continue is a new turn, not a transaction checkpoint.",
+  "sourceId": "d405332778c1c12116333a1b",
+  "phase": "configuration",
+  "checks": [
+    {
+      "name": "实际MCP新增工具可见，原生保留技能可读取",
+      "passed": true,
+      "evidence": {
+        "managedToolNames": [
+          "import_data_file",
+          "analyze_result",
+          "describe_database",
+          "list_databases",
+          "explore_database",
+          "publish_answer",
+          "execute_metric",
+          "describe_result",
+          "query_database",
+          "run_python",
+          "propose_database_correction",
+          "fetch_data",
+          "list_metric_rules",
+          "read_result",
+          "read_database_context",
+          "create_chart",
+          "propose_database_knowledge"
+        ],
+        "retainedNativeSkills": [
+          {
+            "name": "openai-docs",
+            "enabled": true,
+            "scope": "system"
+          },
+          {
+            "name": "review-agent",
+            "enabled": true,
+            "scope": "system"
+          },
+          {
+            "name": "skill-creator",
+            "enabled": true,
+            "scope": "system"
+          },
+          {
+            "name": "skill-installer",
+            "enabled": true,
+            "scope": "system"
+          }
+        ],
+        "configurationNotChanged": true,
+        "skillExecutionNotTested": true
+      }
+    },
+    {
+      "name": "重新探索相同数据库后保留已采用纠正与业务定义",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected \"actual\" to be strictly unequal to:\n\n'fd1e6e64e2a2568bcd15d8d10a6be1bf'\n    at file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:163:490\n    at async check (file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:20:50)\n    at async file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:163:3"
+    }
+  ],
+  "errors": [],
+  "events": [],
+  "calls": [],
+  "approvals": []
+}

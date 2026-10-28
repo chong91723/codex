@@ -1,0 +1,236 @@
+{
+  "scope": "Real current web, native DeepSeek Flash, own read-only public MySQL AdventureWorks. Explicit browser actions simulate this test user. No old user threads read. Stop/continue is a new turn, not a transaction checkpoint.",
+  "sourceId": "d405332778c1c12116333a1b",
+  "phase": "analysis",
+  "checks": [
+    {
+      "name": "复杂多问题触发自主计划，执行前向用户确认",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+        "turnId": "01a18264-3ae9-7171-baa0-0b5da5853ac4",
+        "plans": [
+          "# 修订后分析方案\n\n## 摘要\n\n基于用户指定的独立 AdventureWorks 只读数据源，沿用已经确认的业务定义，对需求指定的比较期与基期开展有效线上订单、区域收入变化、产品大类成交收入和客户复购分析。交付中文分析报告、区域收入变化柱状图，以及可用于复核的完整下载数据。\n\n## 执行口径与步骤\n\n- 严格使用指定的独立 AdventureWorks 数据源，不混入其他数据库的数据。\n- 沿用已确认的有效状态和线上订单标记条件筛选有效线上订单。\n- 订单数、订单收入和客单价按订单头粒度计算，避免明细连接后再汇总订单头金额。\n- 订单收入使用订单头 `SubTotal`，不包含 `TaxAmt` 和 `Freight`。\n- 比较期与基期按订单头 `OrderDate` 所属自然年度划分。\n- 客单价使用对应期间有效线上订单的订单头 `SubTotal` 合计除以有效订单数。\n- 金额使用 AdventureWorks 数据源金额单位；币种尚未确认，不称为人民币。\n- 按比较期与基期分别输出有效线上订单数、收入、客单价及其变化，并保留地区维度的对应结果。\n- 区域使用订单头 `TerritoryID`，通过区域维表补充名称；无法映射的记录归入“未知区域”，不直接丢弃。\n- 区域收入变化定义为比较期区域收入减基期区域收入；区域贡献按区域变化额占总体收入变化额的比例表达。总体变化额不适用时避免计算贡献率，并明确标注；文字只使用“贡献”，不作因果解释。\n- 产品大类成交收入按有效线上订单明细的 `LineTotal` 汇总，沿产品、子类和大类的已声明关联取得分类；无法映射到产品大类的记录归入“未分类”，并单独披露。\n- 分别构建订单头汇总与订单明细汇总，避免订单头金额随明细展开而重复累计。\n- 核对订单头主键与订单明细复合标识是否重复、有效订单的明细覆盖情况、订单明细金额与订单头小计的匹配情况，以及产品分类映射缺失情况；异常按实际结果披露，不从字段名称推断业务关系。\n- 按自然年度和 `CustomerID` 汇总去重后的有效订单数；同年度内客户通过多张不同订单成交时识别为复购客户，复购率按复购客户数除以下单客户数计算，并比较比较期与基期的变化。\n- 对复购率分母不适用、分类缺失、区域缺失及金额核对差异设置明确的展示规则，避免静默丢弃或使用无效分母。\n- 报告中分别说明订单级指标和明细级指标的统计粒度，确保比较期与基期结果能够相互核对。\n\n## 交付物与数据结构\n\n- 中文报告包含核心结论、比较期与基期汇总、区域变化、产品大类变化、复购变化、数据质量核查和口径说明。\n- 区域收入变化柱状图基于真实查询结果生成，覆盖“未知区域”并显示区域收入变化。\n- 完整下载数据至少包括有效订单头、有效订单明细及产品分类映射、客户年度订单汇总与复购标识、区域汇总、大类汇总、头表与明细核对结果。\n- 摘要及完整结果均保留来源字段和期间标识，金额明确标注未确认币种。\n\n## 验证与验收\n\n- 订单头汇总中的有效订单数和收入必须与订单头粒度结果匹配。\n- 区域汇总的收入合计必须能够回接到总体订单头收入，未知区域单独列为可解释项。\n- 产品大类汇总加上“未分类”后应覆盖有效订单明细收入，差异必须可解释。\n- 头表与明细核对必须显式检查连接后是否产生订单头收入重复，并将相关异常列为核查结果。\n- 客户年度订单汇总必须保证客户与期间的汇总粒度清晰，复购率分母保持有效。\n- 图表使用真实分析结果，报告中的金额、变化额、客单价、贡献比例和复购率均须能追溯到查询或程序计算。\n- 分析过程保持只读，不修改源数据库，不把区域或大类贡献表述为因果关系。\n\n## 默认假设\n\n- 采用已经确认的业务规则；方案不新增未获确认的金额成分或币种解释。\n- 目标期间以用户需求指定的比较期与基期为边界，不扩展到其他年份。\n- “完整数据”指与本次分析范围相关的订单头、订单明细、分类映射、客户复购和核对结果，不包含无关业务表。\n"
+        ],
+        "reference": [
+          {
+            "year": "2002",
+            "order_count": "2680",
+            "revenue": "6530858.549599939"
+          },
+          {
+            "year": "2003",
+            "order_count": "10955",
+            "revenue": "9805009.748101065"
+          }
+        ],
+        "modelSelectedPlanning": true
+      }
+    },
+    {
+      "name": "计划讨论支持用户修改，保留未分类与未知区域",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+        "turnId": "01a18265-05db-7532-8e60-c8ef34d0aa74",
+        "plans": [
+          "# 修订后最终分析方案\n\n## 摘要\n\n基于用户指定的独立 AdventureWorks 只读数据源，沿用已经确认的业务定义，对需求指定的比较期与基期分析有效线上订单、区域收入变化、产品大类成交收入和客户复购。交付中文分析报告、区域对比柱状图、产品大类表格及可用于复核的完整下载数据。\n\n## 执行口径与步骤\n\n- 严格使用指定的独立 AdventureWorks 数据源，不混入其他数据库的数据。\n- 沿用已确认的有效状态和线上订单标记条件筛选有效线上订单。\n- 订单数、订单收入和客单价均按订单头粒度计算，避免明细连接后再汇总订单头金额。\n- 客单价使用对应期间有效线上订单的订单头 `SubTotal` 合计除以去重订单数。\n- 订单收入使用订单头 `SubTotal`，不包含 `TaxAmt` 和 `Freight`。\n- 比较期与基期按订单头 `OrderDate` 所属自然年度划分。\n- 金额使用 AdventureWorks 数据源金额单位；币种尚未确认，不称为人民币。\n- 按比较期与基期分别输出有效线上订单数、订单收入、客单价及其变化，并保留地区维度的对应结果。\n- 区域使用订单头 `TerritoryID`，通过保留缺失维度的关联方式补充区域名称；无法映射的记录归入“未知区域”，不得通过内连接静默排除。\n- 产品映射沿产品、子类和大类的已声明关联展开，并使用保留未匹配记录的关联方式；无法映射到产品大类的记录归入“未分类”并单独披露，不得通过内连接静默排除。\n- 订单头收入与产品品类行金额分别构建汇总结果再对账：订单头收入从有效订单头计算，品类收入从有效订单明细的 `LineTotal` 计算，二者不通过明细展开直接相加。\n- 订单头收入与品类行金额的差额属于独立对账结果；差异按实际数据如实解释，不强行调整、不强制令二者相等。解释范围包括明细覆盖、分类未匹配和源数据记录差异等可核查事实，不把未核实因素当作结论。\n- 分别核对订单头主键与订单明细复合标识是否重复、有效订单的明细覆盖情况、明细金额与订单头小计的匹配情况，以及产品和区域映射缺失情况；异常按实际结果披露，不从字段名称推断业务关系。\n- 区域收入变化定义为比较期区域收入减基期区域收入；区域贡献按区域变化额占总体收入变化额的比例表达。总体变化额不适用时避免计算贡献率，并明确标注；文字只使用“贡献”，不作因果解释。\n- 产品大类使用表格呈现比较期收入、基期收入、变化额及变化情况，保留“未分类”，不生成产品大类图表。\n- 按自然年度和订单头 `CustomerID` 汇总有效线上订单的去重订单数及去重下单客户数。\n- 复购客户定义为同年度内通过多张不同有效线上订单成交的客户；复购率的分母明确为该年度具有有效线上订单的去重客户数。\n- 比较期与基期的复购率按对应年度分别计算，并比较其变化；分母不适用时避免计算比率，保留客户数和复购客户数作为核对依据。\n- 对分类缺失、区域缺失、明细覆盖差异及金额对账差异设置明确的展示规则，避免静默丢弃记录。\n- 报告中分别说明订单级指标和明细级指标的统计粒度，确保比较期与基期结果能够相互核对。\n\n## 交付物与数据结构\n\n- 中文报告包含核心结论、比较期与基期汇总、区域变化、产品大类变化、复购变化、数据质量核查和口径说明。\n- 区域对比柱状图基于真实查询结果生成，按区域展示比较期与基期的订单头收入，并保留“未知区域”；产品大类不使用图表。\n- 完整下载数据包括有效订单头、有效订单明细及产品分类映射、客户年度订单汇总与复购标识、区域汇总、大类汇总、头表与明细对账结果。\n- 摘要及完整结果均保留来源字段和期间标识，金额明确标注未确认币种。\n- 下载数据中的未匹配区域和未分类产品保留原始标识、映射状态及汇总金额，便于复核排除风险和差异来源。\n\n## 验证与验收\n\n- 订单头汇总中的有效订单数和收入必须与订单头粒度结果匹配，客单价分母使用去重订单数。\n- 区域汇总的收入合计必须能够回接到总体订单头收入，未知区域单独列为可解释项。\n- 产品大类汇总必须保留未分类记录，并披露其金额和明细覆盖情况。\n- 订单头收入与品类行金额必须分别对账；差额按实际结果展示和解释，不以强制相等作为完成条件。\n- 头表与明细核对必须显式检查连接后是否产生订单头收入重复，并将相关异常列为核查结果。\n- 客户年度订单汇总必须保证客户与期间的汇总粒度清晰；复购率的分母必须采用该年度具有有效线上订单的去重客户数。\n- 图表使用真实分析结果，报告中的金额、变化额、客单价、贡献比例和复购率均须能追溯到查询或程序计算。\n- 分析过程保持只读，不修改源数据库，不把区域或大类贡献表述为因果关系。\n\n## 默认假设\n\n- 采用已经确认的业务规则；方案不新增未获确认的金额成分或币种解释。\n- 目标期间以用户需求指定的比较期与基期为边界，不扩展到其他年份。\n- “完整数据”指与本次分析范围相关的订单头、订单明细、分类映射、客户复购和核对结果，不包含无关业务表。\n- 区域图表仅展示区域收入对比；产品大类仅以表格呈现。\n"
+        ]
+      }
+    },
+    {
+      "name": "确认计划后展示真实进度，中途停止确实中断本轮",
+      "passed": true,
+      "evidence": {
+        "nativePlanUpdates": [
+          {
+            "method": "turn/plan/updated",
+            "params": {
+              "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+              "turnId": "01a18265-5e9e-7092-b466-98399f3ae947",
+              "explanation": "按已确认口径执行 AdventureWorks 双年度有效线上订单分析；数据库只读，所有结果保留结果引用。",
+              "plan": [
+                {
+                  "step": "核验已确认业务口径与所需表结构",
+                  "status": "completed"
+                },
+                {
+                  "step": "计算订单头层订单数、收入、客单价及区域对比",
+                  "status": "inProgress"
+                },
+                {
+                  "step": "计算产品大类成交收入并执行头表与明细对账",
+                  "status": "pending"
+                },
+                {
+                  "step": "计算年度复购客户及复购率变化",
+                  "status": "pending"
+                },
+                {
+                  "step": "生成区域对比柱状图与完整下载数据集",
+                  "status": "pending"
+                },
+                {
+                  "step": "校验数值、发布中文分析报告并逐项回答问题",
+                  "status": "pending"
+                }
+              ]
+            },
+            "emittedAtMs": 1793189053916
+          }
+        ],
+        "queriesCompletedBeforeStop": 1,
+        "pendingQuery": "SELECT YEAR(o.OrderDate) AS order_year,\n       COALESCE(t.Name, '未知区域') AS region_name,\n       COUNT(DISTINCT o.SalesOrderID) AS order_count,\n       SUM(o.SubTotal) AS revenue,\n       SUM(o.SubTotal) / COUNT(DISTINCT o.SalesOrderID) AS average_order_value\nFROM salesorderheader o\nLEFT JOIN salesterritory t\n  ON o.TerritoryID = t.TerritoryID\nWHERE o.Status = 5\n  AND o.OnlineOrderFlag = 1\n  AND o.OrderDate >= '2002-01-01'\n  AND o.OrderDate < '2004-01-01'\nGROUP BY YEAR(o.OrderDate), COALESCE(t.Name, '未知区域')\nORDER BY region_name, order_year",
+        "actualInterruptSent": true,
+        "terminalStatus": "interrupted"
+      }
+    },
+    {
+      "name": "数值对照前保留完整回答和执行证据",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+        "turnId": "01a18265-ab04-75c2-bd0b-05a9ccb0b792",
+        "answer": "# AdventureWorks 有效线上订单分析报告\n\n## 口径与范围\n\n分析仅使用指定的独立 AdventureWorks 只读数据源。比较期为 2003，基期为 2002。有效线上订单沿用已确认的 `Status` 与 `OnlineOrderFlag` 条件。订单数、订单收入和客单价均从订单头计算；订单收入使用 `SubTotal`，不包含 `TaxAmt` 和 `Freight`。客单价为订单头小计合计除以去重订单数。金额保留 AdventureWorks 数据源金额单位，币种尚未确认，不表述为人民币。区域与产品维度采用保留缺失记录的方式关联；下文采用修正后的映射审计结果。\n\n## 核心结论\n\n- 有效线上订单数由 2680 增至 10955，变化 8275，变化幅度 308.77%。\n- 订单头收入由 6530858.55 增至 9805009.75，变化 3274151.2，变化幅度 50.13%。\n- 客单价由 2436.89 变为 895.03，变化 -1541.86，变化幅度 -63.27%。订单数增加而客单价下降，结果按订单头口径计算。\n- 区域收入正贡献以 Australia、United Kingdom、Germany、France、Southwest 和 Northwest 为主；Canada 的收入变化为负贡献。具体变化额及贡献比例见区域表。\n- Bikes 是产品大类成交收入变化的主要正贡献项，Accessories 与 Clothing 也形成正贡献；未分类明细没有形成收入。产品大类仅以表格呈现。\n- 复购比例由 0.0% 变为 13.29%。复购分母为该年度有有效线上订单的去重客户数。\n- 订单头与明细年度总额分别对账后无差额。明细复合标识没有重复；但若先把订单头连接到明细、再按明细行累加订单头金额，会产生连接放大。\n\n## 订单头总览\n\n| 指标 | 基期 2002 | 比较期 2003 | 变化 |\n|---|---:|---:|---:|\n| 有效线上订单数 | 2680 | 10955 | 8275（308.77%） |\n| 订单头收入 | 6530858.55 | 9805009.75 | 3274151.2（50.13%） |\n| 客单价 | 2436.89 | 895.03 | -1541.86（-63.27%） |\n\n## 区域收入变化与贡献\n\n| 区域 | 基期订单头收入 | 比较期订单头收入 | 收入变化 | 对总体收入变化的贡献 |\n|---|---:|---:|---:|---:|\n| Australia | 2154353.68 | 3041367.02 | 887013.33 | 27.09% |\n| United Kingdom | 591586.85 | 1306168.3 | 714581.44 | 21.82% |\n| Germany | 523412.41 | 1057435.6 | 534023.19 | 16.31% |\n| France | 513545.31 | 1024692.39 | 511147.08 | 15.61% |\n| Southwest | 1276567.45 | 1734502.44 | 457934.99 | 13.99% |\n| Northwest | 848923.59 | 1095920.23 | 246996.65 | 7.54% |\n| Northeast | 0.0 | 3966.81 | 3966.81 | 0.12% |\n| Central | 0.0 | 2768.12 | 2768.12 | 0.08% |\n| Southeast | 1565.98 | 2230.47 | 664.49 | 0.02% |\n| Canada | 620903.28 | 535958.38 | -84944.9 | -2.59% |\n\n区域结果中的“未知区域”已按保留缺失记录的方式处理；修正后的审计显示未知区域没有订单或收入。未舍入的区域收入合计回接订单头收入，未舍入回接差额分别为 6.612390279769897e-08 和 -1.0952353477478027e-06，属于浮点计算残差；表中的金额按显示精度舍入。\n\n交互式区域对比柱状图“区域有效线上订单收入对比”已生成，展示各区域基期与比较期订单头收入，图表数据结果引用为 `916a5c7a85eadd24a8666a858c853c25`，图表引用为 `b5c9e23f8e92d8aa2a5f5500ad3a3163`。未生成其他图片。\n\n## 产品大类成交收入\n\n| 产品大类 | 基期明细收入 | 比较期明细收入 | 收入变化 | 对总体收入变化的贡献 |\n|---|---:|---:|---:|---:|\n| Bikes | 6530858.55 | 9371244.74 | 2840386.19 | 86.75% |\n| Accessories | 0.0 | 294907.67 | 294907.67 | 9.01% |\n| Clothing | 0.0 | 138857.34 | 138857.34 | 4.24% |\n| 合计 | 6530858.55 | 9805009.75 | 3274151.2 | 100.0% |\n\nAccessories 与 Clothing 在基期的有效线上订单明细中没有出现，比较期出现并形成正贡献；该描述只反映本次数据范围，不作需求变化原因判断。产品大类没有生成图表。\n\n## 客户复购\n\n| 指标 | 基期 2002 | 比较期 2003 |\n|---|---:|---:|\n| 有有效线上订单的去重客户数 | 2680 | 9335 |\n| 复购客户数 | 0 | 1241 |\n| 复购率 | 0.0% | 13.29% |\n\n复购比例由 0.0% 变为 13.29%。复购客户按年度和客户归组，依据不同有效订单累计次数判定；分母采用各年度有有效线上订单的去重客户数。\n\n## 对账与数据质量\n\n| 核查项 | 基期 2002 | 比较期 2003 |\n|---|---:|---:|\n| 未知区域订单数 | 0.0 | 0.0 |\n| 未分类明细行数 | 0.0 | 0.0 |\n| 订单头行数 | 2680.0 | 10955.0 |\n| 订单头去重标识数 | 2680.0 | 10955.0 |\n| 订单头收入 | 6530858.55 | 9805009.75 |\n| 明细行金额合计 | 6530858.55 | 9805009.75 |\n| 年度头表明细对账差额 | 0.0 | 0.0 |\n| 明细行数 | 2680.0 | 24534.0 |\n| 明细复合标识去重数 | 2680.0 | 24534.0 |\n| 明细展开后的订单头金额累加 | 6530858.55 | 22091832.78 |\n| 连接放大差额 | 0.0 | 12286823.03 |\n| 显著订单级金额差异数 | 0.0 | 0.0 |\n| 订单级最大绝对金额差异 | 0.0 | 1e-12 |\n\n订单头没有缺失明细的订单数分别为 0 和 0。订单头行数与去重标识数相同，明细行数与复合标识去重数相同。订单头收入与明细行金额采用独立汇总，不因明细展开而重复累计；年度对账差额如实列示。订单级金额按显示精度舍入后存在差异的订单数分别为 0 和 0；最大绝对差异仅为 1e-12，属于浮点计算残差。\n\n连接放大是实际核查结果：把订单头关联到明细后再累加订单头 `SubTotal`，比较期的订单头金额会被放大 12286823.03。因此订单级指标继续从订单头 CTE 计算，明细与分类收入单独计算。先前维度映射审计的计数条件存在错误，已用修正查询重新计算并保留原始结果；正文采用修正结果。区域或产品贡献只表示统计贡献，不作因果解释。\n\n## 结果引用与下载数据\n\n以下完整结果集均已保存在分析结果中，可用于下载和复核：\n\n- 完整有效订单头：`d64c8f138fc7e2008ebd953e3169d024`\n- 完整有效订单明细与产品分类映射：`93edfe91cc51b2de9edcc0a9f79b5ecb`\n- 客户年度订单与复购标识：`cc787dedfcaae5e93c977224509a6cde`\n- 订单头总览发布表：`50eebf293c5225f48c31a02a5b10c721`\n- 区域收入贡献发布表：`a2f700be26b79411f4cef7058bcdee84`\n- 产品大类收入发布表：`eecaa8ca7b938430db4c3eac0aebe818`\n- 复购比例发布表：`0c9c40fb6f5386798c57d61ca60d387e`\n- 头表明细对账发布表：`f54d92cd36562796196cf7977c6adb63`\n- 订单头总览原始结果：`e9b1065d45f392876844e8e3e1be9d61`\n- 区域汇总原始结果：`094e913caa2dc2f8d92ba37fe3d9fb38`\n- 产品大类汇总原始结果：`a9c668d1913e0e4091c1e895c516670e`\n- 复购汇总原始结果：`0e560be22e918a4c69a0dd236ce111ed`\n- 头表明细年度对账原始结果：`3fe6b7d964a41644b17005c95038d0fa`\n- 维度映射修正后结果：`3af5915d083d3262bbe3837efed87d7a`\n- 连接重复检查结果：`93abc64a9a6d9c4edc559f6071dad175`\n- 订单金额差异分布结果：`e8854ffb8e5cb2c709b2aa7b903fd5d3`",
+        "plans": [],
+        "verification": {
+          "status": "verified",
+          "strict": true,
+          "answerId": "0401858a62fe51402b03c35413a9de95a745b9e01e1ab8b661f3ea3ca6eaad6a",
+          "version": "numeric-evidence-v1",
+          "evidenceCount": 126
+        }
+      }
+    },
+    {
+      "name": "暂停后修改输出并继续执行，回答全部问题且与独立SQL一致",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+        "turnId": "01a18265-ab04-75c2-bd0b-05a9ccb0b792",
+        "answer": "# AdventureWorks 有效线上订单分析报告\n\n## 口径与范围\n\n分析仅使用指定的独立 AdventureWorks 只读数据源。比较期为 2003，基期为 2002。有效线上订单沿用已确认的 `Status` 与 `OnlineOrderFlag` 条件。订单数、订单收入和客单价均从订单头计算；订单收入使用 `SubTotal`，不包含 `TaxAmt` 和 `Freight`。客单价为订单头小计合计除以去重订单数。金额保留 AdventureWorks 数据源金额单位，币种尚未确认，不表述为人民币。区域与产品维度采用保留缺失记录的方式关联；下文采用修正后的映射审计结果。\n\n## 核心结论\n\n- 有效线上订单数由 2680 增至 10955，变化 8275，变化幅度 308.77%。\n- 订单头收入由 6530858.55 增至 9805009.75，变化 3274151.2，变化幅度 50.13%。\n- 客单价由 2436.89 变为 895.03，变化 -1541.86，变化幅度 -63.27%。订单数增加而客单价下降，结果按订单头口径计算。\n- 区域收入正贡献以 Australia、United Kingdom、Germany、France、Southwest 和 Northwest 为主；Canada 的收入变化为负贡献。具体变化额及贡献比例见区域表。\n- Bikes 是产品大类成交收入变化的主要正贡献项，Accessories 与 Clothing 也形成正贡献；未分类明细没有形成收入。产品大类仅以表格呈现。\n- 复购比例由 0.0% 变为 13.29%。复购分母为该年度有有效线上订单的去重客户数。\n- 订单头与明细年度总额分别对账后无差额。明细复合标识没有重复；但若先把订单头连接到明细、再按明细行累加订单头金额，会产生连接放大。\n\n## 订单头总览\n\n| 指标 | 基期 2002 | 比较期 2003 | 变化 |\n|---|---:|---:|---:|\n| 有效线上订单数 | 2680 | 10955 | 8275（308.77%） |\n| 订单头收入 | 6530858.55 | 9805009.75 | 3274151.2（50.13%） |\n| 客单价 | 2436.89 | 895.03 | -1541.86（-63.27%） |\n\n## 区域收入变化与贡献\n\n| 区域 | 基期订单头收入 | 比较期订单头收入 | 收入变化 | 对总体收入变化的贡献 |\n|---|---:|---:|---:|---:|\n| Australia | 2154353.68 | 3041367.02 | 887013.33 | 27.09% |\n| United Kingdom | 591586.85 | 1306168.3 | 714581.44 | 21.82% |\n| Germany | 523412.41 | 1057435.6 | 534023.19 | 16.31% |\n| France | 513545.31 | 1024692.39 | 511147.08 | 15.61% |\n| Southwest | 1276567.45 | 1734502.44 | 457934.99 | 13.99% |\n| Northwest | 848923.59 | 1095920.23 | 246996.65 | 7.54% |\n| Northeast | 0.0 | 3966.81 | 3966.81 | 0.12% |\n| Central | 0.0 | 2768.12 | 2768.12 | 0.08% |\n| Southeast | 1565.98 | 2230.47 | 664.49 | 0.02% |\n| Canada | 620903.28 | 535958.38 | -84944.9 | -2.59% |\n\n区域结果中的“未知区域”已按保留缺失记录的方式处理；修正后的审计显示未知区域没有订单或收入。未舍入的区域收入合计回接订单头收入，未舍入回接差额分别为 6.612390279769897e-08 和 -1.0952353477478027e-06，属于浮点计算残差；表中的金额按显示精度舍入。\n\n交互式区域对比柱状图“区域有效线上订单收入对比”已生成，展示各区域基期与比较期订单头收入，图表数据结果引用为 `916a5c7a85eadd24a8666a858c853c25`，图表引用为 `b5c9e23f8e92d8aa2a5f5500ad3a3163`。未生成其他图片。\n\n## 产品大类成交收入\n\n| 产品大类 | 基期明细收入 | 比较期明细收入 | 收入变化 | 对总体收入变化的贡献 |\n|---|---:|---:|---:|---:|\n| Bikes | 6530858.55 | 9371244.74 | 2840386.19 | 86.75% |\n| Accessories | 0.0 | 294907.67 | 294907.67 | 9.01% |\n| Clothing | 0.0 | 138857.34 | 138857.34 | 4.24% |\n| 合计 | 6530858.55 | 9805009.75 | 3274151.2 | 100.0% |\n\nAccessories 与 Clothing 在基期的有效线上订单明细中没有出现，比较期出现并形成正贡献；该描述只反映本次数据范围，不作需求变化原因判断。产品大类没有生成图表。\n\n## 客户复购\n\n| 指标 | 基期 2002 | 比较期 2003 |\n|---|---:|---:|\n| 有有效线上订单的去重客户数 | 2680 | 9335 |\n| 复购客户数 | 0 | 1241 |\n| 复购率 | 0.0% | 13.29% |\n\n复购比例由 0.0% 变为 13.29%。复购客户按年度和客户归组，依据不同有效订单累计次数判定；分母采用各年度有有效线上订单的去重客户数。\n\n## 对账与数据质量\n\n| 核查项 | 基期 2002 | 比较期 2003 |\n|---|---:|---:|\n| 未知区域订单数 | 0.0 | 0.0 |\n| 未分类明细行数 | 0.0 | 0.0 |\n| 订单头行数 | 2680.0 | 10955.0 |\n| 订单头去重标识数 | 2680.0 | 10955.0 |\n| 订单头收入 | 6530858.55 | 9805009.75 |\n| 明细行金额合计 | 6530858.55 | 9805009.75 |\n| 年度头表明细对账差额 | 0.0 | 0.0 |\n| 明细行数 | 2680.0 | 24534.0 |\n| 明细复合标识去重数 | 2680.0 | 24534.0 |\n| 明细展开后的订单头金额累加 | 6530858.55 | 22091832.78 |\n| 连接放大差额 | 0.0 | 12286823.03 |\n| 显著订单级金额差异数 | 0.0 | 0.0 |\n| 订单级最大绝对金额差异 | 0.0 | 1e-12 |\n\n订单头没有缺失明细的订单数分别为 0 和 0。订单头行数与去重标识数相同，明细行数与复合标识去重数相同。订单头收入与明细行金额采用独立汇总，不因明细展开而重复累计；年度对账差额如实列示。订单级金额按显示精度舍入后存在差异的订单数分别为 0 和 0；最大绝对差异仅为 1e-12，属于浮点计算残差。\n\n连接放大是实际核查结果：把订单头关联到明细后再累加订单头 `SubTotal`，比较期的订单头金额会被放大 12286823.03。因此订单级指标继续从订单头 CTE 计算，明细与分类收入单独计算。先前维度映射审计的计数条件存在错误，已用修正查询重新计算并保留原始结果；正文采用修正结果。区域或产品贡献只表示统计贡献，不作因果解释。\n\n## 结果引用与下载数据\n\n以下完整结果集均已保存在分析结果中，可用于下载和复核：\n\n- 完整有效订单头：`d64c8f138fc7e2008ebd953e3169d024`\n- 完整有效订单明细与产品分类映射：`93edfe91cc51b2de9edcc0a9f79b5ecb`\n- 客户年度订单与复购标识：`cc787dedfcaae5e93c977224509a6cde`\n- 订单头总览发布表：`50eebf293c5225f48c31a02a5b10c721`\n- 区域收入贡献发布表：`a2f700be26b79411f4cef7058bcdee84`\n- 产品大类收入发布表：`eecaa8ca7b938430db4c3eac0aebe818`\n- 复购比例发布表：`0c9c40fb6f5386798c57d61ca60d387e`\n- 头表明细对账发布表：`f54d92cd36562796196cf7977c6adb63`\n- 订单头总览原始结果：`e9b1065d45f392876844e8e3e1be9d61`\n- 区域汇总原始结果：`094e913caa2dc2f8d92ba37fe3d9fb38`\n- 产品大类汇总原始结果：`a9c668d1913e0e4091c1e895c516670e`\n- 复购汇总原始结果：`0e560be22e918a4c69a0dd236ce111ed`\n- 头表明细年度对账原始结果：`3fe6b7d964a41644b17005c95038d0fa`\n- 维度映射修正后结果：`3af5915d083d3262bbe3837efed87d7a`\n- 连接重复检查结果：`93abc64a9a6d9c4edc559f6071dad175`\n- 订单金额差异分布结果：`e8854ffb8e5cb2c709b2aa7b903fd5d3`",
+        "plans": [],
+        "verification": {
+          "status": "verified",
+          "strict": true,
+          "answerId": "0401858a62fe51402b03c35413a9de95a745b9e01e1ab8b661f3ea3ca6eaad6a",
+          "version": "numeric-evidence-v1",
+          "evidenceCount": 126
+        },
+        "independentAnnualTotalsMatched": true,
+        "reportDownloaded": true,
+        "sameTaskContinued": true
+      }
+    }
+  ],
+  "errors": [],
+  "approvals": [
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT YEAR(OrderDate) AS order_year,\n       COUNT(DISTINCT SalesOrderID) AS order_count,\n       SUM(SubTotal) AS revenue,\n       SUM(SubTotal) / COUNT(DISTINCT SalesOrderID) AS average_order_value\nFROM salesorderheader\nWHERE Status = 5\n  AND OnlineOrderFlag = 1\n  AND OrderDate >= '2002-01-01'\n  AND OrderDate < '2004-01-01'\nGROUP BY YEAR(OrderDate)\nORDER BY order_year"
+      },
+      "decision": "accept-before-pause"
+    },
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT YEAR(o.OrderDate) AS order_year,\n       COALESCE(t.Name, '未知区域') AS region_name,\n       COUNT(DISTINCT o.SalesOrderID) AS order_count,\n       SUM(o.SubTotal) AS revenue,\n       SUM(o.SubTotal) / COUNT(DISTINCT o.SalesOrderID) AS average_order_value\nFROM salesorderheader o\nLEFT JOIN salesterritory t\n  ON o.TerritoryID = t.TerritoryID\nWHERE o.Status = 5\n  AND o.OnlineOrderFlag = 1\n  AND o.OrderDate >= '2002-01-01'\n  AND o.OrderDate < '2004-01-01'\nGROUP BY YEAR(o.OrderDate), COALESCE(t.Name, '未知区域')\nORDER BY region_name, order_year"
+      },
+      "decision": "accept"
+    },
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "WITH valid_orders AS (\n  SELECT SalesOrderID, OrderDate\n  FROM salesorderheader\n  WHERE Status = 5\n    AND OnlineOrderFlag = 1\n    AND OrderDate >= '2002-01-01'\n    AND OrderDate < '2004-01-01'\n)\nSELECT YEAR(o.OrderDate) AS order_year,\n       COALESCE(pc.Name, '未分类') AS category_name,\n       COUNT(*) AS line_count,\n       COUNT(DISTINCT o.SalesOrderID) AS order_count,\n       SUM(d.LineTotal) AS revenue\nFROM valid_orders o\nJOIN salesorderdetail d\n  ON o.SalesOrderID = d.SalesOrderID\nLEFT JOIN product p\n  ON d.ProductID = p.ProductID\nLEFT JOIN productsubcategory ps\n  ON p.ProductSubcategoryID = ps.ProductSubcategoryID\nLEFT JOIN productcategory pc\n  ON ps.ProductCategoryID = pc.ProductCategoryID\nGROUP BY YEAR(o.OrderDate), COALESCE(pc.Name, '未分类')\nORDER BY category_name, order_year"
+      },
+      "decision": "accept"
+    },
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "WITH valid_headers AS (\n  SELECT SalesOrderID, OrderDate, SubTotal\n  FROM salesorderheader\n  WHERE Status = 5\n    AND OnlineOrderFlag = 1\n    AND OrderDate >= '2002-01-01'\n    AND OrderDate < '2004-01-01'\n),\nline_by_order AS (\n  SELECT SalesOrderID,\n         COUNT(*) AS line_count,\n         SUM(LineTotal) AS line_revenue\n  FROM salesorderdetail\n  GROUP BY SalesOrderID\n)\nSELECT YEAR(h.OrderDate) AS order_year,\n       COUNT(*) AS header_rows,\n       COUNT(DISTINCT h.SalesOrderID) AS distinct_header_ids,\n       SUM(h.SubTotal) AS header_revenue,\n       COALESCE(SUM(d.line_revenue), 0) AS category_line_revenue,\n       SUM(h.SubTotal) - COALESCE(SUM(d.line_revenue), 0) AS reconciliation_difference,\n       SUM(CASE WHEN d.SalesOrderID IS NULL THEN 1 ELSE 0 END) AS headers_without_detail,\n       SUM(CASE WHEN d.SalesOrderID IS NOT NULL AND ABS(h.SubTotal - d.line_revenue) > 0 THEN 1 ELSE 0 END) AS orders_with_amount_difference,\n       SUM(CASE WHEN d.SalesOrderID IS NOT NULL THEN d.line_count ELSE 0 END) AS detail_row_count,\n       COUNT(DISTINCT CASE WHEN d.SalesOrderID IS NOT NULL THEN CONCAT(h.SalesOrderID, ':', d.SalesOrderID) END) AS comparable_headers\nFROM valid_headers h\nLEFT JOIN line_by_order d\n  ON h.SalesOrderID = d.SalesOrderID\nGROUP BY YEAR(h.OrderDate)\nORDER BY order_year"
+      },
+      "decision": "accept"
+    },
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "WITH valid_headers AS (\n  SELECT SalesOrderID, OrderDate, TerritoryID, SubTotal\n  FROM salesorderheader\n  WHERE Status = 5\n    AND OnlineOrderFlag = 1\n    AND OrderDate >= '2002-01-01'\n    AND OrderDate < '2004-01-01'\n),\nregion_audit AS (\n  SELECT YEAR(h.OrderDate) AS order_year,\n         COUNT(*) AS unknown_region_orders,\n         SUM(h.SubTotal) AS unknown_region_revenue\n  FROM valid_headers h\n  LEFT JOIN salesterritory t\n    ON h.TerritoryID = t.TerritoryID\n  WHERE t.TerritoryID IS NULL\n  GROUP BY YEAR(h.OrderDate)\n),\ncategory_audit AS (\n  SELECT YEAR(h.OrderDate) AS order_year,\n         COUNT(*) AS unclassified_lines,\n         SUM(d.LineTotal) AS unclassified_revenue,\n         SUM(CASE WHEN p.ProductID IS NULL THEN 1 ELSE 0 END) AS missing_product_lines,\n         SUM(CASE WHEN ps.ProductSubcategoryID IS NULL THEN 1 ELSE 0 END) AS missing_subcategory_lines,\n         SUM(CASE WHEN pc.ProductCategoryID IS NULL THEN 1 ELSE 0 END) AS missing_category_lines\n  FROM valid_headers h\n  JOIN salesorderdetail d\n    ON h.SalesOrderID = d.SalesOrderID\n  LEFT JOIN product p\n    ON d.ProductID = p.ProductID\n  LEFT JOIN productsubcategory ps\n    ON p.ProductSubcategoryID = ps.ProductSubcategoryID\n  LEFT JOIN productcategory pc\n    ON ps.ProductCategoryID = pc.ProductCategoryID\n  GROUP BY YEAR(h.OrderDate)\n)\nSELECT COALESCE(r.order_year, c.order_year) AS order_year,\n       COALESCE(r.unknown_region_orders, 0) AS unknown_region_orders,\n       COALESCE(r.unknown_region_revenue, 0) AS unknown_region_revenue,\n       COALESCE(c.unclassified_lines, 0) AS unclassified_lines,\n       COALESCE(c.unclassified_revenue, 0) AS unclassified_revenue,\n       COALESCE(c.missing_product_lines, 0) AS missing_product_lines,\n       COALESCE(c.missing_subcategory_lines, 0) AS missing_subcategory_lines,\n       COALESCE(c.missing_category_lines, 0) AS missing_category_lines\nFROM region_audit r\nLEFT JOIN category_audit c\n  ON r.order_year = c.order_year\nUNION ALL\nSELECT COALESCE(r.order_year, c.order_year) AS order_year,\n       COALESCE(r.unknown_region_orders, 0),\n       COALESCE(r.unknown_region_revenue, 0),\n       COALESCE(c.unclassified_lines, 0),\n       COALESCE(c.unclassified_revenue, 0),\n       COALESCE(c.missing_product_lines, 0),\n       COALESCE(c.missing_subcategory_lines, 0),\n       COALESCE(c.missing_category_lines, 0)\nFROM category_audit c\nLEFT JOIN region_audit r\n  ON r.order_year = c.order_year\nWHERE r.order_year IS NULL\nORDER BY order_year"
+      },
+      "decision": "accept"
+    },
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "WITH customer_year AS (\n  SELECT YEAR(OrderDate) AS order_year,\n         CustomerID,\n         COUNT(DISTINCT SalesOrderID) AS order_count\n  FROM salesorderheader\n  WHERE Status = 5\n    AND OnlineOrderFlag = 1\n    AND OrderDate >= '2002-01-01'\n    AND OrderDate < '2004-01-01'\n  GROUP BY YEAR(OrderDate), CustomerID\n)\nSELECT order_year,\n       COUNT(*) AS ordering_customers,\n       SUM(CASE WHEN order_count > 1 THEN 1 ELSE 0 END) AS repeat_customers,\n       SUM(order_count) AS distinct_orders_across_customers,\n       SUM(CASE WHEN order_count > 1 THEN 1 ELSE 0 END) / COUNT(*) AS repeat_rate\nFROM customer_year\nGROUP BY order_year\nORDER BY order_year"
+      },
+      "decision": "accept"
+    },
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "WITH valid_headers AS (\n  SELECT SalesOrderID, OrderDate, TerritoryID, SubTotal\n  FROM salesorderheader\n  WHERE Status = 5\n    AND OnlineOrderFlag = 1\n    AND OrderDate >= '2002-01-01'\n    AND OrderDate < '2004-01-01'\n),\nyears AS (\n  SELECT DISTINCT YEAR(OrderDate) AS order_year\n  FROM valid_headers\n),\nregion_audit AS (\n  SELECT YEAR(h.OrderDate) AS order_year,\n         COUNT(*) AS unknown_region_orders,\n         SUM(h.SubTotal) AS unknown_region_revenue\n  FROM valid_headers h\n  LEFT JOIN salesterritory t\n    ON h.TerritoryID = t.TerritoryID\n  WHERE t.TerritoryID IS NULL\n  GROUP BY YEAR(h.OrderDate)\n),\ncategory_audit AS (\n  SELECT YEAR(h.OrderDate) AS order_year,\n         SUM(CASE WHEN pc.ProductCategoryID IS NULL THEN 1 ELSE 0 END) AS unclassified_lines,\n         SUM(CASE WHEN pc.ProductCategoryID IS NULL THEN d.LineTotal ELSE 0 END) AS unclassified_revenue,\n         SUM(CASE WHEN p.ProductID IS NULL THEN 1 ELSE 0 END) AS missing_product_lines,\n         SUM(CASE WHEN ps.ProductSubcategoryID IS NULL THEN 1 ELSE 0 END) AS missing_subcategory_lines,\n         SUM(CASE WHEN pc.ProductCategoryID IS NULL THEN 1 ELSE 0 END) AS missing_category_lines\n  FROM valid_headers h\n  JOIN salesorderdetail d\n    ON h.SalesOrderID = d.SalesOrderID\n  LEFT JOIN product p\n    ON d.ProductID = p.ProductID\n  LEFT JOIN productsubcategory ps\n    ON p.ProductSubcategoryID = ps.ProductSubcategoryID\n  LEFT JOIN productcategory pc\n    ON ps.ProductCategoryID = pc.ProductCategoryID\n  GROUP BY YEAR(h.OrderDate)\n)\nSELECT y.order_year,\n       COALESCE(r.unknown_region_orders, 0) AS unknown_region_orders,\n       COALESCE(r.unknown_region_revenue, 0) AS unknown_region_revenue,\n       COALESCE(c.unclassified_lines, 0) AS unclassified_lines,\n       COALESCE(c.unclassified_revenue, 0) AS unclassified_revenue,\n       COALESCE(c.missing_product_lines, 0) AS missing_product_lines,\n       COALESCE(c.missing_subcategory_lines, 0) AS missing_subcategory_lines,\n       COALESCE(c.missing_category_lines, 0) AS missing_category_lines\nFROM years y\nLEFT JOIN region_audit r\n  ON y.order_year = r.order_year\nLEFT JOIN category_audit c\n  ON y.order_year = c.order_year\nORDER BY y.order_year"
+      },
+      "decision": "accept"
+    },
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "WITH valid_headers AS (\n  SELECT SalesOrderID, OrderDate, SubTotal\n  FROM salesorderheader\n  WHERE Status = 5\n    AND OnlineOrderFlag = 1\n    AND OrderDate >= '2002-01-01'\n    AND OrderDate < '2004-01-01'\n),\nheader_agg AS (\n  SELECT YEAR(OrderDate) AS order_year,\n         COUNT(DISTINCT SalesOrderID) AS order_count,\n         SUM(SubTotal) AS header_revenue\n  FROM valid_headers\n  GROUP BY YEAR(OrderDate)\n),\njoined_agg AS (\n  SELECT YEAR(h.OrderDate) AS order_year,\n         COUNT(d.SalesOrderDetailID) AS detail_row_count,\n         COUNT(DISTINCT CONCAT(d.SalesOrderID, ':', d.SalesOrderDetailID)) AS distinct_detail_keys,\n         SUM(h.SubTotal) AS naive_header_sum_after_detail_join\n  FROM valid_headers h\n  JOIN salesorderdetail d\n    ON h.SalesOrderID = d.SalesOrderID\n  GROUP BY YEAR(h.OrderDate)\n)\nSELECT h.order_year,\n       h.order_count,\n       j.detail_row_count,\n       j.distinct_detail_keys,\n       h.header_revenue,\n       j.naive_header_sum_after_detail_join,\n       j.naive_header_sum_after_detail_join - h.header_revenue AS connection_inflation\nFROM header_agg h\nJOIN joined_agg j\n  ON h.order_year = j.order_year\nORDER BY h.order_year"
+      },
+      "decision": "accept"
+    },
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "WITH valid_headers AS (\n  SELECT SalesOrderID, OrderDate, SubTotal\n  FROM salesorderheader\n  WHERE Status = 5\n    AND OnlineOrderFlag = 1\n    AND OrderDate >= '2002-01-01'\n    AND OrderDate < '2004-01-01'\n),\nline_by_order AS (\n  SELECT SalesOrderID, SUM(LineTotal) AS line_revenue\n  FROM salesorderdetail\n  GROUP BY SalesOrderID\n),\norder_pairs AS (\n  SELECT YEAR(h.OrderDate) AS order_year,\n         h.SalesOrderID,\n         h.SubTotal,\n         COALESCE(l.line_revenue, 0) AS line_revenue,\n         h.SubTotal - COALESCE(l.line_revenue, 0) AS amount_difference\n  FROM valid_headers h\n  LEFT JOIN line_by_order l\n    ON h.SalesOrderID = l.SalesOrderID\n)\nSELECT order_year,\n       COUNT(*) AS comparable_orders,\n       SUM(CASE WHEN ABS(amount_difference) > 0.005 THEN 1 ELSE 0 END) AS meaningful_amount_differences,\n       SUM(CASE WHEN ROUND(amount_difference, 2) <> 0 THEN 1 ELSE 0 END) AS cent_rounded_differences,\n       MIN(amount_difference) AS minimum_difference,\n       MAX(amount_difference) AS maximum_difference,\n       SUM(amount_difference) AS net_difference,\n       SUM(ABS(amount_difference)) AS absolute_difference_sum,\n       MAX(ABS(amount_difference)) AS maximum_absolute_difference\nFROM order_pairs\nGROUP BY order_year\nORDER BY order_year"
+      },
+      "decision": "accept"
+    },
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT YEAR(o.OrderDate) AS order_year,\n       o.SalesOrderID,\n       o.OrderDate,\n       o.CustomerID,\n       o.TerritoryID,\n       COALESCE(t.Name, '未知区域') AS region_name,\n       CASE WHEN t.TerritoryID IS NULL THEN '未匹配' ELSE '已匹配' END AS region_mapping_status,\n       o.Status,\n       o.OnlineOrderFlag,\n       o.SubTotal,\n       o.TaxAmt,\n       o.Freight,\n       o.TotalDue\nFROM salesorderheader o\nLEFT JOIN salesterritory t\n  ON o.TerritoryID = t.TerritoryID\nWHERE o.Status = 5\n  AND o.OnlineOrderFlag = 1\n  AND o.OrderDate >= '2002-01-01'\n  AND o.OrderDate < '2004-01-01'\nORDER BY o.OrderDate, o.SalesOrderID"
+      },
+      "decision": "accept"
+    },
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT YEAR(o.OrderDate) AS order_year,\n       o.SalesOrderID,\n       d.SalesOrderDetailID,\n       o.OrderDate,\n       o.CustomerID,\n       o.TerritoryID,\n       d.ProductID,\n       p.Name AS product_name,\n       p.ProductSubcategoryID,\n       ps.Name AS subcategory_name,\n       ps.ProductCategoryID,\n       pc.Name AS product_category_name,\n       COALESCE(pc.Name, '未分类') AS category_display_name,\n       CASE WHEN pc.ProductCategoryID IS NULL THEN '未匹配' ELSE '已匹配' END AS category_mapping_status,\n       d.OrderQty,\n       d.UnitPrice,\n       d.UnitPriceDiscount,\n       d.LineTotal\nFROM salesorderheader o\nJOIN salesorderdetail d\n  ON o.SalesOrderID = d.SalesOrderID\nLEFT JOIN product p\n  ON d.ProductID = p.ProductID\nLEFT JOIN productsubcategory ps\n  ON p.ProductSubcategoryID = ps.ProductSubcategoryID\nLEFT JOIN productcategory pc\n  ON ps.ProductCategoryID = pc.ProductCategoryID\nWHERE o.Status = 5\n  AND o.OnlineOrderFlag = 1\n  AND o.OrderDate >= '2002-01-01'\n  AND o.OrderDate < '2004-01-01'\nORDER BY o.OrderDate, o.SalesOrderID, d.SalesOrderDetailID"
+      },
+      "decision": "accept"
+    },
+    {
+      "threadId": "01a18263-a2d6-7861-9bce-36a8ca032033",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "WITH customer_year AS (\n  SELECT YEAR(OrderDate) AS order_year,\n         CustomerID,\n         COUNT(DISTINCT SalesOrderID) AS order_count\n  FROM salesorderheader\n  WHERE Status = 5\n    AND OnlineOrderFlag = 1\n    AND OrderDate >= '2002-01-01'\n    AND OrderDate < '2004-01-01'\n  GROUP BY YEAR(OrderDate), CustomerID\n)\nSELECT order_year,\n       CustomerID,\n       order_count,\n       CASE WHEN order_count > 1 THEN 1 ELSE 0 END AS is_repeat_customer\nFROM customer_year\nORDER BY order_year, CustomerID"
+      },
+      "decision": "accept"
+    }
+  ],
+  "rawArchive": {
+    "file": "analysis.raw.json.gz",
+    "sha256Uncompressed": "9d82cf1b541bb7e726456c478950bc16f2738faa4ce72aef17665e7b8aed19b1",
+    "bytesUncompressed": 3200757,
+    "bytesCompressed": 424133
+  },
+  "protocolCounts": {
+    "events": 354,
+    "calls": 8,
+    "completedTurns": 5
+  }
+}

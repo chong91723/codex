@@ -1,0 +1,78 @@
+{
+  "scope": "Real current web, native DeepSeek Flash, own read-only public MySQL AdventureWorks. Explicit browser actions simulate this test user. No old user threads read. Stop/continue is a new turn, not a transaction checkpoint.",
+  "sourceId": "d405332778c1c12116333a1b",
+  "phase": "manual-plan",
+  "checks": [
+    {
+      "name": "用户主动用斜杠plan生成方案，等待确认期间不执行汇总",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a18268-c785-7572-85a6-c1a9e173b686",
+        "turnId": "01a18268-cfa0-7920-b343-5011f2f8fbf8",
+        "plans": [
+          "# 独立线上订单经营分析方案\n\n## 摘要\n\n- 使用“AdventureWorks 用户体验审计（独立只读）”独立数据源，沿用已确认的有效线上订单口径。\n- 正式比较比较年 2003 与基年 2002；按自然年、自然季度统计，季度结果只与相邻前序自然年度的相同季度比较。\n- 输出年度客单价、季度收入／订单数／客单价趋势、年度复购客户率及去重依据。\n- 本轮只确认方案，不执行经营明细、汇总或复购查询；确认后再运行只读分析。\n\n## 口径与去重设计\n\n- 先建立 `valid_orders` 公共订单集：只从 `salesorderheader` 取 `Status = 5` 且 `OnlineOrderFlag = 1` 的订单，保留 `SalesOrderID`、`OrderDate`、`CustomerID`、`SubTotal`。头表主键为 `SalesOrderID`，因此该集合中的订单和客户都必须用去重计数。\n- 年度客单价：按自然年汇总有效订单头 `SubTotal`，再除以该年 `COUNT(DISTINCT SalesOrderID)`。同时列出有效收入、去重订单数和去重活跃客户数，禁止用明细行数作为订单数。\n- 季度趋势：按 `OrderDate` 的自然年、自然季度汇总有效订单头，展示收入、去重订单数和客单价；同比率为比较年同季度指标相对基年同季度指标的相对变化。\n- 年度复购客户率：在自然年度内按 `CustomerID` 汇总去重订单数，拥有至少 2 个不同有效线上订单的客户为复购客户；分母为该年度有有效线上订单的去重客户数。结果同时保留复购客户数和活跃客户数。\n- 客单价与复购分析全程以订单头为主表，不为了统计客户或订单而连接明细。\n- `salesorderheader` 到 `salesorderdetail` 是父订单到子明细关系，连接键为 `SalesOrderID`；明细的联合主键为 `SalesOrderID` 与 `SalesOrderDetailID`。连接后头表金额会随明细行重复，不能在此结果上直接汇总 `SubTotal`。\n- 如果未来需要商品或分类分析，先在明细粒度按 `SalesOrderID` 汇总 `LineTotal`，再连接已筛选的订单头；需要保留无明细订单时使用左连接。明细收入使用 `LineTotal`，订单收入仍使用头表 `SubTotal`，订单收入与明细收入不混加。\n- 可在执行阶段做订单级核对：比较订单的明细 `LineTotal` 汇总与头表 `SubTotal`，记录差异订单；该核对只用于数据质量说明，不改变已确认的官方收入口径。\n\n## 输出与结果接口\n\n- 年度指标集：`year`、`revenue`、`orders`、`active_customers`、`aov`、`aov_yoy_rate`。\n- 季度指标集：`year`、`period_label`、`revenue`、`orders`、`aov`、`same_period_yoy_rate`；比较年和基年使用相同的季度标签并列。\n- 复购指标集：`year`、`repeat_customers`、`active_customers`、`repeat_customer_rate`、`rate_yoy_pp`。复购客户率的跨年差异按比率差展示，不展示相对变化率。\n- 展示层采用年度指标卡与明细表、按自然季度排列的收入／订单数／客单价趋势图、同季度同比表，以及复购客户率及分子分母表。所有图表的数值来自实际查询结果。\n- 不新增外部 API；上述结果集作为本轮分析的内部数据契约，字段名、粒度和口径固定。\n\n## 验证与测试\n\n- 验证公共订单集只包含线上且有效的订单，并确认订单头主键在基础表中唯一。\n- 验证年度、季度收入只汇总头表 `SubTotal`；连接明细后的任何汇总都不能进入正式客单价结果。\n- 对明细核对结果检查订单级重复：订单连接多条明细时，订单不因明细数量增加而重复计数，客户仍只按 `CustomerID` 去重。\n- 验证客单价的分子和分母来自相同订单集、相同自然期间；同比计算没有混用不同年度或不同季度。\n- 对无活跃客户或基期值不可用的情形返回空同比并显示“不可计算”，不输出无穷值或制造兜底值。\n- 检查比较年与基年各自然季度的覆盖完整性。缺少或未完成的可比季度不进入正式同季度同比，并在数据质量说明中披露；完整期间才进入正式结论。\n\n## 假设与默认值\n\n- 年度和季度均采用日历自然年、自然季度，比较期为 2003，基期为 2002。\n- 用户未另行指定季度展示内容，因此默认同时展示季度收入、去重订单数和客单价，以收入与订单量解释客单价变化。\n- 复购只在自然年度内判断，不把跨年再次购买自动计入该年度复购客户率。\n- 订单收入仅使用头表 `SubTotal`，不含 `TaxAmt` 与 `Freight`；数据源未确认币种，因此结果不声明为人民币或其他固定币种。\n- 执行时先完成数据质量检查，再生成正式图表；不完整期间不参与正式同比，完整性与缺失情况单独说明。\n"
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "approvals": [
+    {
+      "threadId": "01a18268-c785-7572-85a6-c1a9e173b686",
+      "kind": "clarification",
+      "answers": [
+        {
+          "question": "“年度客单价”要按哪一种口径作为主指标？",
+          "answer": "按每笔有效线上订单：订单头 SubTotal 合计除以去重订单数。"
+        },
+        {
+          "question": "复购分析希望以哪种观察方式为主？",
+          "answer": "年度复购客户率：同一自然年同一 CustomerID 至少两个不同有效线上订单的客户数，除以该年度有有效线上订单的去重客户数。"
+        },
+        {
+          "question": "年度和季度比较如何处理不完整期间？",
+          "answer": "按已确认的比较期与基期，展示各自然季度趋势并做同季度同比。"
+        }
+      ]
+    },
+    {
+      "threadId": "01a18268-c785-7572-85a6-c1a9e173b686",
+      "kind": "clarification",
+      "answers": [
+        {
+          "question": "年度客单价默认覆盖哪些完整自然年？",
+          "answer": "只比较 2003 年与 2002 年。"
+        },
+        {
+          "question": "季度趋势需要同时展示哪些业务量？",
+          "answer": "按已确认的比较期与基期，展示各自然季度趋势并做同季度同比。"
+        },
+        {
+          "question": "如果数据覆盖末尾存在不完整年度或季度，如何处理？",
+          "answer": "按已确认的比较期与基期，展示各自然季度趋势并做同季度同比。"
+        }
+      ]
+    },
+    {
+      "threadId": "01a18268-c785-7572-85a6-c1a9e173b686",
+      "kind": "clarification",
+      "answers": [
+        {
+          "question": "季度趋势图与同季度同比表应包含哪些指标？",
+          "answer": "按已确认的比较期与基期，展示各自然季度趋势并做同季度同比。"
+        }
+      ]
+    }
+  ],
+  "rawArchive": {
+    "file": "manual-plan.raw.json.gz",
+    "sha256Uncompressed": "858f6731f6f7201a3776d0bd4122922c77886f7f33b854e1bd44eb25e8840ad7",
+    "bytesUncompressed": 980646,
+    "bytesCompressed": 105515
+  },
+  "protocolCounts": {
+    "events": 152,
+    "calls": 1,
+    "completedTurns": 1
+  }
+}

@@ -9,6 +9,9 @@ FORBIDDEN=set('Insert Update Delete Create Drop Alter Command Copy Into Merge Tr
 # Exempt only their exact structural types from function-name checks; the walk
 # below still validates every child, including CASE conditions/results.
 SQL_SYNTAX_FUNCTION_TYPES=(exp.And,exp.Or,exp.Case)
+# The pinned parser normalizes MySQL YEAR/MONTH/DAY arguments through this
+# pure date conversion node. Its children are still checked individually.
+SAFE_NORMALIZED_FUNCTION_TYPES=(exp.TsOrDsToDate,)
 
 class ReadOnlyError(ValueError):
     pass
@@ -37,7 +40,7 @@ def validate_query(query,connection,enforce_limit=False):
             raise ReadOnlyError('只读查询禁止写入、锁定、导出和修改会话设置。')
         if isinstance(node,exp.Func) and type(node) not in SQL_SYNTAX_FUNCTION_TYPES:
             name=node.name.upper() if isinstance(node,exp.Anonymous) else node.sql_name().upper()
-            if name not in SAFE_FUNCTIONS:
+            if name not in SAFE_FUNCTIONS and type(node) not in SAFE_NORMALIZED_FUNCTION_TYPES:
                 raise ReadOnlyError('不允许可能产生副作用或访问外部数据的函数：'+name)
         if isinstance(node,exp.Table):
             if not isinstance(node.this,exp.Identifier):

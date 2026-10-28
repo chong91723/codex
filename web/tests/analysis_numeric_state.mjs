@@ -62,3 +62,13 @@ test('metric proof download rejects navigation changes and mismatched execution 
  const pending=f.context.downloadAnalysisMetricProof(metric,()=>current);current=false;gate.resolve({proofHash:'expected',proof:{resultId:metric.resultId}});await assert.rejects(pending,/已切换/);assert.equal(downloads,0);
  const mismatch=fixture(async()=>({proofHash:'other',proof:{resultId:metric.resultId}}));mismatch.context.downloadDatabaseBlob=()=>{downloads++;};mismatch.context.Blob=Blob;await assert.rejects(mismatch.context.downloadAnalysisMetricProof(metric),/不一致/);assert.equal(downloads,0);
 });
+test('unverified proposed plan offers a proposal-only repair and never submits execution',async()=>{
+ const f=fixture(async()=>({status:'rejected',reason:'缺少依据'}));
+ f.context.extractAnalysisProposal=text=>text.startsWith('<proposed_plan>')?'数量待核对的方案':null;
+ const plan={...item,text:'<proposed_plan>比较两个年度的收入。</proposed_plan>'};
+ const node=f.context.renderGroundedAnalysisItem(plan,true,'turn-A');await flush();
+ assert.equal(node.dataset.analysisVerification,'rejected');assert.equal(f.rendered.length,0);
+ const action=node.all('button').find(n=>n.textContent==='修订方案中的未核验数值');assert(action);
+ f.prompt.value='用户正在补充';action.onclick();assert.equal(f.prompt.value,'用户正在补充');
+ f.prompt.value='';action.onclick();assert.match(f.prompt.value,/还未批准执行/);assert.match(f.prompt.value,/不开始经营查询/);assert.match(f.prompt.value,/publish_answer/);assert.equal(f.calls.length,1);
+});

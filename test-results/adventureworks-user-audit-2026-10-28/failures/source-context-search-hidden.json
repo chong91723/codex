@@ -1,0 +1,42 @@
+{
+  "scope": "Real current web, native DeepSeek Flash, own read-only public MySQL AdventureWorks. Explicit browser actions simulate this test user. No old user threads read. Stop/continue is a new turn, not a transaction checkpoint.",
+  "sourceId": "d405332778c1c12116333a1b",
+  "phase": "resilience",
+  "checks": [
+    {
+      "name": "自然语言生成实际订单明细，分页跳转并下载完整CSV",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 30000ms exceeded.\n    at /root/Codex/web/tests/adventureworks_analyst_live.mjs:146:171\n    at async check (/root/Codex/web/tests/adventureworks_analyst_live.mjs:19:50)\n    at async file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:143:3"
+    }
+  ],
+  "errors": [],
+  "approvals": [
+    {
+      "threadId": "01a1826b-fa8f-7b02-92e7-87c52ef6d4a2",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT `OnlineOrderFlag`, `Status`, COUNT(*) AS `OrderCount` FROM `salesorderheader` GROUP BY `OnlineOrderFlag`, `Status` ORDER BY `OnlineOrderFlag`, `Status`;"
+      },
+      "decision": "accept"
+    },
+    {
+      "threadId": "01a1826b-fa8f-7b02-92e7-87c52ef6d4a2",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT\n  `SalesOrderNumber`,\n  `OrderDate`,\n  `CustomerID`,\n  `SubTotal`\nFROM `salesorderheader`\nWHERE `OnlineOrderFlag` = 1\n  AND `Status` = 5\nORDER BY `SubTotal` DESC, `SalesOrderNumber` ASC\nLIMIT 65;"
+      },
+      "decision": "accept"
+    }
+  ],
+  "rawArchive": {
+    "file": "source-context-search-hidden.raw.json.gz",
+    "sha256Uncompressed": "41337ad83a918d63513582e3ab4f441419d7e4158b7f8f89f8f063ca91bedafc",
+    "bytesUncompressed": 245538,
+    "bytesCompressed": 21445
+  },
+  "protocolCounts": {
+    "events": 36,
+    "calls": 1,
+    "completedTurns": 1
+  }
+}

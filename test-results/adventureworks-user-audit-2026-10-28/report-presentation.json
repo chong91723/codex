@@ -1,0 +1,118 @@
+{
+  "scope": "Real current web, native DeepSeek Flash, own read-only public MySQL AdventureWorks. Explicit browser actions simulate this test user. No old user threads read. Stop/continue is a new turn, not a transaction checkpoint.",
+  "sourceId": "d405332778c1c12116333a1b",
+  "phase": "report-presentation",
+  "checks": [
+    {
+      "name": "新任务实际复用修订定义，短结论不暴露内部结果编号",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a18272-1fd2-7201-aae2-c641748ac8c3",
+        "turnId": "01a18272-2425-7f52-b72e-7240b17853d0",
+        "answer": "目前有效线上订单共 27,659 笔，订单收入合计为 29,358,677.22。收入按订单小计汇总，不含税和运费。",
+        "plans": [],
+        "verified": {
+          "status": "verified",
+          "strict": true,
+          "answerId": "44456a69ea34fd6d1b537fd4df9db8973db180ddea2bde846fcf114b8c9ceed0",
+          "evidence": [
+            {
+              "name": "count",
+              "value": "27,659",
+              "resultId": "4d3210eef9ccf9d3004636c3cfd0d7b3",
+              "row": 0,
+              "column": "valid_online_order_count_display",
+              "sha256": "dd7f60d6ed1101b05877930a2e626641a700d1a02f81636367fe3065e95270a5",
+              "sourceKind": "python",
+              "sourceName": "订单指标展示值",
+              "acquisition": [
+                {
+                  "kind": "database",
+                  "threadId": "01a18272-1fd2-7201-aae2-c641748ac8c3",
+                  "turnId": "01a18272-2425-7f52-b72e-7240b17853d0",
+                  "retrievedAt": "2026-10-28T12:18:09.583654+00:00",
+                  "connectionId": "d405332778c1c12116333a1b"
+                }
+              ]
+            },
+            {
+              "name": "revenue",
+              "value": "29,358,677.22",
+              "resultId": "4d3210eef9ccf9d3004636c3cfd0d7b3",
+              "row": 0,
+              "column": "order_revenue_display",
+              "sha256": "dd7f60d6ed1101b05877930a2e626641a700d1a02f81636367fe3065e95270a5",
+              "sourceKind": "python",
+              "sourceName": "订单指标展示值",
+              "acquisition": [
+                {
+                  "kind": "database",
+                  "threadId": "01a18272-1fd2-7201-aae2-c641748ac8c3",
+                  "turnId": "01a18272-2425-7f52-b72e-7240b17853d0",
+                  "retrievedAt": "2026-10-28T12:18:09.583654+00:00",
+                  "connectionId": "d405332778c1c12116333a1b"
+                }
+              ]
+            }
+          ],
+          "sources": {
+            "4d3210eef9ccf9d3004636c3cfd0d7b3": {
+              "query": null,
+              "pythonCode": "import pandas as pd\nrow = datasets[\"c6dea9e64418e32c1da3d7f4b226e3ae\"][0]\nresult = pd.DataFrame([{\n    \"valid_online_order_count_display\": f\"{int(row['valid_online_order_count']):,}\",\n    \"order_revenue_display\": f\"{round(float(row['order_revenue']), 2):,.2f}\",\n}])\n",
+              "inputSources": [
+                {
+                  "kind": "dataset",
+                  "resultId": "c6dea9e64418e32c1da3d7f4b226e3ae",
+                  "sha256": "8fdcf591b7015b19da9f6ceb0b9fc3a8e95b61a35a6c8e39b096c19cda42b66f",
+                  "source": "AdventureWorks 用户体验审计（独立只读）"
+                }
+              ]
+            }
+          },
+          "publicationChecks": {
+            "version": "analysis-publication-v2",
+            "checkedAt": "2026-10-28T12:18:21.689685+00:00",
+            "freshness": [
+              {
+                "kind": "database",
+                "threadId": "01a18272-1fd2-7201-aae2-c641748ac8c3",
+                "turnId": "01a18272-2425-7f52-b72e-7240b17853d0",
+                "retrievedAt": "2026-10-28T12:18:09.583654+00:00",
+                "connectionId": "d405332778c1c12116333a1b",
+                "sourceName": "AdventureWorks 用户体验审计（独立只读）",
+                "maxAgeMinutes": null,
+                "status": "notConfigured"
+              }
+            ],
+            "scope": "execution-record-match-only",
+            "note": "读取时间不等于源数据更新时间；未设置时效规则的来源不自动判定为最新。"
+          },
+          "version": "numeric-evidence-v1"
+        },
+        "noInternalIdsInConclusion": true
+      }
+    }
+  ],
+  "errors": [],
+  "approvals": [
+    {
+      "threadId": "01a18272-1fd2-7201-aae2-c641748ac8c3",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT COUNT(*) AS valid_online_order_count, SUM(SubTotal) AS order_revenue FROM salesorderheader WHERE Status = 5 AND OnlineOrderFlag = 1;"
+      },
+      "decision": "accept"
+    }
+  ],
+  "rawArchive": {
+    "file": "report-presentation.raw.json.gz",
+    "sha256Uncompressed": "b0870aee71ca9d82bf2c9a41cf701d97f06a68352c668e7097d173e180da47b4",
+    "bytesUncompressed": 501980,
+    "bytesCompressed": 39899
+  },
+  "protocolCounts": {
+    "events": 42,
+    "calls": 1,
+    "completedTurns": 1
+  }
+}

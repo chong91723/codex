@@ -1,0 +1,92 @@
+{
+  "scope": "Real current web, native DeepSeek Flash, own read-only public MySQL AdventureWorks. Explicit browser actions simulate this test user. No old user threads read. Stop/continue is a new turn, not a transaction checkpoint.",
+  "sourceId": "d405332778c1c12116333a1b",
+  "phase": "analysis",
+  "checks": [
+    {
+      "name": "复杂多问题触发自主计划，执行前向用户确认",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a1825f-0f2a-7862-9291-ab1774b286c0",
+        "turnId": "01a1825f-13c3-7320-9efd-a7cb75452895",
+        "answer": "<proposed_plan>\n**分析范围与已确认口径**\n\n- 数据源固定为 AdventureWorks 独立只读数据源 `d405332778c1c12116333a1b`。\n- 目标年度为 `2003`，基期年度为 `2002`。\n- 有效线上订单筛选条件沿用已确认业务定义：`Status = 5` 且 `OnlineOrderFlag = 1`。\n- 日期使用订单头 `OrderDate`；订单数按不同 `SalesOrderID` 计数；收入按订单头 `SubTotal` 汇总，不含 `TaxAmt` 与 `Freight`；客单价按收入除以订单数计算。\n- 区域使用订单头 `TerritoryID` 并左连接区域表；无法匹配的区域另列为“未知区域”。金额只标注“币种未确认”，不换算、不假定为人民币。\n- 产品大类收入按明细 `LineTotal` 汇总；产品、子类和大类均使用左连接，缺少产品或分类映射的记录归入“未分类”桶。\n\n**综合比较**\n\n- 汇总目标年度与基期年度的有效线上订单数、收入及客单价，并计算年度差额和相对变化。\n- 按区域比较年度订单数与收入，计算各区域收入变化及其相对总收入变化的占比。变化贡献仅作算术拆分，不解释为因果关系；同时保留仅在某年度出现或区域未知的记录。\n- 生成区域收入变化柱状图，按变化幅度排序，清楚区分正变化、负变化和缺失区域。\n\n**产品大类检查**\n\n- 从有效订单头子集连接订单明细，再左连接产品、产品子类和产品大类；按年度及大类汇总成交收入、占比和变化。\n- 另行列示“未分类”收入及其产生原因：产品主数据缺失、产品无子类、子类无大类或分类映射缺失。\n- 核对订单头与明细的键是否重复，验证按 `SalesOrderID` 去重后计数，并检查订单明细复合键的完整性。\n- 比较订单头 `SubTotal` 合计与明细 `LineTotal` 合计，量化头明细对账差额；另外模拟订单头直接连接明细后的汇总结果，识别订单头金额被重复累加的风险，并说明报告采用的是去重订单粒度还是明细粒度。\n- 将产品大类收入加总回订单总收入的核对结果与上述差额并列展示，说明分类口径和头明细口径是否可以互相对账。\n\n**复购分析**\n\n- 在各自然年度内，以有效线上订单的 `CustomerID` 为下单客户集合。\n- 客户在同年度内拥有至少 `2` 个不同 `SalesOrderID` 时标记为该年度复购客户。\n- 输出各年度下过单的客户数、复购客户数和复购比例，并计算年度间比例变化。分母仅包含当年有有效线上订单的客户。\n\n**交付内容**\n\n- 中文分析报告，包含核心结论、区域变化解释、产品大类变化、未分类收入与头明细完整性检查、复购变化，以及口径和限制说明。\n- 区域收入变化 ECharts 柱状图，并附完整区域汇总表。\n- 可下载的完整结果数据：有效线上订单级数据、客户年度复购标记、产品大类年度汇总、区域年度汇总及数据质量检查结果。每份结果保留年份、原始键、收入、分类或区域归属，便于复核。\n</proposed_plan>",
+        "plans": [],
+        "reference": [
+          {
+            "year": "2002",
+            "order_count": "2680",
+            "revenue": "6530858.549599939"
+          },
+          {
+            "year": "2003",
+            "order_count": "10955",
+            "revenue": "9805009.748101065"
+          }
+        ],
+        "modelSelectedPlanning": true
+      }
+    },
+    {
+      "name": "计划讨论支持用户修改，保留未分类与未知区域",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a1825f-0f2a-7862-9291-ab1774b286c0",
+        "turnId": "01a18260-0996-72b2-b4b4-7bff4441fa14",
+        "plans": [
+          "# AdventureWorks 年度订单对比与复购分析方案\n\n## 摘要\n\n- 仅使用独立只读数据源 `d405332778c1c12116333a1b`，比较目标年度 `2003` 与基期年度 `2002`。\n- 有效线上订单固定为 `Status = 5` 且 `OnlineOrderFlag = 1`，日期取订单头 `OrderDate`。\n- 交付中文报告、区域年度对比柱状图、完整结果数据下载。产品大类仅使用表格，不另做图表。\n- 区域变化和产品大类变化只做收入差额的算术拆分，不解释为因果关系。\n\n## 指标与数据处理\n\n**订单主数据集**\n\n- 从订单头筛选有效线上订单，以 `SalesOrderID` 为订单粒度建立去重订单集合。\n- 订单数使用去重 `SalesOrderID` 计数；收入使用订单头 `SubTotal` 合计，排除 `TaxAmt` 和 `Freight`。\n- 客单价固定计算为订单头 `SubTotal` 合计除以去重订单数；不使用明细重复后的订单头金额。\n- 金额保留源数据数值和精度，并统一标注“币种未确认”；不进行币种换算，不假定为人民币。\n\n**区域分析与柱状图**\n\n- 订单头按 `TerritoryID` 左连接区域表；原始 `TerritoryID` 为空或找不到区域名称的记录归入“未知区域”，不得因连接而排除。\n- 汇总区域在目标年度与基期年度的订单数、订单头收入、客单价及收入变化，并计算区域变化占总收入变化的份额。\n- 区域对比柱状图采用按区域分组的双年度订单头收入柱，包含“未知区域”，按收入变化排序。\n- 最终仅输出区域对比柱状图；其他结论使用文字和表格呈现。\n\n**产品大类分析**\n\n- 从有效订单头集合连接订单明细，再按产品、子类、大类的层级全部左连接，禁止使用内连接静默排除缺失分类。\n- 产品收入按明细 `LineTotal` 汇总，按年度和产品大类展示收入、占比、变化额及变化率。\n- 产品主数据缺失、产品无子类、子类无大类或分类映射缺失的记录统一进入“未分类”行，并保留分类状态说明具体缺失层级。\n- 产品大类表格显式列出“未分类”；产品大类收入合计需覆盖全部有效订单明细行。\n- 订单头 `SubTotal` 与明细 `LineTotal` 分开汇总、分别对账。展示订单头总额、明细总额、差额及差额涉及订单数；不调整源数据，不强行令两者相等。只有存在可核实的逐单证据时才说明差异来源，否则如实标注为源数据差异。\n\n**连接完整性检查**\n\n- 检查订单头 `SalesOrderID` 是否重复，并验证去重订单计数与订单头收入是否保持订单粒度。\n- 检查明细 `SalesOrderID + SalesOrderDetailID` 复合键是否重复。\n- 模拟订单头直接连接明细后的汇总结果，量化订单头金额被明细行放大的差额，说明报告为何在订单头粒度计算订单数与客单价。\n- 检查产品、子类、大类连接前后的行数与行金额；任何未匹配记录保留并计入“未分类”。\n- 检查区域连接前后的订单数与订单头收入；任何未匹配记录保留并计入“未知区域”。\n\n**复购分析**\n\n- 各自然年度的复购分母固定为该年度存在有效线上订单的去重 `CustomerID` 数量。\n- 复购客户定义为同年度内拥有至少 `2` 个不同 `SalesOrderID` 的客户。\n- 复购比例计算为年度复购客户数除以年度有效下单去重客户数，并展示年度间比例变化。订单是否复购在订单粒度判断，避免明细行造成重复计数。\n\n## 交付结果与数据接口\n\n- 报告包含区域、产品大类、复购和头明细对账结果，并明确币种、未知区域、未分类及非因果限制。\n- 订单级完整结果集字段：年度、订单号、订单日期、客户号、原始区域号、区域名称、区域是否未知、订单头小计、是否计入年度复购。\n- 明细级完整结果集字段：年度、订单号、明细号、产品号、产品名称、子类、大类、分类状态、明细行金额、对应订单头小计及头明细差额。\n- 客户年度完整结果集字段：年度、客户号、去重订单数、有效下单客户标记、复购客户标记。\n- 汇总结果集包括完整区域年度汇总、完整产品大类年度汇总、整体年度指标及数据质量检查；缺失年度记录不虚构，差异均保留。\n- 所有完整结果集提供可下载 CSV；聚合结果与图表直接使用这些完整结果集生成。\n\n## 验证与验收\n\n- 有效订单数与去重订单头行数核验通过，区域汇总订单数合计与订单主数据集核验通过。\n- 区域左连接前后的订单数及订单头收入核验通过，“未知区域”在明细和图表中可见。\n- 产品链路左连接前后明细行数及 `LineTotal` 合计核验通过，“未分类”显式出现且未被排除。\n- 订单头收入与明细行金额分开核验，差额及涉及订单数能够复算，不以强制平衡掩盖差异。\n- 复购客户数、去重下单客户数及复购比例可以相互复算，复购集合不包含重复订单。\n- 图表数量符合要求，仅保留区域年度对比柱状图。\n- 抽查完整订单、明细和客户年度结果集与汇总表、图表数据能够对应复算。\n\n## 默认口径\n\n- “年度”按 `OrderDate` 所在自然年划分。\n- “成交收入”在整体口径使用订单头 `SubTotal`，在产品大类口径使用明细 `LineTotal`，两者分别命名和展示。\n- “收入变化”使用目标年度收入减基期年度收入；“区域贡献份额”仅描述该区域变化占整体收入变化的算术比例。\n- 源数据没有统一币种证据，所有金额均视为未确认币种的原始金额。\n"
+        ]
+      }
+    },
+    {
+      "name": "确认计划后展示真实进度，中途停止确实中断本轮",
+      "passed": false,
+      "error": "SyntaxError: Unexpected token '不', \"不允许可能产生副作用\"... is not valid JSON\n    at JSON.parse (<anonymous>)\n    at content (file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:16:129)\n    at file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:100:89\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at process.processImmediate (node:internal/timers:541:9)\n    at async check (file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:18:50)\n    at async file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:90:3"
+    }
+  ],
+  "errors": [],
+  "approvals": [
+    {
+      "threadId": "01a1825f-0f2a-7862-9291-ab1774b286c0",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT\n  YEAR(o.OrderDate) AS OrderYear,\n  o.SalesOrderID,\n  o.OrderDate,\n  o.CustomerID,\n  o.TerritoryID,\n  COALESCE(st.Name, '未知区域') AS RegionName,\n  CASE\n    WHEN o.TerritoryID IS NULL THEN '未知区域-区域号为空'\n    WHEN st.TerritoryID IS NULL THEN '未知区域-区域号未匹配'\n    ELSE '已匹配'\n  END AS RegionStatus,\n  o.SubTotal AS OrderHeaderSubTotal,\n  CASE WHEN cyc.DistinctOrderCount >= 2 THEN 1 ELSE 0 END AS IsRepeatCustomerInYear\nFROM salesorderheader o\nLEFT JOIN salesterritory st ON st.TerritoryID = o.TerritoryID\nLEFT JOIN (\n  SELECT YEAR(o2.OrderDate) AS OrderYear, o2.CustomerID, COUNT(DISTINCT o2.SalesOrderID) AS DistinctOrderCount\n  FROM salesorderheader o2\n  WHERE YEAR(o2.OrderDate) IN (2002, 2003)\n    AND o2.Status = 5\n    AND o2.OnlineOrderFlag = 1\n  GROUP BY YEAR(o2.OrderDate), o2.CustomerID\n) cyc ON cyc.OrderYear = YEAR(o.OrderDate) AND cyc.CustomerID = o.CustomerID\nWHERE YEAR(o.OrderDate) IN (2002, 2003)\n  AND o.Status = 5\n  AND o.OnlineOrderFlag = 1\nORDER BY OrderYear, o.SalesOrderID"
+      },
+      "decision": "accept-before-pause"
+    },
+    {
+      "threadId": "01a1825f-0f2a-7862-9291-ab1774b286c0",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT\n  YEAR(o.OrderDate) AS OrderYear,\n  o.SalesOrderID,\n  d.SalesOrderDetailID,\n  d.ProductID,\n  p.Name AS ProductName,\n  COALESCE(ps.Name, '未分类') AS SubcategoryName,\n  COALESCE(pc.Name, '未分类') AS CategoryName,\n  CASE\n    WHEN p.ProductID IS NULL THEN '产品主数据缺失'\n    WHEN p.ProductSubcategoryID IS NULL THEN '产品无子类'\n    WHEN ps.ProductSubcategoryID IS NULL THEN '子类主数据缺失'\n    WHEN ps.ProductCategoryID IS NULL THEN '子类无大类'\n    WHEN pc.ProductCategoryID IS NULL THEN '大类主数据缺失'\n    ELSE '已分类'\n  END AS ClassificationStatus,\n  d.LineTotal,\n  d.OrderQty,\n  d.UnitPrice,\n  d.UnitPriceDiscount,\n  o.SubTotal AS OrderHeaderSubTotal,\n  olr.OrderLineRevenue,\n  o.SubTotal - olr.OrderLineRevenue AS OrderHeaderLineDifference\nFROM salesorderheader o\nJOIN salesorderdetail d ON d.SalesOrderID = o.SalesOrderID\nLEFT JOIN product p ON p.ProductID = d.ProductID\nLEFT JOIN productsubcategory ps ON ps.ProductSubcategoryID = p.ProductSubcategoryID\nLEFT JOIN productcategory pc ON pc.ProductCategoryID = ps.ProductCategoryID\nLEFT JOIN (\n  SELECT SalesOrderID, SUM(LineTotal) AS OrderLineRevenue\n  FROM salesorderdetail\n  GROUP BY SalesOrderID\n) olr ON olr.SalesOrderID = o.SalesOrderID\nWHERE YEAR(o.OrderDate) IN (2002, 2003)\n  AND o.Status = 5\n  AND o.OnlineOrderFlag = 1\nORDER BY OrderYear, o.SalesOrderID, d.SalesOrderDetailID"
+      },
+      "decision": "accept-before-pause"
+    },
+    {
+      "threadId": "01a1825f-0f2a-7862-9291-ab1774b286c0",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT\n  YEAR(o.OrderDate) AS OrderYear,\n  o.CustomerID,\n  COUNT(DISTINCT o.SalesOrderID) AS DistinctOrderCount,\n  1 AS IsActiveOrderingCustomer,\n  CASE WHEN COUNT(DISTINCT o.SalesOrderID) >= 2 THEN 1 ELSE 0 END AS IsRepeatCustomer\nFROM salesorderheader o\nWHERE YEAR(o.OrderDate) IN (2002, 2003)\n  AND o.Status = 5\n  AND o.OnlineOrderFlag = 1\nGROUP BY YEAR(o.OrderDate), o.CustomerID\nORDER BY OrderYear, o.CustomerID"
+      },
+      "decision": "accept-before-pause"
+    },
+    {
+      "threadId": "01a1825f-0f2a-7862-9291-ab1774b286c0",
+      "params": {
+        "connection_id": "d405332778c1c12116333a1b",
+        "query": "SELECT\n  CASE WHEN o.OrderDate < '2003-01-01' THEN 2002 ELSE 2003 END AS OrderYear,\n  o.SalesOrderID,\n  o.OrderDate,\n  o.CustomerID,\n  o.TerritoryID,\n  COALESCE(st.Name, '未知区域') AS RegionName,\n  CASE\n    WHEN o.TerritoryID IS NULL THEN '未知区域-区域号为空'\n    WHEN st.TerritoryID IS NULL THEN '未知区域-区域号未匹配'\n    ELSE '已匹配'\n  END AS RegionStatus,\n  o.SubTotal AS OrderHeaderSubTotal,\n  CASE WHEN cyc.DistinctOrderCount >= 2 THEN 1 ELSE 0 END AS IsRepeatCustomerInYear\nFROM salesorderheader o\nLEFT JOIN salesterritory st ON st.TerritoryID = o.TerritoryID\nLEFT JOIN (\n  SELECT\n    CASE WHEN o2.OrderDate < '2003-01-01' THEN 2002 ELSE 2003 END AS OrderYear,\n    o2.CustomerID,\n    COUNT(DISTINCT o2.SalesOrderID) AS DistinctOrderCount\n  FROM salesorderheader o2\n  WHERE o2.OrderDate >= '2002-01-01' AND o2.OrderDate < '2004-01-01'\n    AND o2.Status = 5\n    AND o2.OnlineOrderFlag = 1\n  GROUP BY CASE WHEN o2.OrderDate < '2003-01-01' THEN 2002 ELSE 2003 END, o2.CustomerID\n) cyc ON cyc.OrderYear = CASE WHEN o.OrderDate < '2003-01-01' THEN 2002 ELSE 2003 END AND cyc.CustomerID = o.CustomerID\nWHERE o.OrderDate >= '2002-01-01' AND o.OrderDate < '2004-01-01'\n  AND o.Status = 5\n  AND o.OnlineOrderFlag = 1\nORDER BY OrderYear, o.SalesOrderID"
+      },
+      "decision": "accept-before-pause"
+    }
+  ],
+  "rawArchive": {
+    "file": "mysql-year-rejected-and-harness-error.raw.json.gz",
+    "sha256Uncompressed": "5637bbadc10416c6968ed5784069244ec31596f6729943f42b9eb29e563c0c31",
+    "bytesUncompressed": 873461,
+    "bytesCompressed": 98648
+  },
+  "protocolCounts": {
+    "events": 90,
+    "calls": 6,
+    "completedTurns": 3
+  }
+}

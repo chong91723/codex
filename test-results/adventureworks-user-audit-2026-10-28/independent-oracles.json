@@ -1,0 +1,206 @@
+{
+  "scope": "Independent fixed SQL on own readonly MySQL AdventureWorks; FLOAT source tolerance is documented, no currency or governed financial precision certification. A current uniqueness observation is not a unique constraint.",
+  "years": [
+    2002,
+    2003
+  ],
+  "parameters": [
+    "2002-01-01",
+    "2004-01-01"
+  ],
+  "queries": {
+    "annual": "SELECT YEAR(h.OrderDate) AS year,COUNT(*) AS order_count,SUM(h.SubTotal) AS revenue,SUM(h.SubTotal)/COUNT(*) AS average_order_value FROM salesorderheader h WHERE h.Status=5 AND h.OnlineOrderFlag=1 AND h.OrderDate>=%s AND h.OrderDate<%s GROUP BY YEAR(h.OrderDate) ORDER BY year",
+    "region": "SELECT YEAR(h.OrderDate) AS year,COALESCE(t.Name,'未知区域') AS region,COUNT(*) AS order_count,SUM(h.SubTotal) AS revenue FROM salesorderheader h LEFT JOIN salesterritory t ON t.TerritoryID=h.TerritoryID WHERE h.Status=5 AND h.OnlineOrderFlag=1 AND h.OrderDate>=%s AND h.OrderDate<%s GROUP BY YEAR(h.OrderDate),COALESCE(t.Name,'未知区域') ORDER BY year,region",
+    "category": "SELECT YEAR(h.OrderDate) AS year,COALESCE(c.Name,'未分类') AS category,SUM(d.LineTotal) AS revenue,COUNT(*) AS detail_rows FROM salesorderheader h JOIN salesorderdetail d ON d.SalesOrderID=h.SalesOrderID LEFT JOIN product p ON p.ProductID=d.ProductID LEFT JOIN productsubcategory s ON s.ProductSubcategoryID=p.ProductSubcategoryID LEFT JOIN productcategory c ON c.ProductCategoryID=s.ProductCategoryID WHERE h.Status=5 AND h.OnlineOrderFlag=1 AND h.OrderDate>=%s AND h.OrderDate<%s GROUP BY YEAR(h.OrderDate),COALESCE(c.Name,'未分类') ORDER BY year,category",
+    "repeat": "SELECT year,COUNT(*) AS active_customers,SUM(order_count>=2) AS repeat_customers,SUM(order_count>=2)/COUNT(*) AS repeat_rate FROM (SELECT YEAR(h.OrderDate) AS year,h.CustomerID,COUNT(DISTINCT h.SalesOrderID) AS order_count FROM salesorderheader h WHERE h.Status=5 AND h.OnlineOrderFlag=1 AND h.OrderDate>=%s AND h.OrderDate<%s GROUP BY YEAR(h.OrderDate),h.CustomerID) x GROUP BY year ORDER BY year",
+    "grain_check": "SELECT YEAR(h.OrderDate) AS year,COUNT(*) AS joined_rows,COUNT(DISTINCT h.SalesOrderID) AS distinct_orders,SUM(d.LineTotal) AS detail_revenue,SUM(h.SubTotal) AS incorrectly_repeated_header_revenue FROM salesorderheader h JOIN salesorderdetail d ON d.SalesOrderID=h.SalesOrderID WHERE h.Status=5 AND h.OnlineOrderFlag=1 AND h.OrderDate>=%s AND h.OrderDate<%s GROUP BY YEAR(h.OrderDate) ORDER BY year"
+  },
+  "answers": {
+    "annual": [
+      {
+        "year": 2002,
+        "order_count": 2680,
+        "revenue": 6530858.549599939,
+        "average_order_value": 2436.88751850744
+      },
+      {
+        "year": 2003,
+        "order_count": 10955,
+        "revenue": 9805009.748101065,
+        "average_order_value": 895.0259925240589
+      }
+    ],
+    "region": [
+      {
+        "year": 2002,
+        "region": "Australia",
+        "order_count": 860,
+        "revenue": 2154353.6809999957
+      },
+      {
+        "year": 2002,
+        "region": "Canada",
+        "order_count": 225,
+        "revenue": 620903.2840999998
+      },
+      {
+        "year": 2002,
+        "region": "France",
+        "order_count": 233,
+        "revenue": 513545.3055999995
+      },
+      {
+        "year": 2002,
+        "region": "Germany",
+        "order_count": 234,
+        "revenue": 523412.4099999994
+      },
+      {
+        "year": 2002,
+        "region": "Northwest",
+        "order_count": 341,
+        "revenue": 848923.5855000006
+      },
+      {
+        "year": 2002,
+        "region": "Southeast",
+        "order_count": 2,
+        "revenue": 1565.98
+      },
+      {
+        "year": 2002,
+        "region": "Southwest",
+        "order_count": 520,
+        "revenue": 1276567.4493999959
+      },
+      {
+        "year": 2002,
+        "region": "United Kingdom",
+        "order_count": 265,
+        "revenue": 591586.8539999995
+      },
+      {
+        "year": 2003,
+        "region": "Australia",
+        "order_count": 2611,
+        "revenue": 3041367.015600046
+      },
+      {
+        "year": 2003,
+        "region": "Canada",
+        "order_count": 1337,
+        "revenue": 535958.3823999944
+      },
+      {
+        "year": 2003,
+        "region": "Central",
+        "order_count": 4,
+        "revenue": 2768.1196000000004
+      },
+      {
+        "year": 2003,
+        "region": "France",
+        "order_count": 1034,
+        "revenue": 1024692.386699991
+      },
+      {
+        "year": 2003,
+        "region": "Germany",
+        "order_count": 992,
+        "revenue": 1057435.5979999898
+      },
+      {
+        "year": 2003,
+        "region": "Northeast",
+        "order_count": 5,
+        "revenue": 3966.8082
+      },
+      {
+        "year": 2003,
+        "region": "Northwest",
+        "order_count": 1586,
+        "revenue": 1095920.2344999847
+      },
+      {
+        "year": 2003,
+        "region": "Southeast",
+        "order_count": 5,
+        "revenue": 2230.4696000000004
+      },
+      {
+        "year": 2003,
+        "region": "Southwest",
+        "order_count": 2114,
+        "revenue": 1734502.4359999823
+      },
+      {
+        "year": 2003,
+        "region": "United Kingdom",
+        "order_count": 1267,
+        "revenue": 1306168.2974999896
+      }
+    ],
+    "category": [
+      {
+        "year": 2002,
+        "category": "Bikes",
+        "revenue": 6530858.549599939,
+        "detail_rows": 2680
+      },
+      {
+        "year": 2003,
+        "category": "Accessories",
+        "revenue": 294907.66999995784,
+        "detail_rows": 15095
+      },
+      {
+        "year": 2003,
+        "category": "Bikes",
+        "revenue": 9371244.738100527,
+        "detail_rows": 5717
+      },
+      {
+        "year": 2003,
+        "category": "Clothing",
+        "revenue": 138857.34000000576,
+        "detail_rows": 3722
+      }
+    ],
+    "repeat": [
+      {
+        "year": 2002,
+        "active_customers": 2680,
+        "repeat_customers": "0",
+        "repeat_rate": "0.0000"
+      },
+      {
+        "year": 2003,
+        "active_customers": 9335,
+        "repeat_customers": "1241",
+        "repeat_rate": "0.1329"
+      }
+    ],
+    "grain_check": [
+      {
+        "year": 2002,
+        "joined_rows": 2680,
+        "distinct_orders": 2680,
+        "detail_revenue": 6530858.549599939,
+        "incorrectly_repeated_header_revenue": 6530858.549599939
+      },
+      {
+        "year": 2003,
+        "joined_rows": 24534,
+        "distinct_orders": 10955,
+        "detail_revenue": 9805009.748103876,
+        "incorrectly_repeated_header_revenue": 22091832.77810224
+      }
+    ],
+    "detail_identity_observation": [
+      {
+        "row_count": 121317,
+        "distinct_detail_ids": 121317
+      }
+    ]
+  }
+}
