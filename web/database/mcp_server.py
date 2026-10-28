@@ -30,6 +30,10 @@ TOOLS.extend([
  {'name':'run_python','description':'在预装 NumPy/pandas/Decimal 的无网络隔离 Python 中计算，不安装包，不使用任何绘图库。datasets[resultId] 为完整记录列表，documents[documentId] 为完整 JSON 对象/CSV记录/文本，parameters为显式参数。设置 result 为平铺记录列表或 DataFrame；每行字段必须一致，单元格必须为标量，不接受嵌套列表/字典。明细与摘要可分两次计算，或将标量摘要重复到各明细行。空结果另设 columns 为字段名列表。返回真实 resultId，可用 read_result/publish_answer/create_chart。所有新计算、比率、日期推导与预测值必须实际执行，禁止模型心算。绘图只能使用 ECharts create_chart。计算标题不要包含数字；图表标题含数字时须先用 publish_answer 发布该标题。','inputSchema':schema({'code':{'type':'string'},'result_ids':{'type':'array','items':{'type':'string'}},'document_ids':{'type':'array','items':{'type':'string'}},'parameters':{'type':'object'},'title':{'type':'string'}},['code'])},
  {'name':'publish_answer','description':'发布带数值依据的最终回答。template中的每个数值/日期/编号/百分比及精度（如三位小数的三）使用 {{变量名}}，references按变量名映射 {result_id,row,column}（row从零开始）。只允许当前会话实际查询/读取或 Python 计算结果的字段；不允许模板裸写数字、心算、手抄或无依据预测。Markdown 表格必须让表头、分隔行和各数据行列数一致。数据源时效由用户在数据源页面设置，工具不能绕过；超过复用时长需重新查询，旧快照再计算不算重新读取。未设置时效规则不代表数据最新，用户询问最新状态时应重新查询。仅证明与执行记录匹配，不证明业务口径。返回 text 后原样作为最终回答；改动文案需重新发布。来源说明请用无数字文字，数据来源与计算代码自动留存。','inputSchema':schema({'template':{'type':'string'},'references':{'type':'object','additionalProperties':{'type':'object','properties':{'result_id':{'type':'string'},'row':{'type':'integer','minimum':0},'column':{'type':'string'}},'required':['result_id','row','column'],'additionalProperties':False}}},['template','references'])}
 ])
+TOOLS.extend([
+ {'name':'list_metric_rules','description':'读取用户在数据源页面确认且当前有效的指标口径及字段映射。分析业务指标时先查适用口径，按用户问题选择规则、参数和分析步骤。此工具不能创建、修改或确认口径；没有适用规则可继续普通分析，但不可宣称口径或推导已验证。','inputSchema':schema({'source_id':{'type':'string'}},[])},
+ {'name':'execute_metric','description':'按指定版本的已确认指标口径执行真实只读查询、聚合和公式计算，返回可读取/绘图/发布的 resultId。系统按实际读取数据生成逐步推导记录，检查字段类型、粒度唯一性、单位、空值、零分母及舍入规则。仅提交口径 ID、版本和定义中的参数，不能替换公式或输入常量冒充业务字段。此状态只说明执行符合该口径，不保证业务定义或回答语义正确。','inputSchema':schema({'rule_id':{'type':'string'},'version':{'type':'integer','minimum':1},'parameters':{'type':'object'}},['rule_id','version','parameters'])}
+])
 for tool in TOOLS:tool['annotations']=ANNOTATIONS
 
 def main():
@@ -47,13 +51,17 @@ def main():
         identifier=request.get('id');method=request.get('method');params=request.get('params') or {}
         if identifier is None:return
         try:
-            if method=='initialize':result={'protocolVersion':params.get('protocolVersion','2025-06-18'),'capabilities':{'tools':{}},'serverInfo':{'name':'codex-web-readonly-databases','version':'1.1.0'},'instructions':'数据库仅可读取。仅数据库问题先 list_databases、describe_database、query_database。文件/API/纯计算不借用无关数据库，使用 fetch_data/import_data_file、run_python。绘图唯一使用 ECharts create_chart，不能下载或调用其他绘图库。所有回答数字必须来自查询或 Python 执行结果，用 publish_answer 发布后原样输出，不能心算或补数。完整数据保存在服务器，query_database 只返回结果引用。使用 read_result 读取必要明细，使用 analyze_result 对全量数据精确计算。需要图表时用结果 ID 调用 create_chart。不要编造数据，不要把全量明细逐页打印进上下文。'}
+            if method=='initialize':result={'protocolVersion':params.get('protocolVersion','2025-06-18'),'capabilities':{'tools':{}},'serverInfo':{'name':'codex-web-readonly-databases','version':'1.1.0'},'instructions':'业务指标分析先用 list_metric_rules 查找适用的用户确认口径，由 Agent 选择规则与参数并规划分析；有适用口径用 execute_metric，不用自由 SQL/Python 冒充同等证明。没有适用规则时允许探索分析并说明口径未确认。推导证明由实际执行生成，不能用自述代替；不得自行确认规则。数据库仅可读取。仅数据库问题先 list_databases、describe_database、query_database。文件/API/纯计算不借用无关数据库，使用 fetch_data/import_data_file、run_python。绘图唯一使用 ECharts create_chart，不能下载或调用其他绘图库。所有回答数字必须来自查询或 Python 执行结果，用 publish_answer 发布后原样输出，不能心算或补数。完整数据保存在服务器，query_database 只返回结果引用。使用 read_result 读取必要明细，使用 analyze_result 对全量数据精确计算。需要图表时用结果 ID 调用 create_chart。不要编造数据，不要把全量明细逐页打印进上下文。'}
             elif method=='tools/list':result={'tools':TOOLS}
             elif method=='ping':result={}
             elif method in ('resources/list','resources/templates/list'):result={'resources':[]} if method=='resources/list' else {'resourceTemplates':[]}
             elif method=='tools/call':
                 name=params.get('name');args=params.get('arguments') or {}
                 if name=='list_databases':data={'connections':gateway.available(),'readOnly':True}
+                elif name in ('list_metric_rules','execute_metric'):
+                    from metric_rules import MetricRules
+                    rules=MetricRules(gateway)
+                    data=rules.available(args.get('source_id')) if name=='list_metric_rules' else gateway.manifest(rules.execute(args['rule_id'],args['version'],args['parameters']))
                 elif name=='describe_database':data=gateway.schema(args['connection_id'],args.get('table'))
                 elif name=='query_database':
                     value=gateway.query(args['connection_id'],args['query']);data={'results':[gateway.manifest(v) for v in value['results']],'readOnly':True} if 'results' in value else gateway.manifest(value)

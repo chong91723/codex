@@ -1,5 +1,6 @@
 """General datasets, isolated calculations and exact numeric answer publication."""
 from decimal import Decimal
+from contextlib import contextmanager
 import hashlib
 import http.client
 import json
@@ -127,11 +128,13 @@ class AnalysisTools:
     def publish(self, template, references):
         # Request-scoped only: never reuse connection success across publications.
         metadata_cache, page_cache, checked_connections, selected_columns = {}, {}, set(), {}
+        metric_cache, metric_rules = {}, None
         if isinstance(references,dict):
             for ref in references.values():
                 if isinstance(ref,dict) and isinstance(ref.get('result_id'),str) and type(ref.get('row')) is int and isinstance(ref.get('column'),str):
                     selected_columns.setdefault((ref['result_id'],ref['row']),set()).add(ref['column'])
         def resolve(reference):
+            nonlocal metric_rules
             if not isinstance(reference, dict) or set(reference) != {'result_id','row','column'}:
                 raise ValueError('引用须包含 result_id、从零开始的 row 和 column。')
             identifier, row, column = reference['result_id'], reference['row'], reference['column']
@@ -139,6 +142,10 @@ class AnalysisTools:
                 metadata_cache[identifier] = self.gateway.snapshots.metadata(identifier)
                 self.evidence.permitted(self.thread, metadata_cache[identifier])
                 self.gateway.result_owner(metadata_cache[identifier], checked_connections)
+                if metadata_cache[identifier].get('metricProof'):
+                    from metric_rules import MetricRules
+                    if metric_rules is None:metric_rules=MetricRules(self.gateway)
+                    metric_cache[identifier]=metric_rules.verify(metadata_cache[identifier], checked_connections) or {}
             metadata = metadata_cache[identifier]
             if isinstance(row, bool) or not isinstance(row,int) or not 0<=row<metadata['rowCount']:
                 raise ValueError('引用的结果行不存在。')
@@ -149,10 +156,34 @@ class AnalysisTools:
                      'sourceKind':metadata.get('sourceKind','database'),'sourceName':metadata.get('sourceName',metadata.get('connectionName')),
                      'query':metadata.get('executedQuery',metadata.get('query')),'pythonCode':metadata.get('pythonCode'),'inputSources':metadata.get('inputSources',[]),
                      'acquisition':acquisitions(metadata)}
+            if column in metric_cache.get(identifier,{}):
+                metric=metric_cache[identifier][column]
+                selected=next((step for step in metric.get('rows',[]) if step['row']==row),None)
+                proof['metric']=dict({key:item for key,item in metric.items() if key not in ('rows','source','parameters')},resultId=identifier,row=row,column=column)
+                proof['metricContext']={'source':metric.get('source'),'parameters':metric.get('parameters'),'proofHash':metric['proofHash']}
+                if selected is not None:
+                    proof['metric']['step']={key:item for key,item in selected.items() if key!='sourceRows'}
+                    proof['metric']['step']['sourceRowCount']=len(selected.get('sourceRows',[]))
             return value, proof
         def check_sources():
-            for metadata in metadata_cache.values():self.gateway.result_owner(metadata,checked_connections)
+            for metadata in metadata_cache.values():
+                self.gateway.result_owner(metadata,checked_connections)
+                if metadata.get('metricProof') and metric_rules:
+                    stamp=metadata['metricProof']
+                    metric_rules.assert_current(stamp['ruleId'],stamp['version'],stamp['definitionHash'])
             return publication_checks(list(metadata_cache.values()),self.gateway.store.get,self.thread,self.gateway.turn_id)
-        record = self.evidence.publish(self.thread,template,references,resolve,self.gateway.turn_id,check_sources)
+        @contextmanager
+        def commit_guard():
+            # References have already been read/probed. Hold the registry writer
+            # lock through final rule checks and answer write so a concurrent
+            # confirmation/revocation has a definite order against publication.
+            with self.gateway.cancel.commit():
+                if metric_rules is None:
+                    yield
+                else:
+                    with self.gateway.store.connect() as database:
+                        database.execute('BEGIN IMMEDIATE')
+                        yield
+        record = self.evidence.publish(self.thread,template,references,resolve,self.gateway.turn_id,check_sources,commit_guard)
         return {'answerId':record['answerId'],'text':record['text'],'verifiedValues':len(record['evidence']),'publicationChecks':record['publicationChecks'],
                 'instruction':'将 text 原样作为本次最终回答。不要自行改数字、加日期、列表数字或附加带数字的来源链接；修改文案后需重新 publish_answer。'}

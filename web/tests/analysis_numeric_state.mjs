@@ -48,3 +48,17 @@ test('matched records retain actual publication checks and warn when an older pr
   assert(node.all('summary').some(n=>n.textContent.includes('已匹配')));assert(!node.all('summary').some(n=>n.textContent.includes('已核验')));
  }
 });
+
+test('metric checks identify only governed fields and preserve ordinary evidence in a mixed answer',async()=>{
+ const proof={status:'verified',evidence:[{value:'3.50',column:'profit',metric:{name:'贡献毛利',unit:'CNY',version:2,ruleId:'rule-a',parameters:{period:'fixture'}}},{value:7,column:'ordinary'}],sources:{}};
+ const f=fixture(async()=>proof),node=f.context.renderGroundedAnalysisItem(item,true,'turn-A');await flush();
+ const detail=node.all('details').find(n=>n.className==='analysis-metric-evidence');assert(detail);assert.equal(detail.all('pre').length,1);assert(detail.all('p').some(n=>n.textContent.includes('贡献毛利 · CNY · 口径版本 2')));assert(detail.all('p').some(n=>n.textContent.includes('不证明整段回答语义')));assert.equal(node.analysisEvidence.evidence.length,2);
+ const plain=fixture(),other=plain.context.renderGroundedAnalysisItem(item,true,'turn-A');await flush();assert(!other.all('details').some(n=>n.className==='analysis-metric-evidence'));
+});
+
+test('metric proof download rejects navigation changes and mismatched execution evidence',async()=>{
+ const gate=deferred(),f=fixture(()=>gate.promise),metric={resultId:'a'.repeat(32),proofHash:'expected'};let current=true,downloads=0;
+ f.context.downloadDatabaseBlob=()=>{downloads++;};f.context.Blob=Blob;
+ const pending=f.context.downloadAnalysisMetricProof(metric,()=>current);current=false;gate.resolve({proofHash:'expected',proof:{resultId:metric.resultId}});await assert.rejects(pending,/已切换/);assert.equal(downloads,0);
+ const mismatch=fixture(async()=>({proofHash:'other',proof:{resultId:metric.resultId}}));mismatch.context.downloadDatabaseBlob=()=>{downloads++;};mismatch.context.Blob=Blob;await assert.rejects(mismatch.context.downloadAnalysisMetricProof(metric),/不一致/);assert.equal(downloads,0);
+});

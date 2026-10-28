@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from contextlib import nullcontext
 import re
 import secrets
 import shutil
@@ -101,7 +102,7 @@ class Evidence:
         if record['sha256'] != metadata['sha256']:
             raise ValueError('数据集指纹不匹配，不能发布数值。')
 
-    def publish(self, thread, template, references, resolve, turn=None, check_sources=None):
+    def publish(self, thread, template, references, resolve, turn=None, check_sources=None, commit_guard=None):
         self.identity(thread)
         self.identity(turn)
         if not isinstance(template, str) or not template.strip() or len(template) > 80000:
@@ -120,16 +121,17 @@ class Evidence:
             # A field is text, never executable Markdown/HTML from an external source.
             text = '—' if value is None else str(value)
             values[name] = re.sub(r'([\\`*_{}\[\]<>!|])', r'\\\1', text.replace('\n', ' '))
-            sources[proof['resultId']] = {key: proof.pop(key) for key in ('query','pythonCode','inputSources') if key in proof}
+            sources.setdefault(proof['resultId'], {}).update({key: proof.pop(key) for key in ('query','pythonCode','inputSources','metricContext') if key in proof})
             evidence.append(dict(name=name, value=value, **proof))
-        checks = check_sources() if check_sources else {'version':'legacy'}
-        text = REFERENCE.sub(lambda match: values[match[1]], template)
-        validate_published_tables(text)
-        digest = hashlib.sha256(canonical(text).encode()).hexdigest()
-        record = {'version': POLICY_VERSION, 'answerId': digest, 'threadId': thread, 'turnId': turn,
-                  'text': text, 'template': template, 'evidence': evidence, 'sources': sources, 'publicationChecks':checks,
-                  'createdAt': datetime.now(timezone.utc).isoformat()}
-        self.write(self.path('answers', thread, digest).parent/self.identity(turn)/(digest+'.json'), record)
+        with commit_guard() if commit_guard else nullcontext():
+            checks = check_sources() if check_sources else {'version':'legacy'}
+            text = REFERENCE.sub(lambda match: values[match[1]], template)
+            validate_published_tables(text)
+            digest = hashlib.sha256(canonical(text).encode()).hexdigest()
+            record = {'version': POLICY_VERSION, 'answerId': digest, 'threadId': thread, 'turnId': turn,
+                      'text': text, 'template': template, 'evidence': evidence, 'sources': sources, 'publicationChecks':checks,
+                      'createdAt': datetime.now(timezone.utc).isoformat()}
+            self.write(self.path('answers', thread, digest).parent/self.identity(turn)/(digest+'.json'), record)
         return record
 
     def verify(self, thread, turn, text, require_evidence=False):

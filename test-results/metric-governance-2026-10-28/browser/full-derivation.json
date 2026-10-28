@@ -1,0 +1,429 @@
+{
+  "proof": {
+    "confirmation": {
+      "businessOwner": "演示业务负责人（测试声明）",
+      "dataSteward": "演示数据维护人员（测试声明）",
+      "note": "仅确认独立虚构示例；已核对字段、日期范围、退款归属、单位、舍入和零分母。不是客户生产口径或身份审批。"
+    },
+    "createdAt": "2026-10-28T04:08:24.469248+00:00",
+    "definition": {
+      "description": "全部为虚构数据。按订单归属日期左闭右开区间，已完成订单；退款及成本回收归属原订单日。净收款=收款-退款；净成本=履约成本-回收成本；贡献利润=净收款-净成本；贡献利润率=贡献利润/净收款*100。无税额、汇率、支付手续费，统一记账单位 CNY 仅作演示。字段无 NULL，分母为零返回空值。不是生产会计口径。",
+      "fields": {
+        "booked_on": {
+          "column": "booked_on",
+          "type": "date",
+          "unit": "1"
+        },
+        "collected": {
+          "column": "collected_amount",
+          "type": "decimal",
+          "unit": "CNY"
+        },
+        "fulfilment": {
+          "column": "fulfilment_cost",
+          "type": "decimal",
+          "unit": "CNY"
+        },
+        "order_id": {
+          "column": "order_id",
+          "type": "text",
+          "unit": "1"
+        },
+        "recovered": {
+          "column": "recovered_cost",
+          "type": "decimal",
+          "unit": "CNY"
+        },
+        "refunded": {
+          "column": "refunded_amount",
+          "type": "decimal",
+          "unit": "CNY"
+        },
+        "status": {
+          "column": "status",
+          "type": "text",
+          "unit": "1"
+        }
+      },
+      "filters": [
+        {
+          "field": "booked_on",
+          "op": "gte",
+          "parameter": "start_date"
+        },
+        {
+          "field": "booked_on",
+          "op": "lt",
+          "parameter": "end_date"
+        },
+        {
+          "field": "status",
+          "op": "eq",
+          "value": "completed"
+        }
+      ],
+      "formulas": [
+        {
+          "expression": "collected_total - refunded_total",
+          "id": "net_revenue",
+          "name": "净收款",
+          "rounding": "HALF_UP",
+          "scale": 2,
+          "unit": "CNY",
+          "zeroDivision": "null"
+        },
+        {
+          "expression": "fulfilment_total - recovered_total",
+          "id": "net_cost",
+          "name": "净履约成本",
+          "rounding": "HALF_UP",
+          "scale": 2,
+          "unit": "CNY",
+          "zeroDivision": "null"
+        },
+        {
+          "expression": "net_revenue - net_cost",
+          "id": "profit",
+          "name": "贡献利润",
+          "rounding": "HALF_UP",
+          "scale": 2,
+          "unit": "CNY",
+          "zeroDivision": "null"
+        },
+        {
+          "expression": "profit / net_revenue * 100",
+          "id": "margin_percent",
+          "name": "贡献利润率",
+          "rounding": "HALF_UP",
+          "scale": 2,
+          "unit": "%",
+          "zeroDivision": "null"
+        }
+      ],
+      "groupBy": [],
+      "measures": [
+        {
+          "field": "order_id",
+          "id": "order_count",
+          "name": "订单数",
+          "nullPolicy": "reject",
+          "op": "count",
+          "rounding": "HALF_UP",
+          "scale": 0,
+          "unit": "1"
+        },
+        {
+          "field": "collected",
+          "id": "collected_total",
+          "name": "收款合计",
+          "nullPolicy": "reject",
+          "op": "sum",
+          "rounding": "HALF_UP",
+          "scale": 2,
+          "unit": "CNY"
+        },
+        {
+          "field": "refunded",
+          "id": "refunded_total",
+          "name": "退款合计",
+          "nullPolicy": "reject",
+          "op": "sum",
+          "rounding": "HALF_UP",
+          "scale": 2,
+          "unit": "CNY"
+        },
+        {
+          "field": "fulfilment",
+          "id": "fulfilment_total",
+          "name": "履约成本合计",
+          "nullPolicy": "reject",
+          "op": "sum",
+          "rounding": "HALF_UP",
+          "scale": 2,
+          "unit": "CNY"
+        },
+        {
+          "field": "recovered",
+          "id": "recovered_total",
+          "name": "回收成本合计",
+          "nullPolicy": "reject",
+          "op": "sum",
+          "rounding": "HALF_UP",
+          "scale": 2,
+          "unit": "CNY"
+        }
+      ],
+      "name": "演示：订单贡献利润（虚构数据）",
+      "parameters": {
+        "end_date": {
+          "type": "date"
+        },
+        "start_date": {
+          "type": "date"
+        }
+      },
+      "ranges": [
+        {
+          "end": "end_date",
+          "start": "start_date"
+        }
+      ],
+      "recordKey": [
+        "order_id"
+      ],
+      "table": {
+        "name": "demo_orders",
+        "schema": "public"
+      }
+    },
+    "definitionHash": "175ad9735a1b29b146e0bd553f8766fb185b95473bfec1bd10bb94f77fd6e586",
+    "executionContext": {
+      "threadId": "01a180b1-cdff-7f93-ad41-3792a7548ebe",
+      "turnId": "metric-demo-task"
+    },
+    "output": {
+      "binding": "c0fa27cfc80c7fdf7472289f9f7aa9a3fca78433a4c576b0dd55a789233ecee0",
+      "schemaHash": "e505a5b697c24df6ffc4a1e003dea6abed6556c2fbcf122c59438a4ba36bc586",
+      "sha256": "f309620912a20efb3aefb76529fc62d9555bcbf49a3a7ebbdbf5a96257ba54aa"
+    },
+    "parameters": {
+      "end_date": "2026-02-01",
+      "start_date": "2026-01-01"
+    },
+    "resultId": "98dff8323771548e4c954c3b8c2fcd47",
+    "ruleId": "fbc32350e49f5991f9b562522cffea47",
+    "ruleVersion": 1,
+    "source": {
+      "binding": "2d226d6b72f88ab0dab27f39a8ade86038d545a8bbaba6c5ecf3164c3e52b96c",
+      "columns": [
+        {
+          "name": "booked_on",
+          "nativeType": "date",
+          "type": "datetime"
+        },
+        {
+          "name": "collected",
+          "nativeType": "Decimal",
+          "scale": 2,
+          "type": "number"
+        },
+        {
+          "name": "fulfilment",
+          "nativeType": "Decimal",
+          "scale": 2,
+          "type": "number"
+        },
+        {
+          "name": "order_id",
+          "nativeType": "str",
+          "type": "string"
+        },
+        {
+          "name": "recovered",
+          "nativeType": "Decimal",
+          "scale": 2,
+          "type": "number"
+        },
+        {
+          "name": "refunded",
+          "nativeType": "Decimal",
+          "scale": 2,
+          "type": "number"
+        },
+        {
+          "name": "status",
+          "nativeType": "str",
+          "type": "string"
+        }
+      ],
+      "query": "SELECT \"booked_on\" AS \"booked_on\", \"collected_amount\" AS \"collected\", \"fulfilment_cost\" AS \"fulfilment\", \"order_id\" AS \"order_id\", \"recovered_cost\" AS \"recovered\", \"refunded_amount\" AS \"refunded\", \"status\" AS \"status\" FROM \"public\".\"demo_orders\"",
+      "resultId": "5df0db93369363a4f39e4ff4b85aa76a",
+      "schemaHash": "c34c7f24f673facda20414395c2cdf47099e891aedf06bf72c52ea6f9e777d55",
+      "sha256": "dfa097dc91829087116b6c91c37b5a478680415ff2d00d3557ad1cc882f8d418",
+      "sourceId": "07dd1a81582661700f51d5ea",
+      "sourceVersion": 1
+    },
+    "steps": [
+      {
+        "group": {},
+        "nodes": {
+          "collected_total": {
+            "contributingRows": 3,
+            "display": "370.30",
+            "exact": {
+              "denominator": "10",
+              "numerator": "3703"
+            },
+            "field": "collected",
+            "kind": "aggregate",
+            "operation": "sum",
+            "rounding": "HALF_UP",
+            "scale": 2,
+            "skippedNulls": 0,
+            "sourceColumn": "collected_amount",
+            "unit": "CNY"
+          },
+          "fulfilment_total": {
+            "contributingRows": 3,
+            "display": "160.00",
+            "exact": {
+              "denominator": "1",
+              "numerator": "160"
+            },
+            "field": "fulfilment",
+            "kind": "aggregate",
+            "operation": "sum",
+            "rounding": "HALF_UP",
+            "scale": 2,
+            "skippedNulls": 0,
+            "sourceColumn": "fulfilment_cost",
+            "unit": "CNY"
+          },
+          "margin_percent": {
+            "display": "56.71",
+            "exact": {
+              "denominator": "231",
+              "numerator": "13100"
+            },
+            "expression": "profit / net_revenue * 100",
+            "inputs": {
+              "net_revenue": {
+                "denominator": "10",
+                "numerator": "3003"
+              },
+              "profit": {
+                "denominator": "10",
+                "numerator": "1703"
+              }
+            },
+            "kind": "formula",
+            "rounding": "HALF_UP",
+            "scale": 2,
+            "unit": "%"
+          },
+          "net_cost": {
+            "display": "130.00",
+            "exact": {
+              "denominator": "1",
+              "numerator": "130"
+            },
+            "expression": "fulfilment_total - recovered_total",
+            "inputs": {
+              "fulfilment_total": {
+                "denominator": "1",
+                "numerator": "160"
+              },
+              "recovered_total": {
+                "denominator": "1",
+                "numerator": "30"
+              }
+            },
+            "kind": "formula",
+            "rounding": "HALF_UP",
+            "scale": 2,
+            "unit": "CNY"
+          },
+          "net_revenue": {
+            "display": "300.30",
+            "exact": {
+              "denominator": "10",
+              "numerator": "3003"
+            },
+            "expression": "collected_total - refunded_total",
+            "inputs": {
+              "collected_total": {
+                "denominator": "10",
+                "numerator": "3703"
+              },
+              "refunded_total": {
+                "denominator": "1",
+                "numerator": "70"
+              }
+            },
+            "kind": "formula",
+            "rounding": "HALF_UP",
+            "scale": 2,
+            "unit": "CNY"
+          },
+          "order_count": {
+            "contributingRows": 3,
+            "display": "3",
+            "exact": {
+              "denominator": "1",
+              "numerator": "3"
+            },
+            "field": "order_id",
+            "kind": "aggregate",
+            "operation": "count",
+            "rounding": "HALF_UP",
+            "scale": 0,
+            "skippedNulls": 0,
+            "sourceColumn": "order_id",
+            "unit": "1"
+          },
+          "profit": {
+            "display": "170.30",
+            "exact": {
+              "denominator": "10",
+              "numerator": "1703"
+            },
+            "expression": "net_revenue - net_cost",
+            "inputs": {
+              "net_cost": {
+                "denominator": "1",
+                "numerator": "130"
+              },
+              "net_revenue": {
+                "denominator": "10",
+                "numerator": "3003"
+              }
+            },
+            "kind": "formula",
+            "rounding": "HALF_UP",
+            "scale": 2,
+            "unit": "CNY"
+          },
+          "recovered_total": {
+            "contributingRows": 3,
+            "display": "30.00",
+            "exact": {
+              "denominator": "1",
+              "numerator": "30"
+            },
+            "field": "recovered",
+            "kind": "aggregate",
+            "operation": "sum",
+            "rounding": "HALF_UP",
+            "scale": 2,
+            "skippedNulls": 0,
+            "sourceColumn": "recovered_cost",
+            "unit": "CNY"
+          },
+          "refunded_total": {
+            "contributingRows": 3,
+            "display": "70.00",
+            "exact": {
+              "denominator": "1",
+              "numerator": "70"
+            },
+            "field": "refunded",
+            "kind": "aggregate",
+            "operation": "sum",
+            "rounding": "HALF_UP",
+            "scale": 2,
+            "skippedNulls": 0,
+            "sourceColumn": "refunded_amount",
+            "unit": "CNY"
+          }
+        },
+        "sourceRows": [
+          0,
+          1,
+          2
+        ]
+      }
+    ],
+    "version": "metric-contract-v1"
+  },
+  "proofHash": "fe61f93722146b3d372ef0685ed279397568db3797a54445ed3d3095b837c28d"
+}

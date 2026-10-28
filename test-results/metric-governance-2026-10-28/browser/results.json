@@ -1,0 +1,290 @@
+{
+  "scope": "Actual owned PostgreSQL, web, native app-server and stdio MCP. Fictional business records only. Chat rendering events are fixtures, not model output.",
+  "results": [
+    {
+      "name": "真实连接独立只读数据库，口径管理按数据源隔离",
+      "status": "passed",
+      "realDatabase": true,
+      "readOnlyAccount": true,
+      "modelRequests": 0
+    },
+    {
+      "name": "浏览器保存草稿不会自动确认，工具拒绝执行未确认口径",
+      "status": "passed",
+      "draftRejected": true,
+      "otherSourceUnchanged": true
+    },
+    {
+      "name": "用户确认后真实执行订单指标，正确处理取消、退款和日期右边界",
+      "status": "passed",
+      "resultId": "98dff8323771548e4c954c3b8c2fcd47",
+      "actual": {
+        "order_count": "3",
+        "collected_total": "370.30",
+        "refunded_total": "70.00",
+        "fulfilment_total": "160.00",
+        "recovered_total": "30.00",
+        "net_revenue": "300.30",
+        "net_cost": "130.00",
+        "profit": "170.30",
+        "margin_percent": "56.71"
+      },
+      "ruleVersion": 1
+    },
+    {
+      "name": "零分母与零分子使用不同结果，非法日期参数被拒绝",
+      "status": "passed",
+      "actual": [
+        {
+          "name": "zero_denominator",
+          "row": {
+            "order_count": "1",
+            "collected_total": "75.25",
+            "refunded_total": "75.25",
+            "fulfilment_total": "40.00",
+            "recovered_total": "40.00",
+            "net_revenue": "0.00",
+            "net_cost": "0.00",
+            "profit": "0.00",
+            "margin_percent": null
+          }
+        },
+        {
+          "name": "zero_numerator",
+          "row": {
+            "order_count": "1",
+            "collected_total": "90.00",
+            "refunded_total": "0.00",
+            "fulfilment_total": "90.00",
+            "recovered_total": "0.00",
+            "net_revenue": "90.00",
+            "net_cost": "90.00",
+            "profit": "0.00",
+            "margin_percent": "0.00"
+          }
+        }
+      ],
+      "invalidRangeRejected": true
+    },
+    {
+      "name": "第二套服务效率配置无需修改引擎，聚合后计算满足率",
+      "status": "passed",
+      "actual": {
+        "case_count": "2",
+        "elapsed_total": "7.50",
+        "fulfilled_total": "5",
+        "requested_total": "6",
+        "mean_minutes": "3.75",
+        "fulfilment_percent": "83.33"
+      },
+      "sameTools": true
+    },
+    {
+      "name": "发布真实指标证据，任意Python派生结果不继承口径证明",
+      "status": "passed",
+      "actualToolPublished": true,
+      "chatEvents": "explicit UI fixtures",
+      "metricProofDownloaded": true,
+      "fullDerivationDownloaded": true,
+      "actualExecutionContext": true,
+      "intermediateFormulaChain": true,
+      "ordinaryPythonNotUpgraded": true
+    },
+    {
+      "name": "同一小型夹具测量本地执行开销，不冒充模型端到端耗时",
+      "status": "passed",
+      "scope": "Local MCP on synthetic seven-row table; direct SQL aggregate versus governed query+all configured formulas+proof. Not equal-work or model-latency benchmark.",
+      "ordinarySqlMs": [
+        19.827,
+        17.014,
+        17.879,
+        17.443,
+        18.904
+      ],
+      "governedMetricMs": [
+        42.483,
+        44.66,
+        44.293,
+        41.129,
+        42.727
+      ],
+      "medianOrdinarySqlMs": 17.879,
+      "medianGovernedMetricMs": 42.727,
+      "extraModelCalls": 0
+    },
+    {
+      "name": "桌面宽度与主题可查看配置和证据，刷新保留规则",
+      "status": "passed",
+      "desktopWidths": [
+        1440,
+        1024
+      ],
+      "dark": true,
+      "persistedAfterReload": true
+    },
+    {
+      "name": "保存新草稿不会沿用旧版确认，冲突保存被拒；停用阻止后续执行且历史可读",
+      "status": "passed",
+      "newVersionDraft": true,
+      "staleSaveRejected": true,
+      "disabledExecutionAndNewPublicationRejected": true,
+      "historyReadable": true,
+      "csvReadable": true,
+      "historicalProofReadable": true
+    }
+  ],
+  "errors": [],
+  "modelRequests": 0,
+  "toolCalls": [
+    {
+      "name": "execute_metric",
+      "elapsedMs": 4.406,
+      "rejected": true
+    },
+    {
+      "name": "list_metric_rules",
+      "elapsedMs": 3.052,
+      "rejected": false
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 415.552,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 17.006,
+      "rejected": false
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 40.593,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 16.287,
+      "rejected": false
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 39.548,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 15.21,
+      "rejected": false
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 2.377,
+      "rejected": true
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 38.425,
+      "rejected": false
+    },
+    {
+      "name": "read_result",
+      "elapsedMs": 16.114,
+      "rejected": false
+    },
+    {
+      "name": "publish_answer",
+      "elapsedMs": 24.067,
+      "rejected": false
+    },
+    {
+      "name": "run_python",
+      "elapsedMs": 591.185,
+      "rejected": false
+    },
+    {
+      "name": "publish_answer",
+      "elapsedMs": 16.741,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 19.787,
+      "rejected": false
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 42.445,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 16.981,
+      "rejected": false
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 44.625,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 17.848,
+      "rejected": false
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 44.254,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 17.412,
+      "rejected": false
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 41.094,
+      "rejected": false
+    },
+    {
+      "name": "query_database",
+      "elapsedMs": 18.873,
+      "rejected": false
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 42.69,
+      "rejected": false
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 1.925,
+      "rejected": true
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 1.603,
+      "rejected": true
+    },
+    {
+      "name": "publish_answer",
+      "elapsedMs": 13.728,
+      "rejected": true
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 41.328,
+      "rejected": false
+    },
+    {
+      "name": "execute_metric",
+      "elapsedMs": 3.604,
+      "rejected": true
+    },
+    {
+      "name": "publish_answer",
+      "elapsedMs": 23.17,
+      "rejected": true
+    }
+  ]
+}

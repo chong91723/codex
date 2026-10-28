@@ -1,0 +1,319 @@
+{
+  "schemaVersion": "metric-rule-v1",
+  "notice": "Fictional independent demo drafts. Bind sourceId at import and confirm explicitly after review.",
+  "rules": [
+    {
+      "key": "ecommerce",
+      "definition": {
+        "parameters": {
+          "start_date": {
+            "type": "date"
+          },
+          "end_date": {
+            "type": "date"
+          }
+        },
+        "ranges": [
+          {
+            "start": "start_date",
+            "end": "end_date"
+          }
+        ],
+        "groupBy": [],
+        "name": "演示：订单贡献利润（虚构数据）",
+        "description": "全部为虚构数据。按订单归属日期左闭右开区间，已完成订单；退款及成本回收归属原订单日。净收款=收款-退款；净成本=履约成本-回收成本；贡献利润=净收款-净成本；贡献利润率=贡献利润/净收款*100。无税额、汇率、支付手续费，统一记账单位 CNY 仅作演示。字段无 NULL，分母为零返回空值。不是生产会计口径。",
+        "table": {
+          "name": "demo_orders",
+          "schema": "public"
+        },
+        "recordKey": [
+          "order_id"
+        ],
+        "fields": {
+          "order_id": {
+            "column": "order_id",
+            "type": "text",
+            "unit": "1"
+          },
+          "booked_on": {
+            "column": "booked_on",
+            "type": "date",
+            "unit": "1"
+          },
+          "status": {
+            "column": "status",
+            "type": "text",
+            "unit": "1"
+          },
+          "collected": {
+            "column": "collected_amount",
+            "type": "decimal",
+            "unit": "CNY"
+          },
+          "refunded": {
+            "column": "refunded_amount",
+            "type": "decimal",
+            "unit": "CNY"
+          },
+          "fulfilment": {
+            "column": "fulfilment_cost",
+            "type": "decimal",
+            "unit": "CNY"
+          },
+          "recovered": {
+            "column": "recovered_cost",
+            "type": "decimal",
+            "unit": "CNY"
+          }
+        },
+        "filters": [
+          {
+            "field": "booked_on",
+            "op": "gte",
+            "parameter": "start_date"
+          },
+          {
+            "field": "booked_on",
+            "op": "lt",
+            "parameter": "end_date"
+          },
+          {
+            "field": "status",
+            "op": "eq",
+            "value": "completed"
+          }
+        ],
+        "measures": [
+          {
+            "id": "order_count",
+            "name": "订单数",
+            "op": "count",
+            "field": "order_id",
+            "unit": "1",
+            "scale": 0,
+            "rounding": "HALF_UP",
+            "nullPolicy": "reject"
+          },
+          {
+            "id": "collected_total",
+            "name": "收款合计",
+            "op": "sum",
+            "field": "collected",
+            "unit": "CNY",
+            "scale": 2,
+            "rounding": "HALF_UP",
+            "nullPolicy": "reject"
+          },
+          {
+            "id": "refunded_total",
+            "name": "退款合计",
+            "op": "sum",
+            "field": "refunded",
+            "unit": "CNY",
+            "scale": 2,
+            "rounding": "HALF_UP",
+            "nullPolicy": "reject"
+          },
+          {
+            "id": "fulfilment_total",
+            "name": "履约成本合计",
+            "op": "sum",
+            "field": "fulfilment",
+            "unit": "CNY",
+            "scale": 2,
+            "rounding": "HALF_UP",
+            "nullPolicy": "reject"
+          },
+          {
+            "id": "recovered_total",
+            "name": "回收成本合计",
+            "op": "sum",
+            "field": "recovered",
+            "unit": "CNY",
+            "scale": 2,
+            "rounding": "HALF_UP",
+            "nullPolicy": "reject"
+          }
+        ],
+        "formulas": [
+          {
+            "id": "net_revenue",
+            "name": "净收款",
+            "expression": "collected_total - refunded_total",
+            "unit": "CNY",
+            "scale": 2,
+            "rounding": "HALF_UP",
+            "zeroDivision": "null"
+          },
+          {
+            "id": "net_cost",
+            "name": "净履约成本",
+            "expression": "fulfilment_total - recovered_total",
+            "unit": "CNY",
+            "scale": 2,
+            "rounding": "HALF_UP",
+            "zeroDivision": "null"
+          },
+          {
+            "id": "profit",
+            "name": "贡献利润",
+            "expression": "net_revenue - net_cost",
+            "unit": "CNY",
+            "scale": 2,
+            "rounding": "HALF_UP",
+            "zeroDivision": "null"
+          },
+          {
+            "id": "margin_percent",
+            "name": "贡献利润率",
+            "expression": "profit / net_revenue * 100",
+            "unit": "%",
+            "scale": 2,
+            "rounding": "HALF_UP",
+            "zeroDivision": "null"
+          }
+        ]
+      }
+    },
+    {
+      "key": "service",
+      "definition": {
+        "parameters": {
+          "start_date": {
+            "type": "date"
+          },
+          "end_date": {
+            "type": "date"
+          }
+        },
+        "ranges": [
+          {
+            "start": "start_date",
+            "end": "end_date"
+          }
+        ],
+        "groupBy": [],
+        "name": "演示：服务处理效率（虚构数据）",
+        "description": "全部为虚构数据。按接收日期左闭右开区间，只统计已关闭请求；平均耗时=耗时合计/请求数；满足率=满足单位合计/请求单位合计*100，禁止用单行比率的平均值替代。没有等待/暂停扣除；字段无 NULL。不是生产 SLA 口径。",
+        "table": {
+          "name": "demo_service_cases",
+          "schema": "public"
+        },
+        "recordKey": [
+          "case_id"
+        ],
+        "fields": {
+          "case_id": {
+            "column": "case_id",
+            "type": "text",
+            "unit": "1"
+          },
+          "received_on": {
+            "column": "received_on",
+            "type": "date",
+            "unit": "1"
+          },
+          "state": {
+            "column": "state",
+            "type": "text",
+            "unit": "1"
+          },
+          "elapsed": {
+            "column": "elapsed_minutes",
+            "type": "decimal",
+            "unit": "minute"
+          },
+          "fulfilled": {
+            "column": "fulfilled_units",
+            "type": "int",
+            "unit": "1"
+          },
+          "requested": {
+            "column": "requested_units",
+            "type": "int",
+            "unit": "1"
+          }
+        },
+        "filters": [
+          {
+            "field": "received_on",
+            "op": "gte",
+            "parameter": "start_date"
+          },
+          {
+            "field": "received_on",
+            "op": "lt",
+            "parameter": "end_date"
+          },
+          {
+            "field": "state",
+            "op": "eq",
+            "value": "closed"
+          }
+        ],
+        "measures": [
+          {
+            "id": "case_count",
+            "name": "请求数",
+            "op": "count",
+            "field": "case_id",
+            "unit": "1",
+            "scale": 0,
+            "rounding": "HALF_UP",
+            "nullPolicy": "reject"
+          },
+          {
+            "id": "elapsed_total",
+            "name": "耗时合计",
+            "op": "sum",
+            "field": "elapsed",
+            "unit": "minute",
+            "scale": 2,
+            "rounding": "HALF_UP",
+            "nullPolicy": "reject"
+          },
+          {
+            "id": "fulfilled_total",
+            "name": "满足单位合计",
+            "op": "sum",
+            "field": "fulfilled",
+            "unit": "1",
+            "scale": 0,
+            "rounding": "HALF_UP",
+            "nullPolicy": "reject"
+          },
+          {
+            "id": "requested_total",
+            "name": "请求单位合计",
+            "op": "sum",
+            "field": "requested",
+            "unit": "1",
+            "scale": 0,
+            "rounding": "HALF_UP",
+            "nullPolicy": "reject"
+          }
+        ],
+        "formulas": [
+          {
+            "id": "mean_minutes",
+            "name": "平均耗时",
+            "expression": "elapsed_total / case_count",
+            "unit": "minute",
+            "scale": 2,
+            "rounding": "HALF_UP",
+            "zeroDivision": "null"
+          },
+          {
+            "id": "fulfilment_percent",
+            "name": "满足率",
+            "expression": "fulfilled_total / requested_total * 100",
+            "unit": "%",
+            "scale": 2,
+            "rounding": "HALF_UP",
+            "zeroDivision": "null"
+          }
+        ]
+      }
+    }
+  ]
+}

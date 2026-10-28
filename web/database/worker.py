@@ -28,7 +28,10 @@ def main():
             else:raise ValueError('未知的数值依据操作。')
         else:
             from service import Gateway
-            if request['action']=='result' and isinstance(payload.get('freshnessPolicy'),dict):
+            if request['action']=='result' and isinstance(payload.get('metricRules'),dict):
+                from metric_rules import MetricRules
+                result=MetricRules(Gateway()).manage(payload['metricRules'])
+            elif request['action']=='result' and isinstance(payload.get('freshnessPolicy'),dict):
                 result=Gateway().manage('freshness',payload['freshnessPolicy'])
             else:result=Gateway().manage(request['action'],payload)
         print(json.dumps({'result':result},ensure_ascii=False))

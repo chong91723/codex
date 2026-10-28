@@ -112,3 +112,13 @@ test('report keeps proof version and acquisition policy while copying a stable e
  const text=f.context.analysisReportMarkdown(snapshot);assert.match(text,/不能据此认定为最新/);assert(text.includes('2026-10-01'));assert(text.includes('analysis-publication-v2'));assert(!text.includes('tampered-later'));assert.match(text,/业务字段来源、公式口径/);
  entry.node.analysisEvidence={status:'verified'};assert.match(f.context.analysisReportMarkdown(f.context.analysisReportSnapshot('answer-A')),/旧规则记录/);
 });
+
+test('metric execution exposes only its final dataset card, not proof input snapshots',()=>{
+ const f=fixture(),value=resultItem({tool:'execute_metric',result:{structuredContent:{resultId:idA,sourceName:'指标结果',metricProof:{inputResult:{resultId:idB}}}}});
+ assert(f.context.isAnalysisResultItem(value));assert.deepEqual(plain(f.context.analysisResultReferences(value)),[{id:idA,name:'指标结果'}]);
+});
+test('download retains confirmed metric version and field scope without upgrading ordinary values',()=>{
+ const f=fixture(),entry=f.state.items.get('answer-A');entry.node.dataset.analysisVerification='verified';
+ entry.node.analysisEvidence={status:'verified',evidence:[{value:'123',metric:{name:'实际指标',ruleId:'rule-a',version:2,unit:'CNY',proofHash:'execution-proof'}},{value:'8'}],sources:{}};
+ const text=f.context.analysisReportMarkdown(f.context.analysisReportSnapshot('answer-A'));assert.match(text,/部分指标引用/);assert.match(text,/只对应记录中的指标字段/);assert(text.includes('execution-proof'));assert(text.includes('rule-a'));assert(text.includes('实际指标'));
+});

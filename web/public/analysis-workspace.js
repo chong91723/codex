@@ -8,10 +8,10 @@ function analysisResultReferences(item){
   const results=new Map();
   const visit=(value,depth=0)=>{if(!value||typeof value!=='object'||depth>6)return;if(Array.isArray(value)){for(const v of value)visit(v,depth+1);return;}
     if(typeof value.resultId==='string'&&/^[a-f0-9]{32}$/.test(value.resultId)){const prior=results.get(value.resultId)||{};results.set(value.resultId,{...prior,id:value.resultId,name:value.sourceName||value.connectionName||prior.name||'查询结果',rowCount:value.rowCount??prior.rowCount});}
-    for(const [key,child]of Object.entries(value))if(!['rows','inputSources','inputResultIds','evidence','sources'].includes(key))visit(child,depth+1);
+    for(const [key,child]of Object.entries(value))if(!['rows','inputSources','inputResultIds','evidence','sources','metricProof'].includes(key))visit(child,depth+1);
   };visit(item.result?.structuredContent);for(const part of item.result?.content||[])if(part.type==='text')try{visit(JSON.parse(part.text));}catch{}return [...results.values()];
 }
-function isAnalysisResultItem(item){return item.server==='codex_web_databases'&&['query_database','analyze_result','run_python'].includes(item.tool)&&analysisResultReferences(item).length>0;}
+function isAnalysisResultItem(item){return item.server==='codex_web_databases'&&['query_database','analyze_result','run_python','execute_metric'].includes(item.tool)&&analysisResultReferences(item).length>0;}
 let unifiedResultSerial=0;
 function analysisResultContext(){return JSON.stringify([state.thread?.id||'new',state.navigationGeneration||0]);}
 function createUnifiedAnalysisResult(result,initialCharts=[]){
@@ -104,6 +104,7 @@ function analysisReportVerificationLines(snapshot){
     if(proof.publicationChecks?.version!=='analysis-publication-v2')lines.push('> 旧规则记录：未应用当前数据源时效检查。');
     else if(proof.publicationChecks.freshness?.some(source=>source.status==='notConfigured'))lines.push('> 部分来源未设置复用时长，不能据此认定为最新数据。');
     lines.push('时效状态记录回答发布时的检查结果，不代表下载或阅读时仍有效。');
+    if(proof.evidence?.some(value=>value.metric))lines.push('部分指标引用另有口径与推导检查：系统记录其使用的用户确认规则版本、来源和计算步骤。此检查只对应记录中的指标字段，不证明整段回答语义、业务定义或源数据真实。口径状态以发布时为准。');
     const record={publicationChecks:proof.publicationChecks,values:proof.evidence,sources:proof.sources};
     lines.push('',...JSON.stringify(record,null,2).split('\n').map(line=>'    '+line));
   }else if(proof.status==='notRequired')lines.push('本条回答未检测到需要核对的数值；不代表数据或结论已经核验。');

@@ -1,0 +1,26 @@
+"""Rebuild synthetic configuration and independently computed Decimal expectations.
+
+Does not import product metric engine or read business data.
+"""
+from decimal import Decimal, localcontext, ROUND_HALF_UP
+import json
+from pathlib import Path
+out=Path(__file__).resolve().parent
+def field(column,kind='decimal',unit='CNY'):return {'column':column,'type':kind,'unit':unit}
+def measure(identifier,name,field,unit='CNY',scale=2,op='sum'):return {'id':identifier,'name':name,'op':op,'field':field,'unit':unit,'scale':scale,'rounding':'HALF_UP','nullPolicy':'reject'}
+def formula(identifier,name,expression,unit='CNY',scale=2):return {'id':identifier,'name':name,'expression':expression,'unit':unit,'scale':scale,'rounding':'HALF_UP','zeroDivision':'null'}
+common={'parameters':{'start_date':{'type':'date'},'end_date':{'type':'date'}},'ranges':[{'start':'start_date','end':'end_date'}],'groupBy':[]}
+def filters(date,status,value):return [{'field':date,'op':'gte','parameter':'start_date'},{'field':date,'op':'lt','parameter':'end_date'},{'field':status,'op':'eq','value':value}]
+orders={**common,'name':'演示：订单贡献利润（虚构数据）','description':'全部为虚构数据。按订单归属日期左闭右开区间，已完成订单；退款及成本回收归属原订单日。净收款=收款-退款；净成本=履约成本-回收成本；贡献利润=净收款-净成本；贡献利润率=贡献利润/净收款*100。无税额、汇率、支付手续费，统一记账单位 CNY 仅作演示。字段无 NULL，分母为零返回空值。不是生产会计口径。','table':{'name':'demo_orders','schema':'public'},'recordKey':['order_id'],'fields':{'order_id':field('order_id','text','1'),'booked_on':field('booked_on','date','1'),'status':field('status','text','1'),'collected':field('collected_amount'),'refunded':field('refunded_amount'),'fulfilment':field('fulfilment_cost'),'recovered':field('recovered_cost')},'filters':filters('booked_on','status','completed'),'measures':[measure('order_count','订单数','order_id','1',0,'count'),measure('collected_total','收款合计','collected'),measure('refunded_total','退款合计','refunded'),measure('fulfilment_total','履约成本合计','fulfilment'),measure('recovered_total','回收成本合计','recovered')],'formulas':[formula('net_revenue','净收款','collected_total - refunded_total'),formula('net_cost','净履约成本','fulfilment_total - recovered_total'),formula('profit','贡献利润','net_revenue - net_cost'),formula('margin_percent','贡献利润率','profit / net_revenue * 100','%')]}
+services={**common,'name':'演示：服务处理效率（虚构数据）','description':'全部为虚构数据。按接收日期左闭右开区间，只统计已关闭请求；平均耗时=耗时合计/请求数；满足率=满足单位合计/请求单位合计*100，禁止用单行比率的平均值替代。没有等待/暂停扣除；字段无 NULL。不是生产 SLA 口径。','table':{'name':'demo_service_cases','schema':'public'},'recordKey':['case_id'],'fields':{'case_id':field('case_id','text','1'),'received_on':field('received_on','date','1'),'state':field('state','text','1'),'elapsed':field('elapsed_minutes','decimal','minute'),'fulfilled':field('fulfilled_units','int','1'),'requested':field('requested_units','int','1')},'filters':filters('received_on','state','closed'),'measures':[measure('case_count','请求数','case_id','1',0,'count'),measure('elapsed_total','耗时合计','elapsed','minute'),measure('fulfilled_total','满足单位合计','fulfilled','1',0),measure('requested_total','请求单位合计','requested','1',0)],'formulas':[formula('mean_minutes','平均耗时','elapsed_total / case_count','minute'),formula('fulfilment_percent','满足率','fulfilled_total / requested_total * 100','%')]}
+for key,definition in [('ecommerce',orders),('service',services)]:
+ (out/(key+'-rule.json')).write_text(json.dumps({'definition':definition},ensure_ascii=False,indent=2)+'\n')
+(out/'rule.json').write_text(json.dumps({'schemaVersion':'metric-rule-v1','notice':'Fictional independent demo drafts. Bind sourceId at import and confirm explicitly after review.','rules':[{'key':'ecommerce','definition':orders},{'key':'service','definition':services}]},ensure_ascii=False,indent=2)+'\n')
+with localcontext() as ctx:
+ ctx.prec=60
+ def fixed(value):return str(Decimal(value).quantize(Decimal('.01'),rounding=ROUND_HALF_UP))
+ revenue=Decimal('120.10')-Decimal('20.00')+Decimal('200.20')+Decimal('50.00')-Decimal('50.00')
+ cost=Decimal('60.00')-Decimal('10.00')+Decimal('80.00')+Decimal('20.00')-Decimal('20.00')
+ profit=revenue-cost
+ expected={'notice':'Synthetic expected values computed independently with Decimal; not product responses.','cases':[{'name':'january','rule':'ecommerce','parameters':{'start_date':'2026-01-01','end_date':'2026-02-01'},'row':{'order_count':3,'collected_total':'370.30','refunded_total':'70.00','fulfilment_total':'160.00','recovered_total':'30.00','net_revenue':fixed(revenue),'net_cost':fixed(cost),'profit':fixed(profit),'margin_percent':fixed(profit/revenue*100)}},{'name':'zero_denominator','rule':'ecommerce','parameters':{'start_date':'2026-03-01','end_date':'2026-04-01'},'row':{'order_count':1,'net_revenue':'0.00','net_cost':'0.00','profit':'0.00','margin_percent':None}},{'name':'zero_numerator','rule':'ecommerce','parameters':{'start_date':'2026-04-01','end_date':'2026-05-01'},'row':{'order_count':1,'net_revenue':'90.00','net_cost':'90.00','profit':'0.00','margin_percent':'0.00'}},{'name':'service','rule':'service','parameters':{'start_date':'2026-01-01','end_date':'2026-02-01'},'row':{'case_count':2,'elapsed_total':'7.50','fulfilled_total':5,'requested_total':6,'mean_minutes':'3.75','fulfilment_percent':fixed(Decimal(5)/Decimal(6)*100)}}]}
+(out/'expected.json').write_text(json.dumps(expected,ensure_ascii=False,indent=2)+'\n')

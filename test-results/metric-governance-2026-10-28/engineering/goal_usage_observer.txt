@@ -1,0 +1,24 @@
+✔ first goal real usage is visible even when native budget counter stays zero; cached and reasoning output are not double counted (2.117388ms)
+✔ cumulative snapshots replace checkpoints; repeated snapshots cannot double count (0.337781ms)
+✔ reload replay keeps the observed total; the next real usage delta is counted once (0.378744ms)
+✔ paused ordinary turns are excluded; resumed goal continues from the later cumulative baseline (0.410852ms)
+✔ final statistics still count when update_goal complete preceded the final response (0.316553ms)
+✔ existing goals without a baseline are unknown, then report only the confirmed lower bound (0.32124ms)
+✔ an existing session with real pre-goal usage has an exact local baseline (0.316666ms)
+✔ threads and profile namespaces cannot mix usage (0.320037ms)
+✔ goal clear removes old accounting even when the replacement shares the native seconds timestamp (0.424464ms)
+✔ a different goal creation timestamp cannot inherit old usage (0.490521ms)
+✔ regressing native counters cannot inflate usage and mark coverage incomplete (1.500322ms)
+✔ malformed and estimate-only counters do not invent paid usage (0.190642ms)
+✔ storage failure is diagnostic and in-memory real accounting remains usable (0.503122ms)
+✔ failed goal set cancels the prepared zero baseline rather than applying it to a later unknown goal (0.229842ms)
+✔ missing goal turn events after a connection gap mark coverage incomplete without attributing unknown usage (0.36569ms)
+✔ corrupt browser history is diagnosed and never becomes an invented zero baseline (0.234551ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19.759541

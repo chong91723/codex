@@ -1,0 +1,139 @@
+{
+  "definition": {
+    "parameters": {
+      "start_date": {
+        "type": "date"
+      },
+      "end_date": {
+        "type": "date"
+      }
+    },
+    "ranges": [
+      {
+        "start": "start_date",
+        "end": "end_date"
+      }
+    ],
+    "groupBy": [],
+    "name": "演示：服务处理效率（虚构数据）",
+    "description": "全部为虚构数据。按接收日期左闭右开区间，只统计已关闭请求；平均耗时=耗时合计/请求数；满足率=满足单位合计/请求单位合计*100，禁止用单行比率的平均值替代。没有等待/暂停扣除；字段无 NULL。不是生产 SLA 口径。",
+    "table": {
+      "name": "demo_service_cases",
+      "schema": "public"
+    },
+    "recordKey": [
+      "case_id"
+    ],
+    "fields": {
+      "case_id": {
+        "column": "case_id",
+        "type": "text",
+        "unit": "1"
+      },
+      "received_on": {
+        "column": "received_on",
+        "type": "date",
+        "unit": "1"
+      },
+      "state": {
+        "column": "state",
+        "type": "text",
+        "unit": "1"
+      },
+      "elapsed": {
+        "column": "elapsed_minutes",
+        "type": "decimal",
+        "unit": "minute"
+      },
+      "fulfilled": {
+        "column": "fulfilled_units",
+        "type": "int",
+        "unit": "1"
+      },
+      "requested": {
+        "column": "requested_units",
+        "type": "int",
+        "unit": "1"
+      }
+    },
+    "filters": [
+      {
+        "field": "received_on",
+        "op": "gte",
+        "parameter": "start_date"
+      },
+      {
+        "field": "received_on",
+        "op": "lt",
+        "parameter": "end_date"
+      },
+      {
+        "field": "state",
+        "op": "eq",
+        "value": "closed"
+      }
+    ],
+    "measures": [
+      {
+        "id": "case_count",
+        "name": "请求数",
+        "op": "count",
+        "field": "case_id",
+        "unit": "1",
+        "scale": 0,
+        "rounding": "HALF_UP",
+        "nullPolicy": "reject"
+      },
+      {
+        "id": "elapsed_total",
+        "name": "耗时合计",
+        "op": "sum",
+        "field": "elapsed",
+        "unit": "minute",
+        "scale": 2,
+        "rounding": "HALF_UP",
+        "nullPolicy": "reject"
+      },
+      {
+        "id": "fulfilled_total",
+        "name": "满足单位合计",
+        "op": "sum",
+        "field": "fulfilled",
+        "unit": "1",
+        "scale": 0,
+        "rounding": "HALF_UP",
+        "nullPolicy": "reject"
+      },
+      {
+        "id": "requested_total",
+        "name": "请求单位合计",
+        "op": "sum",
+        "field": "requested",
+        "unit": "1",
+        "scale": 0,
+        "rounding": "HALF_UP",
+        "nullPolicy": "reject"
+      }
+    ],
+    "formulas": [
+      {
+        "id": "mean_minutes",
+        "name": "平均耗时",
+        "expression": "elapsed_total / case_count",
+        "unit": "minute",
+        "scale": 2,
+        "rounding": "HALF_UP",
+        "zeroDivision": "null"
+      },
+      {
+        "id": "fulfilment_percent",
+        "name": "满足率",
+        "expression": "fulfilled_total / requested_total * 100",
+        "unit": "%",
+        "scale": 2,
+        "rounding": "HALF_UP",
+        "zeroDivision": "null"
+      }
+    ]
+  }
+}
