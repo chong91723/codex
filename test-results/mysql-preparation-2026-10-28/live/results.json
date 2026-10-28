@@ -1,0 +1,230 @@
+{
+  "scope": "Actual AdventureWorks MySQL 8.4, SchemaCrawler CLI and current web. One owned native DeepSeek Flash task. Only owned test resources are mutated.",
+  "checks": [
+    {
+      "name": "实际页面一键探索及资料下载",
+      "passed": true,
+      "snapshotId": "8a4bff6ac3e80bc0823b08336f43c56e",
+      "tableCount": 70,
+      "columnCount": 479,
+      "declaredForeignKeys": 81,
+      "tool": {
+        "businessRowsSampled": false,
+        "durationSeconds": 11.431,
+        "findingCount": 152,
+        "inferredAssociationObservations": 6,
+        "lintReportSha256": "8e469598ca42a3d40c4b3664a12f29944a633422a4cdc2767c834cf9dff58859",
+        "mode": "schema_and_structural_lint",
+        "note": "结构检查属于建议；推测关联不能作为声明外键或业务事实。未执行全表画像。",
+        "peakChildRssKiB": 129476,
+        "schemaReportSha256": "1a9ced64cd89415f7e21a4e0ee36ec6c798fc149a0d063d89ee3d605be6d15e0",
+        "severityCounts": {
+          "hypothesis": 6,
+          "low": 140,
+          "medium": 6
+        },
+        "tool": "SchemaCrawler CLI",
+        "version": "17.16.0"
+      }
+    },
+    {
+      "name": "模型执行结果与独立口径核对前记录",
+      "passed": true,
+      "answer": "| 指标 | 结果 |\n|---|---:|\n| 有效线上订单总数 | 27659 |\n| 订单收入合计 | 29358677.220697206 |\n\n该连接没有已确认的指标口径，因此结果依据用户在该数据源中保存的业务补充生成，不能视为已通过指标规则验证。\n\n有效线上订单使用 `SalesOrderHeader` 表，并同时满足已保存补充规定的有效订单状态值和线上订单标志；数量按 `COUNT(DISTINCT SalesOrderID)` 统计。订单收入使用 `SUM(SubTotal)`，不含 `TaxAmt` 和 `Freight`。金额字段没有说明统一币种，因此该合计仅按源数据金额汇总，不代表已换算或统一后的单一币种收入。",
+      "verification": {
+        "status": "verified",
+        "strict": true,
+        "answerId": "d3b5a7279d654493cf18afb1fcfc5067f6999d3f35723f6e2d46e79959984e7b",
+        "evidence": [
+          {
+            "name": "valid_online_orders",
+            "value": 27659,
+            "resultId": "6b381e1bcf53b1ec51eddc42994afdd9",
+            "row": 0,
+            "column": "valid_online_orders",
+            "sha256": "8fdcf591b7015b19da9f6ceb0b9fc3a8e95b61a35a6c8e39b096c19cda42b66f",
+            "sourceKind": "database",
+            "sourceName": "AdventureWorks 独立探索验收",
+            "acquisition": [
+              {
+                "kind": "database",
+                "threadId": "01a18200-ef91-7a32-b9ed-35d1238bd1a8",
+                "turnId": "01a18200-f40a-7572-934a-8bc7608f85b5",
+                "retrievedAt": "2026-10-28T10:14:32.331544+00:00",
+                "connectionId": "c873d880b5cdfe9b2f2a476e"
+              }
+            ]
+          },
+          {
+            "name": "order_revenue",
+            "value": 29358677.220697206,
+            "resultId": "6b381e1bcf53b1ec51eddc42994afdd9",
+            "row": 0,
+            "column": "order_revenue",
+            "sha256": "8fdcf591b7015b19da9f6ceb0b9fc3a8e95b61a35a6c8e39b096c19cda42b66f",
+            "sourceKind": "database",
+            "sourceName": "AdventureWorks 独立探索验收",
+            "acquisition": [
+              {
+                "kind": "database",
+                "threadId": "01a18200-ef91-7a32-b9ed-35d1238bd1a8",
+                "turnId": "01a18200-f40a-7572-934a-8bc7608f85b5",
+                "retrievedAt": "2026-10-28T10:14:32.331544+00:00",
+                "connectionId": "c873d880b5cdfe9b2f2a476e"
+              }
+            ]
+          }
+        ],
+        "sources": {
+          "6b381e1bcf53b1ec51eddc42994afdd9": {
+            "query": "SELECT COUNT(DISTINCT SalesOrderID) AS valid_online_orders, SUM(SubTotal) AS order_revenue FROM adventureworks.salesorderheader WHERE Status = 5 AND OnlineOrderFlag = 1",
+            "pythonCode": null,
+            "inputSources": []
+          }
+        },
+        "publicationChecks": {
+          "version": "analysis-publication-v2",
+          "checkedAt": "2026-10-28T10:14:45.356548+00:00",
+          "freshness": [
+            {
+              "kind": "database",
+              "threadId": "01a18200-ef91-7a32-b9ed-35d1238bd1a8",
+              "turnId": "01a18200-f40a-7572-934a-8bc7608f85b5",
+              "retrievedAt": "2026-10-28T10:14:32.331544+00:00",
+              "connectionId": "c873d880b5cdfe9b2f2a476e",
+              "sourceName": "AdventureWorks 独立探索验收",
+              "maxAgeMinutes": null,
+              "status": "notConfigured"
+            }
+          ],
+          "scope": "execution-record-match-only",
+          "note": "读取时间不等于源数据更新时间；未设置时效规则的来源不自动判定为最新。"
+        },
+        "version": "numeric-evidence-v1"
+      },
+      "queries": [
+        {
+          "connection_id": "c873d880b5cdfe9b2f2a476e",
+          "query": "SELECT COUNT(DISTINCT SalesOrderID) AS valid_online_orders, SUM(SubTotal) AS order_revenue FROM adventureworks.salesorderheader WHERE Status = 5 AND OnlineOrderFlag = 1"
+        }
+      ]
+    },
+    {
+      "name": "新会话 DeepSeek Flash 使用探索成果和用户补充，真实查询并核验数值",
+      "passed": true,
+      "model": "deepseek-flash",
+      "modelProvider": "deepseek",
+      "answer": "| 指标 | 结果 |\n|---|---:|\n| 有效线上订单总数 | 27659 |\n| 订单收入合计 | 29358677.220697206 |\n\n该连接没有已确认的指标口径，因此结果依据用户在该数据源中保存的业务补充生成，不能视为已通过指标规则验证。\n\n有效线上订单使用 `SalesOrderHeader` 表，并同时满足已保存补充规定的有效订单状态值和线上订单标志；数量按 `COUNT(DISTINCT SalesOrderID)` 统计。订单收入使用 `SUM(SubTotal)`，不含 `TaxAmt` 和 `Freight`。金额字段没有说明统一币种，因此该合计仅按源数据金额汇总，不代表已换算或统一后的单一币种收入。",
+      "verification": {
+        "status": "verified",
+        "strict": true,
+        "answerId": "d3b5a7279d654493cf18afb1fcfc5067f6999d3f35723f6e2d46e79959984e7b",
+        "evidence": [
+          {
+            "name": "valid_online_orders",
+            "value": 27659,
+            "resultId": "6b381e1bcf53b1ec51eddc42994afdd9",
+            "row": 0,
+            "column": "valid_online_orders",
+            "sha256": "8fdcf591b7015b19da9f6ceb0b9fc3a8e95b61a35a6c8e39b096c19cda42b66f",
+            "sourceKind": "database",
+            "sourceName": "AdventureWorks 独立探索验收",
+            "acquisition": [
+              {
+                "kind": "database",
+                "threadId": "01a18200-ef91-7a32-b9ed-35d1238bd1a8",
+                "turnId": "01a18200-f40a-7572-934a-8bc7608f85b5",
+                "retrievedAt": "2026-10-28T10:14:32.331544+00:00",
+                "connectionId": "c873d880b5cdfe9b2f2a476e"
+              }
+            ]
+          },
+          {
+            "name": "order_revenue",
+            "value": 29358677.220697206,
+            "resultId": "6b381e1bcf53b1ec51eddc42994afdd9",
+            "row": 0,
+            "column": "order_revenue",
+            "sha256": "8fdcf591b7015b19da9f6ceb0b9fc3a8e95b61a35a6c8e39b096c19cda42b66f",
+            "sourceKind": "database",
+            "sourceName": "AdventureWorks 独立探索验收",
+            "acquisition": [
+              {
+                "kind": "database",
+                "threadId": "01a18200-ef91-7a32-b9ed-35d1238bd1a8",
+                "turnId": "01a18200-f40a-7572-934a-8bc7608f85b5",
+                "retrievedAt": "2026-10-28T10:14:32.331544+00:00",
+                "connectionId": "c873d880b5cdfe9b2f2a476e"
+              }
+            ]
+          }
+        ],
+        "sources": {
+          "6b381e1bcf53b1ec51eddc42994afdd9": {
+            "query": "SELECT COUNT(DISTINCT SalesOrderID) AS valid_online_orders, SUM(SubTotal) AS order_revenue FROM adventureworks.salesorderheader WHERE Status = 5 AND OnlineOrderFlag = 1",
+            "pythonCode": null,
+            "inputSources": []
+          }
+        },
+        "publicationChecks": {
+          "version": "analysis-publication-v2",
+          "checkedAt": "2026-10-28T10:14:45.356548+00:00",
+          "freshness": [
+            {
+              "kind": "database",
+              "threadId": "01a18200-ef91-7a32-b9ed-35d1238bd1a8",
+              "turnId": "01a18200-f40a-7572-934a-8bc7608f85b5",
+              "retrievedAt": "2026-10-28T10:14:32.331544+00:00",
+              "connectionId": "c873d880b5cdfe9b2f2a476e",
+              "sourceName": "AdventureWorks 独立探索验收",
+              "maxAgeMinutes": null,
+              "status": "notConfigured"
+            }
+          ],
+          "scope": "execution-record-match-only",
+          "note": "读取时间不等于源数据更新时间；未设置时效规则的来源不自动判定为最新。"
+        },
+        "version": "numeric-evidence-v1"
+      },
+      "tools": [
+        {
+          "tool": "list_metric_rules",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "read_database_context",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "explore_database",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "query_database",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "publish_answer",
+          "status": "completed",
+          "isError": false
+        }
+      ],
+      "snapshotUnchanged": true
+    },
+    {
+      "name": "owned source cleanup",
+      "passed": true,
+      "knowledgeHistoryRetained": true
+    }
+  ],
+  "pageErrors": []
+}

@@ -17,7 +17,7 @@ import urllib.error
 import urllib.request
 
 ROOT=Path(__file__).resolve().parents[2]
-OUT=ROOT/'test-results/database-discovery-2026-10-28'
+OUT=Path(os.environ.get('CODEX_DISCOVERY_REPORT_DIR',str(ROOT/'test-results/database-discovery-2026-10-28')))
 if '--runtime-fixture' in sys.argv:OUT=OUT/'runtime-elasticsearch'
 OUT.mkdir(parents=True,exist_ok=True)
 PREFIX='codex-discovery-'+str(os.getpid())

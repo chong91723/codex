@@ -51,13 +51,25 @@ supports_websockets = false
 
 ## 用户主动的数据库分析准备（2026-10-28）
 
-“数据源 → 数据库探索”是分析前的准备入口，由用户主动采集实际结构、发起 Agent 业务探索并补充外部业务说明。日常问题不会自动启动完整探索；MCP 的 `explore_database` 只读取已有目录，未准备时提示入口。普通只读查询仍可按需查看指定表，不强制每个问题先跑准备流程。
+“数据源 → 数据库探索”现在提供“一键探索”和“业务补充”输入框。点击后由后台独立任务采集结构并执行检查，不再要求把探索任务填入聊天框后发送；可查看进度、取消，关闭窗口或刷新不会重复提交。详情、解释冲突和历史记录保留在次级入口，完整资料可下载。
 
-同一服务配置中，新建会话仅创建新的分析任务；数据源、Skills／MCP 启停、准备成果、指标规则与时效设置继续生效，无需复制旧聊天或重新准备。消息、计划、批准和进度仍按任务管理；历史结果复用继续遵守来源、归属和时效检查。
+业务补充点击“保存并用于分析”即表示用户明确采用，保留修改历史；普通 Agent 提议仍是待确认候选。新建会话仅开始新的分析任务，数据源、Skills／MCP、有效准备成果、指标规则与时效设置继续生效。Agent 通过现有 MCP 按需读取相关结构、用户补充和已采用知识，不把整个库常驻提示词。知识不改变访问权限、不自动确认指标公式。
 
-准备成果按数据源 ID 存成结构档案和业务知识：物理表／字段／约束保留原样，用户及 Agent 的解释先作为候选，明确采用后才供分析使用。同对象同主题出现不同内容时暂停采用，用户选择或合并；保存来源、决定依据和版本，结构或连接变化后需重新确认。Agent 在分析时按表、字段和主题分层检索，只取相关的已确认知识，不把整个库和所有候选常驻提示词。业务说明不会自动成为可执行指标公式，也不会改变数据库权限。
+四类数据库的原有专用结构采集继续保留。MySQL／PostgreSQL 增强任务使用固定 SchemaCrawler CLI 17.16.0；ClickHouse／Elasticsearch 继续使用原有引擎采集器，并明确显示增强尚未适配。不会把推测关联当声明外键。准备工具安装需要 Java 17+ 和 Maven，运行时不下载依赖：
 
-支持现有 MySQL、PostgreSQL、ClickHouse、Elasticsearch 连接；不同引擎按实际能力表示关系，不将 ClickHouse 排序键当唯一约束或将 Elasticsearch nested/join 当 SQL 外键。完整操作、存储位置、设计参考与预算见[数据库探索指南](DATABASE_EXPLORATION.md)。真实数据库／MCP、浏览器夹具和模型测试独立记录。2026-10-28新增真实DeepSeek Flash自主探索与确认后新会话查询，限独立虚构PostgreSQL场景；日常8765已按授权原位重启，实际新连接加载入口、MCP工具和模型均通过。已打开页面需刷新；其他驻留旧MCP仍须重新加载。
+```sh
+python3 web/scripts/install_schema_explorer.py --java /绝对路径/java --maven /绝对路径/mvn
+```
+
+本机已安装独立 Java 与最小 CLI，不需要替换系统 Java。复现复杂 MySQL 验收：
+
+```sh
+.toolchains/databases/bin/python -B web/tests/run_mysql_exploration.py
+# 可选：明确授权后，使用已有 Web 服务的凭据完成真实 Flash 验收；脚本不读取密钥。
+CODEX_CONFIRM_LIVE_MODEL_TEST=1 .toolchains/databases/bin/python -B web/tests/run_mysql_exploration.py --live-url http://127.0.0.1:8765
+```
+
+脚本下载固定 GitHub 提交及哈希的 AdventureWorks 样例，在独立 MySQL 容器导入，创建只读账号，结束后清理；需要已缓存 `mysql:8.4` 镜像。实际结构为七十张表、四百七十九个字段和八十一个外键，已完成真实一键探索、资料下载和新会话 Flash 查询核验。完整操作、存储与限制见[探索指南](DATABASE_EXPLORATION.md)，分层验证结果见[验收报告](TEST_REPORT.md)。本批不修改原生 Codex，也不声称已经实现多租户隔离。刷新当前页面即可加载新入口；旧驻留 MCP 需重新加载。
 
 ## 指标口径与数据推导证明（2026-10-28）
 

@@ -1,23 +1,12 @@
 /* Observed structure and acknowledged business knowledge have different owners.
    This dialog never changes database schema or approves an Agent's candidates. */
 const databaseKnowledgeDrafts=new Map();
+const databasePreparationDrafts=new Map();
 const databaseKnowledgeAspects={meaning:'业务含义',grain:'记录粒度',time:'时间口径',unit:'单位',relationship:'业务关联',business_rule:'业务规则',quality:'质量要求',usage:'使用说明',filter:'筛选规则',timezone:'时区',other:'其他说明'};
 function databaseKnowledgeTarget(target){return target?.column?target.table+' · '+target.column:target?.table||'整个数据源';}
 function databaseKnowledgeOrigin(origin){return {user:'用户提供',agent:'Agent 提议（最初为推断）',observed:'数据库注释'}[origin]||String(origin||'未标明来源');}
 function databaseKnowledgeStatus(note){return (note.stale?'需按当前结构复核 · ':'')+({pending:'待确认',accepted:'已采用',rejected:'已拒绝 / 停用',superseded:'已被新决定替代'}[note.status]||'未知状态');}
-function databaseExplorationComposerReady(){
-  const input=typeof $==='function'?$('#prompt'):document.querySelector('#prompt');
-  if(!input||state.threadLoading||state.restoreError||input.disabled){toast('当前对话正在恢复或不可编辑，请恢复后再发起探索。');return false;}
-  if(input.value.trim()||state.attachments?.length||state.attachmentLoads){toast('当前输入内容已保留。请先发送或清空草稿，再发起数据库探索。');return false;}
-  return true;
-}
-function prepareDatabaseExploration(connection){
-  if(!databaseExplorationComposerReady())return false;
-  const input=typeof $==='function'?$('#prompt'):document.querySelector('#prompt');
-  input.value='这是我主动发起的分析前准备任务。请基于已采集的结构记录，探索数据源 '+JSON.stringify({name:connection.name,connectionId:connection.id})+' 的业务含义。先读取实际结构和当前已采用的业务知识，检查表、字段和实际存在的关联；将不确定的含义、粒度和逻辑关联作为有依据的待确认候选，并指出与已有说明的不同。必要的数据查询使用已有只读工具。请勿自行确认候选、覆盖用户决定或修改数据库结构；完成后告诉我哪些候选需要在“数据库探索”中处理。';
-  saveComposer();resizePrompt();showView('chat');input.focus();if(typeof updateSend==='function')updateSend();return true;
-}
-function showDatabaseExploration(connection){
+function showDatabaseExplorationDetails(connection){
   const existing=document.querySelector('dialog.database-exploration-dialog');if(existing){existing.focus();return;}
   const dialog=el('dialog','database-exploration-dialog'),heading=el('div','dialog-title'),title=el('h2','','数据库探索 · '+connection.name),close=el('button','icon-button','×'),summary=el('p','subtle exploration-summary'),toolbar=el('div','db-toolbar exploration-toolbar'),tabs=el('div','exploration-tabs'),body=el('div','exploration-body'),status=el('p','exploration-status'),footer=el('div','dialog-actions');
   title.id='database-exploration-title';dialog.setAttribute('aria-labelledby',title.id);close.type='button';close.ariaLabel='关闭数据库探索';heading.append(title,close);tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','数据库探索内容');body.id='database-exploration-panel';body.setAttribute('role','tabpanel');status.setAttribute('role','status');dialog.append(heading,summary,el('p','subtle exploration-preparation','分析前准备：由你发起结构采集和业务解释。准备完成后，日常分析按需读取已保存的结构与已采用知识。'),toolbar,tabs,body,status,footer);document.body.append(dialog);
@@ -31,26 +20,26 @@ function showDatabaseExploration(connection){
   function finish(){dialog.close();}
   const tabControls=new Map();for(const [key,label]of [['structure','实际结构'],['knowledge','业务知识'],['conflicts','待处理冲突']]){const tab=control(label,async()=>{view=key;await render();});tab.id='exploration-tab-'+key;tab.setAttribute('role','tab');tab.setAttribute('aria-controls',body.id);tabs.append(tab);tabControls.set(key,tab);}
   for(const [key,tab]of tabControls)tab.onkeydown=event=>{const values=[...tabControls.keys()];let index=values.indexOf(key);if(event.key==='ArrowRight')index=(index+1)%values.length;else if(event.key==='ArrowLeft')index=(index+values.length-1)%values.length;else if(event.key==='Home')index=0;else if(event.key==='End')index=values.length-1;else return;event.preventDefault();const target=values[index];run(async()=>{view=target;await render();}).then(()=>tabControls.get(target).focus());};
-  toolbar.append(control('刷新知识状态',async()=>{await reload();message('已读取最新结构记录和用户决定。');}),control('采集实际结构',scan,'solid-button'),control('让 Agent 探索业务含义',async()=>{if(!databaseExplorationComposerReady())return;const threadId=state.thread?.id,navigation=state.navigationGeneration;if(!model?.snapshot||model.stale)await scan();if(!live)return;if(state.thread?.id!==threadId||state.navigationGeneration!==navigation){message('结构准备已保留，当前对话已切换，请重新发起探索。');return;}if(prepareDatabaseExploration(connection)){focusComposer=true;finish();toast('探索任务已填入对话输入框，点击发送后由 Agent 执行。');}}));
+  toolbar.append(control('刷新知识状态',async()=>{await reload();message('已读取最新结构和用户决定。');}));
   footer.append(control('关闭',finish));
   function versionPayload(operation){if(!model)throw new Error('请先加载此数据源的状态');if(!model.snapshot)throw new Error('请先采集实际结构，再管理业务知识');if(model.sourceAvailable===false)throw new Error('数据源当前不可用，请先在数据源页面启用并测试连接');return{operation,expectedRevision:model.revision,snapshotId:model.snapshot.id};}
   function adopt(result){if(result?.sourceId!==connection.id)throw new Error('返回记录不属于当前数据源，请刷新重试');model=result;}
   function updateSummary(){const snap=model?.snapshot;summary.textContent='绑定数据源：'+connection.name+' · 连接版本 '+(model?.sourceVersion??connection.version??'未知')+(snap?' · 最近采集 '+new Date(snap.observedAt).toLocaleString()+' · '+snap.tableCount+' 个对象 / '+snap.columnCount+' 个字段':' · 尚未采集实际结构');if(model?.stale)summary.textContent+=' · 结构记录与当前连接不一致，请刷新';if(model?.sourceAvailable===false)summary.textContent+=' · 数据源当前不可用，历史记录可查看';}
   async function reload(){message('正在读取探索状态…');const ticket=++generation,result=await api({operation:'state'});if(!live||ticket!==generation)return;adopt(result);updateSummary();await render();}
-  async function scan(){if(!model)throw new Error('探索状态尚未加载');message('正在读取数据库实际结构与约束，请等待…');const ticket=++generation,result=await api({operation:'scan',expectedRevision:model.revision});if(!live||ticket!==generation)return;adopt(result);selectedTable=null;columnOffset=catalogOffset=0;knownTables=[];updateSummary();await render();message('实际结构已更新。业务说明仍需用户决定；原有决定和版本记录会保留。');}
+
   async function mutate(payload,after){message('正在保存此项决定…');const ticket=++generation,result=await api(payload);if(!live||ticket!==generation)return;adopt(result);updateSummary();if(after)after();await render();}
   async function render(){if(!live)return;body.replaceChildren();for(const [key,tab]of tabControls){const active=key===view;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}body.setAttribute('aria-labelledby','exploration-tab-'+view);if(!model){body.append(el('p','subtle','正在加载数据源探索记录…'));return;}if(view==='structure')await structure();else if(view==='knowledge')knowledge();else conflicts();}
-  function warning(){const snap=model.snapshot;if(!snap){body.append(el('p','exploration-empty','尚无结构记录。点击“采集实际结构”读取真实表、字段和约束，再补充业务知识。'));return false;}if(model.stale||snap.complete===false)body.append(el('p','db-error',model.stale?'当前连接与此结构记录不一致。请重新采集后确认业务知识。':'此次结构读取不完整；未列出的对象不能视为不存在。请查看采集说明并重试。'));return true;}
+  function warning(){const snap=model.snapshot;if(!snap){body.append(el('p','exploration-empty','尚无结构记录。返回探索窗口点击“一键探索”，读取真实表、字段和约束。'));return false;}if(model.stale||snap.complete===false)body.append(el('p','db-error',model.stale?'当前连接与此结构记录不一致。请重新采集后确认业务知识。':'此次结构读取不完整；未列出的对象不能视为不存在。请查看采集说明并重试。'));return true;}
   function keyValues(values){const list=el('dl','exploration-properties');for(const [name,value]of Object.entries(values||{})){if(value===undefined||value===null||value==='')continue;list.append(el('dt','',name),el('dd','',typeof value==='object'?JSON.stringify(value):String(value)));}return list;}
   function pager(offset,total,load,unit='项'){const node=el('div','exploration-pager'),before=control('上一页',()=>load(Math.max(0,offset-pageSize))),after=control('下一页',()=>load(offset+pageSize));before.disabled=offset===0;after.disabled=offset+pageSize>=total;node.append(before,el('span','subtle',total?(offset+1)+'–'+Math.min(offset+pageSize,total)+' / '+total+' '+unit:'没有匹配项'),after);return node;}
   async function structure(){
     if(!warning())return;body.append(el('p','subtle','以下内容来自数据库的实际元数据。用户业务说明和 Agent 推断单独保存，不会修改这些结构事实。'));
-    const details=el('details','exploration-observation');details.append(el('summary','','采集来源、能力与限制'),keyValues({结构指纹:model.snapshot.hash||model.snapshot.schemaHash,采集版本:model.snapshot.sourceVersion,完整性:model.snapshot.complete===true?'完整':model.snapshot.complete===false?'不完整':'未声明',能力:model.snapshot.capabilities}));for(const item of model.snapshot.warnings||[])details.append(el('p','db-error',typeof item==='string'?item:JSON.stringify(item)));body.append(details);
+    const details=el('details','exploration-observation');details.append(el('summary','','采集来源、能力与限制'),keyValues({结构指纹:model.snapshot.hash||model.snapshot.schemaHash,采集版本:model.snapshot.sourceVersion,完整性:model.snapshot.complete===true?'完整':model.snapshot.complete===false?'不完整':'未声明',能力:model.snapshot.capabilities}));for(const item of model.snapshot.warnings||[])details.append(el('p','db-error',typeof item==='string'?item:JSON.stringify(item)));if(model.snapshot.exploration)details.append(keyValues({探索工具:model.snapshot.exploration.tool,工具版本:model.snapshot.exploration.version,检查建议:model.snapshot.exploration.findingCount,说明:model.snapshot.exploration.note}));body.append(details);
     const content=el('div','exploration-catalog');body.append(content);const ticket=++generation;message('正在读取实际结构…');
     const payload={operation:'catalog',offset:selectedTable?columnOffset:catalogOffset,limit:pageSize};if(selectedTable)payload.table=selectedTable;else if(tableSearch)payload.search=tableSearch;
     const result=await api(payload);if(!live||ticket!==generation||view!=='structure')return;
     if(result.sourceId!==connection.id||result.snapshot?.id!==model.snapshot.id||result.revision!==model.revision)throw new Error('读取期间结构或知识版本已变化，请刷新知识状态后重试');
-    content.replaceChildren();const tables=result.tables||[];
+    content.replaceChildren();const tables=result.tables||[];if(result.findings?.length){const checks=el('details','exploration-observation');checks.append(el('summary','','结构检查建议（不代表业务错误）'));for(const item of result.findings)checks.append(el('p','',item.message+(item.detail?'：'+item.detail:'')));if(result.findingsTruncated)checks.append(el('p','subtle','此页仅展示部分建议，请缩小对象范围查看。'));content.append(checks);}
     if(selectedTable){
       const table=tables[0];content.append(control('返回对象列表',async()=>{selectedTable=null;columnOffset=0;await render();}));if(!table){content.append(el('p','db-error','该对象已不在当前结构记录中，请采集实际结构。'));message('');return;}
       content.append(el('h3','',table.name),keyValues({命名空间:table.namespace,类型:table.kind,数据库注释:table.comment}));
@@ -88,4 +77,63 @@ function showDatabaseExploration(connection){
     body.replaceChildren(el('h3','','合并并确认业务知识'),el('p','subtle','请综合这些说明编写最终内容。确认后采用新说明，并处理此对象与主题的其他候选；各原始版本和你的决定会保留。'));const originals=el('details','exploration-provenance');originals.append(el('summary','','查看待合并的来源'));for(const note of notes)originals.append(noteCard(note,false));body.append(originals);const content=field('knowledgeMergeContent','合并后的业务说明','textarea',saved.content),reason=field('knowledgeReason','合并原因 / 核对依据','textarea',saved.reason);content.input.maxLength=8000;reason.input.maxLength=2000;content.input.oninput=()=>{saved.content=content.input.value;};reason.input.oninput=()=>{saved.reason=reason.input.value;};body.append(content.wrapper,reason.wrapper);const controls=el('div','db-toolbar');controls.append(control('取消合并',()=>render()),control('确认合并并采用',async()=>{if(!content.input.value.trim()||!reason.input.value.trim())throw new Error('请填写合并后的内容和决定原因');await mutate({...versionPayload('merge'),ids:notes.map(note=>note.id),content:content.input.value.trim(),reason:reason.input.value.trim()});message('已采用合并后的知识，原始候选与历史决定保留。');},'solid-button'));body.append(controls);
   }
   dialog.showModal();run(reload);
+}
+
+// The primary preparation UI; the existing detailed editor remains available
+// for object inspection, decisions and history. Exploration never edits chat.
+function showDatabaseExploration(connection){
+  const existing=document.querySelector('dialog.database-exploration-dialog');
+  if(existing){existing.focus();return;}
+  const dialog=el('dialog','database-exploration-dialog exploration-simple');
+  const heading=el('div','dialog-title'),title=el('h2','','数据库探索 · '+connection.name),close=el('button','icon-button','×');
+  title.id='database-preparation-title';dialog.setAttribute('aria-labelledby',title.id);close.type='button';close.ariaLabel='关闭数据库探索';heading.append(title,close);
+  const body=el('div','exploration-body'),intro=el('p','subtle','探索一次，后续分析按需使用。你也可以补充数据库中没有的业务信息。');
+  const summary=el('p','exploration-summary','正在加载资料…'),progress=el('div','exploration-job-status');progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');
+  const actions=el('div','db-toolbar exploration-toolbar'),start=el('button','solid-button','一键探索'),cancel=el('button','small-button','取消探索'),refresh=el('button','small-button','刷新状态');
+  for(const b of [start,cancel,refresh])b.type='button';cancel.hidden=true;start.disabled=true;actions.append(start,cancel,refresh);
+  const editor=el('section','exploration-business-editor'),label=el('label','','业务补充（可选）'),input=el('textarea'),hint=el('p','subtle','例如：金额单位、有效订单状态、统计时间和特殊业务规则。保存后供该数据源的当前及新会话使用。'),save=el('button','solid-button','保存并用于分析'),restore=el('button','small-button','读取最新已保存内容'),editorActions=el('div','db-toolbar');
+  input.name='businessContext';input.id='database-business-context';input.maxLength=8000;input.rows=5;input.placeholder='用普通文字补充业务背景，无需填写表单或编写 SQL。';label.htmlFor=input.id;save.type=restore.type='button';save.disabled=true;restore.hidden=true;editorActions.append(save,restore);editor.append(label,input,hint,editorActions);const history=el('details','exploration-provenance'),historyBody=el('div');history.append(el('summary','','业务补充修改记录'),historyBody);editor.append(history);let historyOffset=0;async function loadHistory(){const value=await api({operation:'business_history',offset:historyOffset,limit:20});if(!live)return;historyBody.replaceChildren();for(const entry of value.records){const item=el('article','exploration-note-card');item.append(el('p','subtle','版本 '+entry.revision+' · '+new Date(entry.updatedAt).toLocaleString()),el('p','exploration-note-content',entry.content||'（已清空）'));historyBody.append(item);}if(!value.records.length)historyBody.append(el('p','subtle','尚无保存记录。'));const nav=el('div','db-toolbar');for(const [text,offset,disabled]of [['上一页',Math.max(0,historyOffset-20),historyOffset===0],['下一页',historyOffset+20,!value.hasMore]]){const b=el('button','small-button',text);b.type='button';b.disabled=disabled;b.onclick=()=>run(async()=>{historyOffset=offset;await loadHistory();});nav.append(b);}historyBody.append(nav);}history.ontoggle=()=>{if(history.open)run(loadHistory);};
+  const feedback=el('p','exploration-status');feedback.setAttribute('role','status');const details=el('button','small-button','查看结构、解释与历史记录');details.type='button';details.disabled=true;const download=el('button','small-button','下载探索资料');download.type='button';download.disabled=true;
+  const more=el('div','db-toolbar');more.append(details,download);body.append(intro,summary,progress,actions,editor,more,feedback);dialog.append(heading,body);document.body.append(dialog);
+  const focus=document.activeElement;let live=true,busy=false,timer=null,model=null,job=null,advance=false;
+  const draft=databasePreparationDrafts.get(connection.id)||{content:null,revision:null};databasePreparationDrafts.set(connection.id,draft);
+  const api=payload=>databaseApi('result',{databaseKnowledge:{sourceId:connection.id,...payload}});
+  const active=()=>job&&['queued','running','cancelling'].includes(job.status);
+  function message(text,error=false){if(!live)return;feedback.textContent=text;feedback.classList.toggle('db-error',error);feedback.setAttribute('role',error?'alert':'status');}
+  function controls(){start.disabled=busy||active()||!model?.sourceAvailable;start.textContent=model?.snapshot?'重新探索':'一键探索';save.disabled=busy||!model;refresh.disabled=busy;details.disabled=busy||!model?.snapshot;download.disabled=busy||!model?.snapshot;cancel.hidden=!active();cancel.disabled=busy||job?.status==='cancelling';}
+  function render(){
+    if(!live)return;const snapshot=model?.snapshot;
+    summary.textContent=snapshot?('已有资料：'+snapshot.tableCount+' 个对象 · '+snapshot.columnCount+' 个字段 · '+new Date(snapshot.completedAt||snapshot.observedAt).toLocaleString()+(snapshot.stale?' · 连接已变化，需重新探索':'')):'尚未探索；点击一键探索后，结果会自动保存供对话使用。';
+    if(job){const text={queued:'等待执行',running:job.message,cancelling:'正在取消，等待实际执行退出',completed:'探索完成，已可用于对话分析',cancelled:'已取消探索，已有资料保留',failed:'探索失败：'+(job.error||'请重试')}[job.status]||job.status;progress.textContent=text;progress.classList.toggle('db-error',job.status==='failed');}
+    else progress.textContent='';
+    hint.textContent=model?.businessContext?.stale?'连接或结构已变化。请核对补充内容后重新保存，旧补充暂不供 Agent 采用。':'保存表示你确认采用这份业务补充；不会改写数据库结构或确认指标公式。';controls();
+  }
+  async function load(){
+    const value=await api({operation:'state'});if(!live)return;model=value;
+    const business=value.businessContext||{content:'',revision:0};
+    if(draft.content===null)draft.content=business.content;
+    if(draft.revision===null)draft.revision=business.revision;
+    input.value=draft.content;
+    if(draft.revision!==business.revision){restore.hidden=false;message('业务补充已在其他页面更新。当前草稿已保留；保存前请核对最新内容。',true);}
+    job=await api({operation:'exploration_status'});render();
+  }
+  async function run(fn){if(busy||!live)return;busy=true;controls();try{await fn();}catch(error){message('操作失败：'+nativeErrorMessage(error)+'。未保存的内容已保留。',true);}finally{busy=false;if(live)controls();}}
+  async function poll(){
+    if(!live||!active())return;
+    try{const previous=job.status;const value=await api({operation:'exploration_status',jobId:job.id});if(!live)return;job=value;
+      if(!active()&&previous!==job.status){const stateValue=await api({operation:'state'});if(live)model=stateValue;}
+      render();
+    }catch(error){message('无法读取探索进度：'+nativeErrorMessage(error)+'。后台任务不会因此重复提交；可点击刷新状态恢复。',true);}
+    if(live&&active())timer=setTimeout(poll,1000);
+  }
+  input.oninput=()=>{draft.content=input.value;};
+  start.onclick=()=>run(async()=>{job=await api({operation:'start_exploration',expectedRevision:model.revision});render();clearTimeout(timer);timer=setTimeout(poll,0);});
+  cancel.onclick=()=>run(async()=>{job=await api({operation:'cancel_exploration',jobId:job.id});render();});
+  refresh.onclick=()=>run(async()=>{await load();clearTimeout(timer);if(active())timer=setTimeout(poll,0);});
+  save.onclick=()=>run(async()=>{const content=input.value;const value=await api({operation:'save_business',expectedRevision:draft.revision,content});if(!live)return;model=value;draft.content=input.value;draft.revision=value.businessContext.revision;restore.hidden=true;if(history.open){historyOffset=0;await loadHistory();}message(input.value!==content?'上次提交的内容已保存；当前新编辑尚未保存。':content.trim()?'业务补充已保存，将按需用于当前及新会话的分析。':'已清空业务补充。');render();});
+  restore.onclick=()=>{const value=model.businessContext||{content:'',revision:0};draft.content=value.content;draft.revision=value.revision;input.value=value.content;restore.hidden=true;message('已读取最新已保存内容。');};
+  download.onclick=()=>run(async()=>{const report=await api({operation:'exploration_report'});if(!live)return;const url=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'}));const link=el('a');link.href=url;link.download='database-exploration-'+connection.id+'.json';link.click();URL.revokeObjectURL(url);message('已下载完整探索资料，包含业务补充、检查建议和来源时间。');});
+  close.onclick=()=>dialog.close();details.onclick=()=>{advance=true;dialog.close();};
+  dialog.addEventListener('close',()=>{live=false;clearTimeout(timer);dialog.remove();if(advance)showDatabaseExplorationDetails(connection);else if(focus?.isConnected)focus.focus();},{once:true});
+  dialog.showModal();run(async()=>{await load();if(active())timer=setTimeout(poll,0);});
 }
