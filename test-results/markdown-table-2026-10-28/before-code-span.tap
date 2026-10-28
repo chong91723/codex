@@ -1,0 +1,103 @@
+TAP version 13
+# Subtest: missing delimiter column renders every original header and data cell
+ok 1 - missing delimiter column renders every original header and data cell
+  ---
+  duration_ms: 30.779343
+  type: 'test'
+  ...
+# Subtest: surplus delimiter syntax is removed without deleting a value or column
+ok 2 - surplus delimiter syntax is removed without deleting a value or column
+  ---
+  duration_ms: 5.094505
+  type: 'test'
+  ...
+# Subtest: correct tables remain byte-for-byte unchanged with alignment and inline formatting
+ok 3 - correct tables remain byte-for-byte unchanged with alignment and inline formatting
+  ---
+  duration_ms: 5.384669
+  type: 'test'
+  ...
+# Subtest: escaped pipes and escaped backslashes follow GFM cell boundaries
+ok 4 - escaped pipes and escaped backslashes follow GFM cell boundaries
+  ---
+  duration_ms: 0.474208
+  type: 'test'
+  ...
+# Subtest: fenced and indented code remain literal
+ok 5 - fenced and indented code remain literal
+  ---
+  duration_ms: 1.953604
+  type: 'test'
+  ...
+# Subtest: raw HTML and multiline code spans are not rewritten
+not ok 6 - raw HTML and multiline code spans are not rewritten
+  ---
+  duration_ms: 1.845852
+  type: 'test'
+  location: '/root/Codex/web/tests/markdown_tables.mjs:12:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+      '`literal\n' +
+        '| 类别 | 次数 | 占比 | 备注 |\n' +
+    +   '| --- | --- | --- | --- |\n' +
+    -   '|---|---|---|\n' +
+        '| 示例甲 | 15 | 12.50% | 数据保留 |\n' +
+        '| 示例乙 | 12 | 10.00% | 数据保留 |\n' +
+        'end`'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: |-
+    `literal
+    | 类别 | 次数 | 占比 | 备注 |
+    |---|---|---|
+    | 示例甲 | 15 | 12.50% | 数据保留 |
+    | 示例乙 | 12 | 10.00% | 数据保留 |
+    end`
+  actual: |-
+    `literal
+    | 类别 | 次数 | 占比 | 备注 |
+    | --- | --- | --- | --- |
+    | 示例甲 | 15 | 12.50% | 数据保留 |
+    | 示例乙 | 12 | 10.00% | 数据保留 |
+    end`
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///root/Codex/web/tests/markdown_tables.mjs:12:149)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: incomplete streaming rows and ambiguous body widths are preserved without inventing cells
+ok 7 - incomplete streaming rows and ambiguous body widths are preserved without inventing cells
+  ---
+  duration_ms: 0.43855
+  type: 'test'
+  ...
+# Subtest: plain text, setext headings, quoted and list blocks retain standard semantics
+ok 8 - plain text, setext headings, quoted and list blocks retain standard semantics
+  ---
+  duration_ms: 2.509595
+  type: 'test'
+  ...
+# Subtest: multiple paragraphs and CRLF preserve prose and numerical strings
+ok 9 - multiple paragraphs and CRLF preserve prose and numerical strings
+  ---
+  duration_ms: 0.78978
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 8
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 167.529954

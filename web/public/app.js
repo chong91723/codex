@@ -241,7 +241,8 @@ function selectedModelProvider(){return $('#model').selectedOptions[0]?.dataset.
 function markdown(text) {
   const wrapper=el('div','markdown');
   if(!window.marked||!window.DOMPurify){wrapper.textContent=text||'';return wrapper;}
-  const html=marked.parse(text||'',{gfm:true,breaks:true});
+  const source=typeof repairMarkdownTableDelimiters==='function'?repairMarkdownTableDelimiters(text||'',marked):text||'';
+  const html=marked.parse(source,{gfm:true,breaks:true});
   wrapper.innerHTML=DOMPurify.sanitize(html,{USE_PROFILES:{html:true},FORBID_TAGS:['style','form','input','button','textarea','select','option'],FORBID_ATTR:['style','id','name']});
   for(const table of wrapper.querySelectorAll('table')){const scroll=el('div','table-scroll');scroll.tabIndex=0;scroll.setAttribute('role','region');scroll.ariaLabel='表格，可横向滚动';table.before(scroll);scroll.append(table);}
   for(const image of wrapper.querySelectorAll('img'))loadImageElement(image,image.getAttribute('src'),null,true);

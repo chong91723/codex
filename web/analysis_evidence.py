@@ -8,6 +8,7 @@ import re
 import secrets
 import shutil
 import unicodedata
+from markdown_tables import validate_published_tables
 
 POLICY_VERSION = 'numeric-evidence-v1'
 REFERENCE = re.compile(r'\{\{([a-zA-Z][a-zA-Z0-9_]*)\}\}')
@@ -110,6 +111,7 @@ class Evidence:
             sources[proof['resultId']] = {key: proof.pop(key) for key in ('query','pythonCode','inputSources') if key in proof}
             evidence.append(dict(name=name, value=value, **proof))
         text = REFERENCE.sub(lambda match: values[match[1]], template)
+        validate_published_tables(text)
         digest = hashlib.sha256(canonical(text).encode()).hexdigest()
         record = {'version': POLICY_VERSION, 'answerId': digest, 'threadId': thread, 'turnId': turn,
                   'text': text, 'template': template, 'evidence': evidence, 'sources': sources,

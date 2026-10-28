@@ -1,6 +1,23 @@
 # 实际验收报告
 
 
+## 本轮：Sakila Markdown 表格与生效核对（2026-10-28）
+
+本轮起始`fc1df90`。用户指定历史的表头与各数据行4列、分隔行3列，标准GFM不会解析为表格；不是缺少Marked／DOMPurify，也不是服务仍提供旧app.js。只读检查确认当前前端与源码一致、原回答Python数值证据实际verified；旧Web进程仍通过worker兼容方式核验。完整[结构基线](test-results/markdown-table-2026-10-28/baseline.json)只保存维度与指纹，不提交用户正文、数据行或截图。
+
+修复只规范确定的分隔格式；数值核验仍对原始消息逐字匹配，存储、复制与历史不改写。Markdown结论下载使用同一规范后的格式，数值与原文一致。新publish_answer在创建答案证据前拒绝列数不符，要求原生模型修正，不自动补数或重发回合。代码块、原始HTML、跨段代码及歧义行不擅自改写；前端兼容限定于平级段落中的确定表格，不宣称支持任意错误Markdown。
+
+| 验证 | 实际结果与范围 |
+|---|---|
+| 实际用户网页与历史 | [browser/results.json](test-results/markdown-table-2026-10-28/browser/results.json)：6/6、0页面错误、0模型及业务写请求。现有8765实际服务、原生历史读取与实际worker证据核验；4列表头、5行、20单元格与原文逐格一致，刷新仍一表且verified；下载真实Markdown解析为4列5行，正文数字序列未变；1440／1024明暗无整页溢出。HTML事件／脚本清理、行内格式和代码围栏为明确的离线DOM样本，不冒称模型输出 |
+| 真实MCP发布链 | [mcp-publication.txt](test-results/markdown-table-2026-10-28/mcp-publication.txt)：标准stdio初始化、显式thread／turn元数据夹具、实际无网络隔离Python计算，缺分隔列返回真实工具错误且不写答案；修正格式后发布成功，独立worker核验verified，改数rejected。零模型、零数据库；不拿该测试冒称Flash本轮重新调用通过 |
+| Marked行为 | [markdown-tables.tap](test-results/markdown-table-2026-10-28/markdown-tables.tap)：9/9，使用实际本地Marked，覆盖缺／多分隔列、原单元格与数字、转义竖线／反斜线、对齐、代码／HTML／跨段代码、歧义／流式半行、普通文字／嵌套块、CRLF及幂等。首次多行代码边界8/9失败在before-code-span.tap保留，修复保护后通过 |
+| 工程与相邻功能 | [engineering/results.json](test-results/markdown-table-2026-10-28/engineering/results.json)：202/202前端行为，Python101项中97通过、4按原条件跳过；102份JS／MJS和45份Python AST通过。前端行为包含既有计划、审批提交、自动衔接、权限、结果、图表、数值证据及新增Markdown；Python完整套件包含真实runner、协议发布、存证与表格检查。构建／TypeScript不适用（纯JS/CSS），没有原生重编译；源码pristine、176方法和完整Schema／资源哈希分别核对 |
+
+实际修后明暗截图已在本机临时目录查看并清理；没有把用户历史内容推到代码仓库。原生进程提示该会话在其他页面占用时，以只读历史验收，不接管或中断。没有重启8765、改配置或写用户数据库。初次完整Python验收启动器错误地resolve虚拟环境软链接、实际调用系统Python导致缺依赖；错误结果在engineering/before-interpreter-fix保留，修正测试器后用项目虚拟环境重跑，不将其算为产品依赖损坏。
+
+生效边界：现有服务动态读取前端文件，当前旧页面刷新后即可看到表格；新的后台发布检查由新建／重新加载的MCP进程读取，本轮未强制重载用户占用中的MCP进程。旧已存证消息不会被新检查追溯拒绝。没有新增ChatGPT／外网依赖，也未修改多租户边界。
+
 ## 当前增量：ECharts、隔离 Python 与数值依据（2026-10-27）
 
 起始提交 `e862590462775c856fc4158b73c1632949b104d9`；原生源码、发行资源、协议与核心没有修改。新增的是原生 MCP 允许接入的本项目分析扩展和前端核验，不自建模型循环。所有实验使用独立 `/tmp` 工作区、只读 PostgreSQL 和明确 DEMO API／CSV。密钥仅通过启动器隐藏输入用于测试进程，未写入配置、源码或报告；用户服务 8765 未重启。

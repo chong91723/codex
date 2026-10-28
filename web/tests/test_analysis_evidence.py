@@ -93,6 +93,15 @@ class EvidenceTests(unittest.TestCase):
             with self.subTest(template=template),self.assertRaisesRegex(ValueError,'未引用'):
                 self.tools.publish(template,{})
 
+    def test_table_shape_rejected_before_publishing_and_corrected_text_still_verifies(self):
+        result=self.compute();reference={'v':self.ref(result)}
+        bad='| 类别 | 金额 | 来源 |\n|---|---|\n| 合计 | {{v}} | Python |'
+        with self.assertRaisesRegex(ValueError,'分隔行'):self.tools.publish(bad,reference)
+        self.assertEqual(list((self.evidence.root/'answers').rglob('*.json')),[])
+        good=bad.replace('|---|---|','|---|---|---|');answer=self.tools.publish(good,reference)
+        self.assertEqual(self.evidence.verify('thread-A','turn-A',answer['text'])['status'],'verified')
+        self.assertEqual(self.evidence.verify('thread-A','turn-A',answer['text'].replace('3.50','3.51'))['status'],'rejected')
+
     def test_modified_published_text_and_numbers_are_not_verified(self):
         result=self.compute();answer=self.tools.publish('合计 {{amount}}。',{'amount':self.ref(result)})
         for text in [answer['text'].replace('3.50','3.51'),answer['text']+' 日期2026',answer['text']+' 已独立复验']:
