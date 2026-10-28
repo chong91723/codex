@@ -1,0 +1,62 @@
+{
+  "scope": "Actual isolated web, PostgreSQL, stdio MCP and Python; transcript events are fixtures, not model outputs. No user service, history or business data accessed.",
+  "results": [
+    {
+      "name": "数据源绑定时效输入，取消不写入，保存不改变连接版本或另一数据源",
+      "status": "passed",
+      "cancelPreserved": true,
+      "persistedAcrossReload": true,
+      "otherSourceUnchanged": true
+    },
+    {
+      "name": "真实只读查询与Python计算保留来源时间，时限内跨回合可复用",
+      "status": "passed",
+      "realSql": true,
+      "realIsolatedPython": true,
+      "originalTimePreserved": true,
+      "newTurnReuseAllowedWithinUserLimit": true
+    },
+    {
+      "name": "现存MCP立即读取更改规则，零仅当前任务；拒绝后原结果仍可下载，重新查询后可发布",
+      "status": "passed",
+      "sameMcpProcess": true,
+      "staleRejected": true,
+      "historyAndCsvRetained": true,
+      "realRequerySucceeded": true
+    },
+    {
+      "name": "清空时效恢复未设置状态；过时检查记录与legacy警示进入实际报告下载",
+      "status": "passed",
+      "actualProofDownloaded": true,
+      "acquisitionTimeRetained": true,
+      "legacyWarningDownloaded": true
+    },
+    {
+      "name": "中文漏检和误判真实界面路径；未存证财务数字被拒，普通一致描述正常显示",
+      "status": "passed",
+      "bareAndFinancialRejected": true,
+      "ordinaryTextDisplayed": true
+    },
+    {
+      "name": "桌面明暗数据源时效窗口无遮挡，检查版本与来源记录可查看",
+      "status": "passed",
+      "desktopWidths": [
+        1440,
+        1024
+      ],
+      "dark": true
+    }
+  ],
+  "errors": [],
+  "modelRequests": 0,
+  "toolCalls": [
+    "query_database",
+    "run_python",
+    "publish_answer",
+    "publish_answer",
+    "read_result",
+    "query_database",
+    "publish_answer",
+    "publish_answer"
+  ]
+}

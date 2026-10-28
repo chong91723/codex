@@ -28,7 +28,9 @@ def main():
             else:raise ValueError('未知的数值依据操作。')
         else:
             from service import Gateway
-            result=Gateway().manage(request['action'],payload)
+            if request['action']=='result' and isinstance(payload.get('freshnessPolicy'),dict):
+                result=Gateway().manage('freshness',payload['freshnessPolicy'])
+            else:result=Gateway().manage(request['action'],payload)
         print(json.dumps({'result':result},ensure_ascii=False))
     except Exception as error:
         print(json.dumps({'error':str(error)[:1000]},ensure_ascii=False))

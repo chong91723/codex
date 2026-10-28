@@ -12,16 +12,28 @@ from markdown_tables import validate_published_tables
 
 POLICY_VERSION = 'numeric-evidence-v1'
 REFERENCE = re.compile(r'\{\{([a-zA-Z][a-zA-Z0-9_]*)\}\}')
-CHINESE_NUMBER = re.compile(r'(?:(?:为|是|：|:)\s*[零〇一二三四五六七八九十百千万亿两]+|百分之[零〇一二三四五六七八九十百千万亿两]+|第[零〇一二三四五六七八九十百千万亿两]+|[零〇一二三四五六七八九十百千万亿两]+(?:个|条|笔|天|日|月|年|元|万|亿|倍|成|位|次|项|组|类|种|页|行|列|份|点|步|轮|名|户|家|只|支|股|%|％))')
-
-ENGLISH_NUMBER = re.compile(r'(?<![A-Za-z_])(?:zero|nought|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion|trillion|half|quarter|once|twice)(?![A-Za-z_])',re.I)
-BARE_CHINESE_NUMBER = re.compile(r'(?:总计|合计|数量|总额|金额|平均值|平均额|结果|答案|记录数|最大值|最小值|等于|达到)\s*[负零〇一二三四五六七八九十百千万亿两]+(?![\u4e00-\u9fffA-Za-z])|(?:^|[\s，。；：、（(])[负零〇一二三四五六七八九十百千万亿两]+(?=[\s，。；、）)]|$)')
-
+# Shared behaviour is checked against the same corpus by Python and JavaScript.
+CHINESE_DIGITS = '零〇一二三四五六七八九十百千万亿兆两兩壹贰貳叁參肆伍陆陸柒捌玖拾佰仟萬億'
+CHINESE_NUMBER = re.compile('[负負'+CHINESE_DIGITS+']+')
+NUMBER_UNIT = re.compile(r'^(?:个|條|条|笔|天|日|月|年|元|圆|圓|角|分|倍|成|位|次|项|组|类|种|页|行|列|份|点|步|轮|名|户|家|只|支|股|吨|克|米|秒|%|％)')
+NUMBER_PREFIX = re.compile(r'(?:一共|总共|共有|共计|总计|合计|数量|总额|金额|平均值|平均额|结果|答案|记录数|最大值|最小值|等于|达到|为|是|：|:)\s*$')
+ENGLISH_NUMBER = re.compile(r'\b(?:zero|nought|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion|trillion|half|quarter|once|twice)\b',re.I|re.ASCII)
 
 def has_number(text):
-    # A format term names punctuation, rather than asserting a data quantity.
-    text = text.replace('千位分隔符', '')
-    return any(unicodedata.category(c) in ('Nd', 'Nl', 'No') for c in text) or bool(CHINESE_NUMBER.search(text) or ENGLISH_NUMBER.search(text) or BARE_CHINESE_NUMBER.search(text))
+    for phrase in ('千位分隔符','一致','一律','统一','唯一','一并','一般','一起','一旦','一键','万一','进一步'):
+        text = text.replace(phrase, '')
+    if any(unicodedata.category(c) in ('Nd', 'Nl', 'No') for c in text) or ENGLISH_NUMBER.search(text):return True
+    # Consume each numeral run once. A greedy run plus a mandatory suffix can
+    # backtrack quadratically on long malformed model output.
+    boundary = '，。；：、（）()'
+    for match in CHINESE_NUMBER.finditer(text):
+        if not any(c in CHINESE_DIGITS for c in match[0]):continue
+        before,after = text[max(0,match.start()-30):match.start()],text[match.end():match.end()+4]
+        if NUMBER_UNIT.match(after) or before.endswith(('百分之','第')):return True
+        next_char = after[:1]
+        if NUMBER_PREFIX.search(before) and (not next_char or not re.match(r'[\u4e00-\u9fffA-Za-z]',next_char)):return True
+        if (not before or before[-1].isspace() or before[-1] in boundary) and (not after or after[0].isspace() or after[0] in boundary):return True
+    return False
 
 
 def canonical(text):
@@ -89,7 +101,7 @@ class Evidence:
         if record['sha256'] != metadata['sha256']:
             raise ValueError('数据集指纹不匹配，不能发布数值。')
 
-    def publish(self, thread, template, references, resolve, turn=None):
+    def publish(self, thread, template, references, resolve, turn=None, check_sources=None):
         self.identity(thread)
         self.identity(turn)
         if not isinstance(template, str) or not template.strip() or len(template) > 80000:
@@ -110,11 +122,12 @@ class Evidence:
             values[name] = re.sub(r'([\\`*_{}\[\]<>!|])', r'\\\1', text.replace('\n', ' '))
             sources[proof['resultId']] = {key: proof.pop(key) for key in ('query','pythonCode','inputSources') if key in proof}
             evidence.append(dict(name=name, value=value, **proof))
+        checks = check_sources() if check_sources else {'version':'legacy'}
         text = REFERENCE.sub(lambda match: values[match[1]], template)
         validate_published_tables(text)
         digest = hashlib.sha256(canonical(text).encode()).hexdigest()
         record = {'version': POLICY_VERSION, 'answerId': digest, 'threadId': thread, 'turnId': turn,
-                  'text': text, 'template': template, 'evidence': evidence, 'sources': sources,
+                  'text': text, 'template': template, 'evidence': evidence, 'sources': sources, 'publicationChecks':checks,
                   'createdAt': datetime.now(timezone.utc).isoformat()}
         self.write(self.path('answers', thread, digest).parent/self.identity(turn)/(digest+'.json'), record)
         return record
@@ -135,7 +148,8 @@ class Evidence:
             if record.get('threadId') != thread or record.get('turnId') != turn or hashlib.sha256(canonical(record['text']).encode()).hexdigest() != digest:
                 raise ValueError('回答证据记录不一致。')
             return {'status': 'verified', 'strict': strict, 'answerId': digest,
-                    'evidence': record['evidence'], 'sources': record.get('sources',{}), 'version': POLICY_VERSION}
+                    'evidence': record['evidence'], 'sources': record.get('sources',{}),
+                    'publicationChecks':record.get('publicationChecks',{'version':'legacy'}), 'version': POLICY_VERSION}
         return {'status': 'rejected' if strict else 'legacy', 'strict': strict,
                 'reason': '回答中的数字没有匹配的查询或 Python 执行证据。请要求 Codex 补充查询或 Python 计算后重新回答；不会自动重发任务。',
                 'version': POLICY_VERSION}

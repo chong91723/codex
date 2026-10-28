@@ -97,3 +97,18 @@ test('pending, commentary and proposal messages receive no conclusion download a
 test('download visibility follows actual completed turn status rather than done message alone',()=>{
  const f=fixture(),entry=f.state.items.get('answer-A');f.context.decorateAnalysisAnswer(entry.node,entry.item,true);const download=entry.node.querySelectorAll('[data-export-analysis-report]')[0];f.state.turns[0].status='inProgress';f.context.refreshAnalysisDownloads();assert.equal(download.hidden,true);f.state.turns[0].status='completed';f.context.refreshAnalysisDownloads();assert.equal(download.hidden,false);entry.done=false;f.context.refreshAnalysisDownloads();assert.equal(download.hidden,true);
 });
+
+test('legacy and unknown verification warnings survive actual Markdown download',async()=>{
+ for(const status of ['legacy','unknown']){
+  const f=fixture(),entry=f.state.items.get('answer-A');entry.node.dataset.analysisVerification=status;
+  f.context.exportAnalysisReport('answer-A','thread-A',7);const text=await f.downloads[0].blob.text();
+  assert.match(text,status==='legacy'?/历史回答：未按当前数值规则核验/:/未取得可确认的数值核验状态/);assert(text.includes(entry.item.text));
+ }
+});
+test('report keeps proof version and acquisition policy while copying a stable evidence snapshot',()=>{
+ const f=fixture(),entry=f.state.items.get('answer-A');entry.node.dataset.analysisVerification='verified';
+ entry.node.analysisEvidence={status:'verified',publicationChecks:{version:'analysis-publication-v2',freshness:[{maxAgeMinutes:30,status:'notConfigured',retrievedAt:'2026-10-01T00:00:00Z'}]},evidence:[{value:'123'}],sources:{}};
+ const snapshot=f.context.analysisReportSnapshot('answer-A');entry.node.analysisEvidence.evidence[0].value='tampered-later';
+ const text=f.context.analysisReportMarkdown(snapshot);assert.match(text,/不能据此认定为最新/);assert(text.includes('2026-10-01'));assert(text.includes('analysis-publication-v2'));assert(!text.includes('tampered-later'));assert.match(text,/业务字段来源、公式口径/);
+ entry.node.analysisEvidence={status:'verified'};assert.match(f.context.analysisReportMarkdown(f.context.analysisReportSnapshot('answer-A')),/旧规则记录/);
+});

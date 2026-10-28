@@ -9,7 +9,7 @@ import secrets
 import sqlite3
 import time
 
-PUBLIC_FIELDS=('id','name','engine','host','port','database','schema','username','tls','verifyTls','caFile','enabled','status','error','checkedAt','version')
+PUBLIC_FIELDS=('id','name','engine','host','port','database','schema','username','tls','verifyTls','caFile','enabled','status','error','checkedAt','version','maxAgeMinutes')
 DEFAULT_PORTS={'mysql':3306,'postgresql':5432,'clickhouse':8123,'elasticsearch':9200}
 
 def state_directory():
@@ -55,13 +55,25 @@ class Store:
         if not 1<=port<=65535:raise ValueError('端口范围为 1–65535。')
         if len(self.all())>=32 and not old:raise ValueError('最多配置 32 个数据库连接。')
         password=payload.get('password') or (old or {}).get('password','')
-        record={'id':(old or {}).get('id') or secrets.token_hex(12),'name':name,'engine':engine,'host':host,'port':port,'database':database,'schema':schema,'username':username,'password':password,'tls':payload.get('tls') is True,'verifyTls':payload.get('verifyTls',True) is True,'caFile':str(payload.get('caFile') or ''),'enabled':payload.get('enabled',True) is True,'status':'unverified','error':None,'checkedAt':None,'version':(old or {}).get('version',0)+1}
+        record={'id':(old or {}).get('id') or secrets.token_hex(12),'name':name,'engine':engine,'host':host,'port':port,'database':database,'schema':schema,'username':username,'password':password,'tls':payload.get('tls') is True,'verifyTls':payload.get('verifyTls',True) is True,'caFile':str(payload.get('caFile') or ''),'enabled':payload.get('enabled',True) is True,'maxAgeMinutes':(old or {}).get('maxAgeMinutes'),'status':'unverified','error':None,'checkedAt':None,'version':(old or {}).get('version',0)+1}
         with self.connect() as db:db.execute('INSERT INTO connections VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET version=excluded.version,record=excluded.record',(record['id'],record['version'],json.dumps(record)))
         return record
+    def set_freshness(self,identifier,minutes):
+        if minutes is not None and (isinstance(minutes,bool) or not isinstance(minutes,int) or not 0<=minutes<=525600):
+            raise ValueError('复用时长请输入零至一年之间的整数分钟，留空表示未设置。')
+        self.get(identifier)
+        # Policy edits do not change connectivity or invalidate every snapshot.
+        with self.connect() as db:
+            changed=db.execute("UPDATE connections SET record=json_set(record,'$.maxAgeMinutes',?) WHERE id=?",(minutes,identifier)).rowcount
+            if not changed:raise ValueError('数据库连接已删除。')
+        return self.get(identifier)
     def status(self,record,status,error=None):
-        current=dict(record,status=status,error=error,checkedAt=datetime.now(timezone.utc).isoformat())
-        with self.connect() as db:changed=db.execute('UPDATE connections SET record=? WHERE id=? AND version=?',(json.dumps(current),record['id'],record['version'])).rowcount
-        if not changed:raise ValueError('连接配置已经变更，请重新测试连接。')
+        checked=datetime.now(timezone.utc).isoformat()
+        # A probe begun before a policy edit must not overwrite the new policy.
+        with self.connect() as db:
+            changed=db.execute("UPDATE connections SET record=json_set(record,'$.status',?,'$.error',?,'$.checkedAt',?) WHERE id=? AND version=?",(status,error,checked,record['id'],record['version'])).rowcount
+            if not changed:raise ValueError('连接配置已经变更，请重新测试连接。')
+            current=json.loads(db.execute('SELECT record FROM connections WHERE id=?',(record['id'],)).fetchone()[0])
         return current
     def toggle(self,identifier,enabled):
         record=self.get(identifier);record['enabled']=enabled;record['version']+=1;record.update(status='unverified',error=None,checkedAt=None)

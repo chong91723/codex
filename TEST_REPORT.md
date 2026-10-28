@@ -1,6 +1,23 @@
 # 实际验收报告
 
 
+## 最新增量：中文数值、报告警示与数据源时效（2026-10-28）
+
+起始`90c8353`。按用户澄清，常量与业务字段血缘、公式口径和计算精度自动正确性检查**暂缓**，未修改SQL守卫、runner或Codex核心。时效由用户在对应数据源的独立窗口设置，未设置不擅定期限；内部未输出中间值、模板生成和数值流式等待完成的机制不变。未使用当前或历史聊天中的密钥，本轮**零模型请求**，真实Flash兼容与端到端等待未重测。
+
+| 验证类别 | 本轮实际结果与边界 |
+|---|---|
+| 修前复现 | [baseline.json](test-results/evidence-followup-2026-10-28/baseline.json)：一共十二／壹佰元漏检、一致误判、旧结果跨回合重新发布verified；真实隔离Python常量可发布，未声称业务语义有保证。[export-baseline.json](test-results/evidence-followup-2026-10-28/export-baseline.json)实际生产导出函数证实legacy警示丢失 |
+| 真实浏览器、只读PG与MCP | [browser/results.json](test-results/evidence-followup-2026-10-28/browser/results.json)：6/6、0页面错误、0模型请求。独立临时PG只读账号实际SUM／COUNT→真实隔离Python，保留原读取时间；用户设分钟值时跨回合可发布，同一已启动新版MCP在改零后拒绝旧结果，实际重查后发布成功。历史CSV仍可下载；设置取消、持久化、刷新、另一个来源隔离、清空通过。实际新证据和legacy Markdown下载保留警示，中文裸数拒绝、非数值一致描述正常显示。消息事件为明确UI夹具，不是模型输出或原生历史持久化验收 |
+| 边界与竞态回归 | [test_data_freshness.py](web/tests/test_data_freshness.py)：共享中英文／财务数字语料，严格拒绝与notRequired；用户规则验证与探针晚到不覆盖；正分钟临界点、缺失／无时区／未来时间、零的当前任务、多个来源及旧派生时间不明。时间戳为明确受控夹具，不能当实际等待分钟过期；Python与DuckDB派生本身真实执行。中途停用在证据写入前被拒 |
+| 报告与状态 | 前端行为测试覆盖legacy／unknown导出警示、实际检查版本／时间／规则、稳定证据快照、旧规则提示和不假称业务正确；保留切换／审批／方案／未完成／失败／中断下载守卫。浏览器实际下载内容分别为actual-proof.md和legacy-warning.md，全部为独立夹具 |
+| 本地等待开销 | [local-latency.json](test-results/evidence-followup-2026-10-28/local-latency.json)：同机器、同真实计算快照，旧／新resolve交替各20次，**共同使用当前证据写入器，仅比较本地引用处理，非完整旧应用或模型A/B**。单引用中位数约0.85→0.93ms，30引用约16.55→1.73ms，100引用约53.58→3.24ms；同源探针和同结果行读取按当前发布去重，下一次不复用成功状态。单源规则读取中位0.135ms；中文检测8千字符1.577ms／8万字符15.317ms。不同机器会变化，不是延迟承诺。过期后真实重查按查询耗时增加等待，无新增模型校验轮次 |
+| 桌面视觉 | 1440／1024明暗截图，1024明暗已实际查看，窗口、输入、来源名称及保存取消无遮挡，无全页横向溢出；[visual-review.json](test-results/evidence-followup-2026-10-28/visual-review.json)。手机不测试 |
+| 工程与完整性 | 前端行为206/206；Python109项中105通过、4按原条件跳过；103份JS/MJS语法、49份Python AST通过；源码pristine、176方法及完整Schema／资源哈希一致。记录见[engineering.json](test-results/evidence-followup-2026-10-28/engineering.json)。纯JS/CSS无bundler或TypeScript，不以语法检查冒称构建或真实模型通过 |
+| 清理与生效 | [integration-cleanup.json](test-results/evidence-followup-2026-10-28/integration-cleanup.json)：本轮自有PG、Web、MCP、浏览器、临时配置清理；用户8765及占用会话不重启。前端刷新可见；后台以新MCP返回publicationChecks.version=analysis-publication-v2为证，旧记录明确未检查，不称所有旧连接自动热更新 |
+
+首次夹具PG初始化在浏览器启动前失败，已清理；原始psql诊断未保留，因此启动就绪竞态只是推断，改为最终TCP就绪后两次实际6/6通过，见before-startup-readiness.json。一次本地基线函数加载器未设置__file__，修正后执行，未生成错误成功数据。复跑入口：`python3 web/tests/run_evidence_followup.py`（要求已安装本地postgres:17、Playwright与原生资源，无模型密钥），`.toolchains/databases/bin/python web/tests/evidence_local_latency.py`（无数据库／模型请求）。API／文件当前无绑定时效设置入口，只记录读取时间并标未设置；不扩展为全新来源管理架构。数字识别仍是有边界的规则，不承诺任意文本语义识别或Markdown永远正确。
+
 ## 本轮：Sakila Markdown 表格与生效核对（2026-10-28）
 
 本轮起始`fc1df90`。用户指定历史的表头与各数据行4列、分隔行3列，标准GFM不会解析为表格；不是缺少Marked／DOMPurify，也不是服务仍提供旧app.js。只读检查确认当前前端与源码一致、原回答Python数值证据实际verified；旧Web进程仍通过worker兼容方式核验。完整[结构基线](test-results/markdown-table-2026-10-28/baseline.json)只保存维度与指纹，不提交用户正文、数据行或截图。

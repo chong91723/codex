@@ -12,6 +12,9 @@ from pathlib import Path
 import secrets,os,csv
 from sql_guard import validate_queries,MAX_ROWS,ReadOnlyError
 from store import Store,public
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from data_freshness import receipt,acquisitions,check_freshness
 
 class Gateway:
     def __init__(self,directory=None,cancellation=None,thread_id=None,turn_id=None,parent_thread_id=None):self.turn_id=turn_id;self.parent_thread_id=parent_thread_id;self.thread_id=thread_id;self.cancel=cancellation or Cancellation();self.store=Store(directory);self.snapshots=Snapshots(self.store.directory,self.cancel)
@@ -37,7 +40,7 @@ class Gateway:
     def available(self):
         records=[record for record in self.store.all() if record['enabled'] and record['status']=='connected']
         with ThreadPoolExecutor(max_workers=4) as pool:checked=list(pool.map(self.probe,records))
-        return [{'id':r['id'],'name':r['name'],'engine':r['engine'],'database':r['database'],'schema':r['schema'] if r['engine']=='postgresql' else None,'readOnly':True} for r in checked if r['status']=='connected']
+        return [{'id':r['id'],'name':r['name'],'engine':r['engine'],'database':r['database'],'schema':r['schema'] if r['engine']=='postgresql' else None,'maxAgeMinutes':r.get('maxAgeMinutes'),'readOnly':True} for r in checked if r['status']=='connected']
     def schema(self,identifier,table=None):
         record=self.require(identifier);adapter=None
         try:
@@ -76,7 +79,7 @@ class Gateway:
             for statement in queries:
                 if time.monotonic()-started>20:raise DatabaseError('批量查询耗时过长，请分批查询。')
                 self.cancel.check()
-                with self.cancel.watch(adapter.cancel):value=self.snapshots.write({'connectionId':identifier,'connectionName':record['name'],'engine':record['engine'],'connectionVersion':record['version'],'connectionDependencies':[{'id':dependency['id'],'version':dependency['version']} for dependency in scope],'query':query if len(queries)==1 else statement,'executedQuery':statement},adapter.stream(statement))
+                with self.cancel.watch(adapter.cancel):value=self.snapshots.write({'connectionId':identifier,'connectionName':record['name'],'engine':record['engine'],'connectionVersion':record['version'],'connectionDependencies':[{'id':dependency['id'],'version':dependency['version']} for dependency in scope],'query':query if len(queries)==1 else statement,'executedQuery':statement,'acquisition':[receipt('database',self.thread_id,self.turn_id,dependency['id']) for dependency in scope]},adapter.stream(statement))
                 if getattr(adapter,'native_response',None):
                     raw_path=self.snapshots.path(value['resultId']).with_suffix('.raw.json');raw_path.write_text(json.dumps(adapter.native_response,ensure_ascii=False));raw_path.chmod(0o600)
                     value['nativeResponseAvailable']=True
@@ -101,23 +104,31 @@ class Gateway:
         page=self.snapshots.page(result_id,offset,limit,columns)
         if model and len(json.dumps({'columns':page['columns'],'rows':page['rows']},ensure_ascii=False))>5000:raise DatabaseError('本页明细超过上下文单次预算。请减少行数或字段；完整结果仍保留，可在网页查看和下载。')
         return page
-    def result_owner(self,metadata):
+    def result_owner(self,metadata,checked=None):
+        def connected(record):
+            key=(record['id'],record['version'])
+            if checked is not None and key in checked:return True
+            ok=self.probe(record)['status']=='connected'
+            if ok and checked is not None:checked.add(key)
+            return ok
         if metadata.get('sourceKind')=='python':
             if self.thread_id and self.thread_id not in (metadata.get('ownerThreadId'),metadata.get('parentThreadId')) and self.parent_thread_id!=metadata.get('ownerThreadId'):raise DatabaseError('计算结果不属于当前会话。')
             for dependency in metadata.get('connectionDependencies',[]):
                 record=self.require(dependency['id'])
-                if record['version']!=dependency['version'] or self.probe(record)['status']!='connected':raise DatabaseError('计算结果依赖的数据源已变化或断开，请重新查询计算。')
+                if record['version']!=dependency['version'] or not connected(record):raise DatabaseError('计算结果依赖的数据源已变化或断开，请重新查询计算。')
+            if self.thread_id:check_freshness([metadata],self.store.get,self.thread_id,self.turn_id)
             return None
         primary=self.require(metadata['connectionId'])
         dependencies=metadata.get('connectionDependencies') or [{'id':primary['id'],'version':metadata.get('connectionVersion',primary['version'])}]
         for dependency in dependencies:
             record=self.require(dependency['id'])
             if record['version']!=dependency['version']:raise DatabaseError('结果依赖的连接配置或启用状态已变更。旧结果可在网页历史查看；Agent 请重新查询。')
-            if self.probe(record)['status']!='connected':raise DatabaseError('结果依赖的数据库已断开连接，请先重新测试。')
+            if not connected(record):raise DatabaseError('结果依赖的数据库已断开连接，请先重新测试。')
+        if self.thread_id:check_freshness([metadata],self.store.get,self.thread_id,self.turn_id)
         return primary
     def analyze(self,result_id,query):
         metadata=self.snapshots.metadata(result_id);self.result_owner(metadata)
-        return self.snapshots.write({key:metadata[key] for key in ('connectionId','connectionName','engine','connectionVersion','connectionDependencies') if key in metadata}|{'sourceKind':'python','sourceName':'本地快照 SQL 计算','ownerThreadId':self.thread_id or metadata.get('ownerThreadId'),'inputResultIds':[result_id],'inputSources':[{'kind':'dataset','resultId':result_id,'sha256':metadata['sha256']}],'pythonCode':'# Python Snapshots.analyze executes this read-only DuckDB query\n'+query,'query':query,'parentResultId':result_id},self.snapshots.analyze(result_id,query))
+        return self.snapshots.write({key:metadata[key] for key in ('connectionId','connectionName','engine','connectionVersion','connectionDependencies') if key in metadata}|{'acquisition':acquisitions(metadata),'sourceKind':'python','sourceName':'本地快照 SQL 计算','ownerThreadId':self.thread_id or metadata.get('ownerThreadId'),'inputResultIds':[result_id],'inputSources':[{'kind':'dataset','resultId':result_id,'sha256':metadata['sha256']}],'pythonCode':'# Python Snapshots.analyze executes this read-only DuckDB query\n'+query,'query':query,'parentResultId':result_id},self.snapshots.analyze(result_id,query))
     def chart(self,result_id,kind,x,ys,title=None):
         metadata=self.snapshots.metadata(result_id);self.result_owner(metadata)
         if metadata['rowCount']>20000:raise DatabaseError('完整数据已保留，但图表点数过多。请显式使用 analyze_result 对完整结果进行分组或筛选，再生成图表；不会自动抽样或丢弃明细。')
@@ -162,6 +173,9 @@ class Gateway:
             return {'removed':True}
         if action=='list':return {'connections':[public(r) for r in self.store.all()],'readOnly':True}
         if action=='save':return {'connection':public(self.store.save(payload))}
+        if action=='freshness':
+            if 'maxAgeMinutes' not in payload:raise ValueError('请提供复用时长，清除规则须显式传入空值。')
+            return {'connection':public(self.store.set_freshness(payload['id'],payload['maxAgeMinutes']))}
         if action=='test':
             record=self.store.get(payload['id']);value=self.probe(record)
             return {'connection':public(value),'success':value['status']=='connected'}

@@ -1,0 +1,59 @@
+{
+  "scope": "Local actual Python execution, immutable snapshot and publication I/O. Alternating same-value publications using old and current resolver functions with the same CURRENT shared evidence writer; not a full old-application A/B. No model/network/SQL requests; not end-to-end user wait.",
+  "modelRequests": 0,
+  "numericDetection": {
+    "8000_characters": {
+      "samples": 50,
+      "medianMs": 1.577,
+      "p95Ms": 1.625
+    },
+    "80000_characters": {
+      "samples": 50,
+      "medianMs": 15.317,
+      "p95Ms": 18.016
+    }
+  },
+  "publication": {
+    "1_references_same_row": {
+      "baseline": {
+        "samples": 20,
+        "medianMs": 0.851,
+        "p95Ms": 0.88
+      },
+      "current": {
+        "samples": 20,
+        "medianMs": 0.927,
+        "p95Ms": 1.009
+      }
+    },
+    "30_references_same_row": {
+      "baseline": {
+        "samples": 20,
+        "medianMs": 16.55,
+        "p95Ms": 23.068
+      },
+      "current": {
+        "samples": 20,
+        "medianMs": 1.73,
+        "p95Ms": 3.037
+      }
+    },
+    "100_references_same_row": {
+      "baseline": {
+        "samples": 20,
+        "medianMs": 53.579,
+        "p95Ms": 59.494
+      },
+      "current": {
+        "samples": 20,
+        "medianMs": 3.237,
+        "p95Ms": 3.394
+      }
+    }
+  },
+  "freshnessCheckOneConfiguredSource": {
+    "samples": 200,
+    "medianMs": 0.135,
+    "p95Ms": 0.165
+  }
+}

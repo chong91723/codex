@@ -27,10 +27,25 @@ async function renderDatabaseSettings(root){
   const managedButton=(label,action)=>{const control=button(label,async()=>{control.disabled=true;control.textContent='处理中…';try{await action();}catch(error){status.textContent='操作失败：'+nativeErrorMessage(error);status.setAttribute('role','alert');throw error;}finally{if(control.isConnected){control.disabled=false;control.textContent=label;}}});return control;};
   for(const connection of data.connections){
     const card=el('article','db-card');card.dataset.managedConnectionId=connection.id;card.dataset.connectionId=connection.id;card.append(databaseCardHeading(connection),el('p','db-address',connection.host+':'+connection.port+' / '+connection.database),el('p','subtle','账号 '+connection.username+' · 永久只读'));
+    card.append(el('p','subtle db-freshness-policy',databaseFreshnessLabel(connection.maxAgeMinutes)));
     if(connection.error)card.append(el('p','db-error',connection.error));if(connection.checkedAt)card.append(el('small','subtle','最近测试 '+new Date(connection.checkedAt).toLocaleString()));
-    const actions=el('div','db-card-actions');actions.append(managedButton('测试连接',async()=>{const result=await databaseApi('test',{id:connection.id});if(result.success&&connection.enabled)await ensureDatabaseMcp(data);toast(result.success?'只读连接已验证':'连接验证失败：'+result.connection.error);await renderDatabaseSettings(root);}),button('查看表结构',()=>showDatabaseSchema(connection)),button('编辑',()=>editDatabase(connection,()=>renderDatabaseSettings(root))),managedButton(connection.enabled?'停用':'启用',async()=>{const result=await databaseApi('toggle',{id:connection.id,enabled:!connection.enabled});if(result.success&&!connection.enabled)await ensureDatabaseMcp(data);await renderDatabaseSettings(root);toast(connection.enabled?'数据源已停用':result.success?'数据源已启用并通过连接验证':'数据源已启用，连接验证失败：'+result.connection.error);}),button('移除',()=>openDialog('移除数据库连接',body=>body.append(el('p','','将移除“'+connection.name+'”的连接配置，数据库中的数据不会改变。')),async()=>{await databaseApi('remove',{id:connection.id});await renderDatabaseSettings(root);toast('数据库连接已移除');},'移除连接')));card.append(actions);grid.append(card);
+    const actions=el('div','db-card-actions');actions.append(managedButton('测试连接',async()=>{const result=await databaseApi('test',{id:connection.id});if(result.success&&connection.enabled)await ensureDatabaseMcp(data);toast(result.success?'只读连接已验证':'连接验证失败：'+result.connection.error);await renderDatabaseSettings(root);}),button('查看表结构',()=>showDatabaseSchema(connection)),button('编辑',()=>editDatabase(connection,()=>renderDatabaseSettings(root))),button('数据时效',()=>editDatabaseFreshness(connection,()=>renderDatabaseSettings(root))),managedButton(connection.enabled?'停用':'启用',async()=>{const result=await databaseApi('toggle',{id:connection.id,enabled:!connection.enabled});if(result.success&&!connection.enabled)await ensureDatabaseMcp(data);await renderDatabaseSettings(root);toast(connection.enabled?'数据源已停用':result.success?'数据源已启用并通过连接验证':'数据源已启用，连接验证失败：'+result.connection.error);}),button('移除',()=>openDialog('移除数据库连接',body=>body.append(el('p','','将移除“'+connection.name+'”的连接配置，数据库中的数据不会改变。')),async()=>{await databaseApi('remove',{id:connection.id});await renderDatabaseSettings(root);toast('数据库连接已移除');},'移除连接')));card.append(actions);grid.append(card);
   }
   if(!data.connections.length)grid.append(el('p','subtle','暂无数据库连接。'));
+}
+
+function databaseFreshnessLabel(minutes){return minutes==null?'数据时效：未设置复用时长':minutes===0?'数据时效：仅当前任务可复用结果':'数据时效：读取后可复用 '+minutes+' 分钟';}
+function editDatabaseFreshness(connection,refresh=()=>showDatabaseSettings()){
+  openDialog(connection.name+' · 数据时效',body=>{
+    const label=el('label','db-field'),input=el('input','field-input');label.append(el('span','','查询结果可复用时长（分钟）'));input.type='number';input.name='maxAgeMinutes';input.id='db-max-age';input.min='0';input.max='525600';input.step='1';input.value=connection.maxAgeMinutes??'';input.placeholder='留空：未设置';input.ariaLabel='查询结果可复用时长（分钟）';label.append(input);body.append(label,
+      el('p','subtle','留空表示不设置时效限制；填零表示只允许在当前任务内复用；正整数表示从实际查询时间起可复用的分钟数。'),
+      el('p','subtle','超过时长后需要重新查询。对旧结果重新读取或计算不会延长时效；历史结果仍可查看和下载。读取时间不等于数据库中的业务更新时间。'));
+  },async body=>{
+    const raw=body.querySelector('[name="maxAgeMinutes"]').value.trim(),minutes=raw===''?null:Number(raw);
+    if(minutes!==null&&(!Number.isInteger(minutes)||minutes<0||minutes>525600))throw new Error('请输入零至一年之间的整数分钟，或留空。');
+    await databaseApi('result',{freshnessPolicy:{id:connection.id,maxAgeMinutes:minutes}});
+    toast('数据源时效规则已保存；已有回答保留其生成时的检查状态。');await refresh();
+  },'保存时效规则');
 }
 
 function editDatabase(connection,refresh=()=>showDatabaseSettings()){const current=connection||{engine:'mysql',port:3306,host:'127.0.0.1',enabled:true,verifyTls:true};openDialog(connection?'编辑数据库':'添加数据库',body=>{const form=el('div','db-form');body.append(el('p','db-readonly-note','仅接受专用只读账号。禁止写入，无需也不能授权写入。'),form);function field(name,label,type='text',value='',required=true){const group=el('label','db-field');group.append(el('span','',label));const input=el(type==='select'?'select':'input','field-input');input.name=name;input.id='db-'+name;input.ariaLabel=label;if(type!=='select')input.type=type;input.value=value;input.required=required;group.append(input);form.append(group);return input;}

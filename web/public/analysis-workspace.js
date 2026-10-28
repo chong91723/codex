@@ -94,9 +94,23 @@ function analysisReportSnapshot(itemId){
   if(['pending','rejected'].includes(entry?.node?.dataset?.analysisVerification))throw new Error('数值依据尚未核验通过，不能下载为完成结论。');
   if(!entry?.done||entry.item.type!=='agentMessage'||entry.item.phase==='commentary'||turn?.status!=='completed'||extractAnalysisProposal(entry.item.text))throw new Error('该回答尚未完成，或仍是待确认方案，不能作为分析结论导出。');
   const results=new Map();for(const candidate of state.items.values())if(candidate.done&&candidate.turnId===entry.turnId)for(const result of analysisResultReferences(candidate.item))results.set(result.id,result);
-  return {threadId:state.thread?.id,generation:state.navigationGeneration,itemId,title:state.thread?.name||state.thread?.preview||'分析结论',text:entry.item.text||'',results:[...results.values()]};
+  return {threadId:state.thread?.id,generation:state.navigationGeneration,itemId,title:state.thread?.name||state.thread?.preview||'分析结论',text:entry.item.text||'',results:[...results.values()],verification:JSON.parse(JSON.stringify(entry.node?.analysisEvidence||{status:entry.node?.dataset?.analysisVerification||(typeof analysisHasNumbers==='function'&&!analysisHasNumbers(entry.item.text||'')&&!/!\[[^\]]*\]\(|<(?:img|svg|iframe)\b/i.test(entry.item.text||'')?'notRequired':'unknown')}))};
 }
-function analysisReportMarkdown(snapshot){const text=typeof repairMarkdownTableDelimiters==='function'&&typeof marked!=='undefined'?repairMarkdownTableDelimiters(snapshot.text,marked):snapshot.text;return ['# '+snapshot.title.replace(/[\r\n]+/g,' '),'',text,'','---','分析记录：'+snapshot.threadId,'',...(snapshot.results.length?['## 本轮相关查询结果','',...snapshot.results.map(r=>'- '+r.name+' · '+r.id+(Number.isInteger(r.rowCount)?' · '+r.rowCount+' 行':'')),'']:[]),'此文件导出本条已完成回答及同轮已加载的查询结果编号；完整数据和查询语句可在原对话查看。'].join('\n');}
+function analysisReportVerificationLines(snapshot){
+  const proof=snapshot.verification||{status:'unknown'},lines=['## 数值依据状态',''];
+  if(proof.status==='legacy')lines.push('> 历史回答：未按当前数值规则核验。此警示随文件保留。');
+  else if(proof.status==='verified'){
+    lines.push('数值已匹配查询或 Python 执行记录。此状态不证明业务字段来源、公式口径或源数据本身正确。');
+    if(proof.publicationChecks?.version!=='analysis-publication-v2')lines.push('> 旧规则记录：未应用当前数据源时效检查。');
+    else if(proof.publicationChecks.freshness?.some(source=>source.status==='notConfigured'))lines.push('> 部分来源未设置复用时长，不能据此认定为最新数据。');
+    lines.push('时效状态记录回答发布时的检查结果，不代表下载或阅读时仍有效。');
+    const record={publicationChecks:proof.publicationChecks,values:proof.evidence,sources:proof.sources};
+    lines.push('',...JSON.stringify(record,null,2).split('\n').map(line=>'    '+line));
+  }else if(proof.status==='notRequired')lines.push('本条回答未检测到需要核对的数值；不代表数据或结论已经核验。');
+  else lines.push('> 未取得可确认的数值核验状态。本文件不能作为已核验结论。');
+  return [...lines,''];
+}
+function analysisReportMarkdown(snapshot){const text=typeof repairMarkdownTableDelimiters==='function'&&typeof marked!=='undefined'?repairMarkdownTableDelimiters(snapshot.text,marked):snapshot.text;return ['# '+snapshot.title.replace(/[\r\n]+/g,' '),'',...analysisReportVerificationLines(snapshot),text,'','---','分析记录：'+snapshot.threadId,'',...(snapshot.results.length?['## 本轮相关查询结果','',...snapshot.results.map(r=>'- '+r.name+' · '+r.id+(Number.isInteger(r.rowCount)?' · '+r.rowCount+' 行':'')),'']:[]),'此文件导出本条已完成回答及同轮已加载的查询结果编号；完整数据和查询语句可在原对话查看。'].join('\n');}
 function exportAnalysisReport(itemId,threadId,generation){
   if(state.threadLoading||state.restoreError||threadId!==state.thread?.id||generation!==state.navigationGeneration)throw new Error('当前分析已切换或正在恢复，请在目标回答中重新下载。');
   const snapshot=analysisReportSnapshot(itemId),name=snapshot.title.replace(/[\\/:*?"<>|\r\n]/g,'-').slice(0,70)||'分析结论';downloadDatabaseBlob(new Blob([analysisReportMarkdown(snapshot)],{type:'text/markdown;charset=utf-8'}),name+'.md');

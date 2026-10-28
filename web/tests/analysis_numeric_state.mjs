@@ -37,3 +37,14 @@ test('old running backend reads current worker configuration without a service r
 test('submission acknowledgement registers strict evidence even if turn-start notification is late',()=>{const src=fs.readFileSync(new URL('../public/analysis-workspace.js',import.meta.url),'utf8'),start=src.indexOf('function recordAnalysisSubmission('),end=src.indexOf('\nfunction analysisUIEvent(',start),registered=[];const c=vm.createContext({registerAnalysisTurn:(thread,turn)=>registered.push([thread,turn]),analysisOwnedTurns:new Map(),analysisLiveTurns:new Map(),state:{ws:{},threadSettings:new Map(),runtimeDefaults:{}}});vm.runInContext(src.slice(start,end),c);c.recordAnalysisSubmission('thread-A',{id:'plan-turn'},{mode:'plan'});c.recordAnalysisSubmission('thread-A',{id:'default-turn'},{mode:'default'});assert.deepEqual(registered,[['thread-A','plan-turn'],['thread-A','default-turn']]);});
 
 test('permanent deletion clears only target thread verification caches and calls actual worker cleanup',async()=>{const f=fixture();await f.context.registerAnalysisTurn('thread-A','turn-A');await f.context.registerAnalysisTurn('thread-B','turn-B');f.context.renderGroundedAnalysisItem(item,true,'turn-A');await flush();await f.context.removeAnalysisThreadEvidence('thread-A');assert.equal(f.calls.at(-1).payload.analysisEvidence.action,'remove_thread');const before=f.calls.length;await f.context.registerAnalysisTurn('thread-B','turn-B');assert.equal(f.calls.length,before);await f.context.registerAnalysisTurn('thread-A','turn-A');assert.equal(f.calls.length,before+1);});
+
+const numberCorpus=JSON.parse(fs.readFileSync(new URL('./numeric_language_cases.json',import.meta.url),'utf8'));
+test('shared Chinese financial and count corpus matches backend expectations',()=>{const f=fixture();for(const value of numberCorpus.positive)assert.equal(f.context.analysisHasNumbers(value),true,value);for(const value of numberCorpus.negative)assert.equal(f.context.analysisHasNumbers(value),false,value);});
+test('matched records retain actual publication checks and warn when an older process did not apply them',async()=>{
+ for(const checks of [undefined,{version:'analysis-publication-v2',freshness:[{status:'notConfigured',retrievedAt:'fixture'}]}]){
+  const f=fixture(async()=>({status:'verified',publicationChecks:checks,evidence:[],sources:{}})),node=f.context.renderGroundedAnalysisItem(item,true,'turn-A');await flush();
+  assert.equal(node.analysisEvidence.status,'verified');assert.equal(node.all('p').some(p=>p.textContent.includes('旧规则记录')),!checks);
+  if(checks)assert(node.all('p').some(p=>p.textContent.includes('未设置复用时长')));
+  assert(node.all('summary').some(n=>n.textContent.includes('已匹配')));assert(!node.all('summary').some(n=>n.textContent.includes('已核验')));
+ }
+});
