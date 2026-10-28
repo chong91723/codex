@@ -14,6 +14,7 @@ ROOT=Path(__file__).resolve().parents[2]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--live-url',required=True)
 parser.add_argument('--report-dir',default=str(ROOT/'test-results/adventureworks-user-audit-rerun'))
+parser.add_argument('--phases',default='corrections,analysis,manual-plan,reject-query,resilience,running-cancel,report-presentation,configuration,learning-loop')
 args=parser.parse_args()
 if os.environ.get('CODEX_CONFIRM_LIVE_MODEL_TEST')!='1':raise SystemExit('Explicit live Flash test authorization required.')
 out=Path(args.report_dir);out.mkdir(parents=True,exist_ok=True)
@@ -52,7 +53,9 @@ try:
   try:
    subprocess.run([str(ROOT/'.toolchains/databases/bin/python'),'-B',str(ROOT/'web/tests/adventureworks_oracles.py'),str(private),str(out)],check=True,timeout=60)
    node('adventureworks_exploration_live.mjs')
-   for phase in ('corrections','analysis','manual-plan','reject-query','resilience','running-cancel','report-presentation','configuration'):node('adventureworks_analyst_live.mjs',phase)
+   for phase in args.phases.split(','):
+    if phase not in ('corrections','analysis','manual-plan','reject-query','resilience','running-cancel','report-presentation','configuration','learning-loop','native-memory-loop'):raise ValueError('Unsupported audit phase')
+    node('adventureworks_analyst_live.mjs',phase)
   finally:
    if receipt.exists():
     try:node('adventureworks_audit_cleanup.mjs');cleanup.update(json.loads((out/'cleanup.json').read_text()))

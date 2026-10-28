@@ -1,0 +1,254 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>只使用独立 AdventureWorks 数据源 7bd239fe3ac2287789a9845c，先读取用户已确认的业务定义。我想综合了解三个问题：第一，比较2003年与2002年有效线上订单的订单数、收入和客单价，哪些区域贡献了收入变化？第二，各产品大</title><style>body{font:16px/1.85 system-ui,sans-serif;color:#202124;max-width:980px;margin:48px auto;padding:0 28px;overflow-wrap:anywhere}h1,h2,h3{line-height:1.4;margin-top:1.6em}table{border-collapse:collapse;min-width:50%;font-size:14px}td,th{padding:10px 14px;border:1px solid #ddd;text-align:left}th{background:#f7f8fa}pre{white-space:pre-wrap;background:#f6f7f8;padding:18px;font-size:13px}blockquote{border-left:3px solid #bbb;margin-left:0;padding-left:16px;color:#555}.table-scroll{overflow:auto}img{max-width:100%}figure{margin:28px 0;break-inside:avoid}figcaption{color:#555}footer{border-top:1px solid #ddd;margin-top:40px;font-size:13px;color:#666}@media print{body{margin:0;max-width:none;padding:0;font-size:11pt}.table-scroll{overflow:visible}table{max-width:100%}pre{white-space:pre-wrap}h1,h2,h3{break-after:avoid}}</style><body><header><h1>只使用独立 AdventureWorks 数据源 7bd239fe3ac2287789a9845c，先读取用户已确认的业务定义。我想综合了解三个问题：第一，比较2003年与2002年有效线上订单的订单数、收入和客单价，哪些区域贡献了收入变化？第二，各产品大</h1><p>分析报告 · 10/28/2026, 10:19:41 PM</p><p>所用业务知识版本仍有效；数据时效以发布时的检查为准。</p></header><main><h1>AdventureWorks 有效线上订单年度对比与复购分析报告</h1>
+<h2>口径说明</h2>
+<ul>
+<li>数据源仅使用“AdventureWorks 用户体验审计（独立只读）”。</li>
+<li>有效线上订单按已确认的订单头状态与线上订单标志筛选；基期为 2002，比较期为 2003。</li>
+<li>订单数按订单头去重；订单头收入汇总 <code>SubTotal</code>，不含税费和运费；客单价按订单头小计合计除以去重有效订单数计算。</li>
+<li>产品大类收入汇总订单明细 <code>LineTotal</code>。订单头和产品分类分别汇总、分别对账。</li>
+<li>区域来自订单头 <code>TerritoryID</code>，分类通过产品、产品子类别和产品大类映射；无法匹配的记录保留为未知区域或未分类产品。</li>
+<li>金额保持数据源金额单位，不假定为人民币。变化为比较期减基期，仅描述差异与贡献，不作因果解释。</li>
+</ul>
+<h2>年度订单头表现</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="表格，可横向滚动"><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>基期 2002</th>
+<th>比较期 2003</th>
+<th>变化</th>
+<th>变化率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>有效线上订单数</td>
+<td>2680.0</td>
+<td>10955.0</td>
+<td>8275.0</td>
+<td>308.77%</td>
+</tr>
+<tr>
+<td>订单头收入</td>
+<td>6530858.55</td>
+<td>9805009.75</td>
+<td>3274151.2</td>
+<td>50.13%</td>
+</tr>
+<tr>
+<td>客单价</td>
+<td>2436.89</td>
+<td>895.03</td>
+<td>-1541.86</td>
+<td>-63.27%</td>
+</tr>
+</tbody></table></div>
+<p>比较期订单头收入较基期增加 3274151.2，有效线上订单数增加 8275.0；订单数扩张与收入增长同向，客单价则由 2436.89 降至 895.03，变化 -1541.86。上述结果描述指标间的同期变化，不构成客单价、订单数对收入变化的因果解释。</p>
+<h2>区域收入变化与贡献</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="表格，可横向滚动"><table>
+<thead>
+<tr>
+<th>区域</th>
+<th>收入变化</th>
+<th>占净收入变化比例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Australia</td>
+<td>887013.33</td>
+<td>27.09%</td>
+</tr>
+<tr>
+<td>United Kingdom</td>
+<td>714581.44</td>
+<td>21.82%</td>
+</tr>
+<tr>
+<td>Germany</td>
+<td>534023.19</td>
+<td>16.31%</td>
+</tr>
+<tr>
+<td>France</td>
+<td>511147.08</td>
+<td>15.61%</td>
+</tr>
+<tr>
+<td>Southwest</td>
+<td>457934.99</td>
+<td>13.99%</td>
+</tr>
+<tr>
+<td>Northwest</td>
+<td>246996.65</td>
+<td>7.54%</td>
+</tr>
+<tr>
+<td>Northeast</td>
+<td>3966.81</td>
+<td>0.12%</td>
+</tr>
+<tr>
+<td>Central</td>
+<td>2768.12</td>
+<td>0.08%</td>
+</tr>
+<tr>
+<td>Southeast</td>
+<td>664.49</td>
+<td>0.02%</td>
+</tr>
+<tr>
+<td>Canada</td>
+<td>-84944.9</td>
+<td>-2.59%</td>
+</tr>
+</tbody></table></div>
+<p>主要正贡献区域包括 Australia、United Kingdom、Germany、France 和 Southwest；Canada 是表中的负贡献区域。区域贡献按区域收入变化占全部区域净收入变化的比例计算，仅用于分解收入差异。结果未出现未知区域记录，但分析使用左连接保留未知区域。</p>
+<p>区域对比柱状图已生成：各区域有效线上订单收入对比。</p>
+<h2>产品大类收入与连接审计</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="表格，可横向滚动"><table>
+<thead>
+<tr>
+<th>产品大类</th>
+<th>基期行收入</th>
+<th>比较期行收入</th>
+<th>收入变化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Bikes</td>
+<td>6530858.55</td>
+<td>9371244.74</td>
+<td>2840386.19</td>
+</tr>
+<tr>
+<td>Accessories</td>
+<td>0.0</td>
+<td>294907.67</td>
+<td>294907.67</td>
+</tr>
+<tr>
+<td>Clothing</td>
+<td>0.0</td>
+<td>138857.34</td>
+<td>138857.34</td>
+</tr>
+<tr>
+<td>Components</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td>未分类产品</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+</tbody></table></div>
+<p>产品大类表保留了数据源中的全部大类及未分类项。Bikes 是收入变化最大的成交大类；Accessories 和 Clothing 仅在比较期出现成交；Components 和未分类产品在基期及比较期均无成交收入。未分类产品没有被静默排除：目标年份未分类收入为 0.0 和 0.0，未分类明细行数为 0.0 和 0.0。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="表格，可横向滚动"><table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>基期 2002</th>
+<th>比较期 2003</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>订单头行数（连接前）</td>
+<td>2680.0</td>
+<td>10955.0</td>
+</tr>
+<tr>
+<td>连接后记录数</td>
+<td>2680.0</td>
+<td>24534.0</td>
+</tr>
+<tr>
+<td>连接后去重订单数</td>
+<td>2680.0</td>
+<td>10955.0</td>
+</tr>
+<tr>
+<td>多明细订单数</td>
+<td>0.0</td>
+<td>7472.0</td>
+</tr>
+<tr>
+<td>订单头收入（连接前）</td>
+<td>6530858.55</td>
+<td>9805009.75</td>
+</tr>
+<tr>
+<td>连接后直接累加订单头金额</td>
+<td>6530858.55</td>
+<td>22091832.78</td>
+</tr>
+<tr>
+<td>连接导致重复累加金额</td>
+<td>0.0</td>
+<td>12286823.03</td>
+</tr>
+<tr>
+<td>订单头收入减明细行收入</td>
+<td>0.0</td>
+<td>-3e-06</td>
+</tr>
+</tbody></table></div>
+<p>连接放大风险在比较期已经实际出现：订单头连接明细后记录数增至 24534.0，去重订单仍为 10955.0，其中 7472.0 个订单具有多明细行。若在连接后直接累加订单头金额，比较期订单头收入会从正确的 9805009.75 放大至 22091832.78，多计 12286823.03。因此订单数、收入与客单价均保持在订单头粒度计算；分类收入保持在明细行粒度计算。</p>
+<p>订单头收入与产品大类行收入分别对账：基期差额为 0.0；比较期原始差额为 -2.810731530189514e-06，属于金额字段存储的浮点精度尾差，未通过人为调整强制归零。未发现订单头无明细记录；未分类收入及未分类明细行数见产品大类说明。</p>
+<h2>客户年度复购</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="表格，可横向滚动"><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>基期 2002</th>
+<th>比较期 2003</th>
+<th>变化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>年度有效线上订单去重客户数</td>
+<td>2680.0</td>
+<td>9335.0</td>
+<td>6655.0</td>
+</tr>
+<tr>
+<td>复购客户数</td>
+<td>0.0</td>
+<td>1241.0</td>
+<td>1241.0</td>
+</tr>
+<tr>
+<td>复购客户订单数</td>
+<td>0.0</td>
+<td>2861.0</td>
+<td>2861.0</td>
+</tr>
+<tr>
+<td>复购客户比例</td>
+<td>0.0%</td>
+<td>13.29%</td>
+<td>13.29 个比例单位</td>
+</tr>
+</tbody></table></div>
+<p>复购比例的分母为该年度具有有效线上订单的去重 CustomerID 数。比较期复购客户比例为 13.29%，较基期 0.0% 变化 13.29 个比例单位。复购仅在自然年度内部识别，不表示跨年度客户留存。</p>
+<h2>可下载完整数据</h2>
+<p>以下结果均可在对应结果卡中下载：</p>
+<ul>
+<li>年度订单头汇总与变化计算</li>
+<li>区域年度收入、订单数、客单价、跨期变化及贡献</li>
+<li>产品大类完整年度表，包含无成交类别和未分类产品</li>
+<li>订单头与明细连接审计</li>
+<li>订单头收入与分类行收入分别对账</li>
+<li>客户年度复购汇总</li>
+<li>有效线上订单头完整数据，含区域、明细行数、明细收入和连接状态</li>
+<li>有效线上订单行完整数据，含产品、子类别、产品大类、区域及未分类标记</li>
+<li>客户年度完整复购明细，含年内去重订单数、客户收入及复购标识</li>
+</ul>
+<figure><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwMCIgaGVpZ2h0PSI1MjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHZlcnNpb249IjEuMSIgYmFzZVByb2ZpbGU9ImZ1bGwiIHZpZXdCb3g9IjAgMCAxMDAwIDUyMCI+CjxyZWN0IHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjUyMCIgeD0iMCIgeT0iMCIgZmlsbD0iI2ZmZiI+PC9yZWN0Pgo8cGF0aCBkPSJNODkuNCA0NDAuNUw5NzIgNDQwLjUiIGZpbGw9Im5vbmUiIHBvaW50ZXItZXZlbnRzPSJ2aXNpYmxlIiBzdHJva2U9IiNlNWU3ZWIiIHN0cm9rZS1kYXNoYXJyYXk9IjQsMiIgY2xhc3M9InpyMC1jbHMtMCI+PC9wYXRoPgo8cGF0aCBkPSJNODkuNCAzODQuNUw5NzIgMzg0LjUiIGZpbGw9Im5vbmUiIHBvaW50ZXItZXZlbnRzPSJ2aXNpYmxlIiBzdHJva2U9IiNlNWU3ZWIiIHN0cm9rZS1kYXNoYXJyYXk9IjQsMiIgY2xhc3M9InpyMC1jbHMtMCI+PC9wYXRoPgo8cGF0aCBkPSJNODkuNCAzMjkuNUw5NzIgMzI5LjUiIGZpbGw9Im5vbmUiIHBvaW50ZXItZXZlbnRzPSJ2aXNpYmxlIiBzdHJva2U9IiNlNWU3ZWIiIHN0cm9rZS1kYXNoYXJyYXk9IjQsMiIgY2xhc3M9InpyMC1jbHMtMCI+PC9wYXRoPgo8cGF0aCBkPSJNODkuNCAyNzMuNUw5NzIgMjczLjUiIGZpbGw9Im5vbmUiIHBvaW50ZXItZXZlbnRzPSJ2aXNpYmxlIiBzdHJva2U9IiNlNWU3ZWIiIHN0cm9rZS1kYXNoYXJyYXk9IjQsMiIgY2xhc3M9InpyMC1jbHMtMCI+PC9wYXRoPgo8cGF0aCBkPSJNODkuNCAyMTguNUw5NzIgMjE4LjUiIGZpbGw9Im5vbmUiIHBvaW50ZXItZXZlbnRzPSJ2aXNpYmxlIiBzdHJva2U9IiNlNWU3ZWIiIHN0cm9rZS1kYXNoYXJyYXk9IjQsMiIgY2xhc3M9InpyMC1jbHMtMCI+PC9wYXRoPgo8cGF0aCBkPSJNODkuNCAxNjMuNUw5NzIgMTYzLjUiIGZpbGw9Im5vbmUiIHBvaW50ZXItZXZlbnRzPSJ2aXNpYmxlIiBzdHJva2U9IiNlNWU3ZWIiIHN0cm9rZS1kYXNoYXJyYXk9IjQsMiIgY2xhc3M9InpyMC1jbHMtMCI+PC9wYXRoPgo8cGF0aCBkPSJNODkuNCAxMDcuNUw5NzIgMTA3LjUiIGZpbGw9Im5vbmUiIHBvaW50ZXItZXZlbnRzPSJ2aXNpYmxlIiBzdHJva2U9IiNlNWU3ZWIiIHN0cm9rZS1kYXNoYXJyYXk9IjQsMiIgY2xhc3M9InpyMC1jbHMtMCI+PC9wYXRoPgo8cGF0aCBkPSJNODkuNCA1Mi41TDk3MiA1Mi41IiBmaWxsPSJub25lIiBwb2ludGVyLWV2ZW50cz0idmlzaWJsZSIgc3Ryb2tlPSIjZTVlN2ViIiBzdHJva2UtZGFzaGFycmF5PSI0LDIiIGNsYXNzPSJ6cjAtY2xzLTAiPjwvcGF0aD4KPHRleHQgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIHRleHQtYW5jaG9yPSJtaWRkbGUiIHN0eWxlPSJmb250LXNpemU6MTJweDtmb250LWZhbWlseTpzYW5zLXNlcmlmOyIgeT0iNiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNTMwLjY5MjQgNDc4KSIgZmlsbD0iIzU0NTU1YSI+cmVnaW9uX25hbWU8L3RleHQ+Cjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0iZW5kIiBzdHlsZT0iZm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6c2Fucy1zZXJpZjsiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDgxLjM4NDggNDQwKSIgZmlsbD0iIzU0NTU1YSI+MDwvdGV4dD4KPHRleHQgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIHRleHQtYW5jaG9yPSJlbmQiIHN0eWxlPSJmb250LXNpemU6MTJweDtmb250LWZhbWlseTpzYW5zLXNlcmlmOyIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoODEuMzg0OCAzODQuNTcxNCkiIGZpbGw9IiM1NDU1NWEiPjUwMCwwMDA8L3RleHQ+Cjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0iZW5kIiBzdHlsZT0iZm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6c2Fucy1zZXJpZjsiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDgxLjM4NDggMzI5LjE0MjkpIiBmaWxsPSIjNTQ1NTVhIj4xLDAwMCwwMDA8L3RleHQ+Cjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0iZW5kIiBzdHlsZT0iZm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6c2Fucy1zZXJpZjsiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDgxLjM4NDggMjczLjcxNDMpIiBmaWxsPSIjNTQ1NTVhIj4xLDUwMCwwMDA8L3RleHQ+Cjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0iZW5kIiBzdHlsZT0iZm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6c2Fucy1zZXJpZjsiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDgxLjM4NDggMjE4LjI4NTcpIiBmaWxsPSIjNTQ1NTVhIj4yLDAwMCwwMDA8L3RleHQ+Cjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0iZW5kIiBzdHlsZT0iZm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6c2Fucy1zZXJpZjsiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDgxLjM4NDggMTYyLjg1NzEpIiBmaWxsPSIjNTQ1NTVhIj4yLDUwMCwwMDA8L3RleHQ+Cjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0iZW5kIiBzdHlsZT0iZm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6c2Fucy1zZXJpZjsiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDgxLjM4NDggMTA3LjQyODYpIiBmaWxsPSIjNTQ1NTVhIj4zLDAwMCwwMDA8L3RleHQ+Cjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0iZW5kIiBzdHlsZT0iZm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6c2Fucy1zZXJpZjsiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDgxLjM4NDggNTIpIiBmaWxsPSIjNTQ1NTVhIj4zLDUwMCwwMDA8L3RleHQ+Cjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iZm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6c2Fucy1zZXJpZjsiIHk9IjYiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDEzMy41MTU1IDQ0OCkiIGZpbGw9IiM1NDU1NWEiPkF1c3RyYWxpYTwvdGV4dD4KPHRleHQgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIHRleHQtYW5jaG9yPSJtaWRkbGUiIHN0eWxlPSJmb250LXNpemU6MTJweDtmb250LWZhbWlseTpzYW5zLXNlcmlmOyIgeT0iNiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzEwLjAzODYgNDQ4KSIgZmlsbD0iIzU0NTU1YSI+R2VybWFueTwvdGV4dD4KPHRleHQgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIHRleHQtYW5jaG9yPSJtaWRkbGUiIHN0eWxlPSJmb250LXNpemU6MTJweDtmb250LWZhbWlseTpzYW5zLXNlcmlmOyIgeT0iNiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDg2LjU2MTYgNDQ4KSIgZmlsbD0iIzU0NTU1YSI+U291dGh3ZXN0PC90ZXh0Pgo8dGV4dCBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgc3R5bGU9ImZvbnQtc2l6ZToxMnB4O2ZvbnQtZmFtaWx5OnNhbnMtc2VyaWY7IiB5PSI2IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NjMuMDg0NyA0NDgpIiBmaWxsPSIjNTQ1NTVhIj5Ob3J0aGVhc3Q8L3RleHQ+Cjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iZm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6c2Fucy1zZXJpZjsiIHk9IjYiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDgzOS42MDc3IDQ0OCkiIGZpbGw9IiM1NDU1NWEiPlNvdXRoZWFzdDwvdGV4dD4KPHBhdGggZD0iTTEwNi4zIDIwMS4yTDEyNyAyMDEuMkE1IDUgMCAwIDEgMTMyIDIwNi4yTDEzMiA0NDBMMTAxLjMgNDQwTDEwMS4zIDIwNi4yQTUgNSAwIDAgMSAxMDYuMyAyMDEuMloiIGZpbGw9IiM2MzY2ZjEiIGVjbWV0YV9zZXJpZXNfaW5kZXg9IjAiIGVjbWV0YV9kYXRhX2luZGV4PSIwIiBlY21ldGFfc3NyX3R5cGU9ImNoYXJ0IiBjbGFzcz0ienIwLWNscy0xIj48L3BhdGg+CjxwYXRoIGQ9Ik0xOTQuNiAzNzQuNEwyMTUuMiAzNzQuNEE1IDUgMCAwIDEgMjIwLjIgMzc5LjRMMjIwLjIgNDQwTDE4OS42IDQ0MEwxODkuNiAzNzkuNEE1IDUgMCAwIDEgMTk0LjYgMzc0LjRaIiBmaWxsPSIjNjM2NmYxIiBlY21ldGFfc2VyaWVzX2luZGV4PSIwIiBlY21ldGFfZGF0YV9pbmRleD0iMSIgZWNtZXRhX3Nzcl90eXBlPSJjaGFydCIgY2xhc3M9InpyMC1jbHMtMSI+PC9wYXRoPgo8cGF0aCBkPSJNMjgyLjggMzgyTDMwMy41IDM4MkE1IDUgMCAwIDEgMzA4LjUgMzg3TDMwOC41IDQ0MEwyNzcuOCA0NDBMMjc3LjggMzg3QTUgNSAwIDAgMSAyODIuOCAzODJaIiBmaWxsPSIjNjM2NmYxIiBlY21ldGFfc2VyaWVzX2luZGV4PSIwIiBlY21ldGFfZGF0YV9pbmRleD0iMiIgZWNtZXRhX3Nzcl90eXBlPSJjaGFydCIgY2xhc3M9InpyMC1jbHMtMSI+PC9wYXRoPgo8cGF0aCBkPSJNMzcxLjEgMzgzLjFMMzkxLjggMzgzLjFBNSA1IDAgMCAxIDM5Ni44IDM4OC4xTDM5Ni44IDQ0MEwzNjYuMSA0NDBMMzY2LjEgMzg4LjFBNSA1IDAgMCAxIDM3MS4xIDM4My4xWiIgZmlsbD0iIzYzNjZmMSIgZWNtZXRhX3Nlcmllc19pbmRleD0iMCIgZWNtZXRhX2RhdGFfaW5kZXg9IjMiIGVjbWV0YV9zc3JfdHlwZT0iY2hhcnQiIGNsYXNzPSJ6cjAtY2xzLTEiPjwvcGF0aD4KPHBhdGggZD0iTTQ1OS4zIDI5OC41TDQ4MCAyOTguNUE1IDUgMCAwIDEgNDg1IDMwMy41TDQ4NSA0NDBMNDU0LjMgNDQwTDQ1NC4zIDMwMy41QTUgNSAwIDAgMSA0NTkuMyAyOTguNVoiIGZpbGw9IiM2MzY2ZjEiIGVjbWV0YV9zZXJpZXNfaW5kZXg9IjAiIGVjbWV0YV9kYXRhX2luZGV4PSI0IiBlY21ldGFfc3NyX3R5cGU9ImNoYXJ0IiBjbGFzcz0ienIwLWNscy0xIj48L3BhdGg+CjxwYXRoIGQ9Ik01NDcuNiAzNDUuOUw1NjguMyAzNDUuOUE1IDUgMCAwIDEgNTczLjMgMzUwLjlMNTczLjMgNDQwTDU0Mi42IDQ0MEw1NDIuNiAzNTAuOUE1IDUgMCAwIDEgNTQ3LjYgMzQ1LjlaIiBmaWxsPSIjNjM2NmYxIiBlY21ldGFfc2VyaWVzX2luZGV4PSIwIiBlY21ldGFfZGF0YV9pbmRleD0iNSIgZWNtZXRhX3Nzcl90eXBlPSJjaGFydCIgY2xhc3M9InpyMC1jbHMtMSI+PC9wYXRoPgo8cGF0aCBkPSJNNjMwLjkgNDQwTDY2MS42IDQ0MEw2MzAuOSA0NDBaIiBmaWxsPSIjNjM2NmYxIiBlY21ldGFfc2VyaWVzX2luZGV4PSIwIiBlY21ldGFfZGF0YV9pbmRleD0iNiIgZWNtZXRhX3Nzcl90eXBlPSJjaGFydCIgY2xhc3M9InpyMC1jbHMtMSI+PC9wYXRoPgo8cGF0aCBkPSJNNzE5LjEgNDQwTDc0OS44IDQ0MEw3MTkuMSA0NDBaIiBmaWxsPSIjNjM2NmYxIiBlY21ldGFfc2VyaWVzX2luZGV4PSIwIiBlY21ldGFfZGF0YV9pbmRleD0iNyIgZWNtZXRhX3Nzcl90eXBlPSJjaGFydCIgY2xhc3M9InpyMC1jbHMtMSI+PC9wYXRoPgo8cGF0aCBkPSJNODA3LjYgNDM5LjhMODM3LjkgNDM5LjhBMC4yIDAuMiAwIDAgMSA4MzguMSA0NDBMODA3LjQgNDQwQTAuMiAwLjIgMCAwIDEgODA3LjYgNDM5LjhaIiBmaWxsPSIjNjM2NmYxIiBlY21ldGFfc2VyaWVzX2luZGV4PSIwIiBlY21ldGFfZGF0YV9pbmRleD0iOCIgZWNtZXRhX3Nzcl90eXBlPSJjaGFydCIgY2xhc3M9InpyMC1jbHMtMSI+PC9wYXRoPgo8cGF0aCBkPSJNOTAwLjcgMzcxLjJMOTIxLjMgMzcxLjJBNSA1IDAgMCAxIDkyNi4zIDM3Ni4yTDkyNi4zIDQ0MEw4OTUuNyA0NDBMODk1LjcgMzc2LjJBNSA1IDAgMCAxIDkwMC43IDM3MS4yWiIgZmlsbD0iIzYzNjZmMSIgZWNtZXRhX3Nlcmllc19pbmRleD0iMCIgZWNtZXRhX2RhdGFfaW5kZXg9IjkiIGVjbWV0YV9zc3JfdHlwZT0iY2hhcnQiIGNsYXNzPSJ6cjAtY2xzLTEiPjwvcGF0aD4KPHBhdGggZD0iTTE0MCAxMDIuOEwxNjAuNyAxMDIuOEE1IDUgMCAwIDEgMTY1LjcgMTA3LjhMMTY1LjcgNDQwTDEzNSA0NDBMMTM1IDEwNy44QTUgNSAwIDAgMSAxNDAgMTAyLjhaIiBmaWxsPSIjMDZiNmQ0IiBlY21ldGFfc2VyaWVzX2luZGV4PSIxIiBlY21ldGFfZGF0YV9pbmRleD0iMCIgZWNtZXRhX3Nzcl90eXBlPSJjaGFydCIgY2xhc3M9InpyMC1jbHMtMiI+PC9wYXRoPgo8cGF0aCBkPSJNMjI4LjMgMjk1LjJMMjQ5IDI5NS4yQTUgNSAwIDAgMSAyNTQgMzAwLjJMMjU0IDQ0MEwyMjMuMyA0NDBMMjIzLjMgMzAwLjJBNSA1IDAgMCAxIDIyOC4zIDI5NS4yWiIgZmlsbD0iIzA2YjZkNCIgZWNtZXRhX3Nlcmllc19pbmRleD0iMSIgZWNtZXRhX2RhdGFfaW5kZXg9IjEiIGVjbWV0YV9zc3JfdHlwZT0iY2hhcnQiIGNsYXNzPSJ6cjAtY2xzLTIiPjwvcGF0aD4KPHBhdGggZD0iTTMxNi42IDMyMi44TDMzNy4zIDMyMi44QTUgNSAwIDAgMSAzNDIuMyAzMjcuOEwzNDIuMyA0NDBMMzExLjYgNDQwTDMxMS42IDMyNy44QTUgNSAwIDAgMSAzMTYuNiAzMjIuOFoiIGZpbGw9IiMwNmI2ZDQiIGVjbWV0YV9zZXJpZXNfaW5kZXg9IjEiIGVjbWV0YV9kYXRhX2luZGV4PSIyIiBlY21ldGFfc3NyX3R5cGU9ImNoYXJ0IiBjbGFzcz0ienIwLWNscy0yIj48L3BhdGg+CjxwYXRoIGQ9Ik00MDQuOCAzMjYuNEw0MjUuNSAzMjYuNEE1IDUgMCAwIDEgNDMwLjUgMzMxLjRMNDMwLjUgNDQwTDM5OS44IDQ0MEwzOTkuOCAzMzEuNEE1IDUgMCAwIDEgNDA0LjggMzI2LjRaIiBmaWxsPSIjMDZiNmQ0IiBlY21ldGFfc2VyaWVzX2luZGV4PSIxIiBlY21ldGFfZGF0YV9pbmRleD0iMyIgZWNtZXRhX3Nzcl90eXBlPSJjaGFydCIgY2xhc3M9InpyMC1jbHMtMiI+PC9wYXRoPgo8cGF0aCBkPSJNNDkzLjEgMjQ3LjdMNTEzLjggMjQ3LjdBNSA1IDAgMCAxIDUxOC44IDI1Mi43TDUxOC44IDQ0MEw0ODguMSA0NDBMNDg4LjEgMjUyLjdBNSA1IDAgMCAxIDQ5My4xIDI0Ny43WiIgZmlsbD0iIzA2YjZkNCIgZWNtZXRhX3Nlcmllc19pbmRleD0iMSIgZWNtZXRhX2RhdGFfaW5kZXg9IjQiIGVjbWV0YV9zc3JfdHlwZT0iY2hhcnQiIGNsYXNzPSJ6cjAtY2xzLTIiPjwvcGF0aD4KPHBhdGggZD0iTTU4MS40IDMxOC41TDYwMiAzMTguNUE1IDUgMCAwIDEgNjA3IDMyMy41TDYwNyA0NDBMNTc2LjQgNDQwTDU3Ni40IDMyMy41QTUgNSAwIDAgMSA1ODEuNCAzMTguNVoiIGZpbGw9IiMwNmI2ZDQiIGVjbWV0YV9zZXJpZXNfaW5kZXg9IjEiIGVjbWV0YV9kYXRhX2luZGV4PSI1IiBlY21ldGFfc3NyX3R5cGU9ImNoYXJ0IiBjbGFzcz0ienIwLWNscy0yIj48L3BhdGg+CjxwYXRoIGQ9Ik02NjUuMSA0MzkuNkw2OTQuOSA0MzkuNkEwLjQgMC40IDAgMCAxIDY5NS4zIDQ0MEw2OTUuMyA0NDBMNjY0LjYgNDQwQTAuNCAwLjQgMCAwIDEgNjY1LjEgNDM5LjZaIiBmaWxsPSIjMDZiNmQ0IiBlY21ldGFfc2VyaWVzX2luZGV4PSIxIiBlY21ldGFfZGF0YV9pbmRleD0iNiIgZWNtZXRhX3Nzcl90eXBlPSJjaGFydCIgY2xhc3M9InpyMC1jbHMtMiI+PC9wYXRoPgo8cGF0aCBkPSJNNzUzLjIgNDM5LjdMNzgzLjMgNDM5LjdBMC4zIDAuMyAwIDAgMSA3ODMuNiA0NDBMNzgzLjYgNDQwTDc1Mi45IDQ0MEEwLjMgMC4zIDAgMCAxIDc1My4yIDQzOS43WiIgZmlsbD0iIzA2YjZkNCIgZWNtZXRhX3Nlcmllc19pbmRleD0iMSIgZWNtZXRhX2RhdGFfaW5kZXg9IjciIGVjbWV0YV9zc3JfdHlwZT0iY2hhcnQiIGNsYXNzPSJ6cjAtY2xzLTIiPjwvcGF0aD4KPHBhdGggZD0iTTg0MS40IDQzOS44TDg3MS42IDQzOS44QTAuMiAwLjIgMCAwIDEgODcxLjggNDQwTDg0MS4xIDQ0MEEwLjIgMC4yIDAgMCAxIDg0MS40IDQzOS44WiIgZmlsbD0iIzA2YjZkNCIgZWNtZXRhX3Nlcmllc19pbmRleD0iMSIgZWNtZXRhX2RhdGFfaW5kZXg9IjgiIGVjbWV0YV9zc3JfdHlwZT0iY2hhcnQiIGNsYXNzPSJ6cjAtY2xzLTIiPjwvcGF0aD4KPHBhdGggZD0iTTkzNC40IDM4MC42TDk1NS4xIDM4MC42QTUgNSAwIDAgMSA5NjAuMSAzODUuNkw5NjAuMSA0NDBMOTI5LjQgNDQwTDkyOS40IDM4NS42QTUgNSAwIDAgMSA5MzQuNCAzODAuNloiIGZpbGw9IiMwNmI2ZDQiIGVjbWV0YV9zZXJpZXNfaW5kZXg9IjEiIGVjbWV0YV9kYXRhX2luZGV4PSI5IiBlY21ldGFfc3NyX3R5cGU9ImNoYXJ0IiBjbGFzcz0ienIwLWNscy0yIj48L3BhdGg+CjxwYXRoIGQ9Ik0tNSAtNS41bDQyMy42IDBsMCAyNWwtNDIzLjYgMFoiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI5My4yMSA1LjUpIiBmaWxsPSJyZ2IoMCwwLDApIiBmaWxsLW9wYWNpdHk9IjAiIHN0cm9rZT0iI2I3YjliZSIgc3Ryb2tlLXdpZHRoPSIwIiBjbGFzcz0ienIwLWNscy0wIj48L3BhdGg+CjxwYXRoIGQ9Ik0zLjUgMEwyMS41IDBBMy41IDMuNSAwIDAgMSAyNSAzLjVMMjUgMTAuNUEzLjUgMy41IDAgMCAxIDIxLjUgMTRMMy41IDE0QTMuNSAzLjUgMCAwIDEgMCAxMC41TDAgMy41QTMuNSAzLjUgMCAwIDEgMy41IDBaIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyOTMuMjEgNS41KSIgZmlsbD0iIzYzNjZmMSIgZWNtZXRhX3Nlcmllc19pbmRleD0iMCIgZWNtZXRhX2RhdGFfaW5kZXg9IjAiIGVjbWV0YV9zc3JfdHlwZT0ibGVnZW5kIiBlY21ldGFfc2lsZW50PSJ0cnVlIiBjbGFzcz0ienIwLWNscy0wIj48L3BhdGg+Cjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0ic3RhcnQiIHN0eWxlPSJmb250LXNpemU6MTJweDtmb250LWZhbWlseTpzYW5zLXNlcmlmOyIgeD0iMzAiIHk9IjciIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI5My4yMSA1LjUpIiBmaWxsPSIjNTQ1NTVhIj5iYXNlX29yZGVyX2hlYWRlcl9yZXZlbnVlPC90ZXh0Pgo8cGF0aCBkPSJNMCAwbDE4NC44IDBsMCAxNGwtMTg0LjggMFoiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI5My4yMSA1LjUpIiBmaWxsPSJub25lIiBwb2ludGVyLWV2ZW50cz0idmlzaWJsZSIgZWNtZXRhX3Nlcmllc19pbmRleD0iMCIgZWNtZXRhX2RhdGFfaW5kZXg9IjAiIGVjbWV0YV9zc3JfdHlwZT0ibGVnZW5kIiBjbGFzcz0ienIwLWNscy0zIj48L3BhdGg+CjxwYXRoIGQ9Ik0zLjUgMEwyMS41IDBBMy41IDMuNSAwIDAgMSAyNSAzLjVMMjUgMTAuNUEzLjUgMy41IDAgMCAxIDIxLjUgMTRMMy41IDE0QTMuNSAzLjUgMCAwIDEgMCAxMC41TDAgMy41QTMuNSAzLjUgMCAwIDEgMy41IDBaIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0ODUuOTk3MSA1LjUpIiBmaWxsPSIjMDZiNmQ0IiBlY21ldGFfc2VyaWVzX2luZGV4PSIxIiBlY21ldGFfZGF0YV9pbmRleD0iMSIgZWNtZXRhX3Nzcl90eXBlPSJsZWdlbmQiIGVjbWV0YV9zaWxlbnQ9InRydWUiIGNsYXNzPSJ6cjAtY2xzLTAiPjwvcGF0aD4KPHRleHQgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIHRleHQtYW5jaG9yPSJzdGFydCIgc3R5bGU9ImZvbnQtc2l6ZToxMnB4O2ZvbnQtZmFtaWx5OnNhbnMtc2VyaWY7IiB4PSIzMCIgeT0iNyIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDg1Ljk5NzEgNS41KSIgZmlsbD0iIzU0NTU1YSI+Y29tcGFyaXNvbl9vcmRlcl9oZWFkZXJfcmV2ZW51ZTwvdGV4dD4KPHBhdGggZD0iTTAgMGwyMjAuOCAwbDAgMTRsLTIyMC44IDBaIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0ODUuOTk3MSA1LjUpIiBmaWxsPSJub25lIiBwb2ludGVyLWV2ZW50cz0idmlzaWJsZSIgZWNtZXRhX3Nlcmllc19pbmRleD0iMSIgZWNtZXRhX2RhdGFfaW5kZXg9IjEiIGVjbWV0YV9zc3JfdHlwZT0ibGVnZW5kIiBjbGFzcz0ienIwLWNscy0zIj48L3BhdGg+CjxzdHlsZSA+PCFbQ0RBVEFbCi56cjAtY2xzLTA6aG92ZXIgewpwb2ludGVyLWV2ZW50czpub25lOwp9Ci56cjAtY2xzLTE6aG92ZXIgewpjdXJzb3I6cG9pbnRlcjsKZmlsbDpyZ2JhKDEwOCwxMTIsMjU1LDEpOwp9Ci56cjAtY2xzLTI6aG92ZXIgewpjdXJzb3I6cG9pbnRlcjsKZmlsbDpyZ2JhKDYsMjAwLDIzMywxKTsKfQouenIwLWNscy0zOmhvdmVyIHsKY3Vyc29yOnBvaW50ZXI7CmZpbGw6cmdiYSgwLDAsMCwwKTsKfQoKXV0+Cgo8L3N0eWxlPgo8L3N2Zz4=" alt="各区域有效线上订单收入对比"><figcaption>各区域有效线上订单收入对比</figcaption></figure></main><footer><h2>数值依据状态</h2>
+<p>数值已匹配查询或 Python 执行记录。此状态不证明业务字段来源、公式口径或源数据本身正确。</p>
+<blockquote>
+<p>部分来源未设置复用时长，不能据此认定为最新数据。<br>时效状态记录回答发布时的检查结果，不代表下载或阅读时仍有效。</p>
+</blockquote>
+<p>图表为导出时的静态快照；交互图表和完整 CSV 保留在原对话。技术依据可从原回答单独下载，不在正文中重复展开。</p><p>分析记录：01a182d7-fa35-7182-9d1d-3b5967120c0b</p></footer></body></html>

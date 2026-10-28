@@ -17,7 +17,8 @@ from mcp_server import TOOLS, knowledge_tool, KNOWLEDGE_RESULT_MAX_CHARS
 
 class DatabaseExplorationToolTests(unittest.TestCase):
     def setUp(self):
-        self.gateway = Mock(spec=['require'])
+        self.gateway = Mock(spec=['require','learning'])
+        self.gateway.learning.record_read.return_value={'sourceId':'source-a','token':'explicit-boundary-fixture'}
         self.gateway.require.return_value = {'id': 'source-a', 'version': 3}
         self.knowledge = Mock(spec=['state', 'scan', 'catalog', 'context', 'propose'])
         self.knowledge.state.return_value = {'sourceId': 'source-a', 'sourceVersion': 3, 'revision': 7, 'snapshot': {'id': 'snapshot-a', 'sourceVersion': 3}, 'stale': False}
@@ -74,7 +75,8 @@ class DatabaseExplorationToolTests(unittest.TestCase):
 
     def test_context_read_does_not_explore_or_propose(self):
         result = self.call('read_database_context', table='orders', offset=0, limit=5)
-        self.assertEqual(result, self.knowledge.context.return_value)
+        self.assertEqual({k:v for k,v in result.items() if k!='knowledgeReceipt'}, self.knowledge.context.return_value)
+        self.gateway.learning.record_read.assert_called_once()
         self.knowledge.context.assert_called_once_with('source-a', table='orders', offset=0, limit=5)
         self.knowledge.scan.assert_not_called()
         self.knowledge.catalog.assert_not_called()

@@ -18,6 +18,12 @@ from data_freshness import receipt,acquisitions,check_freshness
 
 class Gateway:
     def __init__(self,directory=None,cancellation=None,thread_id=None,turn_id=None,parent_thread_id=None):self.turn_id=turn_id;self.parent_thread_id=parent_thread_id;self.thread_id=thread_id;self.cancel=cancellation or Cancellation();self.store=Store(directory);self.snapshots=Snapshots(self.store.directory,self.cancel)
+    @property
+    def learning(self):
+        if not hasattr(self, '_learning'):
+            from learning import Learning
+            self._learning = Learning(self)
+        return self._learning
     def probe(self,record):
         adapter=None
         try:
@@ -73,13 +79,14 @@ class Gateway:
                 if name in referenced and self.probe(other)['status']!='connected':raise DatabaseError('跨库查询所需的数据库已断开连接。')
             scope=[record,*[other for other in scope[1:] if (other['schema'] if other['engine']=='postgresql' else other['database']) in referenced]]
         else:queries=[query]
+        knowledge_stamps=[self.learning.before_query(dependency['id']) for dependency in scope]
         started=time.monotonic();adapter=None;results=[]
         try:
             adapter=connect(record,self.cancel)
             for statement in queries:
                 if time.monotonic()-started>20:raise DatabaseError('批量查询耗时过长，请分批查询。')
                 self.cancel.check()
-                with self.cancel.watch(adapter.cancel):value=self.snapshots.write({'connectionId':identifier,'connectionName':record['name'],'engine':record['engine'],'connectionVersion':record['version'],'connectionDependencies':[{'id':dependency['id'],'version':dependency['version']} for dependency in scope],'query':query if len(queries)==1 else statement,'executedQuery':statement,'acquisition':[receipt('database',self.thread_id,self.turn_id,dependency['id']) for dependency in scope]},adapter.stream(statement))
+                with self.cancel.watch(adapter.cancel):value=self.snapshots.write({'connectionId':identifier,'connectionName':record['name'],'engine':record['engine'],'connectionVersion':record['version'],'connectionDependencies':[{'id':dependency['id'],'version':dependency['version']} for dependency in scope],'knowledgeDependencies':knowledge_stamps,'query':query if len(queries)==1 else statement,'executedQuery':statement,'acquisition':[receipt('database',self.thread_id,self.turn_id,dependency['id']) for dependency in scope]},adapter.stream(statement))
                 if getattr(adapter,'native_response',None):
                     raw_path=self.snapshots.path(value['resultId']).with_suffix('.raw.json');raw_path.write_text(json.dumps(adapter.native_response,ensure_ascii=False));raw_path.chmod(0o600)
                     value['nativeResponseAvailable']=True
@@ -87,6 +94,7 @@ class Gateway:
                 for dependency in scope:
                     current=self.require(dependency['id'])
                     if current['version']!=dependency['version']:raise DatabaseError('查询期间连接配置已变更，结果未返回。')
+                if self.learning.check(knowledge_stamps):raise DatabaseError('查询期间业务知识发生变化，请重新读取知识并查询；旧结果未用于回答。')
                 results.append(value)
         except Exception as error:
             self.cancel.check()
@@ -105,6 +113,7 @@ class Gateway:
         if model and len(json.dumps({'columns':page['columns'],'rows':page['rows']},ensure_ascii=False))>5000:raise DatabaseError('本页明细超过上下文单次预算。请减少行数或字段；完整结果仍保留，可在网页查看和下载。')
         return page
     def result_owner(self,metadata,checked=None):
+        if self.thread_id:self.learning.check_result(metadata)
         def connected(record):
             key=(record['id'],record['version'])
             if checked is not None and key in checked:return True
@@ -128,7 +137,7 @@ class Gateway:
         return primary
     def analyze(self,result_id,query):
         metadata=self.snapshots.metadata(result_id);self.result_owner(metadata)
-        return self.snapshots.write({key:metadata[key] for key in ('connectionId','connectionName','engine','connectionVersion','connectionDependencies') if key in metadata}|{'acquisition':acquisitions(metadata),'sourceKind':'python','sourceName':'本地快照 SQL 计算','ownerThreadId':self.thread_id or metadata.get('ownerThreadId'),'inputResultIds':[result_id],'inputSources':[{'kind':'dataset','resultId':result_id,'sha256':metadata['sha256']}],'pythonCode':'# Python Snapshots.analyze executes this read-only DuckDB query\n'+query,'query':query,'parentResultId':result_id},self.snapshots.analyze(result_id,query))
+        return self.snapshots.write({key:metadata[key] for key in ('connectionId','connectionName','engine','connectionVersion','connectionDependencies','knowledgeDependencies') if key in metadata}|{'acquisition':acquisitions(metadata),'sourceKind':'python','sourceName':'本地快照 SQL 计算','ownerThreadId':self.thread_id or metadata.get('ownerThreadId'),'inputResultIds':[result_id],'inputSources':[{'kind':'dataset','resultId':result_id,'sha256':metadata['sha256']}],'pythonCode':'# Python Snapshots.analyze executes this read-only DuckDB query\n'+query,'query':query,'parentResultId':result_id},self.snapshots.analyze(result_id,query))
     def chart(self,result_id,kind,x,ys,title=None):
         metadata=self.snapshots.metadata(result_id);self.result_owner(metadata)
         if metadata['rowCount']>20000:raise DatabaseError('完整数据已保留，但图表点数过多。请显式使用 analyze_result 对完整结果进行分组或筛选，再生成图表；不会自动抽样或丢弃明细。')

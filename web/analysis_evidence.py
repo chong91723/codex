@@ -1,4 +1,5 @@
 """Versioned answer evidence, independent of model reasoning or Codex internals."""
+import sqlite3
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -21,7 +22,7 @@ NUMBER_PREFIX = re.compile(r'(?:一共|总共|共有|共计|总计|合计|数量
 ENGLISH_NUMBER = re.compile(r'\b(?:zero|nought|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion|trillion|half|quarter|once|twice)\b',re.I|re.ASCII)
 
 def has_number(text):
-    for phrase in ('千位分隔符','一致','一律','统一','唯一','一并','一般','一起','一旦','一键','万一','进一步'):
+    for phrase in ('百分点','百分比','百分率','百分数','千位分隔符','一致','一律','统一','唯一','一并','一般','一起','一旦','一键','万一','进一步'):
         text = text.replace(phrase, '')
     if any(unicodedata.category(c) in ('Nd', 'Nl', 'No') for c in text) or ENGLISH_NUMBER.search(text):return True
     # Consume each numeral run once. A greedy run plus a mandatory suffix can
@@ -77,6 +78,12 @@ class Evidence:
             try:shutil.rmtree(path)
             except FileNotFoundError:pass
 
+        registry=self.root.parent/'registry.sqlite3'
+        if registry.exists():
+            with sqlite3.connect(registry,timeout=15) as database:
+                if database.execute("SELECT count(*) FROM sqlite_master WHERE name='analysis_knowledge_reads'").fetchone()[0]:
+                    database.execute('DELETE FROM analysis_knowledge_reads WHERE thread_id=?',(thread,))
+
     def observe(self, message):
         if message.get('method')=='thread/deleted':
             self.remove_thread((message.get('params') or {}).get('threadId'))
@@ -109,6 +116,9 @@ class Evidence:
             raise ValueError('回答模板为空或过长。')
         if not isinstance(references, dict) or len(references) > 400:
             raise ValueError('请提供数值或字段引用对象。')
+        prose=''.join(re.split(r'(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`]*`)',template)[::2])
+        if r'\n\n' in prose or r'\n|' in prose:
+            raise ValueError('模板含字面反斜杠换行。请在 template 字符串中使用实际换行；保留代码块与路径的真实转义，不要输出 JSON 转义后的正文。')
         names = REFERENCE.findall(template)
         skeleton = REFERENCE.sub('', template)
         if '{{' in skeleton or '}}' in skeleton or has_number(skeleton) or re.search(r'!\[[^\]]*\]\(|<(?:img|svg|iframe)\b', skeleton, re.I):

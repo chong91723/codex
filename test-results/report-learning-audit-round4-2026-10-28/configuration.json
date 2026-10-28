@@ -1,0 +1,71 @@
+{
+  "scope": "Real current web, native DeepSeek Flash, own read-only public MySQL AdventureWorks. Explicit browser actions simulate this test user. No old user threads read. Stop/continue is a new turn, not a transaction checkpoint.",
+  "sourceId": "7bd239fe3ac2287789a9845c",
+  "phase": "configuration",
+  "checks": [
+    {
+      "name": "实际MCP新增工具可见，原生保留技能可读取",
+      "passed": true,
+      "evidence": {
+        "managedToolNames": [
+          "read_knowledge_history",
+          "list_metric_rules",
+          "analyze_result",
+          "list_databases",
+          "execute_metric",
+          "create_chart",
+          "describe_result",
+          "publish_answer",
+          "propose_database_correction",
+          "query_database",
+          "explore_database",
+          "read_database_context",
+          "run_python",
+          "propose_database_knowledge",
+          "describe_database",
+          "fetch_data",
+          "read_result",
+          "import_data_file"
+        ],
+        "retainedNativeSkills": [
+          {
+            "name": "openai-docs",
+            "enabled": true,
+            "scope": "system"
+          },
+          {
+            "name": "review-agent",
+            "enabled": true,
+            "scope": "system"
+          },
+          {
+            "name": "skill-creator",
+            "enabled": true,
+            "scope": "system"
+          },
+          {
+            "name": "skill-installer",
+            "enabled": true,
+            "scope": "system"
+          }
+        ],
+        "configurationNotChanged": true,
+        "skillExecutionNotTested": true
+      }
+    },
+    {
+      "name": "重新探索相同数据库后保留已采用纠正与业务定义",
+      "passed": true,
+      "evidence": {
+        "previousSnapshot": "5ecb6e97ebf0f635c4103817cd46b246",
+        "newSnapshot": "53e175d27e080358b5729371f3e110f7",
+        "sameSchemaHash": true,
+        "userDecisionsPreserved": true
+      }
+    }
+  ],
+  "errors": [],
+  "events": [],
+  "calls": [],
+  "approvals": []
+}

@@ -896,6 +896,8 @@ def main():
     parser.add_argument('--workspace', default=str(ROOT.parent / 'workspaces' / 'default'))
     args = parser.parse_args()
     settings = Settings(args)
+    from memory_scheduler import ensure_scheduler
+    ensure_scheduler(settings.codex,Path(os.environ.get('CODEX_HOME',Path.home()/'.codex')),os.getpid())
     server = ThreadingHTTPServer((args.bind, args.port), Handler)
     server.daemon_threads = True
     server.settings = settings

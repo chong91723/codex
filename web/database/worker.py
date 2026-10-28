@@ -26,9 +26,21 @@ def main():
                 result=database_status(evidence.get('workspace'))
             elif evidence.get('action')=='verify':result=store.verify(evidence.get('threadId'),evidence.get('turnId'),evidence.get('text'),evidence.get('requireEvidence') is True)
             else:raise ValueError('未知的数值依据操作。')
+        elif request['action']=='result' and isinstance(payload.get('nativeMemory'),dict):
+            from pathlib import Path
+            sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+            from native_memory import NativeMemory
+            memory=NativeMemory(Path(__file__).resolve().parents[2]/'native/bin/codex')
+            if payload['nativeMemory'].get('operation') in ('state','context'):
+                from memory_scheduler import ensure_scheduler
+                ensure_scheduler(memory.codex,memory.home)
+            result=memory.manage(payload['nativeMemory'])
         else:
             from service import Gateway
-            if request['action']=='result' and isinstance(payload.get('databaseKnowledge'),dict):
+            if request['action']=='result' and isinstance(payload.get('learning'),dict):
+                from learning import Learning
+                result=Learning(Gateway()).manage(payload['learning'])
+            elif request['action']=='result' and isinstance(payload.get('databaseKnowledge'),dict):
                 from database_knowledge import DatabaseKnowledge
                 result=DatabaseKnowledge(Gateway()).manage(payload['databaseKnowledge'])
             elif request['action']=='result' and isinstance(payload.get('metricRules'),dict):

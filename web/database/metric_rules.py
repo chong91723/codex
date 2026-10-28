@@ -532,7 +532,7 @@ CREATE TABLE IF NOT EXISTS metric_executions (result_id TEXT PRIMARY KEY, record
                     'ownerThreadId': self.gateway.thread_id, 'parentThreadId': self.gateway.parent_thread_id,
                     'inputResultIds': [source_result['resultId']],
                     'inputSources': [{'kind': 'dataset', 'resultId': source_result['resultId'], 'sha256': source_result['sha256'], 'source': source['name']}],
-                    'connectionDependencies': source_result['connectionDependencies'], 'acquisition': source_result.get('acquisition', []),
+                    'connectionDependencies': source_result['connectionDependencies'], 'knowledgeDependencies': source_result.get('knowledgeDependencies', []), 'acquisition': source_result.get('acquisition', []),
                     'metricProof': {'ruleId': rule_id, 'version': version, 'definitionHash': record['hash']}}
         result = None
         try:

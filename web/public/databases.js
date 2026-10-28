@@ -1,6 +1,6 @@
 /* Connection management is a web extension. Agent calls use the native MCP client. */
 const databaseEngines={mysql:{name:'MySQL',port:3306,mark:'My',hint:'数据库名称，例如 sakila'},postgresql:{name:'PostgreSQL',port:5432,mark:'Pg',hint:'数据库名称'},clickhouse:{name:'ClickHouse',port:8123,mark:'Ch',hint:'数据库名称，使用 HTTP 端口'},elasticsearch:{name:'Elasticsearch',port:9200,mark:'Es',hint:'索引名称或模式，例如 sales-*'}};
-async function databaseApi(action='',payload){const response=await fetch('/api/databases'+(action?'/'+action:''),payload?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}:{});let data;try{data=await response.json();}catch{throw new Error('数据库接口尚未就绪，请检查网页服务。');}if(!response.ok)throw new Error(data.error||'数据库请求失败');return data;}
+async function databaseApi(action='',payload){const response=await fetch('/api/databases'+(action?'/'+action:''),payload?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}:{});let data;try{data=await response.json();}catch{throw new Error('数据库接口尚未就绪，请检查网页服务。');}if(!response.ok)throw new Error(data.error||'数据库请求失败');if(payload?.databaseKnowledge&&['save_business','correct','decide','reject','merge','save','scan'].includes(payload.databaseKnowledge.operation))document.dispatchEvent(new Event('analysis-knowledge-changed'));return data;}
 async function ensureDatabaseMcp(status){const before=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});const existing=before.config?.mcp_servers?.[status.mcpName];if(existing&&(existing.command!==status.mcpConfig.command||pretty(existing.args)!==pretty(status.mcpConfig.args)))throw new Error('同名 MCP 已被其他服务占用，请先在 MCP 页面调整名称。');if(existing?.enabled!==false&&existing?.command===status.mcpConfig.command&&existing?.env?.CODEX_WEB_DB_STATE===status.mcpConfig.env.CODEX_WEB_DB_STATE)return;await writeMcpConfig(status.mcpName,status.mcpConfig,before);}
 function databaseConnectionState(connection){return !connection.enabled?'已停用':{connected:'已连接',failed:'连接失败',unverified:'待验证'}[connection.status]||'待验证';}
 function databaseCardHeading(connection){
@@ -10,6 +10,7 @@ function databaseCardHeading(connection){
 async function renderDatabases(){
   const root=panelHeading('数据源','配置和管理数据库连接，查看表结构。Agent 会发现已启用、可用且获授权的数据源。','database');
   const intro=el('div','db-intro');intro.append(el('span','db-shield','✓ 永久只读'),el('p','','无需手动选择数据源。Agent 按问题使用可用连接；实际访问范围由数据库只读账号和服务端约束。'));root.append(intro);
+  if(typeof renderLearningReview==='function')await renderLearningReview(root);
   const connections=el('div');connections.id='database-connections';root.append(connections);await renderDatabaseSettings(connections);
 }
 function showDatabaseSettings(){showView('databases');}

@@ -517,6 +517,7 @@ async function openThread(id,{archived=state.archived&&state.threads.some(thread
   closeThreadMenu(false);rememberScroll();saveComposer();const generation=++state.navigationGeneration;state.hydration={threadId:id,generation,events:[]};state.historyPage=null;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
   showView('chat');$('#jump-latest').hidden=true;$('#view-chat').classList.remove('empty');$('#prompt').disabled=true;$('#welcome').hidden=true;$('#messages').replaceChildren(el('div','loading','读取原生会话…'));state.items.clear();state.live.clear();
   try {
+    if(typeof prepareAnalysisMemory==='function')await prepareAnalysisMemory();
     // Each WebSocket owns a new native process and identity guard. UI caches
     // survive reconnects, but cannot attest a thread to that new connection.
     const identity=await rpc('thread/read',{threadId:id,includeTurns:false});
@@ -708,6 +709,7 @@ async function submitPrompt(submission=null) {
     if(skills.length){const result=await rpc('skills/list',{cwds:[context.cwd],forceReload:true}),available=(result.data||[]).flatMap(group=>group.skills||[]);for(const skill of skills)if(!available.some(item=>item.path===skill.path&&item.name===skill.name&&item.enabled!==false))throw new Error('所选技能已停用或不可用：'+skill.name+'。输入已保留，请重新选择。');}
     if(planPrompt===null&&!preserveDraft&&!attachments.length&&await nativeSlashCommand(text))return;
     if(!preserveDraft&&sourceText==='/'&&!attachments.length)return showNativeMenu();
+    if(typeof prepareAnalysisMemory==='function')await prepareAnalysisMemory();
     if(typeof prepareAnalysisTools==='function')await prepareAnalysisTools();
     const thread=await ensureThread(context),running=state.activeTurns.get(thread.id);
     const result=running?await rpc('turn/steer',{threadId:thread.id,expectedTurnId:running,input}):await rpc('turn/start',{threadId:thread.id,input,model:context.model||null,effort:context.effort||null,collaborationMode,additionalContext:runtimeModelContext(thread.id,context)});
@@ -938,6 +940,7 @@ async function renderSettings(){
   settingRow(appearance,'外观','保存在当前浏览器。',button(document.documentElement.dataset.theme==='dark'?'深色':'浅色',()=>{toggleTheme();return renderSettings();}));
   settingRow(appearance,'Skills 技能','查看、配置和启停当前可用的技能。',button('管理 Skills',()=>showView('skills')));
   settingRow(appearance,'MCP 工具','添加或配置服务，管理启停及连接状态。',button('管理 MCP',()=>showView('mcp')));
+  if(typeof renderAnalysisMemorySettings==='function')await renderAnalysisMemorySettings(root,config);
   const advanced=el('details','section-card analysis-advanced-settings');advanced.id='analysis-advanced-settings';advanced.open=!!state.settingsAdvancedOpen;
   advanced.append(el('summary','','高级设置'),el('p','subtle','原生运行配置和诊断工具。当前实例的用户均可操作；折叠入口不构成权限隔离。请先了解配置影响。'));
   advanced.ontoggle=()=>{state.settingsAdvancedOpen=advanced.open;};root.append(advanced);
@@ -1077,7 +1080,7 @@ async function threadAction(action,target=null){
         if(state.thread?.id===id)resetChat();forgetThreadDraft(id);await loadThreads();toast('会话历史已永久删除，无法恢复。');
       },'永久删除');
     case'rename':return askText('重命名会话','会话名称',thread.name||'',async name=>{await perform(()=>rpc('thread/name/set',{threadId:id,name}));if(state.thread?.id===id){state.thread.name=name;$('#page-title').textContent=name;}await loadThreads();});
-    case'fork':{const result=await perform(()=>rpc('thread/fork',{threadId:id}));if(generation===state.navigationGeneration)return openThread(result.thread.id);await loadThreads();return toast('分叉会话已创建，可从侧栏打开。');}
+    case'fork':{await prepareAnalysisMemory();const result=await perform(()=>rpc('thread/fork',{threadId:id,config:threadRuntimeConfig(state.threadSettings.get(id)?.modelProvider||state.runtimeDefaults?.model_provider)}));if(generation===state.navigationGeneration)return openThread(result.thread.id);await loadThreads();return toast('分叉会话已创建，可从侧栏打开。');}
     case'compact':await perform(()=>rpc('thread/compact/start',{threadId:id}));return toast('已请求原生上下文压缩');
     case'review':await perform(()=>rpc('review/start',{threadId:id,target:{type:'uncommittedChanges'}}));return;
     case'revert':return rollbackThread(id);

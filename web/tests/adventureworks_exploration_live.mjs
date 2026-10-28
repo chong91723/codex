@@ -22,7 +22,7 @@ try{
  await page.waitForFunction(()=>document.querySelector('.exploration-job-status')?.textContent==='探索完成，已可用于对话分析',null,{timeout:150000});
  const stateBefore=await knowledge({operation:'state'});assert.equal(stateBefore.snapshot.tableCount,70);
  await dialog.screenshot({path:out+'/baseline-preparation.png'});await dialog.getByRole('button',{name:'关闭数据库探索',exact:true}).click();await dialog.waitFor({state:'detached'});
- const created=await rpc('thread/start',{cwd:await page.evaluate(()=>state.status.workspace),model:'deepseek-flash',config:{model_provider:'deepseek','tools.update_plan.enabled':true}});threadId=created.thread.id;
+ const created=await rpc('thread/start',{cwd:await page.evaluate(()=>state.status.workspace),model:'deepseek-flash',config:{features:{memories:false},model_provider:'deepseek','tools.update_plan.enabled':true}});threadId=created.thread.id;
  await page.evaluate(v=>{resetChat();state.threadSettings.set(v.thread.id,{model:v.model,modelProvider:v.modelProvider,collaborationMode:v.collaborationMode,approvalPolicy:v.approvalPolicy,sandboxPolicy:v.sandbox,effort:v.reasoningEffort});adoptThread(v.thread);showView('chat');$('#model').value='deepseek-flash';$('#effort').value='low';},created);
  await page.locator('#prompt').fill('请把我当作刚接触陌生数据库的分析师。只使用独立数据源 '+sourceId+'，先读取已保存探索资料、业务补充。调查 salesorderheader、salesorderdetail、product、productsubcategory、productcategory、customer、salesterritory 的结构和关联，向我提出最可能导致重复汇总、无效订单混入、错误收入定义的风险，生成待我确认的业务候选，不做经营汇总，不执行全库扫描，不写数据库。不要重新采集结构。使用已有 MCP 工具。只作前置探索，不生成分析执行计划。最终用不含具体数值的文字总结哪些还需要我的定义。');await page.locator('#send').click();
  let terminal;const end=Date.now()+420000;

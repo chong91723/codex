@@ -93,6 +93,18 @@ class EvidenceTests(unittest.TestCase):
             with self.subTest(template=template),self.assertRaisesRegex(ValueError,'未引用'):
                 self.tools.publish(template,{})
 
+    def test_percentage_units_and_literal_escaped_paragraphs(self):
+        from mcp_server import tool_result
+        result=self.compute();refs={'v':self.ref(result)}
+        published=self.tools.publish('变化 {{v}} 个百分点，使用百分比。',refs)
+        response=tool_result('publish_answer',published)
+        self.assertEqual(published['text'],response['content'][0]['text'])
+        self.assertEqual(published['answerId'],response['structuredContent']['answerId'])
+        self.assertEqual('verified',self.evidence.verify('thread-A','turn-A',published['text'])['status'])
+        with self.assertRaisesRegex(ValueError,'实际换行'):self.tools.publish(r'结果 {{v}}\n\n说明',refs)
+        code=self.tools.publish('值 {{v}}；代码 `text="\\n\\n"`',refs)
+        self.assertIn(r'\n\n',code['text'])
+
     def test_table_shape_rejected_before_publishing_and_corrected_text_still_verifies(self):
         result=self.compute();reference={'v':self.ref(result)}
         bad='| 类别 | 金额 | 来源 |\n|---|---|\n| 合计 | {{v}} | Python |'

@@ -617,6 +617,7 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
             warnings.append('同一对象与主题存在不同内容，相关知识暂停采用，须由用户明确选择、拒绝或合并。')
         return {'sourceId': source_id, 'sourceVersion': state['sourceVersion'], 'revision': state['revision'], 'snapshot': state['snapshot'],
                 'businessContextRevision': business['revision'],
+                'requiredBusinessContext': {'content':business['content'],'revision':business['revision'],'origin':'user','decision':'savedByUser'} if business.get('content') and not business['stale'] and self._business_key() not in blocked_keys else None,
                 'notes': accepted[offset:offset + limit], 'total': len(accepted), 'offset': offset, 'limit': limit, 'hasMore': offset + limit < len(accepted),
                 'blockedConflicts': blocked, 'conflictsTotal': len(conflicts), 'conflictsHasMore': offset + limit < len(conflicts),
                 'warnings': warnings, 'requiresScan': state['snapshot'] is None or state['stale'],

@@ -18,7 +18,7 @@ async function removeAnalysisThreadEvidence(threadId){
 const analysisChineseDigits='零〇一二三四五六七八九十百千万亿兆两兩壹贰貳叁參肆伍陆陸柒捌玖拾佰仟萬億',analysisChineseNumber=new RegExp('[负負'+analysisChineseDigits+']+','gu');
 const analysisNumberUnit=/^(?:个|條|条|笔|天|日|月|年|元|圆|圓|角|分|倍|成|位|次|项|组|类|种|页|行|列|份|点|步|轮|名|户|家|只|支|股|吨|克|米|秒|%|％)/u,analysisNumberPrefix=/(?:一共|总共|共有|共计|总计|合计|数量|总额|金额|平均值|平均额|结果|答案|记录数|最大值|最小值|等于|达到|为|是|：|:)\s*$/u;
 function analysisHasNumbers(text){
-  for(const phrase of ['千位分隔符','一致','一律','统一','唯一','一并','一般','一起','一旦','一键','万一','进一步'])text=text.replaceAll(phrase,'');
+  for(const phrase of ['百分点','百分比','百分率','百分数','千位分隔符','一致','一律','统一','唯一','一并','一般','一起','一旦','一键','万一','进一步'])text=text.replaceAll(phrase,'');
   if(/\p{N}/u.test(text)||/(?<![A-Za-z_])(?:zero|nought|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion|trillion|half|quarter|once|twice)(?![A-Za-z_])/i.test(text))return true;
   const boundary='，。；：、（）()';
   for(const match of text.matchAll(analysisChineseNumber)){
@@ -33,15 +33,19 @@ function analysisHasNumbers(text){
 function analysisEvidenceInstructions(){return 'Numerical evidence policy numeric-evidence-v1: Every number you state (amount, count, date, percentage, change, prediction, numeric identifier) must come from an actual database query or Python execution. Never calculate mentally, invent, or transcribe numbers into narrative. Use run_python for calculations and date parameters. To present a numerical answer or plan, call publish_answer with a prose template using {{name}} for every numeric/date/identifier value and references mapping names to {result_id,row,column}. For Markdown tables, header, delimiter and body rows must have matching column counts; include a delimiter cell for each header. Output the returned text EXACTLY; adding dates, numbered list markers, numeric URLs or changing wording requires publishing again. Use qualitative titles without numbers for run_python and charts. If a chart title needs numbers, publish that title first with actual field references. Do not embed plot images in prose. ECharts create_chart is the ONLY visualization path. Do not install or use Matplotlib, Plotly, seaborn or other plotting libraries. Python is only for fetching/parsing/cleaning/computation, with preinstalled NumPy/pandas/Decimal; its isolated runner has no network. For external sources use fetch_data (its description lists allowed origins) or import_data_file, then run_python documents. Do not use shell commands to fetch analysis data, probe runtimes, or install packages; do not query an unrelated database with SELECT literals/UNION to manufacture result IDs. Data from APIs, files or Python results can be charted directly by result ID without any database. Only discover database schemas for actual database questions. Commentary must remain qualitative: do not repeat user-provided numeric precision, dates, ranges or counts before publication, including Chinese expressions such as 三位小数. Before execution, plans contain intended operations rather than observed statistics. Avoid quantified phrases such as 两个年度, 一个订单 or 一对多 in unexecuted plans: use 比较期与基期, 订单头粒度 and 连接放大风险. Before returning ANY final proposed plan, call publish_answer with the COMPLETE plan body as template and empty references if qualitative. Fix all validation errors in the SAME native turn; use run_python for necessary numerical parameters and reference them. This validates the proposal text and does not approve or execute the analysis. Copy the returned text exactly inside the proposed_plan block; never add headings or numbering afterwards. Plans before execution should describe rules qualitatively, with unnumbered bullets: say 字段唯一 instead of 一个字段, and avoid restating numerical amounts, dates, counts, thresholds, numbered headings or numeric paths. If a numerical threshold must appear in a plan, materialize it through Python and publish the complete plan with field references first. In publish_answer templates, precision/count words also require references, for example 保留{{precision}}位小数. Python result must be a flat table: all rows have the same columns and cells are scalar; do not nest dictionaries or lists. Use separate calculations for detail and summary, or repeat scalar summary fields alongside chart rows. Data reuse limits are set by the user for each database source and enforced by the analysis tools. Re-reading or recalculating a cached result does not refresh its source acquisition time. A source with no configured reuse limit is not certified current; query the source again for latest/current questions. For business metrics, first list_metric_rules and select an applicable user-confirmed rule and parameters. Use execute_metric for that governed calculation; the tool records actual derivation and enforces the configured formula, units and data quality. Never self-confirm a rule. If no applicable rule exists, propose a candidate definition and continue exploratory analysis only with its limitation made clear. Free SQL/Python outputs do not inherit metric proof from their inputs. Publication always matches numbers to execution records; only metric-annotated fields additionally have versioned rule execution evidence. Never describe an arbitrary paragraph as business-correct: a metric value must retain its actual metric name, unit and scope. Scope/definition correctness still needs the business owner. Never claim business correctness verified just because publish_answer succeeds. A refused publication is an error to fix using the same native tool workflow, not permission to output unverified figures.';}
 async function prepareAnalysisTools(){
   let status=await databaseApi();if(!status.ready)return;
-  if(!status.mcpConfig?.env?.CODEX_WEB_ANALYSIS_ROOTS)status=await databaseApi('result',{analysisEvidence:{action:'configuration',workspace:state.status?.workspace||state.selectedCwd}});
+  if(status.learningVersion!=='knowledge-receipts-v3'||!status.mcpConfig?.env?.CODEX_WEB_ANALYSIS_ROOTS)status=await databaseApi('result',{analysisEvidence:{action:'configuration',workspace:state.status?.workspace||state.selectedCwd}});
   const current=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd}),existing=current.config?.mcp_servers?.[status.mcpName];
   // Only migrate missing settings of our managed extension, preserving user overrides.
   if(existing){
     if(existing.enabled===false||existing.command!==status.mcpConfig.command||JSON.stringify(existing.args)!==JSON.stringify(status.mcpConfig.args))return;
     const missing=Object.fromEntries(Object.entries(status.mcpConfig.env||{}).filter(([name])=>!Object.hasOwn(existing.env||{},name)));
+    if(existing.env?.CODEX_WEB_MEMORY_HOME&&existing.env.CODEX_WEB_MEMORY_HOME!==status.mcpConfig.env?.CODEX_WEB_MEMORY_HOME)throw new Error('内置分析 MCP 的记忆目录与当前配置空间不一致，请在 MCP 设置核对；不会读取其他配置空间的记忆。');
+    const contract=status.mcpConfig.env?.CODEX_WEB_ANALYSIS_CONTRACT;if(contract&&existing.env?.CODEX_WEB_ANALYSIS_CONTRACT!==contract)missing.CODEX_WEB_ANALYSIS_CONTRACT=contract;
     if(!Object.keys(missing).length)return;
+    if(state.activeTurns?.size)throw new Error('数据工具需要更新，当前仍有分析正在执行。请待任务结束后重试，输入已保留；不会中断执行中的工具。');
     await writeMcpConfig(status.mcpName,{...existing,env:{...existing.env,...missing}},current);return;
   }
+  if(state.activeTurns?.size)throw new Error('当前有分析正在执行，请结束后再初始化分析工具；输入已保留。');
   await writeMcpConfig(status.mcpName,status.mcpConfig,current);
 }
 function renderGroundedAnalysisItem(item,done,turnId){
@@ -50,6 +54,7 @@ function renderGroundedAnalysisItem(item,done,turnId){
   if(!numeric&&!image)return null;
   const root=el('div','message agent analysis-evidence-answer'),status=el('p','analysis-evidence-status','正在核验回答中的数值依据…');status.setAttribute('role','status');root.append(status);root.dataset.analysisVerification='pending';
   if(!done&&!state.renderingHistory){status.textContent='正在生成回答，数值依据将在内容完成后核验。';return root;}
+  const restored=!!state.renderingHistory||!!state.threadLoading;
   const threadId=state.thread?.id,generation=state.navigationGeneration,targetTurn=turnId||state.items.get(item.id)?.turnId||state.activeTurns.get(threadId)||'',key=JSON.stringify([threadId,targetTurn,item.id,text]);
   const active=()=>root.isConnected&&state.thread?.id===threadId&&state.navigationGeneration===generation;
   async function verify(retry=false){
@@ -59,7 +64,7 @@ function renderGroundedAnalysisItem(item,done,turnId){
       const result=await analysisEvidenceRequests.get(key);if(!active())return;
       if(['verified','notRequired','legacy'].includes(result.status)){
         root.dataset.analysisVerification=result.status;root.analysisEvidence=result;
-        const content=renderItem({...item,_analysisVerified:true},done,targetTurn);content.classList.remove('message');root.replaceChildren(content);
+        const content=renderItem({...item,_analysisVerified:true,_reportRestored:restored},done,targetTurn);content.classList.remove('message');root.replaceChildren(content);
         if(result.status==='legacy')root.prepend(el('p','subtle analysis-evidence-legacy','历史回答：未按当前数值规则核验。'));
         if(result.status==='verified'){
           const evidence=el('details','analysis-number-evidence');evidence.append(el('summary','','数值依据：已匹配查询或 Python 执行记录'),el('pre','',pretty({publicationChecks:result.publicationChecks,values:result.evidence,sources:result.sources})));root.append(evidence);
@@ -74,7 +79,7 @@ function renderGroundedAnalysisItem(item,done,turnId){
           if(checks?.version!=='analysis-publication-v2')root.prepend(el('p','subtle analysis-evidence-policy','旧规则记录：未应用当前数据源时效检查。'));
           else if(checks.freshness?.some(source=>source.status==='notConfigured'))evidence.prepend(el('p','subtle','部分来源未设置复用时长，不能据此认定为最新数据。'));
         }
-        refreshAnalysisDownloads();return;
+        refreshAnalysisDownloads();if(typeof refreshReportKnowledge==='function')queueMicrotask(()=>{const entry=state.items.get(item.id);if(entry)refreshReportKnowledge(entry);});return;
       }
       reject(result.reason||'数值依据核验未通过。');
     }catch(error){if(active()){analysisEvidenceRequests.delete(key);reject('数值依据核验失败：'+nativeErrorMessage(error));}}

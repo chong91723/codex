@@ -94,7 +94,14 @@ function goalUsageText(usage){return usage.observedTokens===null?'本会话消�
 function goalUsageWarning(usage,goal){const warnings=[];if(usage.nativeTokens===0)warnings.push('原生目标计数 0 不代表没有模型消耗。');if(usage.observedTokens!==null&&usage.nativeTokens!==null&&usage.nativeTokens<usage.observedTokens)warnings.push('原生预算计数低于本会话观测，可能尚未更新或存在首回合漏计；剩余预算可能高估。');if(!usage.complete)warnings.push('缺少目标开始时的完整基线，网页观测仅是下界。');if(goal.tokenBudget)warnings.push('预算由原生计数控制，不能作为严格费用上限。');if(usage.storageError)warnings.push(usage.storageError);if(usage.counterError)warnings.push(usage.counterError);return warnings.join(' ');}
 function renderGoalUsageDetails(root,threadId,goal){const usage=goalUsageSnapshot(threadId,goal),details=el('div','context-stats');details.dataset.goalUsage='details';for(const [title,value]of [[usage.complete?'本会话观测消耗':'本会话已确认消耗下界',usage.observedTokens===null?'未完整观测':usage.observedTokens.toLocaleString()+' tokens'],['原生预算计数',usage.nativeTokens===null?'未知':usage.nativeTokens.toLocaleString()+' tokens'],['原生剩余预算',goal.tokenBudget&&usage.nativeTokens!==null?Math.max(0,goal.tokenBudget-usage.nativeTokens).toLocaleString()+' tokens（可能高估）':'未设置']]){const row=el('div');row.append(el('span','subtle',title),el('strong','',value));details.append(row);}root.append(details,el('p','subtle','网页观测按目标参与回合的原生累计统计差额计算：未缓存输入 + 输出；缓存输入扣除，推理输出已包含。只覆盖本会话，不含子代理独立消耗和服务计价；未知历史不会按 0 补齐。原生预算计数保持原样。'));const warning=goalUsageWarning(usage,goal);if(warning){const node=el('p','subtle',warning);node.dataset.goalUsageWarning='true';root.append(node);}}
 
-function threadRuntimeConfig(provider){return provider==='deepseek'?{model_auto_compact_token_limit_scope:'total',model_post_turn_compact_threshold_percent:100}:{};}
+function threadRuntimeConfig(provider){
+  const configured=state.runtimeDefaults||{},memoryConfig=Object.fromEntries(Object.entries(configured.memories||{}).filter(([,value])=>value!==null&&value!==undefined)),enabled=state.analysisUserMemory?.paused!==true&&configured.features?.memories!==false;
+  // Native startup jobs belong to the server-owned maintenance session. A
+  // browser-owned app-server must not claim a lease and die on WS disconnect.
+  // generate_memories independently preserves eligible native rollout history;
+  // the managed MCP provides native-format notes and read-only memory access.
+  return {...(provider==='deepseek'?{model_auto_compact_token_limit_scope:'total',model_post_turn_compact_threshold_percent:100}:{}),features:{memories:false},memories:{...memoryConfig,version:memoryConfig.version||'v2',use_memories:false,generate_memories:enabled,dedicated_tools:false,min_rollout_idle_hours:1,max_rollouts_per_startup:2,extract_model:'deepseek-flash',consolidation_model:'deepseek-flash'}};
+}
 function currentMode(){return state.thread?(state.nativeModes.get(state.thread.id)||state.threadSettings.get(state.thread.id)?.collaborationMode?.mode||'default'):state.draftMode;}
 function turnCollaborationMode(mode=currentMode()){
   const settings=state.threadSettings.get(state.thread?.id)||{};

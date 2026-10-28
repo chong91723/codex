@@ -57,6 +57,8 @@ def deepseek_profile(state_dir):
             'tools.update_plan.enabled = true',
             'features.image_generation = false', 'features.fast_mode = false', 'features.ultrafast_mode = false',
             'feedback.enabled = false',
+            'features.memories = true', 'memories.version = "v2"',
+            'memories.generate_memories = true', 'memories.use_memories = true', 'memories.min_rollout_idle_hours = 1',
             'memories.extract_model = "deepseek-flash"', 'memories.consolidation_model = "deepseek-flash"',
             'model_catalog_json = ' + json.dumps(str(catalog_path)),
             '[[skills.config]]', 'path = ' + json.dumps(str(state_dir/'skills'/'.system'/'imagegen'/'SKILL.md')), 'enabled = false',

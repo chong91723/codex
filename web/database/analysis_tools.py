@@ -114,7 +114,7 @@ class AnalysisTools:
         output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
         metadata = {'sourceKind':'python','sourceName':str(title)[:160], 'engine':'python', 'ownerThreadId':self.thread,'parentThreadId':self.gateway.parent_thread_id,
                     'pythonCode':code,'parameters':parameters or {},'inputSources':sources,'inputResultIds':result_ids,
-                    'connectionDependencies':list(dependencies.values()),'calculationElapsedMs':output['elapsedMs'],
+                    'connectionDependencies':list(dependencies.values()),'knowledgeDependencies':list({s['sourceId']:s for m in inputs for s in m.get('knowledgeDependencies',[])}.values()),'calculationElapsedMs':output['elapsedMs'],
                     'acquisition':merge_acquisitions(inputs) if inputs else [receipt('calculation',self.thread,self.gateway.turn_id)]}
         result = self.gateway.snapshots.write(metadata, iter([(output['columns'],output['rows'])]))
         self.remember(result)
@@ -165,25 +165,29 @@ class AnalysisTools:
                     proof['metric']['step']={key:item for key,item in selected.items() if key!='sourceRows'}
                     proof['metric']['step']['sourceRowCount']=len(selected.get('sourceRows',[]))
             return value, proof
+        # Initialize before holding the registry publication lock.
+        learning = self.gateway.learning
         def check_sources():
             for metadata in metadata_cache.values():
                 self.gateway.result_owner(metadata,checked_connections)
                 if metadata.get('metricProof') and metric_rules:
                     stamp=metadata['metricProof']
                     metric_rules.assert_current(stamp['ruleId'],stamp['version'],stamp['definitionHash'])
-            return publication_checks(list(metadata_cache.values()),self.gateway.store.get,self.thread,self.gateway.turn_id)
+            checks = publication_checks(list(metadata_cache.values()),self.gateway.store.get,self.thread,self.gateway.turn_id)
+            stamps={s['sourceId']:s for s in learning.current_reads()}
+            stamps.update({s['sourceId']:s for m in metadata_cache.values() for s in m.get('knowledgeDependencies', [])})
+            if learning.check(list(stamps.values())):raise ValueError('本轮读取的业务知识已变化，请重新读取当前定义再发布回答。')
+            checks['knowledge'] = list(stamps.values())
+            return checks
         @contextmanager
         def commit_guard():
             # References have already been read/probed. Hold the registry writer
             # lock through final rule checks and answer write so a concurrent
             # confirmation/revocation has a definite order against publication.
             with self.gateway.cancel.commit():
-                if metric_rules is None:
+                with self.gateway.store.connect() as database:
+                    database.execute('BEGIN IMMEDIATE')
                     yield
-                else:
-                    with self.gateway.store.connect() as database:
-                        database.execute('BEGIN IMMEDIATE')
-                        yield
         record = self.evidence.publish(self.thread,template,references,resolve,self.gateway.turn_id,check_sources,commit_guard)
         return {'answerId':record['answerId'],'text':record['text'],'verifiedValues':len(record['evidence']),'publicationChecks':record['publicationChecks'],
-                'instruction':'将 text 原样作为本次最终回答。不要自行改数字、加日期、列表数字或附加带数字的来源链接；修改文案后需重新 publish_answer。'}
+                'instruction':'本轮工作已完成。逐字复制 MCP 正文（与 text 相同）作为最终回答，不要润色、改连接语或拼接其他发布片段。不要自行改数字、加日期、列表数字或附加带数字的来源链接；修改文案后需重新 publish_answer。'}

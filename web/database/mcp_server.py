@@ -28,7 +28,7 @@ TOOLS.extend([
  {'name':'fetch_data','description':'从用户允许的 API origin 获取真实 JSON/CSV/文本原始文档，不访问业务数据库。返回 documentId；用 run_python 的 document_ids 解析完整数据。默认支持配置的国内行情入口，禁止自行切换未配置来源。当前允许的 origin：'+os.environ.get('CODEX_WEB_DATA_ORIGINS',DEFAULT_ORIGINS), 'inputSchema':schema({'url':{'type':'string'},'format':{'type':'string','enum':['json','csv','text']}},['url'])},
  {'name':'import_data_file','description':'读取用户配置分析目录中的 CSV/JSON/文本文件，返回 documentId，供 run_python 使用；不执行文件内容，不读取目录外文件。','inputSchema':schema({'path':{'type':'string'},'format':{'type':'string','enum':['json','csv','text']}},['path'])},
  {'name':'run_python','description':'在预装 NumPy/pandas/Decimal 的无网络隔离 Python 中计算，不安装包，不使用任何绘图库。datasets[resultId] 为完整记录列表，documents[documentId] 为完整 JSON 对象/CSV记录/文本，parameters为显式参数。设置 result 为平铺记录列表或 DataFrame；每行字段必须一致，单元格必须为标量，不接受嵌套列表/字典。明细与摘要可分两次计算，或将标量摘要重复到各明细行。空结果另设 columns 为字段名列表。返回真实 resultId，可用 read_result/publish_answer/create_chart。所有新计算、比率、日期推导与预测值必须实际执行，禁止模型心算。绘图只能使用 ECharts create_chart。计算标题不要包含数字；图表标题含数字时须先用 publish_answer 发布该标题。','inputSchema':schema({'code':{'type':'string'},'result_ids':{'type':'array','items':{'type':'string'}},'document_ids':{'type':'array','items':{'type':'string'}},'parameters':{'type':'object'},'title':{'type':'string'}},['code'])},
- {'name':'publish_answer','description':'发布带数值依据的最终回答。template中的每个数值/日期/编号/百分比及精度（如三位小数的三）使用 {{变量名}}，references按变量名映射 {result_id,row,column}（row从零开始）。只允许当前会话实际查询/读取或 Python 计算结果的字段；不允许模板裸写数字、心算、手抄或无依据预测。Markdown 表格必须让表头、分隔行和各数据行列数一致。数据源时效由用户在数据源页面设置，工具不能绕过；超过复用时长需重新查询，旧快照再计算不算重新读取。未设置时效规则不代表数据最新，用户询问最新状态时应重新查询。仅证明与执行记录匹配，不证明业务口径。返回 text 后原样作为最终回答；改动文案需重新发布。来源说明请用无数字文字，数据来源与计算代码自动留存。','inputSchema':schema({'template':{'type':'string'},'references':{'type':'object','additionalProperties':{'type':'object','properties':{'result_id':{'type':'string'},'row':{'type':'integer','minimum':0},'column':{'type':'string'}},'required':['result_id','row','column'],'additionalProperties':False}}},['template','references'])}
+ {'name':'publish_answer','description':'发布带数值依据的最终回答。template中的每个数值/日期/编号/百分比及精度（如三位小数的三）使用 {{变量名}}，references按变量名映射 {result_id,row,column}（row从零开始）。只允许当前会话实际查询/读取或 Python 计算结果的字段；不允许模板裸写数字、心算、手抄或无依据预测。Markdown 表格必须让表头、分隔行和各数据行列数一致。数据源时效由用户在数据源页面设置，工具不能绕过；超过复用时长需重新查询，旧快照再计算不算重新读取。未设置时效规则不代表数据最新，用户询问最新状态时应重新查询。仅证明与执行记录匹配，不证明业务口径。返回的正文已经完整成稿，必须逐字复制为最终回答；不要再次生成、改写连接语或合并多个已发布片段。模板需使用实际换行而非字面反斜杠n；改动任何文案都必须重新发布。来源说明请用无数字文字，数据来源与计算代码自动留存。','inputSchema':schema({'template':{'type':'string'},'references':{'type':'object','additionalProperties':{'type':'object','properties':{'result_id':{'type':'string'},'row':{'type':'integer','minimum':0},'column':{'type':'string'}},'required':['result_id','row','column'],'additionalProperties':False}}},['template','references'])}
 ])
 TOOLS.extend([
  {'name':'list_metric_rules','description':'读取用户在数据源页面确认且当前有效的指标口径及字段映射。分析业务指标时先查适用口径，按用户问题选择规则、参数和分析步骤。此工具不能创建、修改或确认口径；没有适用规则可继续普通分析，但不可宣称口径或推导已验证。','inputSchema':schema({'source_id':{'type':'string'}},[])},
@@ -52,18 +52,34 @@ TOOLS.append({'name':'propose_database_correction',
      'content':{'type':'string','minLength':1,'maxLength':8000}},['connection_id','snapshot_id','reference','content']),
  'annotations':dict(ANNOTATIONS,readOnlyHint=False)})
 
+TOOLS.append({'name':'read_knowledge_history',
+ 'description':'当用户问为什么定义/分析结论变化时，按页读取数据源纠错、采用/拒绝决定与理由，包含原文、修订和时间。历史是解释依据，不能把被拒绝或替代的内容当作当前事实；使用 read_database_context 获取当前有效定义。不能通过本工具作出批准。',
+ 'inputSchema':schema({'connection_id':ID,'offset':{'type':'integer','minimum':0},'limit':{'type':'integer','minimum':1,'maximum':20}},['connection_id']),
+ 'annotations':dict(ANNOTATIONS)})
+
+TOOLS.extend([
+ {'name':'search_analysis_memory','description':'按关键词搜索当前配置空间内的即时偏好笔记、原生生成文件和已提取的任务摘要，含尚未合并进全局摘要的记录。按需检索，不打印整个历史；结果是历史线索，不是当前业务事实、权限或数值证据。业务纠错原因优先 read_knowledge_history，当前定义用 read_database_context。','inputSchema':schema({'query':{'type':'string','maxLength':200},'offset':{'type':'integer','minimum':0,'maximum':10000},'limit':{'type':'integer','minimum':1,'maximum':20}},[]),'annotations':dict(ANNOTATIONS,openWorldHint=False)},
+ {'name':'read_analysis_memory','description':'分段读取 search_analysis_memory 返回的原生资料。文件传 path，任务摘要传 thread_id 和 version。后续段使用首段 sha256 作为 expected_hash，防止拼接不同版本。历史记录只用于理解过去；不能复用为当前业务数值或覆盖已裁定知识。暂停记忆时不能读取。','inputSchema':schema({'thread_id':{'type':'string'},'path':{'type':'string'},'version':{'type':'string','enum':['v1','v2']},'offset':{'type':'integer','minimum':0,'maximum':1000000},'limit':{'type':'integer','minimum':1,'maximum':8000},'expected_hash':{'type':'string'}},[]),'annotations':dict(ANNOTATIONS,openWorldHint=False)},
+ {'name':'record_analysis_memory','description':'自动保留用户明确的长期偏好或纠正经验，必须提供用户来源。写入当前配置空间的原生 ad_hoc 笔记格式，下一任务即可读取，不等历史摘要合并。不得保存密钥、数据明细、一次性要求，不得代替业务定义审批或当前数值证据。后台总结仍由原生 Codex 完成。','inputSchema':schema({'content':{'type':'string','minLength':1,'maxLength':4000},'provenance':{'type':'string','minLength':1,'maxLength':500}},['content','provenance']),'annotations':dict(ANNOTATIONS,readOnlyHint=False,idempotentHint=False,openWorldHint=False)}
+])
+
 KNOWLEDGE_RESULT_MAX_CHARS=16000
 
-def knowledge_result(value):
+def knowledge_result(value,extra_budget=0):
     # The storage and management API retain complete records. Model pages have
     # a separate explicit budget; never trim accepted prose or physical fields.
-    if len(json.dumps(value,ensure_ascii=False))>KNOWLEDGE_RESULT_MAX_CHARS:
+    if len(json.dumps(value,ensure_ascii=False))>KNOWLEDGE_RESULT_MAX_CHARS+extra_budget:
         raise ValueError('本页数据库探索资料超过单次上下文预算；未返回截断内容。请缩小 limit 或按 table/search 读取相关对象；若单个对象仍超限，请用户在数据库探索页面查看完整资料。')
     return value
 
 def knowledge_context(value):
     fields=('id','target','aspect','content','origin','sourceVersion','schemaHash','snapshotId','decision','reason','correctionOf','businessRevision')
     notes=[{key:note[key] for key in fields if key in note} for note in value.get('notes',[])]
+    required=value.get('requiredBusinessContext')
+    if required:
+        for note in notes:
+            if note.get('aspect')=='business_context' and note.get('businessRevision')==required['revision']:
+                note.pop('content',None);note['contentRef']='requiredBusinessContext'
     blocked=[]
     for conflict in value.get('blockedConflicts',[]):
         candidates=conflict.get('candidates',[])
@@ -78,10 +94,14 @@ def knowledge_context(value):
             'candidateIdsTruncated':len(identifiers)>10,'previews':previews,'preview':True,
             'truncated':len(candidates)>3 or len(identifiers)>10 or any(item['truncated'] for item in previews),
             'resolution':'候选仅作冲突预览，不能作为事实。请用户在数据源 → 数据库探索页面查看全部原文并选择、拒绝或合并。'})
-    return knowledge_result(dict(value,notes=notes,blockedConflicts=blocked))
+    return knowledge_result(dict(value,notes=notes,blockedConflicts=blocked),len(required['content']) if required else 0)
 
 def knowledge_tool(gateway,name,args):
     from database_knowledge import DatabaseKnowledge,shape
+    if name=='read_knowledge_history':
+        shape(args,('connection_id',),('offset','limit'))
+        gateway.require(args['connection_id'])
+        return knowledge_result(gateway.learning.history(args['connection_id'],args.get('offset',0),args.get('limit',10)))
     required=('connection_id','snapshot_id','items') if name=='propose_database_knowledge' else ('connection_id','snapshot_id','reference','content') if name=='propose_database_correction' else ('connection_id',)
     optional=() if name in ('propose_database_knowledge','propose_database_correction') else ('table','search','offset','limit')
     shape(args,required,optional)
@@ -97,11 +117,31 @@ def knowledge_tool(gateway,name,args):
                                  'conflictsTotal':len(value['conflicts']),
                                  'message':'修订已登记，尚未批准。请用户打开数据源 → 数据库探索 → 待处理冲突，对照原文与修订内容作出决定。' if pending else '未重新打开审批；请尊重已有决定。'})
     page={key:args[key] for key in ('table','search','offset','limit') if key in args}
-    if name=='read_database_context':return knowledge_context(knowledge.context(source_id,**page))
+    if name=='read_database_context':
+        value=knowledge_context(knowledge.context(source_id,**page))
+        value['knowledgeReceipt']=gateway.learning.record_read(source_id,value)
+        return value
     current=knowledge.state(source_id)
     if not current['snapshot'] or current['stale']:
         return {'sourceId':source_id,'requiresPreparation':True,'reason':'connection_changed' if current['stale'] else 'not_prepared','message':'此数据源尚未准备或连接已变化。请用户在数据源 → 数据库探索中主动采集实际结构；日常分析不能自动启动完整探索。原有按表结构查询与只读分析仍可使用。'}
     return knowledge_result(knowledge.catalog(source_id,**page))
+
+def memory_tool(name,args):
+    from native_memory import NativeMemory
+    from pathlib import Path
+    home=os.environ.get('CODEX_WEB_MEMORY_HOME')
+    if not home:raise ValueError('分析 MCP 尚未绑定当前记忆配置空间，请重新加载项目内置分析 MCP；不会回退到其他用户的记忆目录。')
+    memory=NativeMemory(Path(__file__).resolve().parents[2]/'native/bin/codex',home)
+    if name=='search_analysis_memory':return knowledge_result(memory.search(args.get('query',''),args.get('offset',0),args.get('limit',5)))
+    if name=='record_analysis_memory':return memory.record_note(args['content'],args['provenance'])
+    return knowledge_result(memory.read_entry(args))
+
+def tool_result(name,data):
+    # Human-readable report text is a real MCP content block, not buried in a
+    # JSON string that encourages the model to decode/rephrase it. Proof and
+    # machine consumers still receive the unchanged structured publication.
+    body=data['text'] if name=='publish_answer' else json.dumps(data,ensure_ascii=False)
+    return {'content':[{'type':'text','text':body}],'structuredContent':data,'isError':False}
 
 def main():
     lock=threading.Lock();pending_lock=threading.Lock();pending={};pool=ThreadPoolExecutor(max_workers=4)
@@ -129,7 +169,7 @@ def main():
                     from metric_rules import MetricRules
                     rules=MetricRules(gateway)
                     data=rules.available(args.get('source_id')) if name=='list_metric_rules' else gateway.manifest(rules.execute(args['rule_id'],args['version'],args['parameters']))
-                elif name in ('explore_database','read_database_context','propose_database_knowledge','propose_database_correction'):data=knowledge_tool(gateway,name,args)
+                elif name in ('explore_database','read_database_context','propose_database_knowledge','propose_database_correction','read_knowledge_history'):data=knowledge_tool(gateway,name,args)
                 elif name=='describe_database':data=gateway.schema(args['connection_id'],args.get('table'))
                 elif name=='query_database':
                     value=gateway.query(args['connection_id'],args['query']);data={'results':[gateway.manifest(v) for v in value['results']],'readOnly':True} if 'results' in value else gateway.manifest(value)
@@ -145,6 +185,7 @@ def main():
                     from analysis_tools import AnalysisTools,has_number
                     if args.get('title') and has_number(args['title']):AnalysisTools(gateway,gateway.thread_id).check_chart_title(args['title'])
                     data={'codexWebChart':gateway.chart(args['result_id'],args['kind'],args['x'],args['ys'],args.get('title'))}
+                elif name in ('search_analysis_memory','read_analysis_memory','record_analysis_memory'):data=memory_tool(name,args)
                 elif name in ('fetch_data','import_data_file','run_python','publish_answer'):
                     from analysis_tools import AnalysisTools
                     analysis=AnalysisTools(gateway,gateway.thread_id)
@@ -153,7 +194,7 @@ def main():
                     elif name=='run_python':data=analysis.calculate(args['code'],args.get('result_ids'),args.get('document_ids'),args.get('parameters'),args.get('title','Python 计算结果'))
                     else:data=analysis.publish(args['template'],args['references'])
                 else:raise ValueError('未知工具。')
-                result={'content':[{'type':'text','text':json.dumps(data,ensure_ascii=False)}],'structuredContent':data,'isError':False}
+                result=tool_result(name,data)
             else:respond({'jsonrpc':'2.0','id':identifier,'error':{'code':-32601,'message':'Method not found'}});return
             token.check()
             respond({'jsonrpc':'2.0','id':identifier,'result':result})
