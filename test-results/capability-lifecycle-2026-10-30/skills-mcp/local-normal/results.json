@@ -1,0 +1,56 @@
+{
+  "scope": "Actual browser and pinned native MCP lifecycle; fixture explicitly not production service",
+  "name": "lifecycle_1793336802007",
+  "results": [
+    {
+      "label": "添加本地 MCP：原生保存、重载与实际工具发现",
+      "status": "passed",
+      "evidence": {
+        "nativeConfigSaved": true,
+        "toolCount": 1,
+        "runtimeStatus": null,
+        "toolsError": null
+      }
+    },
+    {
+      "label": "编辑实际启动参数并保留高级工具配置",
+      "status": "failed",
+      "error": "Expected values to be strictly equal:\n\n'{}' !== ''\n",
+      "feedback": "MCP 已添加并启用\n×"
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793336802007\""
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793336802007\".tool_timeout_sec"
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793336802007\""
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    }
+  ],
+  "nativeErrors": [],
+  "cleanup": {
+    "ownedConfigurationRemoved": true
+  }
+}

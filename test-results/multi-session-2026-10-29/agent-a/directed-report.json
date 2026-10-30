@@ -1,0 +1,51 @@
+{
+  "tester": "A",
+  "phase": "directed",
+  "service": "http://127.0.0.1:44437",
+  "sourceId": "9f0e887b483dd2f73f189590",
+  "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+  "initialTurnId": "01a186f9-6436-7b41-be38-ec64fa497d49",
+  "browser": "独立Playwright browser.newContext；同服务、配置空间和workspace",
+  "model": "deepseek-flash",
+  "findings": [
+    {
+      "id": "A-F01",
+      "severity": "功能缺陷",
+      "title": "数据时效陈旧编辑未阻止覆盖",
+      "steps": ["A与B均打开初始空白数据时效规则", "A输入20但不提交；B输入10", "B于09:29:56Z保存10，09:30:03Z卡片确认10", "A旧窗于09:30:24Z提交20"],
+      "observed": "A未收到版本冲突，弹窗关闭，卡片变为读取后可复用20分钟。",
+      "expectedFromWorkflow": "共享资料已被他处修改时提示冲突、保留草稿并要求读取最新后重新决定。",
+      "evidence": ["10-freshness-old-draft.png", "11-freshness-stale-submit.png", "12-freshness-conflict-result.png", "events.jsonl", "../agent-b/44-freshness-saved-b.png"],
+      "reportedToRoot": true
+    },
+    {
+      "id": "A-F02",
+      "severity": "可用性",
+      "title": "原生子任务默认只显示技术调用名",
+      "observed": "父对话默认仅显示子代理spawnAgent/sendInput/wait/closeAgent，需展开长JSON读取receiver、model、状态和完成结果；没有结构化的可读分工与状态卡。",
+      "evidence": ["09-native-subagents-spawn.png", "native-collab-items.json", "native-collab-ui.json"],
+      "reportedToRoot": true
+    }
+  ],
+  "coverage": [
+    {"scenario":"用户主动首次一键探索", "observed":"09:19Z从数据源页启动，09:19:29Z完成70个对象479字段，进度可见；未重新启动探索", "evidence":["01-explore-start.png","02-explore-complete.png"]},
+    {"scenario":"实际结构与业务说明独立查阅", "observed":"搜索salesorderheader，查看27字段、主键和外键；业务知识页单独显示已采用说明", "evidence":["15-order-header-structure.png","16-adopted-business-knowledge.png"]},
+    {"scenario":"业务补充陈旧编辑", "observed":"B先存，A旧稿提交被409拒绝，提示读取最新且A草稿仍在textarea；A读最新后未覆盖B", "evidence":["04-stale-business-draft.png","events.jsonl"]},
+    {"scenario":"计划模式澄清、修改与最终批准", "observed":"/plan进入原生模式；覆盖边界调查后收到3项澄清；修改排名规则与原生子任务要求；最终确认修订正文后执行", "evidence":["07-plan-clarification.png","08-revised-plan-confirm.png","events.jsonl"]},
+    {"scenario":"新会话复用已有准备", "observed":"首次探索后新分析读取已保存快照与已采用知识，未要求再次主动采集；最终附录保留sourceVersion1/businessRevision2/knowledgeRevision3", "evidence":["17-final-report.png","events.jsonl"]},
+    {"scenario":"真实原生子代理", "observed":"2个deepseek-flash子代理真实spawn，实际sendInput修正委派笔误、2次wait、2次closeAgent；receiver与sender归属可从native JSON核对", "childIds":["01a186fc-f593-7c22-9141-19cc01b7d7b4","01a186fd-03a6-7951-a8af-7066c837ebbf"], "evidence":["native-collab-items.json","09-native-subagents-spawn.png"]},
+    {"scenario":"同时执行及B刷新/停止隔离", "observed":"A于09:24:13左右发送，B09:24:26发送独立线程；B09:25刷新期间A继续澄清；B09:33:50明确停止另一线程后A仍执行4/6且工具继续，未见B正文或审批串入A", "evidence":["14-b-stop-a-continues.png","events.jsonl"]},
+    {"scenario":"执行期间共享配置变更", "observed":"A等待子代理时B将时效空值改10，随后A陈旧改20；A任务继续，所用结果仍处复用时长内；未据此判定应当失效", "evidence":["10-freshness-old-draft.png","12-freshness-conflict-result.png","events.jsonl"]},
+    {"scenario":"查询、计算、图表与报告", "observed":"真实工具和实际步骤进度；最终6/6，出现统一数据/图表卡、字段依据说明和版本附录。中间read_result预算拒绝、run_python数据键错误及SQL错误可见，后续成功结果与报告保留", "evidence":["13-charts-progress.png","17-final-report.png","events.jsonl"]},
+    {"scenario":"下载与导出", "observed":"UI下载CSV、PNG、Markdown、HTML、JSON均成功；独立浏览器加载HTML，9张静态SVG全部complete且1000x520", "evidence":["export-summary.json","html-render-summary.json","18-exported-html-preview.png","2002 与 2003 月度 SubTotal 趋势.png","result-c3fbdd8a0378c9d30fd164acded79ba1.csv"]}
+  ],
+  "limits": [
+    "未对业务答案作独立计算、比较或真实性认证。",
+    "未宣称生产并发、多租户或压力验证。",
+    "未验证执行中业务知识/指标变更导致发布阻止；本轮执行中变更的是数据时效且现有结果仍有效。",
+    "原生子代理此任务被要求不写workspace文件，未人为制造共享文件冲突。",
+    "原先getByRole(button)查询业务知识失败，是该控件的实际role=tab；getByRole(tab)成功，排除可访问性缺陷。",
+    "未读取fixture-private.json或凭据环境；未写业务数据库；未修改产品源码。"
+  ],
+  "freeExploration": "尚未开始；等待root单独开始信号"
+}

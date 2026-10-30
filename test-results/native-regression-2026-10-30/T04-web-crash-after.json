@@ -1,0 +1,143 @@
+{
+  "case": "T30-004C",
+  "phase": "after",
+  "startedAt": "2026-10-30T03:48:17.558596+00:00",
+  "model": "deepseek-flash",
+  "fault": "SIGKILL owned Web during actual native command",
+  "commandsBefore": [
+    {
+      "pid": 607297,
+      "birth": "49453722"
+    }
+  ],
+  "root": "01a18aec-38e4-7e83-b1d4-ae42d3b21354",
+  "nativeBefore": {
+    "pid": 607004,
+    "birth": "49451610"
+  },
+  "faultAt": "2026-10-30T03:48:23.497836+00:00",
+  "nativeAliveAfter8s": false,
+  "commandsAfter8s": [],
+  "automaticOwnerCleanupPassed": true,
+  "recovery": {
+    "history": {
+      "id": "audit30-b3be910c-4668-477e-ac55-0e424e5f3881",
+      "result": {
+        "thread": {
+          "id": "01a18aec-38e4-7e83-b1d4-ae42d3b21354",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-audit-20261030/live/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-audit-20261030/live/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a18aec-38e4-7e83-b1d4-ae42d3b21354",
+          "forkedFromId": null,
+          "parentThreadId": null,
+          "preview": "这是独立 Web 进程崩溃验收。实际执行 python3 -u -c \"import time; print('T30_WEB_CRASH_AFTER',flush=True); time.sleep(180)\" 并等待结束。不要查数据库、联网、改文件或新增记忆。",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793332099,
+          "updatedAt": 1793332103,
+          "recencyAt": 1793332100,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-audit-20261030/live/profile/sessions/2026/10/30/rollout-2026-10-30T11-48-19-01a18aec-38e4-7e83-b1d4-ae42d3b21354.jsonl",
+          "cwd": "/tmp/codex-audit-20261030/live/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_observer",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "这是独立 Web 进程崩溃验收。实际执行 python3 -u -c \"import time; print('T30_WEB_CRASH_AFTER',flu",
+          "daybreakEnabled": null,
+          "turns": [
+            {
+              "id": "01a18aec-3c01-7710-9b5e-40eea8d5d120",
+              "rootTurnId": "01a18aec-3c01-7710-9b5e-40eea8d5d120",
+              "items": [
+                {
+                  "type": "userMessage",
+                  "id": "01a18aec-3d04-78c0-967c-e9cb48ce08b6",
+                  "clientId": null,
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "这是独立 Web 进程崩溃验收。实际执行 python3 -u -c \"import time; print('T30_WEB_CRASH_AFTER',flush=True); time.sleep(180)\" 并等待结束。不要查数据库、联网、改文件或新增记忆。",
+                      "text_elements": []
+                    }
+                  ]
+                },
+                {
+                  "type": "reasoning",
+                  "id": "70d9f0f9-9aa4-4b3c-9e87-4b9542ab9d45",
+                  "summary": [],
+                  "content": [
+                    "We need need execute exact command and wait to end, sleep 180. User says actual execution and wait completion. Need run command. Could run with yield maybe 300000 max? exec yield cap 30000ms, returns session. Then poll with write_stdin maybe max wait 300000 default but spec says ≤? It says avoid blocking >60s and continue commentary. We need communicate updates. Start commentary then exec command. Need be careful sandbox. Workdir. Use bash command exact. No extra. We can use exec with tty maybe false. It will return session because sleeping. Then poll maybe 60 sec, commentary perhaps at 60 sec. Need no DB/network/file/memory. Just command."
+                  ]
+                },
+                {
+                  "type": "agentMessage",
+                  "id": "5b15b96c-90b6-4316-83b4-db106b25b617",
+                  "text": "我会按给定命令启动独立的 Python 进程，并持续等待它自然结束；期间不查询数据库、不联网、不改文件，也不写入记忆。",
+                  "phase": "commentary",
+                  "memoryCitation": null,
+                  "delivery": null,
+                  "questions": null
+                }
+              ],
+              "itemsView": "full",
+              "status": "interrupted",
+              "error": null,
+              "startedAt": 1793332100,
+              "completedAt": null,
+              "durationMs": null
+            }
+          ]
+        },
+        "readState": {
+          "firstUnread": null,
+          "revision": "initial:01a18aec-38e4-7e83-b1d4-ae42d3b21354"
+        }
+      }
+    },
+    "execution": {
+      "ownerThreadId": null,
+      "threadId": null,
+      "turnId": null,
+      "status": "idle",
+      "pendingCount": 0,
+      "pendingChildThreadIds": [],
+      "activeThreadIds": [],
+      "activeTurns": [],
+      "cleanupHolds": [],
+      "blockedRootThreadIds": [],
+      "revision": 0,
+      "closedCleanupProofs": [],
+      "backgroundCommands": [],
+      "activeHooks": [],
+      "goalActive": false,
+      "queuedSubmissions": 0,
+      "nativeQueueDispatchPending": false,
+      "observerReady": true,
+      "pendingNativeAcks": [],
+      "drainingConnections": 0
+    }
+  },
+  "restartedPid": 607299,
+  "finishedAt": "2026-10-30T03:48:32.635848+00:00"
+}

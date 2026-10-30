@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "plan_id": "8462a60316c655e930e530a2e67bc6aa71762958b5e82ab66b2fbfb4ca41303a",
+  "agent": "codex",
+  "entries": [
+    {
+      "path": "README.md",
+      "source_sha256": "3c3bb309ea0869224c8b724db5d3e9bc22d28933f73486594afab857f6288316",
+      "entry": "README.md[DC8M]: F:运行与产品边界 | R:web/start.py,web/native_runtime.py,web/skill_packages.py,upstream-lock.json,CAPABILITIES.md,USER_WORKFLOWS.md,REPORT_MEMORY_LOOP.md,TEST_REPORT.md | A:- | S:原生能力优先,不替代Agent循环或改上游;服务持有运行时,断页不杀进程且重连不重发;同用户一root执行,审批清理或回执未知仍占用;真实验证限定deepseek-flash;对话仅图片附件,技能页独立上传ZIP或SKILL.md,原生解析后默认停用且不执行安装脚本;仅保留内置或登记完整包,管理须idle,移除CAS且保留历史草稿;技能不提升权限,GitHub安装未接入;口径文本填写,字段关联不认证整篇论述;前端无打包且资源本地提供;共享配置非租户隔离"
+    },
+    {
+      "path": "web/public/app.js",
+      "source_sha256": "9036ef005409c46ae5e94ff26036ed51ba14edda8780d64e3306ad092fdc12a4",
+      "entry": "app.js[UC9L]: F:原生会话交互 | R:web/server.py,web/native_runtime.py,web/skill_packages.py,web/public/native-ui.js,web/public/permissions.js,web/public/analysis-workspace.js,web/public/analysis-evidence.js,web/public/subagents.js,web/image_inputs.py | A:rpc,handleEvent,openThread,submitPrompt,interruptTurn,renderSkills,uploadSkillFile,useAnalysisSkill,writeMcpConfig | S:执行快照权威,单用户单root;回执未知/观察失败禁提交和steer;父回合结束仍追踪迟到children,停止绑定原连接等root释放,ACK非回收;其他root占用只read历史,发送前resume;断线不杀runtime且不重发,审批不迁移;导航隔代,快照delta不重放且保留独立usage/plan/settings;会话草稿持久技能身份,含空格名按提及边界匹配,发送重查上传登记完整性及原生启用,失效保留输入拒发;技能管理须idle,默认停用,移除确认携版本,坏包独立展示清理,登记失败仍展示内置;安装器卡只选本地文件;ACK只清已发版本/附件;MCP比对原配置后用户版本CAS写再reload,参数/密钥不回显且留空保留,高级项保留;原值不写不reload,保存非就绪,删除读回辨继承;脱敏保留工具schema;子任务只读不改父导航或伪造完成;图片解码验证且总量16MiB"
+    },
+    {
+      "path": "web/server.py",
+      "source_sha256": "20ccdcbd84efbbb6cb6673556558fc95e38364f3709afe32c8b55a1671fd4a41",
+      "entry": "server.py[HC9L]: F:原生协议桥接 | R:web/native_runtime.py,web/native_execution.py,web/native_memory_policy.py,web/native_memory.py,web/database_bridge.py,web/analysis_evidence.py,web/image_inputs.py,web/skill_packages.py | A:main,/ws/rpc,/ws/terminal,/api/databases/,/api/skills,/api/skills/upload,/api/skills/remove,/api/status,/api/known-forks,/api/schema/ | S:服务持有持久原生runtime,各RPC连接独立原生订阅与审批;同配置空间单root准入覆盖子任务、审批、后台命令和清理,断页排空ACK且不重发,观察或结果未知保守占用;Stop仅清理本轮已观察终端并确认原生状态;管理JSON限128KiB,正文核对限512KiB,技能上传另有有界请求;技能仅保留内置或登记且清单未变包,上传先停用后原生解析;安装/移除/启停与任务准入同锁且须全局idle,发送重验原生启用,移除绑定当前版本;图片受内容和总量检查;记忆清空须全局idle、paused、CAS与维护锁并退役旧runtime;独立PTY默认关闭,HttpOnly与同源检查非租户隔离"
+    }
+  ]
+}

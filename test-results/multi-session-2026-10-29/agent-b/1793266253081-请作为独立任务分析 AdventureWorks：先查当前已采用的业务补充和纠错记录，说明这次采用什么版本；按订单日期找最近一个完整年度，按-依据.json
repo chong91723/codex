@@ -1,0 +1,1798 @@
+{
+  "title": "请作为独立任务分析 AdventureWorks：先查当前已采用的业务补充和纠错记录，说明这次采用什么版本；按订单日期找最近一个完整年度，按月分别比较 SubTotal 与 TotalDue 的趋势和差额，给订单数与图表，列出所引用字段和数据读取时间。不要替我裁决未决的业务争议；如没有已确认指标规则，明确标注。本任务编号 B-独立月度。",
+  "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+  "turnId": "01a186fa-d49f-7a70-86b1-826baf2bfb14",
+  "exportedAt": "2026-10-29T09:30:52.509Z",
+  "knowledgeStatus": {
+    "status": "current",
+    "changes": [],
+    "notice": "依赖变化只表示报告需复核，不证明每个数值都错误；历史正文不会被静默改写。"
+  },
+  "verification": {
+    "status": "verified",
+    "strict": true,
+    "answerId": "2c880772fdf81be10c1d467939a8d7ff8628f263b87fa08ed71c2d0ea534bbfc",
+    "version": "data-evidence-v2",
+    "verificationScope": "referenced-fields",
+    "assurance": {
+      "scope": "referenced-fields",
+      "source": {
+        "status": "linked",
+        "fields": [
+          "min_order_date",
+          "max_order_date",
+          "annual_order_count",
+          "annual_subtotal",
+          "annual_totaldue",
+          "annual_diff",
+          "monthly_avg_diff",
+          "m01_month",
+          "m01_orders",
+          "m01_sub",
+          "m01_due",
+          "m01_diff",
+          "m02_month",
+          "m02_orders",
+          "m02_sub",
+          "m02_due",
+          "m02_diff",
+          "m03_month",
+          "m03_orders",
+          "m03_sub",
+          "m03_due",
+          "m03_diff",
+          "m04_month",
+          "m04_orders",
+          "m04_sub",
+          "m04_due",
+          "m04_diff",
+          "m05_month",
+          "m05_orders",
+          "m05_sub",
+          "m05_due",
+          "m05_diff",
+          "m06_month",
+          "m06_orders",
+          "m06_sub",
+          "m06_due",
+          "m06_diff",
+          "m07_month",
+          "m07_orders",
+          "m07_sub",
+          "m07_due",
+          "m07_diff",
+          "m08_month",
+          "m08_orders",
+          "m08_sub",
+          "m08_due",
+          "m08_diff",
+          "m09_month",
+          "m09_orders",
+          "m09_sub",
+          "m09_due",
+          "m09_diff",
+          "m10_month",
+          "m10_orders",
+          "m10_sub",
+          "m10_due",
+          "m10_diff",
+          "m11_month",
+          "m11_orders",
+          "m11_sub",
+          "m11_due",
+          "m11_diff",
+          "m12_month",
+          "m12_orders",
+          "m12_sub",
+          "m12_due",
+          "m12_diff",
+          "max_diff_month",
+          "max_diff_value",
+          "min_diff_month",
+          "min_diff_value",
+          "max_amount_month",
+          "max_subtotal_value",
+          "max_totaldue_value",
+          "max_order_month",
+          "max_order_count",
+          "min_order_month",
+          "min_order_count"
+        ]
+      },
+      "execution": {
+        "status": "recorded",
+        "kinds": [
+          "database",
+          "python"
+        ]
+      },
+      "metric": {
+        "status": "not-applied",
+        "fields": []
+      },
+      "narrative": {
+        "status": "not-assessed",
+        "reason": "解释、比较与因果判断未作语义正确性认证；仅所列字段引用与执行记录匹配。"
+      }
+    },
+    "evidence": [
+      {
+        "name": "min_order_date",
+        "value": "2001-06-30T22:00:00",
+        "resultId": "1904f490f279463344c1497f8498709f",
+        "row": 0,
+        "column": "MinOrderDate",
+        "sha256": "54ed33e9c3fc5ff940f06e85847c0092d79ef344e904dd3f1660b00bcc1098a3",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:40.838489+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "max_order_date",
+        "value": "2004-07-30T22:00:00",
+        "resultId": "1904f490f279463344c1497f8498709f",
+        "row": 0,
+        "column": "MaxOrderDate",
+        "sha256": "54ed33e9c3fc5ff940f06e85847c0092d79ef344e904dd3f1660b00bcc1098a3",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:40.838489+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "annual_order_count",
+        "value": 12510,
+        "resultId": "944c8e1419e02aebe0bc7169fa37fb67",
+        "row": 0,
+        "column": "AnnualOrderCount",
+        "sha256": "d6407dc0723629e653dc842f4d60fb2c71010ca04456b191233bc030c8c7f252",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "annual_subtotal",
+        "value": 49578680.87,
+        "resultId": "944c8e1419e02aebe0bc7169fa37fb67",
+        "row": 0,
+        "column": "AnnualSubTotal",
+        "sha256": "d6407dc0723629e653dc842f4d60fb2c71010ca04456b191233bc030c8c7f252",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "annual_totaldue",
+        "value": 54784442.65,
+        "resultId": "944c8e1419e02aebe0bc7169fa37fb67",
+        "row": 0,
+        "column": "AnnualTotalDue",
+        "sha256": "d6407dc0723629e653dc842f4d60fb2c71010ca04456b191233bc030c8c7f252",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "annual_diff",
+        "value": 5205761.8,
+        "resultId": "944c8e1419e02aebe0bc7169fa37fb67",
+        "row": 0,
+        "column": "AnnualAmountDifference",
+        "sha256": "d6407dc0723629e653dc842f4d60fb2c71010ca04456b191233bc030c8c7f252",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "monthly_avg_diff",
+        "value": "433813.48",
+        "resultId": "944c8e1419e02aebe0bc7169fa37fb67",
+        "row": 0,
+        "column": "MonthlyAverageAmountDifference",
+        "sha256": "d6407dc0723629e653dc842f4d60fb2c71010ca04456b191233bc030c8c7f252",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m01_month",
+        "value": 1,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 0,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m01_orders",
+        "value": 378,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 0,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m01_sub",
+        "value": 3308984.17,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 0,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m01_due",
+        "value": 3656427.52,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 0,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m01_diff",
+        "value": 347443.35,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 0,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m02_month",
+        "value": 2,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 1,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m02_orders",
+        "value": 377,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 1,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m02_sub",
+        "value": 2358872.22,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 1,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m02_due",
+        "value": 2606553.82,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 1,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m02_diff",
+        "value": 247681.6,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 1,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m03_month",
+        "value": 3,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 2,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m03_orders",
+        "value": 348,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 2,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m03_sub",
+        "value": 2740992.35,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 2,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m03_due",
+        "value": 3028796.56,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 2,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m03_diff",
+        "value": 287804.21,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 2,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m04_month",
+        "value": 4,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 3,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m04_orders",
+        "value": 430,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 3,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m04_sub",
+        "value": 3973719.28,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 3,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m04_due",
+        "value": 4390959.82,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 3,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m04_diff",
+        "value": 417240.54,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 3,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m05_month",
+        "value": 5,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 4,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m05_orders",
+        "value": 439,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 4,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m05_sub",
+        "value": 2959444.58,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 4,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m05_due",
+        "value": 3270186.27,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 4,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m05_diff",
+        "value": 310741.7,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 4,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m06_month",
+        "value": 6,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 5,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m06_orders",
+        "value": 414,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 5,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m06_sub",
+        "value": 3903121.33,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 5,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m06_due",
+        "value": 4312949.08,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 5,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m06_diff",
+        "value": 409827.75,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 5,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m07_month",
+        "value": 7,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 6,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m07_orders",
+        "value": 733,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 6,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m07_sub",
+        "value": 6169805.3,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 6,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m07_due",
+        "value": 6817634.87,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 6,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m07_diff",
+        "value": 647829.57,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 6,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m08_month",
+        "value": 8,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 7,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m08_orders",
+        "value": 1740,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 7,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m08_sub",
+        "value": 5957019.68,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 7,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m08_due",
+        "value": 6582506.79,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 7,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m08_diff",
+        "value": 625487.11,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 7,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m09_month",
+        "value": 9,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 8,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m09_orders",
+        "value": 1722,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 8,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m09_sub",
+        "value": 3771725.05,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 8,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m09_due",
+        "value": 4167756.21,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 8,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m09_diff",
+        "value": 396031.17,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 8,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m10_month",
+        "value": 10,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 9,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m10_orders",
+        "value": 1858,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 9,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m10_sub",
+        "value": 5281660.57,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 9,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m10_due",
+        "value": 5836234.97,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 9,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m10_diff",
+        "value": 554574.4,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 9,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m11_month",
+        "value": 11,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 10,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m11_orders",
+        "value": 1901,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 10,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m11_sub",
+        "value": 5458168.49,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 10,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m11_due",
+        "value": 6031276.22,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 10,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m11_diff",
+        "value": 573107.73,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 10,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m12_month",
+        "value": 12,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 11,
+        "column": "OrderMonth",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m12_orders",
+        "value": 2170,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 11,
+        "column": "OrderCount",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m12_sub",
+        "value": 3695167.85,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 11,
+        "column": "SubTotalSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m12_due",
+        "value": 4083160.52,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 11,
+        "column": "TotalDueSum",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "m12_diff",
+        "value": 387992.67,
+        "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+        "row": 11,
+        "column": "AmountDifference",
+        "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "max_diff_month",
+        "value": 7,
+        "resultId": "7cc689ee6dee3bf68abed896ad05ba94",
+        "row": 3,
+        "column": "OrderMonth",
+        "sha256": "7df2c9c525dd79808b119119e68a31cf656b731844529dbae97905d67e153ad7",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "max_diff_value",
+        "value": 647829.57,
+        "resultId": "7cc689ee6dee3bf68abed896ad05ba94",
+        "row": 3,
+        "column": "AmountDifference",
+        "sha256": "7df2c9c525dd79808b119119e68a31cf656b731844529dbae97905d67e153ad7",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "min_diff_month",
+        "value": 2,
+        "resultId": "7cc689ee6dee3bf68abed896ad05ba94",
+        "row": 4,
+        "column": "OrderMonth",
+        "sha256": "7df2c9c525dd79808b119119e68a31cf656b731844529dbae97905d67e153ad7",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "min_diff_value",
+        "value": 247681.6,
+        "resultId": "7cc689ee6dee3bf68abed896ad05ba94",
+        "row": 4,
+        "column": "AmountDifference",
+        "sha256": "7df2c9c525dd79808b119119e68a31cf656b731844529dbae97905d67e153ad7",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "max_amount_month",
+        "value": 7,
+        "resultId": "7cc689ee6dee3bf68abed896ad05ba94",
+        "row": 1,
+        "column": "OrderMonth",
+        "sha256": "7df2c9c525dd79808b119119e68a31cf656b731844529dbae97905d67e153ad7",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "max_subtotal_value",
+        "value": 6169805.3,
+        "resultId": "7cc689ee6dee3bf68abed896ad05ba94",
+        "row": 1,
+        "column": "SubTotalSum",
+        "sha256": "7df2c9c525dd79808b119119e68a31cf656b731844529dbae97905d67e153ad7",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "max_totaldue_value",
+        "value": 6817634.87,
+        "resultId": "7cc689ee6dee3bf68abed896ad05ba94",
+        "row": 2,
+        "column": "TotalDueSum",
+        "sha256": "7df2c9c525dd79808b119119e68a31cf656b731844529dbae97905d67e153ad7",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "max_order_month",
+        "value": 12,
+        "resultId": "7cc689ee6dee3bf68abed896ad05ba94",
+        "row": 0,
+        "column": "OrderMonth",
+        "sha256": "7df2c9c525dd79808b119119e68a31cf656b731844529dbae97905d67e153ad7",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "max_order_count",
+        "value": 2170,
+        "resultId": "7cc689ee6dee3bf68abed896ad05ba94",
+        "row": 0,
+        "column": "OrderCount",
+        "sha256": "7df2c9c525dd79808b119119e68a31cf656b731844529dbae97905d67e153ad7",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "min_order_month",
+        "value": 3,
+        "resultId": "7cc689ee6dee3bf68abed896ad05ba94",
+        "row": 5,
+        "column": "OrderMonth",
+        "sha256": "7df2c9c525dd79808b119119e68a31cf656b731844529dbae97905d67e153ad7",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "min_order_count",
+        "value": 348,
+        "resultId": "7cc689ee6dee3bf68abed896ad05ba94",
+        "row": 5,
+        "column": "OrderCount",
+        "sha256": "7df2c9c525dd79808b119119e68a31cf656b731844529dbae97905d67e153ad7",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+            "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+            "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      }
+    ],
+    "sources": {
+      "1904f490f279463344c1497f8498709f": {
+        "query": "SELECT MIN(OrderDate) AS MinOrderDate, MAX(OrderDate) AS MaxOrderDate, COUNT(*) AS OrderRowCount FROM salesorderheader",
+        "pythonCode": null,
+        "inputSources": []
+      },
+      "944c8e1419e02aebe0bc7169fa37fb67": {
+        "query": "SELECT SUM(OrderCount) AS AnnualOrderCount, ROUND(SUM(SubTotalSum), 2) AS AnnualSubTotal, ROUND(SUM(TotalDueSum), 2) AS AnnualTotalDue, ROUND(SUM(AmountDifference), 2) AS AnnualAmountDifference, ROUND(AVG(AmountDifference), 2) AS MonthlyAverageAmountDifference FROM result;",
+        "pythonCode": "# Python Snapshots.analyze executes this read-only DuckDB query\nSELECT SUM(OrderCount) AS AnnualOrderCount, ROUND(SUM(SubTotalSum), 2) AS AnnualSubTotal, ROUND(SUM(TotalDueSum), 2) AS AnnualTotalDue, ROUND(SUM(AmountDifference), 2) AS AnnualAmountDifference, ROUND(AVG(AmountDifference), 2) AS MonthlyAverageAmountDifference FROM result;",
+        "inputSources": [
+          {
+            "kind": "dataset",
+            "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+            "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c"
+          }
+        ]
+      },
+      "ef0115a55dd7c28521ee4fd8622a3289": {
+        "query": "SELECT MONTH(OrderDate) AS OrderMonth, COUNT(DISTINCT SalesOrderID) AS OrderCount, ROUND(SUM(SubTotal), 2) AS SubTotalSum, ROUND(SUM(TotalDue), 2) AS TotalDueSum, ROUND(SUM(TotalDue) - SUM(SubTotal), 2) AS AmountDifference FROM salesorderheader WHERE OrderDate >= '2003-01-01' AND OrderDate < '2004-01-01' GROUP BY MONTH(OrderDate) ORDER BY OrderMonth",
+        "pythonCode": null,
+        "inputSources": []
+      },
+      "7cc689ee6dee3bf68abed896ad05ba94": {
+        "query": "SELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最大差额' AS ExtremeType FROM result WHERE AmountDifference = (SELECT MAX(AmountDifference) FROM result) UNION ALL SELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最小差额' AS ExtremeType FROM result WHERE AmountDifference = (SELECT MIN(AmountDifference) FROM result) UNION ALL SELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最大SubTotal' AS ExtremeType FROM result WHERE SubTotalSum = (SELECT MAX(SubTotalSum) FROM result) UNION ALL SELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最大TotalDue' AS ExtremeType FROM result WHERE TotalDueSum = (SELECT MAX(TotalDueSum) FROM result) UNION ALL SELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最多订单' AS ExtremeType FROM result WHERE OrderCount = (SELECT MAX(OrderCount) FROM result) UNION ALL SELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最少订单' AS ExtremeType FROM result WHERE OrderCount = (SELECT MIN(OrderCount) FROM result) ORDER BY ExtremeType, OrderMonth;",
+        "pythonCode": "# Python Snapshots.analyze executes this read-only DuckDB query\nSELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最大差额' AS ExtremeType FROM result WHERE AmountDifference = (SELECT MAX(AmountDifference) FROM result) UNION ALL SELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最小差额' AS ExtremeType FROM result WHERE AmountDifference = (SELECT MIN(AmountDifference) FROM result) UNION ALL SELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最大SubTotal' AS ExtremeType FROM result WHERE SubTotalSum = (SELECT MAX(SubTotalSum) FROM result) UNION ALL SELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最大TotalDue' AS ExtremeType FROM result WHERE TotalDueSum = (SELECT MAX(TotalDueSum) FROM result) UNION ALL SELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最多订单' AS ExtremeType FROM result WHERE OrderCount = (SELECT MAX(OrderCount) FROM result) UNION ALL SELECT OrderMonth, OrderCount, SubTotalSum, TotalDueSum, AmountDifference, '最少订单' AS ExtremeType FROM result WHERE OrderCount = (SELECT MIN(OrderCount) FROM result) ORDER BY ExtremeType, OrderMonth;",
+        "inputSources": [
+          {
+            "kind": "dataset",
+            "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+            "sha256": "e1b1456cb31f883a7be5dce698c3f306bb36fe24c9db97962ca7c52abbaccc4c"
+          }
+        ]
+      }
+    },
+    "publicationChecks": {
+      "version": "analysis-publication-v2",
+      "checkedAt": "2026-10-29T09:26:39.165019+00:00",
+      "freshness": [
+        {
+          "kind": "database",
+          "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+          "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+          "retrievedAt": "2026-10-29T09:24:40.838489+00:00",
+          "connectionId": "9f0e887b483dd2f73f189590",
+          "sourceName": "AdventureWorks 双会话体验（独立只读）",
+          "maxAgeMinutes": null,
+          "status": "notConfigured"
+        },
+        {
+          "kind": "database",
+          "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+          "turnId": "01a186f9-9f04-7d32-a056-ec8b3ad33c31",
+          "retrievedAt": "2026-10-29T09:24:49.750587+00:00",
+          "connectionId": "9f0e887b483dd2f73f189590",
+          "sourceName": "AdventureWorks 双会话体验（独立只读）",
+          "maxAgeMinutes": null,
+          "status": "notConfigured"
+        }
+      ],
+      "scope": "execution-record-match-only",
+      "note": "读取时间不等于源数据更新时间；未设置时效规则的来源不自动判定为最新。",
+      "knowledge": [
+        {
+          "sourceId": "9f0e887b483dd2f73f189590",
+          "token": "b9129caaf4621fdaf3973c2c50abb2a5a93f20da58e80c9cb40a3670cc0a6597",
+          "sourceVersion": 1,
+          "businessRevision": 2,
+          "businessStale": false,
+          "knowledgeRevision": 3,
+          "schemaHash": "7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952",
+          "conflicts": 0,
+          "requiresContext": true
+        }
+      ],
+      "metrics": [],
+      "files": []
+    }
+  },
+  "results": [
+    {
+      "id": "ef0115a55dd7c28521ee4fd8622a3289",
+      "name": "查询结果",
+      "rowCount": 12
+    },
+    {
+      "id": "944c8e1419e02aebe0bc7169fa37fb67",
+      "name": "查询结果",
+      "rowCount": 1
+    },
+    {
+      "id": "7cc689ee6dee3bf68abed896ad05ba94",
+      "name": "查询结果",
+      "rowCount": 6
+    },
+    {
+      "id": "1904f490f279463344c1497f8498709f",
+      "name": "已引用的历史分析数据"
+    }
+  ],
+  "charts": [
+    {
+      "version": 2,
+      "chartId": "fde362ec89e4d154f3a47c6b162c8cda",
+      "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+      "title": "2003 年月度 SubTotal、TotalDue 与差额",
+      "rowCount": 12,
+      "complete": true
+    },
+    {
+      "version": 2,
+      "chartId": "68eade06e338efe4a4197f4278b247ea",
+      "resultId": "ef0115a55dd7c28521ee4fd8622a3289",
+      "title": "2003 年月度订单数",
+      "rowCount": 12,
+      "complete": true
+    }
+  ],
+  "artifactScope": "same-turn-and-explicit-evidence-lineage"
+}

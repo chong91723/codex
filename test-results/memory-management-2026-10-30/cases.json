@@ -1,0 +1,94 @@
+{
+  "model": "deepseek-flash",
+  "provider": "deepseek",
+  "nativeSourceCommit": "970111f6cb62cc02fe36a82ea7d71b37a2889c97",
+  "realWorkflowCases": [
+    {
+      "workflow": "原生笔记保存明确偏好",
+      "status": "passed",
+      "evidence": "flash-save-preference.json"
+    },
+    {
+      "workflow": "新会话读取已保存偏好",
+      "status": "passed",
+      "evidence": "flash-new-analysis-read.json"
+    },
+    {
+      "workflow": "两页CAS及状态轮询保留草稿",
+      "status": "passed",
+      "evidence": "ui-edit-cas.json"
+    },
+    {
+      "workflow": "纠正后原生完整上下文与Flash读取",
+      "status": "passed",
+      "evidence": "flash-corrected-analysis-read-after-context-fix.json"
+    },
+    {
+      "workflow": "原生独立维护合并及清理",
+      "status": "passed",
+      "evidence": "background-final-proof.json"
+    },
+    {
+      "workflow": "维护已清理直链与完成卡片",
+      "status": "passed",
+      "evidence": "ui-background-completed-direct-link.json"
+    },
+    {
+      "workflow": "永久删除原聊天并保留独立偏好",
+      "status": "passed",
+      "evidence": "ui-delete-independent-memory.json"
+    },
+    {
+      "workflow": "删除后新Flash仍读取偏好",
+      "status": "passed",
+      "evidence": "flash-read-after-original-chat-deleted.json"
+    },
+    {
+      "workflow": "同名用户会话、原生启停及桌面尺寸",
+      "status": "passed",
+      "evidence": "ui-memory-adjacent.json"
+    },
+    {
+      "workflow": "日常空闲重启/配置对齐/零模型只读",
+      "status": "passed",
+      "evidence": "daily-smoke.json"
+    },
+    {
+      "workflow": "原定16:40自然冷却后全局合并与Flash读取",
+      "status": "passed",
+      "evidence": "scheduled-recall-reviewed.json"
+    }
+  ],
+  "retainedFailures": [
+    {
+      "evidence": "flash-corrected-analysis-read.json",
+      "type": "confirmed product defect",
+      "cause": "Native per-value middle truncation omitted the new user preference; fixed, real retry separate."
+    },
+    {
+      "evidence": "ui-memory-adjacent-first-controller-timing.json",
+      "type": "controller timing",
+      "cause": "Awaited early label change, not completion; corrected wait and separate retry."
+    },
+    {
+      "evidence": "daily-smoke-first-observation.json",
+      "type": "deployment configuration condition",
+      "cause": "Old native generate_memories=true; per-thread policy was already false. Native single-key CAS alignment and final readback retained."
+    }
+  ],
+  "engineering": {
+    "python": "python-full-summary.json",
+    "nativeOptIn": "native-optin-summary.json",
+    "javascript": "js-summary.json",
+    "static": "static-checks-summary.json",
+    "nativeIntegrity": "upstream-native-verification-summary.json"
+  },
+  "limits": [
+    "No new business-database or source-adjudication end-to-end run in this memory-only batch.",
+    "Browser closure and native job completion occur in the same second; only later cleanup without the page is proven here.",
+    "No claim that deletion synchronously retracts already-injected global context or that all model memory interpretation is perfect.",
+    "Real new model flow covers turn/start; steer context propagation is protocol/source and behavior-test coverage.",
+    "Maintenance sessions predating exact registration are not classified or deleted by title.",
+    "One user root policy is retained; no production multitenancy/capacity certification."
+  ]
+}

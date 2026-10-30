@@ -1,0 +1,211 @@
+{
+  "steer": {
+    "threadId": "01a18b20-ab3f-77c1-ae11-e366a53b8bc8",
+    "turnCount": 1,
+    "nativeStatus": "completed",
+    "executionStatus": "idle",
+    "turnStarts": 1,
+    "steers": 1,
+    "interrupts": 0,
+    "declineResponses": 0,
+    "controlledFileAbsent": null,
+    "protocolPassed": true,
+    "publicationCount": 1,
+    "status": null,
+    "evidenceFile": "/tmp/codex-capability-20261030/native-workflows/steer.json",
+    "publicationFields": 38,
+    "changedQueries": [
+      "SELECT COUNT(*) AS total_orders,\n       SUM(CASE WHEN ShipDate IS NULL THEN 1 ELSE 0 END) AS ship_date_null_orders,\n       SUM(CASE WHEN ShipDate IS NOT NULL THEN 1 ELSE 0 END) AS shipped_date_orders,\n       COUNT(DISTINCT TerritoryID) AS territory_distinct_count,\n       SUM(CASE WHEN TerritoryID IS NULL THEN 1 ELSE 0 END) AS territory_null_orders\nFROM salesorderheader;",
+      "SELECT TerritoryID,\n       COUNT(*) AS sales_order_count,\n       SUM(TotalDue) AS total_due\nFROM salesorderheader\nWHERE ShipDate IS NOT NULL\nGROUP BY TerritoryID\nORDER BY TerritoryID;"
+    ]
+  },
+  "approval-deny": {
+    "threadId": "01a18b22-6a56-7cd2-9a65-db695e2f786b",
+    "turnCount": 1,
+    "nativeStatus": "completed",
+    "executionStatus": "idle",
+    "turnStarts": 1,
+    "steers": 0,
+    "interrupts": 0,
+    "declineResponses": 1,
+    "controlledFileAbsent": true,
+    "protocolPassed": null,
+    "publicationCount": 0,
+    "status": "denial-observed",
+    "evidenceFile": "/tmp/codex-capability-20261030/native-workflows/approval-deny.json"
+  },
+  "approval-refresh": {
+    "threadId": "01a18b24-decc-72b3-b956-610aa14e8e64",
+    "turnCount": 1,
+    "nativeStatus": "completed",
+    "executionStatus": "idle",
+    "turnStarts": 1,
+    "steers": 0,
+    "interrupts": 0,
+    "declineResponses": 1,
+    "controlledFileAbsent": true,
+    "protocolPassed": null,
+    "publicationCount": 0,
+    "status": "safe-native-reissued-denial-after-slow-recovery",
+    "evidenceFile": "/tmp/codex-capability-20261030/native-workflows/approval-refresh.json"
+  },
+  "approvalRecoveryTrace": [
+    {
+      "at": "2026-10-30T04:50:30.425Z",
+      "direction": "sent",
+      "method": "initialize",
+      "id": 1,
+      "params": null
+    },
+    {
+      "at": "2026-10-30T04:50:31.236Z",
+      "direction": "reply",
+      "method": "initialize",
+      "seconds": 0.811,
+      "error": null
+    },
+    {
+      "at": "2026-10-30T04:50:31.236Z",
+      "direction": "sent",
+      "method": "initialized",
+      "id": null,
+      "params": null
+    },
+    {
+      "at": "2026-10-30T04:50:31.236Z",
+      "direction": "sent",
+      "method": "thread/list",
+      "id": 2,
+      "params": null
+    },
+    {
+      "at": "2026-10-30T04:50:31.245Z",
+      "direction": "sent",
+      "method": "model/list",
+      "id": 3,
+      "params": null
+    },
+    {
+      "at": "2026-10-30T04:50:31.245Z",
+      "direction": "sent",
+      "method": "config/read",
+      "id": 4,
+      "params": {
+        "includeLayers": false,
+        "cwd": "/tmp/codex-capability-20261030/live/workspace"
+      }
+    },
+    {
+      "at": "2026-10-30T04:50:31.967Z",
+      "direction": "reply",
+      "method": "model/list",
+      "seconds": 0.722,
+      "error": null
+    },
+    {
+      "at": "2026-10-30T04:50:34.509Z",
+      "direction": "reply",
+      "method": "thread/list",
+      "seconds": 3.273,
+      "error": null
+    },
+    {
+      "at": "2026-10-30T04:50:39.107Z",
+      "direction": "reply",
+      "method": "config/read",
+      "seconds": 7.862,
+      "error": null
+    },
+    {
+      "at": "2026-10-30T04:50:39.253Z",
+      "direction": "sent",
+      "method": "config/read",
+      "id": 5,
+      "params": {
+        "includeLayers": false
+      }
+    },
+    {
+      "at": "2026-10-30T04:52:33.846Z",
+      "direction": "reply",
+      "method": "config/read",
+      "seconds": 114.593,
+      "error": null
+    },
+    {
+      "at": "2026-10-30T04:52:35.090Z",
+      "direction": "sent",
+      "method": "thread/read",
+      "id": 6,
+      "params": null
+    },
+    {
+      "at": "2026-10-30T04:52:36.002Z",
+      "direction": "reply",
+      "method": "thread/read",
+      "seconds": 0.912,
+      "error": null
+    },
+    {
+      "at": "2026-10-30T04:52:36.010Z",
+      "direction": "sent",
+      "method": "thread/resume",
+      "id": 7,
+      "params": null
+    },
+    {
+      "at": "2026-10-30T04:52:37.490Z",
+      "direction": "reply",
+      "method": "thread/resume",
+      "seconds": 1.48,
+      "error": null
+    },
+    {
+      "at": "2026-10-30T04:52:37.510Z",
+      "direction": "sent",
+      "method": "thread/list",
+      "id": 8,
+      "params": null
+    },
+    {
+      "at": "2026-10-30T04:52:37.810Z",
+      "direction": "notification",
+      "method": "item/commandExecution/requestApproval",
+      "id": 1
+    },
+    {
+      "at": "2026-10-30T04:52:40.080Z",
+      "direction": "reply",
+      "method": "thread/list",
+      "seconds": 2.57,
+      "error": null
+    },
+    {
+      "at": "2026-10-30T04:55:46.735Z",
+      "direction": "notification",
+      "method": "turn/completed",
+      "id": null
+    },
+    {
+      "at": "2026-10-30T04:55:46.735Z",
+      "direction": "sent",
+      "method": "thread/list",
+      "id": 9,
+      "params": null
+    },
+    {
+      "at": "2026-10-30T04:55:46.934Z",
+      "direction": "reply",
+      "method": "thread/list",
+      "seconds": 0.199,
+      "error": null
+    }
+  ],
+  "limitations": [
+    "Steer used real composer Enter; visible button remains Stop during running tasks.",
+    "Refresh recovered through actual native reissued request on new connection; not old-response replay.",
+    "114.593-second second config/read observed at browser wire; underlying native/bridge/browser scheduling cause not isolated.",
+    "Controller partial-JSON read, readiness timeout and screenshot timeout retained separately; not asserted as product failures.",
+    "No global permissions changed; no histories removed; only new owned marker paths targeted."
+  ]
+}

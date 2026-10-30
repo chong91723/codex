@@ -1,0 +1,65 @@
+{
+  "tester": "A",
+  "phase": "free",
+  "window": {
+    "startedAt": "2026-10-29T09:40:39.916514+00:00",
+    "deadline": "2026-10-29T09:45:05+00:00",
+    "seconds": 265.083486,
+    "phase": "free",
+    "agent": "A"
+  },
+  "actualOperationCount": 19,
+  "lastActualOperation": {
+    "at": "2026-10-29T09:44:49.615Z",
+    "kind": "operation",
+    "op": "read"
+  },
+  "operationsAtOrAfterDeadline": [],
+  "deadlineGuardRefusal": "2026-10-29T09:45:08.596218Z allowed=false；拒绝执行计划中的后续点击。",
+  "codeVersionObserved": "970111f；本窗口未刷新、未重启、未重载MCP，未使用根修复版。",
+  "scenarios": [
+    {
+      "scenario": "阅读字段依据与执行记录",
+      "result": "最终报告可展开真实字段、结果引用、执行SQL/计算来源；界面内容较长且为技术JSON，未把字段关联等同全文认证。"
+    },
+    {
+      "scenario": "裸/plan新分析",
+      "result": "输入裸/plan并发送后输入清空，页面提示计划模式已开启，未生成分析回答，URL仍为新分析入口。"
+    },
+    {
+      "scenario": "新客户集中度任务",
+      "threadId": "01a1870a-8b1e-7210-b3a2-3cf9109cd2ef",
+      "result": "要求2003年CustomerID订单数/SubTotal、前10客户累计占比和Pareto。沿用计划模式，开始真实工具调查，未批准正式分析。"
+    },
+    {
+      "scenario": "任务存续期间修改已采用业务补充",
+      "result": "保留B此前已采用的OrderDate/SubTotal/TotalDue说明，追加报告读取时间/版本及中文图表标题呈现要求。首个旧稿保存被陈旧版本机制拒绝；读取最新后于09:44:42Z再次保存，09:44:46.9Z读取页面确认成功。未裁定新业务含义、未修改公式。"
+    },
+    {
+      "scenario": "变更后旧报告复核提示",
+      "result": "未执行；下一个点击前guard已过截止并拒绝操作，不标通过。"
+    }
+  ],
+  "newConfirmedDefects": [],
+  "testHarnessNotes": [
+    "活动状态下计划模式按钮的精确accessible name与旧选择器不匹配，造成attribute/click查询超时。未核查完整名称，不登记为产品Bug；后续客户任务因此仍在计划模式。"
+  ],
+  "pendingTasks": [
+    {
+      "threadId": "01a1870a-8b1e-7210-b3a2-3cf9109cd2ef",
+      "lastObserved": "2条过程说明、5次思考、10项工具活动；随后DOM存在原生响应JSON控件。",
+      "formalExecutionApproved": false,
+      "stateAtDeadline": "未重新读取，不能用旧采样断言最终状态；保留实例等待回归。"
+    }
+  ],
+  "evidence": [
+    "events.jsonl",
+    "free-window.json",
+    "free-clock-checks.jsonl",
+    "19-free-business-dependency-change.png",
+    "directed-report.json"
+  ],
+  "scope": "本报告仅记录产品操作与机制反馈，不独立计算或裁决AdventureWorks业务答案。浏览器及原生实例保持打开。",
+  "phaseBoundaryNote": "本文件只统计root自由窗口内19次操作；之后root明确下发修复回归任务，events.jsonl继续复用记录回归。截止后的明确回归不属于自由探索。",
+  "subsequentRegressionFirstOperationAt": "2026-10-29T09:47:53.721Z"
+}

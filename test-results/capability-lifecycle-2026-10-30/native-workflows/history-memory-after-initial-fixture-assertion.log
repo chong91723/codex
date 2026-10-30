@@ -1,0 +1,74 @@
+✔ other conversation is blocked during starting (13.506243ms)
+✔ other conversation is blocked during running (4.320707ms)
+✔ other conversation is blocked during waitingForApproval (1.739565ms)
+✔ other conversation is blocked during waitingForInput (1.593823ms)
+✔ other conversation is blocked during reconciling (1.682827ms)
+✔ other conversation is blocked during cleaningUp (1.527296ms)
+✔ other conversation is blocked during cleanupFailed (1.456818ms)
+✔ other conversation is blocked during backgroundRunning (1.442285ms)
+✔ other conversation is blocked during conflicted (2.093319ms)
+✔ owner cannot submit a new message during starting (3.206043ms)
+✔ owner cannot submit a new message during reconciling (1.288154ms)
+✔ owner cannot submit a new message during cleaningUp (0.990994ms)
+✔ owner cannot submit a new message during cleanupFailed (1.007051ms)
+✔ owner cannot submit a new message during backgroundRunning (1.093269ms)
+✔ owner cannot submit a new message during conflicted (1.171819ms)
+✔ owner can steer native turn during running (1.519397ms)
+✔ owner can steer native turn during waitingForApproval (1.122302ms)
+✔ owner can steer native turn during waitingForInput (1.124442ms)
+✔ idle execution permits another history or a new conversation and does not cap history count (0.95775ms)
+✔ fresh execution snapshot releases prior snapshot turns and cannot revive a finished turn (2.44527ms)
+✔ stale history inProgress cannot expose Stop or steer in a different executing conversation (1.058344ms)
+✔ another tab winning while tools load aborts submission and preserves draft without native turn request (1.413434ms)
+✔ native rejection after initial idle admission preserves text and attachments (1.519391ms)
+✔ service-owned tasks do not warn on navigation; an unresolved send acknowledgement still warns (1.025681ms)
+✔ persistent disconnection interruption notice does not claim browser killed the native process (1.135544ms)
+✔ cleanup retry uses native thread/turn identities and refreshes actual service state (1.496815ms)
+✔ native terminal interrupt response does not become fake cleanup success (1.499501ms)
+✔ cleanup never guesses a command PID when native turn identity is missing (0.985801ms)
+✔ native busy error carries authoritative execution state back into composer without a retry (2.599471ms)
+✔ bridge snapshot is processed before initialization and persistent disconnect never resends (2.253477ms)
+✔ completed owner with active native child cannot start a second root turn (1.059734ms)
+✔ replayed native terminal turn does not remain steerable while service reconciles (0.955707ms)
+✔ repeated cleanup click while native request is pending submits only once (1.189825ms)
+✔ opening another conversation during a native task reads history without native resume and keeps its draft editable (4.834468ms)
+✔ native resume race rejection falls back to history instead of falsely showing restore failure (1.917801ms)
+✔ deferred conversation native mode and permissions are restored before later submission (2.644912ms)
+✔ losing the slot again during deferred resume never submits and preserves draft (1.878249ms)
+✔ successful ordinary resume removes an obsolete deferred marker (1.391626ms)
+✔ uncertain acknowledgementUnknown blocks same-owner steering, keeps known-turn Stop, and displays native diagnostic (1.387325ms)
+✔ uncertain observationFailed blocks same-owner steering, keeps known-turn Stop, and displays native diagnostic (1.356784ms)
+✔ uncertain acknowledgementUnknown without known native turn cannot open a second execution (1.052326ms)
+✔ uncertain observationFailed without known native turn cannot open a second execution (1.320976ms)
+✔ an unrecognized execution state stays stoppable with a known turn but cannot steer (1.090777ms)
+✔ archived history stays readable when analysis memory preparation is unavailable (1.384141ms)
+✖ own pending approval can restore through native resume without memory prefetch (2.882777ms)
+✔ submitting a real task waits for current memory preparation before native execution (7.966324ms)
+✔ failed memory preparation blocks native task submission and retains its draft (1.184121ms)
+ℹ tests 47
+ℹ suites 0
+ℹ pass 46
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 109.996121
+
+✖ failing tests:
+
+test at web/tests/single_execution_state.mjs:158:1
+✖ own pending approval can restore through native resume without memory prefetch (2.882777ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 'TB'
+  
+      at TestContext.<anonymous> (file:///root/Codex/web/tests/single_execution_state.mjs:165:69)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'TB',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,46 @@
+{"oracleGroups": ["annual", "region", "category", "repeat", "grain_check", "detail_identity_observation"], "years": [2002, 2003], "allReadOnly": true}
+PASS 真实Agent关联错误用户补充提出待审批修订
+PASS 用户对照原文审批修订，业务新版本和历史同步生效
+PASS 用户纠正实际Agent探索候选，保留原文并明确采用
+PASS 用户纠正自动工具检查的解释，不改写实际结构
+PASS 错误人工修订可拒绝，确认后的补充保持有效
+{"phase":"corrections","checks":[{"name":"真实Agent关联错误用户补充提出待审批修订","passed":true},{"name":"用户对照原文审批修订，业务新版本和历史同步生效","passed":true},{"name":"用户纠正实际Agent探索候选，保留原文并明确采用","passed":true},{"name":"用户纠正自动工具检查的解释，不改写实际结构","passed":true},{"name":"错误人工修订可拒绝，确认后的补充保持有效","passed":true}],"errors":[]}
+PASS 复杂多问题触发自主计划，执行前向用户确认
+PASS 计划讨论支持用户修改，保留未分类与未知区域
+PASS 确认计划后展示真实进度，中途停止确实中断本轮
+PASS 暂停后修改输出并继续执行，回答全部问题且与独立SQL一致
+{"phase":"analysis","checks":[{"name":"复杂多问题触发自主计划，执行前向用户确认","passed":true},{"name":"计划讨论支持用户修改，保留未分类与未知区域","passed":true},{"name":"确认计划后展示真实进度，中途停止确实中断本轮","passed":true},{"name":"数值对照前保留完整回答和执行证据","passed":true},{"name":"暂停后修改输出并继续执行，回答全部问题且与独立SQL一致","passed":true}],"errors":[]}
+PASS 用户主动用斜杠plan生成方案，等待确认期间不执行汇总
+{"phase":"manual-plan","checks":[{"name":"用户主动用斜杠plan生成方案，等待确认期间不执行汇总","passed":true}],"errors":[]}
+PASS 用户拒绝查询审批，模型不能显示查询成功或伪造结果
+{"phase":"reject-query","checks":[{"name":"用户拒绝查询审批，模型不能显示查询成功或伪造结果","passed":true}],"errors":[]}
+PASS 自然语言生成实际订单明细，分页跳转并下载完整CSV
+PASS 刷新和断线重连恢复同一分析，草稿保留且不重发模型任务
+{"phase":"resilience","checks":[{"name":"自然语言生成实际订单明细，分页跳转并下载完整CSV","passed":true},{"name":"刷新和断线重连恢复同一分析，草稿保留且不重发模型任务","passed":true}],"errors":[]}
+PASS 实际执行中的MySQL只读查询停止后退出，之后可在同一任务继续
+{"phase":"running-cancel","checks":[{"name":"实际执行中的MySQL只读查询停止后退出，之后可在同一任务继续","passed":true}],"errors":[]}
+PASS 新任务实际复用修订定义，短结论不暴露内部结果编号
+{"phase":"report-presentation","checks":[{"name":"新任务实际复用修订定义，短结论不暴露内部结果编号","passed":true}],"errors":[]}
+PASS 实际MCP新增工具可见，原生保留技能可读取
+PASS 重新探索相同数据库后保留已采用纠正与业务定义
+PASS 百分点与百分比单位可实际发布，数值仍由真实 Python 执行产生
+{"phase":"configuration","checks":[{"name":"实际MCP新增工具可见，原生保留技能可读取","passed":true},{"name":"重新探索相同数据库后保留已采用纠正与业务定义","passed":true},{"name":"百分点与百分比单位可实际发布，数值仍由真实 Python 执行产生","passed":true}],"errors":[]}
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'rejected'
+- 'verified'
+
+    at file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:192:169
+    at async check (file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:20:50)
+    at async file:///root/Codex/web/tests/adventureworks_analyst_live.mjs:180:3
+{"phase":"learning-loop","checks":[{"name":"实际错误口径分析 → Agent登记纠正 → 页面外裁定 → 新会话解释与重算 → 旧报告标识影响","passed":false}],"errors":[]}
+{"sourceRemoved":true,"remainingOwnedResultsRemoved":0,"ownedChartsRemoved":1}
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/run_adventureworks_audit.py", line 58, in <module>
+    node('analysis_cross_feature_live.mjs' if phase=='capability-fixes' else 'adventureworks_analyst_live.mjs',phase)
+  File "/root/Codex/web/tests/run_adventureworks_audit.py", line 52, in node
+    subprocess.run([str(ROOT/'.toolchains/node24/bin/node'),str(ROOT/'web/tests'/script)],env=current,cwd=ROOT,check=True,timeout=1800)
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/root/Codex/.toolchains/node24/bin/node', '/root/Codex/web/tests/adventureworks_analyst_live.mjs']' returned non-zero exit status 1.

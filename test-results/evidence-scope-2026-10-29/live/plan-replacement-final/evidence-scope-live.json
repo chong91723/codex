@@ -1,0 +1,86 @@
+{
+  "scope": "Real Flash, browser and independently owned readonly AdventureWorks; source and scope checks are not semantic truth proofs",
+  "checks": [
+    {
+      "name": "计划中的用户年份、阈值及步骤编号不需要预先执行",
+      "passed": true,
+      "evidence": {
+        "userParametersVisible": true,
+        "planEditable": true,
+        "noQueriesBeforeApproval": true
+      }
+    },
+    {
+      "name": "用户确认并修改计划后，真实非数值字段关联来源且执行进度可见",
+      "passed": true,
+      "evidence": {
+        "actualTextFields": [
+          {
+            "column": "item_name",
+            "value": "LL Crankarm"
+          },
+          {
+            "column": "item_class",
+            "value": "Black"
+          }
+        ],
+        "independentMySQLOracleMatched": true,
+        "progressVisible": true,
+        "exportAndHistoryPreserveScope": true
+      }
+    }
+  ],
+  "errors": [],
+  "turns": [
+    {
+      "id": "01a186b7-d09b-77e3-9419-8a3f3bb95354",
+      "status": "completed",
+      "model": "deepseek-flash",
+      "tools": []
+    },
+    {
+      "id": "01a186b8-2ca2-7113-bfd8-ffcf76944e68",
+      "status": "completed",
+      "model": "deepseek-flash",
+      "tools": []
+    },
+    {
+      "id": "01a186b8-44a1-7ba2-9b2c-40874d6cbfbe",
+      "status": "completed",
+      "model": "deepseek-flash",
+      "tools": [
+        {
+          "tool": "describe_database",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "query_database",
+          "status": "failed",
+          "isError": false
+        },
+        {
+          "tool": "read_database_context",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "query_database",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "publish_answer",
+          "status": "completed",
+          "isError": false
+        }
+      ]
+    }
+  ],
+  "clarifications": []
+}

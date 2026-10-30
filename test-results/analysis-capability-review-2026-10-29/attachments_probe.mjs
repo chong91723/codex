@@ -1,0 +1,12 @@
+import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
+const source=fs.readFileSync('/root/Codex/web/public/app.js','utf8');
+const start=source.indexOf('async function readAttachments('),end=source.indexOf('async function fileBrowser(',start);
+assert(start>0&&end>start);
+const draft={attachments:[]},otherDraft={attachments:[]};const notices=[];
+const scope={composerState:()=>otherDraft,renderAttachments:()=>{throw Error('Unexpected DOM work')},toast:t=>notices.push(t),FileReader:class{}};
+vm.createContext(scope);vm.runInContext(source.slice(start,end)+'\nthis.read=readAttachments;',scope);
+const files=[new File(['label,amount\nalpha,9007199254740993\n'],'fixture.csv',{type:'text/csv'}),new File([new Uint8Array([80,75,3,4,255,254,0])],'fixture.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})];
+await scope.read(files,draft);
+assert.equal(draft.attachments.length,2);assert.equal(draft.attachments[0].input.type,'text');assert.equal(draft.attachments[1].input.type,'text');
+assert(!draft.attachments[0].documentId);assert(draft.attachments[1].input.text.includes('\uFFFD'));
+console.log(JSON.stringify({scope:'Actual current readAttachments function in isolated Node VM with browser-compatible File objects; no server/model/network',files:draft.attachments.map(a=>({name:a.name,inputType:a.input.type,hasDocumentId:!!a.documentId,hasReplacementCharacter:a.input.text.includes('\uFFFD')})),result:'CSV is inlined in model text rather than source-evidence import; XLSX binary is decoded as UTF-8 text with replacement characters; no error notice',notices},null,2));

@@ -1,0 +1,44 @@
+{
+  "name": "依赖验收-订单字段统计",
+  "description": "独立验收用字段统计；不声明收入、币种或业务指标含义。",
+  "table": {
+    "name": "salesorderheader"
+  },
+  "fields": {
+    "order_key": {
+      "column": "SalesOrderID",
+      "type": "int",
+      "unit": "1"
+    },
+    "amount": {
+      "column": "TotalDue",
+      "type": "decimal",
+      "unit": "1"
+    }
+  },
+  "recordKey": [
+    "order_key"
+  ],
+  "measures": [
+    {
+      "id": "total",
+      "name": "TotalDue字段合计",
+      "op": "sum",
+      "field": "amount",
+      "unit": "1",
+      "scale": 2,
+      "rounding": "HALF_UP",
+      "nullPolicy": "reject"
+    },
+    {
+      "id": "records",
+      "name": "记录数",
+      "op": "count",
+      "field": "order_key",
+      "unit": "1",
+      "scale": 0,
+      "rounding": "HALF_UP",
+      "nullPolicy": "reject"
+    }
+  ]
+}

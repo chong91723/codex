@@ -1,0 +1,156 @@
+[
+  {
+    "observedAt": "2026-10-29T09:29:54.991Z",
+    "item": {
+      "type": "collabAgentToolCall",
+      "id": "call_00_5kAbrXFQil5XZdlwnzIW3044",
+      "tool": "spawnAgent",
+      "status": "completed",
+      "senderThreadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+      "receiverThreadIds": [
+        "01a186fc-f593-7c22-9141-19cc01b7d7b4"
+      ],
+      "prompt": "你是本次 AdventureWorks 分析的子代理一，只负责“公司总体 2002/2003 月度趋势与同比”。不要创建更多子代理，不要制作最终网页报告或图表，不要写文件，不要创建/批准知识候选，不要修改任何数据，不要使用其他数据源，不要自行裁决冲突。\n\n必须复用的只读数据源与版本：\n- connection/sourceId: 9f0e887b483dd2f73f189590（AdventureWorks 双会话体验（独立只读））\n- sourceVersion: 1\n- snapshotId: ae97724f50d97edc95105c79c3ebb048\n- schemaHash: 7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952\n- businessRevision: 2\n- knowledgeRevision: 3\n先读取 read_database_context 验证上述版本且 blockedConflicts=0。复用已保存结构，不重新采集结构。若版本、知识或状态不一致，立即停止并在最终回复报告阻塞，不可猜测。\n\n任务口径：\n1. 仅分析 order_year 2002 和 2003，使用 OrderDate 的数据库年月，边界 [2002-01-01, 2004-01-01)。\n2. 按月份汇总销售订单头 salesorderheader：订单数 COUNT(DISTINCT SalesOrderID)，销售金额 SUM(SubTotal)，每单金额 SUM(SubTotal)/COUNT(DISTINCT SalesOrderID)。\n3. 不使用 TotalDue；金额保留数据库原单位，不做币种换算；不增加状态业务筛选。先核对 2002/2003 范围内 Status 是否仍然只有单一取值；若非单一，停止并报告。\n4. 形成 12 行可直接用于图表的月度对比，每行含 month、order_count_2002/2003、subtotal_2002/2003、avg_order_value_2002/2003、订单数绝对变化、SubTotal 绝对变化、每单金额绝对变化及相应同比百分比。基期为零时标记不可计算。内部计算不得使用四舍五入后的值。\n5. 另给出两年各自年度订单数与年度 SubTotal 合计，供主 Agent 交叉核对；同时说明每月覆盖检查结果。\n6. 所有正式结果必须由真实查询/计算生成并保留 resultId。最终回复列出实际 resultId、查询条件、来源/版本凭据、状态核对结果、年度合计、异常或失败；不要粘贴全部明细行。",
+      "model": "deepseek-flash",
+      "reasoningEffort": "high",
+      "agentsStates": {
+        "01a186fc-f593-7c22-9141-19cc01b7d7b4": {
+          "status": "pendingInit",
+          "message": null
+        }
+      }
+    }
+  },
+  {
+    "observedAt": "2026-10-29T09:29:54.991Z",
+    "item": {
+      "type": "collabAgentToolCall",
+      "id": "call_01_maXCbjBkRPuXmM91vn3L1070",
+      "tool": "spawnAgent",
+      "status": "completed",
+      "senderThreadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+      "receiverThreadIds": [
+        "01a186fd-03a6-7951-a8af-7066c837ebbf"
+      ],
+      "prompt": "你是本次 AdventureWorks 分析的子代理二，只负责“2002/2003 区域年度变化与订单量/每单金额贡献拆解”，并附带区域月度基础明细。不要创建更多子代理，不要制作最终网页报告或图表，不要写文件，不要创建/批准知识候选，不要修改任何数据，不要使用其他数据源，不要自行裁决冲突。\n\n必须复用的只读数据源与版本：\n- connection/sourceId: 9f0e887b483dd2f73f189590（AdventureWorks 双会话体验（独立只读））\n- sourceVersion: 1\n- snapshotId: ae97724f50d97edc95105c79c3ebb048\n- schemaHash: 7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952\n- businessRevision: 2\n- knowledgeRevision: 3\n先读取 read_database_context 验证上述版本且 blockedConflicts=0。复用已保存结构，不重新采集结构。若版本、知识或状态不一致，立即停止并在最终回复报告阻塞，不可猜测。\n\n任务口径：\n1. 仅分析 2002 和 2003，使用 salesorderheader.OrderDate 的数据库年月，边界 [2002-01-01, 2024-01-01) 中的实际年份必须严格是 2002 与 2003；按 salesterritory.Name 的 10 个具体 Territory 汇总，JOIN 使用已保存的 TerritoryID 外键关系。\n2. 订单数 COUNT(DISTINCT SalesOrderID)，销售金额 SUM(SubTotal)，每单金额 SUM(SubTotal)/COUNT(DISTINCT SalesOrderID)。不使用 TotalDue，金额保留数据库原单位，不换算币种，不增加状态业务筛选。先核对 2002/2003 范围内 Status 是否仍单一；非单一则停止报告。\n3. 区域月度基础结果必须覆盖 10 个区域 × 12 个月，并将 2002/2003 并列。缺失区域月份补 0；每行含区域 ID、Name、国家代码、Group、month、两年订单数、SubTotal、每单金额、同比绝对变化和同比百分比。\n4. 区域年度结果必须覆盖全部 10 个区域，含两年订单数、SubTotal、每单金额、订单数变化、SubTotal 同比差额（保留正负）、SubTotal 同比百分比、每单金额变化及百分比。\n5. 前三按 ABS(2003 SubTotal - 2002 SubTotal) 降序选取；同绝对值时正差额优先，再按 2003 SubTotal 降序、TerritoryID 升序。排名结果必须保留带正负号的差额，绝对变化大的负增长区域也必须能入选。\n6. 对全部 10 区域计算精确贡献：\n   订单量贡献 = 订单数变化 × 2002 每单金额；\n   每单金额贡献 = 2002 订单数 × 每单金额变化；\n   交互项 = 订单数变化 × 每单金额变化。\n   用未四舍五入值校验三项和等于实际 SubTotal 差额；输出可保留足够精度，最终展示再按两位小数。明确给出前三区域的贡献及实际差额。\n7. 给出两年区域合计/公司合计，供主 Agent 交叉核对。\n8. 所有正式结果必须由真实查询/计算生成并保留 resultId（至少区域月度基础、10 区域年度结果、前三排名/贡献）。最终回复列出实际 resultId、查询条件、来源/版本凭据、状态核对、前三结果、贡献校验和异常；不要粘贴全部明细行。",
+      "model": "deepseek-flash",
+      "reasoningEffort": "high",
+      "agentsStates": {
+        "01a186fd-03a6-7951-a8af-7066c837ebbf": {
+          "status": "pendingInit",
+          "message": null
+        }
+      }
+    }
+  },
+  {
+    "observedAt": "2026-10-29T09:29:54.991Z",
+    "item": {
+      "type": "collabAgentToolCall",
+      "id": "call_00_0JHKbBNwGXHMvelN6H5U0530",
+      "tool": "sendInput",
+      "status": "completed",
+      "senderThreadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+      "receiverThreadIds": [
+        "01a186fd-03a6-7951-a8af-7066c837ebbf"
+      ],
+      "prompt": "更正委派文本中的一处笔误：任务边界严格为 [2002-01-01, 2004-01-01)，只包含 2002 和 2003。忽略上一消息里误写的 2024；其余口径不变。请按此更正继续。",
+      "model": null,
+      "reasoningEffort": null,
+      "agentsStates": {
+        "01a186fd-03a6-7951-a8af-7066c837ebbf": {
+          "status": "interrupted",
+          "message": null
+        }
+      }
+    }
+  },
+  {
+    "observedAt": "2026-10-29T09:35:16.858Z",
+    "item": {
+      "type": "collabAgentToolCall",
+      "id": "call_00_B1AkD8yMIGtebmUXdTLP4287",
+      "tool": "wait",
+      "status": "completed",
+      "senderThreadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+      "receiverThreadIds": [
+        "01a186fc-f593-7c22-9141-19cc01b7d7b4"
+      ],
+      "prompt": null,
+      "model": null,
+      "reasoningEffort": null,
+      "agentsStates": {
+        "01a186fc-f593-7c22-9141-19cc01b7d7b4": {
+          "status": "completed",
+          "message": "## 子代理一结果：公司总体 2002/2003 月度趋势与同比\n\n### 来源与版本核对\n\n- 数据源：`AdventureWorks 双会话体验（独立只读）`\n- `sourceId`：`9f0e887b483dd2f73f189590`；`sourceVersion`：`1`\n- 结构快照：`ae97724f50d97edc95105c79c3ebb048`\n- `schemaHash`：`7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952`\n- `businessRevision`：`2`；`knowledgeRevision`：`3`\n- 已采用业务补充与上述版本一致；`blockedConflicts` 为 0。未重新采集结构，未使用其他数据源，未创建或批准知识候选。\n\n### 查询口径与条件\n\n- 时间范围：`OrderDate >= 2002-01-01 AND OrderDate < 2004-01-01`，按数据库中的 `YEAR(OrderDate)`、`MONTH(OrderDate)` 汇总。\n- 仅使用 `salesorderheader` 订单头：订单数为 `COUNT(DISTINCT SalesOrderID)`，SubTotal 为 `SUM(SubTotal)`，每单金额为 `SUM(SubTotal) / COUNT(DISTINCT SalesOrderID)`。\n- 未使用 `TotalDue`，未换算币种，金额按数据库原单位展示，未增加状态业务筛选。\n- 2002–2003 范围内仅有 **1 种 Status**，对应 **16230 个订单**；因此按确认方案不增加状态筛选。月度汇总订单数之和与单一状态订单总数相等，差异为 **0**。\n\n### 年度合计与月份覆盖\n\n| 年度 | 订单数 | SubTotal（数据库原单位） | 覆盖月份 | 月度行数 |\n|---|---:|---:|---:|---:|\n| 2002 | 3720 | 36,812,964.63 | 12 | 12 |\n| 2003 | 12510 | 49,578,680.86 | 12 | 12 |\n\n- 两年均完整覆盖 1–12 月，2002 年基期不存在零订单、零 SubTotal 或零每单金额的月份；订单数、SubTotal、每单金额的同比字段均无空值，因此没有“不可计算”结果需要标记。\n- 月度结果共 **12 行**，包含确认方案要求的 month、两年订单数/SubTotal/每单金额、三项绝对变化及对应同比百分比。\n\n### 保留的结果引用\n\n- 最终月度趋势与同比结果：`cc3d63b047c84ac74e015ebdbbd5c7b2`\n- 月度原始聚合：`c5c22688bbebc918cb4eab112502f0f3`\n- 年度原始合计：`76c4e703235b4ff5c66fd68b7d803a47`\n- 订单状态核对：`30836edfc58f10ecf14a849c941b4876`\n- 年度、月份覆盖与状态验证：`03961a90bbffcca672117b0295bf5a59`\n- 本次年度交接摘要：`21b8fb106ad440b3123349f8b5289ff3`\n\n### 异常与失败\n\n- 没有数据库查询失败。\n- 独立计算的年度 SubTotal 与“月度 SubTotal 逐月求和”存在浮点聚合尾差：2002 年为 **-1.997e-07**，2003 年为 **1.6254e-06**，均小于实际验证所用的 **1e-05** 原单位技术容差。订单数和月份覆盖完全一致。\n- 过程中有两次中间计算脚本失败：一次为严格浮点等号校验，一次为列名访问错误；均已修正并重新计算。失败步骤未作为正式结果提交。"
+        }
+      }
+    }
+  },
+  {
+    "observedAt": "2026-10-29T09:35:16.858Z",
+    "item": {
+      "type": "collabAgentToolCall",
+      "id": "call_00_2tNYTRAE5ifD5zz1vkbu6973",
+      "tool": "wait",
+      "status": "completed",
+      "senderThreadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+      "receiverThreadIds": [
+        "01a186fd-03a6-7951-a8af-7066c837ebbf"
+      ],
+      "prompt": null,
+      "model": null,
+      "reasoningEffort": null,
+      "agentsStates": {
+        "01a186fd-03a6-7951-a8af-7066c837ebbf": {
+          "status": "completed",
+          "message": "## 执行结论\n\n- 分析范围严格为 **2002-01-01（含）至 2004-01-01（不含）**，实际仅包含 2002、2003 两个自然年度。\n- 数据源与依赖核对通过：`sourceId=9f0e887b483dd2f73f189590`、`sourceVersion=1`、快照 `ae97724f50d97edc95105c79c3ebb048`、`schemaHash=7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952`、`businessRevision=2`、`knowledgeRevision=3`、未决冲突为 0。\n- 两年度订单状态均为单一值：2002 年为 5，2003 年为 5，因此未增加状态业务筛选。\n- 共覆盖 10 个 Territory；范围内未关联到 Territory 的订单数为 0。区域月度基础结果为 120 行，区域年度结果为 10 行，前三排名结果为 3 行，全部区域贡献结果为 10 行。\n- 金额均来自 `salesorderheader.SubTotal`，使用数据库原单位，未使用 `TotalDue`、未换算币种。\n\n## 公司合计交叉核对\n\n| 年度 | 订单数 | SubTotal | 每单金额 |\n|---|---:|---:|---:|\n| 2002 | 3,720 | 36,812,964.63 | 9,895.96 |\n| 2003 | 12,510 | 49,578,680.86 | 3,963.12 |\n\n月度骨架合计、区域年度合计与公司订单头合计的订单数和 SubTotal 逐项一致；区域合计覆盖全部 Territory，没有遗漏未匹配订单。\n\n## 前三区域：按 SubTotal 差额绝对值排序\n\n表格中的差额保留正负号。本次前三区域的实际差额均为正，但排序依据始终是绝对差额。\n\n| 排名 | 区域 | 订单数 2002→2003 | 订单变化 | 订单变化率 | SubTotal 2002→2003 | SubTotal 差额 | SubTotal 变化率 | 每单金额 2002→2003 | 每单金额变化率 |\n|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|\n| 1 | France | 272→1,127 | +855 | +314.34% | 1,593,617.93→3,956,937.78 | +2,363,319.84 | +148.30% | 5,858.89→3,511.04 | -40.07% |\n| 2 | United Kingdom | 304→1,360 | +1,056 | +347.37% | 1,653,761.75→4,011,201.27 | +2,357,439.52 | +142.55% | 5,440.01→2,949.41 | -45.78% |\n| 3 | Germany | 234→1,075 | +841 | +359.40% | 523,412.41→2,596,217.73 | +2,072,805.32 | +396.02% | 2,236.81→2,415.09 | +7.97% |\n\n## 订单量与每单金额贡献\n\n贡献公式使用未四舍五入值：订单量贡献 = 订单数变化 × 2002 年每单金额；每单金额贡献 = 2002 年订单数 × 每单金额变化；交互项 = 订单数变化 × 每单金额变化。\n\n| 排名 | 区域 | 订单量贡献 | 每单金额贡献 | 交互项 | 三项合计/实际 SubTotal 差额 |\n|---:|---|---:|---:|---:|---:|\n| 1 | France | +5,009,350.49 | -638,616.09 | -2,007,414.55 | +2,363,319.84 |\n| 2 | United Kingdom | +5,744,646.09 | -757,140.29 | -2,630,066.28 | +2,357,439.52 |\n| 3 | Germany | +1,881,153.15 | +41,717.77 | +149,934.39 | +2,072,805.32 |\n\nFrance 与 United Kingdom 的净增长主要来自订单量贡献，每单金额贡献和交互项为负值，抵消了部分增量；Germany 的三项贡献均为正。\n\n## 校验与异常\n\n- 精确恒等校验覆盖 10 个区域，通过 10 个；按未舍入有理数计算，任一区域精确恒等残差标志为 0。\n- 三项贡献按两位小数展示后，受独立四舍五入影响，最大显示残差为 0.0000000001；未舍入计算本身残差为 0。区域月度、区域年度和公司合计的数量与精度未发现异常。\n- 未发现版本、来源、状态、区域关联、月份覆盖或合计不平衡问题，无阻塞。\n\n## 实际 resultId\n\n- 区域月度基础结果（120 行）：`87a336efb57976727efc3d992f1930e7`\n- 10 区域年度结果：`23f4798b256d6189f122a741c04bed15`\n- 全部 10 区域贡献拆解：`31d26e7367fa8fdbb520ee573d6e59ec`\n- 前三绝对差额排名与贡献：`2e625a812a1a05d6248da2a0ee6ea9ae`\n- 公司年度合计：`55af9ce60e4799d09a6617fc9549b0eb`\n- 范围与合计校验集：`9bf812eb313b4e893fbc7d9b846ee188`\n- 精确贡献校验汇总：`73c72fd02d13ee0a523bd630369ca2ae`\n- 前三与公司合计两位小数展示结果：`2718b3724a3243e521ef1c580896266c`\n\n查询条件为：`OrderDate >= '2002-01-01' AND OrderDate < '2004-01-01'`；按 `salesorderheader.TerritoryID = salesterritory.TerritoryID` 已保存的声明外键关联；订单数 `COUNT(DISTINCT SalesOrderID)`，SubTotal 为 `SUM(SubTotal)`，每单金额为 `SUM(SubTotal)/COUNT(DISTINCT SalesOrderID)`。"
+        }
+      }
+    }
+  },
+  {
+    "observedAt": "2026-10-29T09:35:16.858Z",
+    "item": {
+      "type": "collabAgentToolCall",
+      "id": "call_00_rQ559zcZLa1VXv7TT6zo0299",
+      "tool": "closeAgent",
+      "status": "completed",
+      "senderThreadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+      "receiverThreadIds": [
+        "01a186fc-f593-7c22-9141-19cc01b7d7b4"
+      ],
+      "prompt": null,
+      "model": null,
+      "reasoningEffort": null,
+      "agentsStates": {
+        "01a186fc-f593-7c22-9141-19cc01b7d7b4": {
+          "status": "completed",
+          "message": "## 子代理一结果：公司总体 2002/2003 月度趋势与同比\n\n### 来源与版本核对\n\n- 数据源：`AdventureWorks 双会话体验（独立只读）`\n- `sourceId`：`9f0e887b483dd2f73f189590`；`sourceVersion`：`1`\n- 结构快照：`ae97724f50d97edc95105c79c3ebb048`\n- `schemaHash`：`7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952`\n- `businessRevision`：`2`；`knowledgeRevision`：`3`\n- 已采用业务补充与上述版本一致；`blockedConflicts` 为 0。未重新采集结构，未使用其他数据源，未创建或批准知识候选。\n\n### 查询口径与条件\n\n- 时间范围：`OrderDate >= 2002-01-01 AND OrderDate < 2004-01-01`，按数据库中的 `YEAR(OrderDate)`、`MONTH(OrderDate)` 汇总。\n- 仅使用 `salesorderheader` 订单头：订单数为 `COUNT(DISTINCT SalesOrderID)`，SubTotal 为 `SUM(SubTotal)`，每单金额为 `SUM(SubTotal) / COUNT(DISTINCT SalesOrderID)`。\n- 未使用 `TotalDue`，未换算币种，金额按数据库原单位展示，未增加状态业务筛选。\n- 2002–2003 范围内仅有 **1 种 Status**，对应 **16230 个订单**；因此按确认方案不增加状态筛选。月度汇总订单数之和与单一状态订单总数相等，差异为 **0**。\n\n### 年度合计与月份覆盖\n\n| 年度 | 订单数 | SubTotal（数据库原单位） | 覆盖月份 | 月度行数 |\n|---|---:|---:|---:|---:|\n| 2002 | 3720 | 36,812,964.63 | 12 | 12 |\n| 2003 | 12510 | 49,578,680.86 | 12 | 12 |\n\n- 两年均完整覆盖 1–12 月，2002 年基期不存在零订单、零 SubTotal 或零每单金额的月份；订单数、SubTotal、每单金额的同比字段均无空值，因此没有“不可计算”结果需要标记。\n- 月度结果共 **12 行**，包含确认方案要求的 month、两年订单数/SubTotal/每单金额、三项绝对变化及对应同比百分比。\n\n### 保留的结果引用\n\n- 最终月度趋势与同比结果：`cc3d63b047c84ac74e015ebdbbd5c7b2`\n- 月度原始聚合：`c5c22688bbebc918cb4eab112502f0f3`\n- 年度原始合计：`76c4e703235b4ff5c66fd68b7d803a47`\n- 订单状态核对：`30836edfc58f10ecf14a849c941b4876`\n- 年度、月份覆盖与状态验证：`03961a90bbffcca672117b0295bf5a59`\n- 本次年度交接摘要：`21b8fb106ad440b3123349f8b5289ff3`\n\n### 异常与失败\n\n- 没有数据库查询失败。\n- 独立计算的年度 SubTotal 与“月度 SubTotal 逐月求和”存在浮点聚合尾差：2002 年为 **-1.997e-07**，2003 年为 **1.6254e-06**，均小于实际验证所用的 **1e-05** 原单位技术容差。订单数和月份覆盖完全一致。\n- 过程中有两次中间计算脚本失败：一次为严格浮点等号校验，一次为列名访问错误；均已修正并重新计算。失败步骤未作为正式结果提交。"
+        }
+      }
+    }
+  },
+  {
+    "observedAt": "2026-10-29T09:35:16.858Z",
+    "item": {
+      "type": "collabAgentToolCall",
+      "id": "call_01_sXQJPS8pQKE4glWthkg82829",
+      "tool": "closeAgent",
+      "status": "completed",
+      "senderThreadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+      "receiverThreadIds": [
+        "01a186fd-03a6-7951-a8af-7066c837ebbf"
+      ],
+      "prompt": null,
+      "model": null,
+      "reasoningEffort": null,
+      "agentsStates": {
+        "01a186fd-03a6-7951-a8af-7066c837ebbf": {
+          "status": "completed",
+          "message": "## 执行结论\n\n- 分析范围严格为 **2002-01-01（含）至 2004-01-01（不含）**，实际仅包含 2002、2003 两个自然年度。\n- 数据源与依赖核对通过：`sourceId=9f0e887b483dd2f73f189590`、`sourceVersion=1`、快照 `ae97724f50d97edc95105c79c3ebb048`、`schemaHash=7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952`、`businessRevision=2`、`knowledgeRevision=3`、未决冲突为 0。\n- 两年度订单状态均为单一值：2002 年为 5，2003 年为 5，因此未增加状态业务筛选。\n- 共覆盖 10 个 Territory；范围内未关联到 Territory 的订单数为 0。区域月度基础结果为 120 行，区域年度结果为 10 行，前三排名结果为 3 行，全部区域贡献结果为 10 行。\n- 金额均来自 `salesorderheader.SubTotal`，使用数据库原单位，未使用 `TotalDue`、未换算币种。\n\n## 公司合计交叉核对\n\n| 年度 | 订单数 | SubTotal | 每单金额 |\n|---|---:|---:|---:|\n| 2002 | 3,720 | 36,812,964.63 | 9,895.96 |\n| 2003 | 12,510 | 49,578,680.86 | 3,963.12 |\n\n月度骨架合计、区域年度合计与公司订单头合计的订单数和 SubTotal 逐项一致；区域合计覆盖全部 Territory，没有遗漏未匹配订单。\n\n## 前三区域：按 SubTotal 差额绝对值排序\n\n表格中的差额保留正负号。本次前三区域的实际差额均为正，但排序依据始终是绝对差额。\n\n| 排名 | 区域 | 订单数 2002→2003 | 订单变化 | 订单变化率 | SubTotal 2002→2003 | SubTotal 差额 | SubTotal 变化率 | 每单金额 2002→2003 | 每单金额变化率 |\n|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|\n| 1 | France | 272→1,127 | +855 | +314.34% | 1,593,617.93→3,956,937.78 | +2,363,319.84 | +148.30% | 5,858.89→3,511.04 | -40.07% |\n| 2 | United Kingdom | 304→1,360 | +1,056 | +347.37% | 1,653,761.75→4,011,201.27 | +2,357,439.52 | +142.55% | 5,440.01→2,949.41 | -45.78% |\n| 3 | Germany | 234→1,075 | +841 | +359.40% | 523,412.41→2,596,217.73 | +2,072,805.32 | +396.02% | 2,236.81→2,415.09 | +7.97% |\n\n## 订单量与每单金额贡献\n\n贡献公式使用未四舍五入值：订单量贡献 = 订单数变化 × 2002 年每单金额；每单金额贡献 = 2002 年订单数 × 每单金额变化；交互项 = 订单数变化 × 每单金额变化。\n\n| 排名 | 区域 | 订单量贡献 | 每单金额贡献 | 交互项 | 三项合计/实际 SubTotal 差额 |\n|---:|---|---:|---:|---:|---:|\n| 1 | France | +5,009,350.49 | -638,616.09 | -2,007,414.55 | +2,363,319.84 |\n| 2 | United Kingdom | +5,744,646.09 | -757,140.29 | -2,630,066.28 | +2,357,439.52 |\n| 3 | Germany | +1,881,153.15 | +41,717.77 | +149,934.39 | +2,072,805.32 |\n\nFrance 与 United Kingdom 的净增长主要来自订单量贡献，每单金额贡献和交互项为负值，抵消了部分增量；Germany 的三项贡献均为正。\n\n## 校验与异常\n\n- 精确恒等校验覆盖 10 个区域，通过 10 个；按未舍入有理数计算，任一区域精确恒等残差标志为 0。\n- 三项贡献按两位小数展示后，受独立四舍五入影响，最大显示残差为 0.0000000001；未舍入计算本身残差为 0。区域月度、区域年度和公司合计的数量与精度未发现异常。\n- 未发现版本、来源、状态、区域关联、月份覆盖或合计不平衡问题，无阻塞。\n\n## 实际 resultId\n\n- 区域月度基础结果（120 行）：`87a336efb57976727efc3d992f1930e7`\n- 10 区域年度结果：`23f4798b256d6189f122a741c04bed15`\n- 全部 10 区域贡献拆解：`31d26e7367fa8fdbb520ee573d6e59ec`\n- 前三绝对差额排名与贡献：`2e625a812a1a05d6248da2a0ee6ea9ae`\n- 公司年度合计：`55af9ce60e4799d09a6617fc9549b0eb`\n- 范围与合计校验集：`9bf812eb313b4e893fbc7d9b846ee188`\n- 精确贡献校验汇总：`73c72fd02d13ee0a523bd630369ca2ae`\n- 前三与公司合计两位小数展示结果：`2718b3724a3243e521ef1c580896266c`\n\n查询条件为：`OrderDate >= '2002-01-01' AND OrderDate < '2004-01-01'`；按 `salesorderheader.TerritoryID = salesterritory.TerritoryID` 已保存的声明外键关联；订单数 `COUNT(DISTINCT SalesOrderID)`，SubTotal 为 `SUM(SubTotal)`，每单金额为 `SUM(SubTotal)/COUNT(DISTINCT SalesOrderID)`。"
+        }
+      }
+    }
+  }
+]

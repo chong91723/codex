@@ -1,0 +1,118 @@
+{
+  "date": "2026-10-30",
+  "model": "deepseek-flash",
+  "nativeCapabilityFirst": true,
+  "singleExecutingRootIsResourcePolicy": true,
+  "cases": [
+    {
+      "id": "T30-001",
+      "topic": "真实SQL执行期间知识变更",
+      "status": "passed",
+      "evidence": [
+        "T01-inflight-result.json",
+        "T01B-connection-inflight.json"
+      ],
+      "coverage": "real in-flight knowledge and connection edits; source freshness positive expiry is separately T07"
+    },
+    {
+      "id": "T30-002",
+      "topic": "原生持久目标及队列恢复与另一会话竞争",
+      "status": "passed",
+      "evidence": [
+        "T02-native-durable-setup.json",
+        "T02-actual-resume-race.json",
+        "T02-autowork-progress.json",
+        "T02-final-proof.json"
+      ]
+    },
+    {
+      "id": "T30-003",
+      "topic": "运行中的原生child随父停止和回收",
+      "status": "passed",
+      "evidence": [
+        "T03-stop-regression.json",
+        "group-stop-after.log"
+      ]
+    },
+    {
+      "id": "T30-004",
+      "topic": "原生进程与Web服务故障/恢复/回执丢失",
+      "status": "passed",
+      "evidence": [
+        "T04-native-crash.json",
+        "T04-ack-unknown-state.json",
+        "T04-ack-recovered.json",
+        "T04-web-crash-baseline2.json",
+        "T04-web-crash-after.json"
+      ]
+    },
+    {
+      "id": "T30-005",
+      "topic": "原生澄清等待下的后端准入矩阵",
+      "status": "passed",
+      "evidence": [
+        "T05-native-input-admission-matrix.json",
+        "T05-after-answer-status.json",
+        "T05-user-answered.json"
+      ]
+    },
+    {
+      "id": "T30-006",
+      "topic": "记忆编辑/暂停/清空与真实分析行为",
+      "status": "passedImmediateControlsAndCrossThreadRead;globalReMergeScheduled",
+      "evidence": [
+        "T06-paused-task-final.json",
+        "T06-enabled-task-final.json",
+        "T06-clear-success.json",
+        "T06-memory-stale-edit-rejected.json",
+        "T06-previous-timer-result.json",
+        "T06-edited-global-memory-scheduled.json"
+      ]
+    },
+    {
+      "id": "T30-007",
+      "topic": "PG/CH/ES新版协作链",
+      "status": "passed",
+      "evidence": [
+        "T07-postgresql-final.json",
+        "T07-clickhouse-final.json",
+        "T07-elasticsearch-final.json",
+        "T07-offline-exports.json",
+        "T07-clickhouse-expiry-final.json"
+      ]
+    },
+    {
+      "id": "T30-008",
+      "topic": "四个保留Codex原生技能真实调用",
+      "status": "passedRetainedLocalWorkflows",
+      "evidence": [
+        "T08-openai-docs.json",
+        "T08-review-agent.json",
+        "T08-skill-creator.json",
+        "T08-skill-installer.json"
+      ],
+      "notTested": "online downloads/installations; outside current non-native skill scope"
+    },
+    {
+      "id": "T30-009",
+      "topic": "一小时资源实测和重复历史操作",
+      "status": "completedOneHourWithExplicitScopeLimitations",
+      "evidence": [
+        "resource-final-summary.json",
+        "T09-resource-final.json",
+        "T09-repeated-history.json"
+      ],
+      "priorPartialLimitation": "Earlier sampler lost authentication after service restart; partial data retained, excluded from full-hour conclusion."
+    },
+    {
+      "id": "T30-010",
+      "topic": "此前条件跳过的四个集成用例",
+      "status": "passed",
+      "evidence": [
+        "opt-in-final.log",
+        "opt-in-after.log"
+      ],
+      "firstFailure": "opt-in-before/tests.log"
+    }
+  ]
+}

@@ -1,0 +1,478 @@
+{
+  "ok": true,
+  "issues": [],
+  "score": {
+    "dimensions": [
+      {
+        "name": "format",
+        "total": 21,
+        "bad": 0,
+        "samples": [],
+        "note": "ValidateEntryLine硬拒级违规;全量: aoci index score --dim format"
+      },
+      {
+        "name": "coverage",
+        "total": 21,
+        "bad": 0,
+        "samples": [],
+        "note": "实际待补录覆盖缺口，仅统计ActionableMissing;完整原始差集与策展子集见aoci verify"
+      },
+      {
+        "name": "freshness",
+        "total": 21,
+        "bad": 0,
+        "samples": [],
+        "note": "未解决治理路径: ActionableMissing+PendingCurationMissing+Orphan+Stale+Unbaselined(按路径去重);LineEndingOnly不计欠账;原始四态与已解释排除见aoci verify"
+      },
+      {
+        "name": "squota",
+        "total": 21,
+        "bad": 0,
+        "samples": [],
+        "note": "S字段超配额(头部S配额声明生效,未声明档回退默认;Warning级策展欠账);全量: aoci index score --dim squota"
+      },
+      {
+        "name": "dict",
+        "total": 21,
+        "bad": 0,
+        "samples": [],
+        "note": "标签符号不在头部字典(Warning级;entries apply场景为硬拒);全量: aoci index score --dim dict"
+      },
+      {
+        "name": "token",
+        "total": 4026,
+        "bad": 0,
+        "samples": [],
+        "note": "索引全文token粗估(estimated口径,rune×0.6趋势参考,禁作精确计费)"
+      },
+      {
+        "name": "agent_ready",
+        "total": 3,
+        "bad": 0,
+        "samples": [],
+        "note": "agent可用性三要素: 头部字典可用/基线存在/条目非空"
+      },
+      {
+        "name": "escale",
+        "total": 21,
+        "bad": 0,
+        "samples": [],
+        "note": "条目E档位与文件实际行数错配(Warning级);全量: aoci index score --dim escale;.aoci治理运行时资产不参与代码规模判定"
+      },
+      {
+        "name": "tagparse",
+        "total": 21,
+        "bad": 0,
+        "samples": [],
+        "note": "标签结构在场但无法按ABCDE规则解析(Warning级,dict/escale会跳过);全量: aoci index score --dim tagparse"
+      }
+    ],
+    "entry_count": 21,
+    "disk_count": 21,
+    "index_tokens_estimated": 4026,
+    "curation_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "drift": {
+      "missing": 0,
+      "raw_missing": 0,
+      "orphan": 0,
+      "stale": 0,
+      "unbaselined": 0,
+      "line_ending_only": 0,
+      "actionable_missing": 0,
+      "included_missing": 0,
+      "curation_excluded_missing": 0,
+      "skipped_missing": 0,
+      "pending_curation": 0,
+      "pending_curation_missing": 0,
+      "stale_curation_decisions": 0,
+      "observed_new": 0,
+      "observed_changed": 0,
+      "observed_removed": 0
+    },
+    "managed_scope": {
+      "scope_change_required": false,
+      "observe_review_required": true,
+      "scope_policy_identity": "72be7c4b06ef8deecdfef8c421fed1b471afac454e9ec6ab8824a7b89fc3c693",
+      "active_scope_policy_identity": "72be7c4b06ef8deecdfef8c421fed1b471afac454e9ec6ab8824a7b89fc3c693",
+      "index_count": 21,
+      "observe_count": 0,
+      "exclude_count": 106678,
+      "observed_pending_review": 0
+    },
+    "cognition_budget": {
+      "version": "cognition-budget-report/v1",
+      "mode": "enforce",
+      "budget_status": "healthy",
+      "whole_index_tokens": 3679,
+      "target_tokens": 200000,
+      "warning_tokens": 300000,
+      "max_tokens": 400000,
+      "header_tokens": 954,
+      "f_tokens": 127,
+      "r_tokens": 572,
+      "a_tokens": 271,
+      "s_tokens": 1386,
+      "structure_tokens": 369,
+      "entry_count": 21,
+      "largest_entries": [
+        {
+          "path": "web/database/learning.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 48,
+          "a_tokens": 20,
+          "s_tokens": 81,
+          "entry_total_tokens": 168
+        },
+        {
+          "path": "web/database/service.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 43,
+          "a_tokens": 13,
+          "s_tokens": 78,
+          "entry_total_tokens": 153
+        },
+        {
+          "path": "web/public/app.js",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 27,
+          "a_tokens": 23,
+          "s_tokens": 84,
+          "entry_total_tokens": 151
+        },
+        {
+          "path": "web/public/analysis-reports.js",
+          "importance": 8,
+          "f_tokens": 6,
+          "r_tokens": 29,
+          "a_tokens": 26,
+          "s_tokens": 71,
+          "entry_total_tokens": 147
+        },
+        {
+          "path": "web/database/metric_rules.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 26,
+          "a_tokens": 14,
+          "s_tokens": 86,
+          "entry_total_tokens": 146
+        },
+        {
+          "path": "web/database/database_knowledge.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 30,
+          "a_tokens": 18,
+          "s_tokens": 73,
+          "entry_total_tokens": 143
+        },
+        {
+          "path": "web/database/mcp_server.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 36,
+          "a_tokens": 18,
+          "s_tokens": 68,
+          "entry_total_tokens": 142
+        },
+        {
+          "path": "web/analysis_evidence.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 28,
+          "a_tokens": 20,
+          "s_tokens": 71,
+          "entry_total_tokens": 141
+        },
+        {
+          "path": "web/native_memory.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 25,
+          "a_tokens": 16,
+          "s_tokens": 77,
+          "entry_total_tokens": 138
+        },
+        {
+          "path": "web/public/analysis-learning.js",
+          "importance": 8,
+          "f_tokens": 6,
+          "r_tokens": 24,
+          "a_tokens": 30,
+          "s_tokens": 61,
+          "entry_total_tokens": 137
+        }
+      ],
+      "largest_r": [
+        {
+          "path": "web/database/learning.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 48,
+          "a_tokens": 20,
+          "s_tokens": 81,
+          "entry_total_tokens": 168
+        },
+        {
+          "path": "web/database/service.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 43,
+          "a_tokens": 13,
+          "s_tokens": 78,
+          "entry_total_tokens": 153
+        },
+        {
+          "path": "web/database/mcp_server.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 36,
+          "a_tokens": 18,
+          "s_tokens": 68,
+          "entry_total_tokens": 142
+        },
+        {
+          "path": "web/tests/test_analysis_learning.py",
+          "importance": 8,
+          "f_tokens": 6,
+          "r_tokens": 34,
+          "a_tokens": 8,
+          "s_tokens": 66,
+          "entry_total_tokens": 131
+        },
+        {
+          "path": "DATABASE_EXPLORATION.md",
+          "importance": 8,
+          "f_tokens": 6,
+          "r_tokens": 33,
+          "a_tokens": 0,
+          "s_tokens": 54,
+          "entry_total_tokens": 109
+        },
+        {
+          "path": "REPORT_MEMORY_LOOP.md",
+          "importance": 8,
+          "f_tokens": 6,
+          "r_tokens": 33,
+          "a_tokens": 0,
+          "s_tokens": 56,
+          "entry_total_tokens": 111
+        },
+        {
+          "path": "web/database/database_knowledge.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 30,
+          "a_tokens": 18,
+          "s_tokens": 73,
+          "entry_total_tokens": 143
+        },
+        {
+          "path": "web/public/analysis-reports.js",
+          "importance": 8,
+          "f_tokens": 6,
+          "r_tokens": 29,
+          "a_tokens": 26,
+          "s_tokens": 71,
+          "entry_total_tokens": 147
+        },
+        {
+          "path": "README.md",
+          "importance": 8,
+          "f_tokens": 7,
+          "r_tokens": 28,
+          "a_tokens": 0,
+          "s_tokens": 53,
+          "entry_total_tokens": 100
+        },
+        {
+          "path": "web/analysis_evidence.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 28,
+          "a_tokens": 20,
+          "s_tokens": 71,
+          "entry_total_tokens": 141
+        }
+      ],
+      "largest_s": [
+        {
+          "path": "web/database/metric_rules.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 26,
+          "a_tokens": 14,
+          "s_tokens": 86,
+          "entry_total_tokens": 146
+        },
+        {
+          "path": "web/public/app.js",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 27,
+          "a_tokens": 23,
+          "s_tokens": 84,
+          "entry_total_tokens": 151
+        },
+        {
+          "path": "web/database/learning.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 48,
+          "a_tokens": 20,
+          "s_tokens": 81,
+          "entry_total_tokens": 168
+        },
+        {
+          "path": "web/database/service.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 43,
+          "a_tokens": 13,
+          "s_tokens": 78,
+          "entry_total_tokens": 153
+        },
+        {
+          "path": "web/native_memory.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 25,
+          "a_tokens": 16,
+          "s_tokens": 77,
+          "entry_total_tokens": 138
+        },
+        {
+          "path": "web/database/database_knowledge.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 30,
+          "a_tokens": 18,
+          "s_tokens": 73,
+          "entry_total_tokens": 143
+        },
+        {
+          "path": "web/server.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 28,
+          "a_tokens": 16,
+          "s_tokens": 73,
+          "entry_total_tokens": 134
+        },
+        {
+          "path": "web/memory_scheduler.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 19,
+          "a_tokens": 16,
+          "s_tokens": 72,
+          "entry_total_tokens": 128
+        },
+        {
+          "path": "web/analysis_evidence.py",
+          "importance": 9,
+          "f_tokens": 6,
+          "r_tokens": 28,
+          "a_tokens": 20,
+          "s_tokens": 71,
+          "entry_total_tokens": 141
+        },
+        {
+          "path": "web/public/analysis-reports.js",
+          "importance": 8,
+          "f_tokens": 6,
+          "r_tokens": 29,
+          "a_tokens": 26,
+          "s_tokens": 71,
+          "entry_total_tokens": 147
+        }
+      ],
+      "violations": [],
+      "whole_index_policy": {
+        "target_tokens": 200000,
+        "warning_tokens": 300000,
+        "max_tokens": 400000
+      },
+      "s_coverage": [
+        {
+          "min_c": 1,
+          "max_c": 4,
+          "entries": 0,
+          "s_present": 0
+        },
+        {
+          "min_c": 5,
+          "max_c": 7,
+          "entries": 2,
+          "s_present": 2
+        },
+        {
+          "min_c": 8,
+          "max_c": 8,
+          "entries": 9,
+          "s_present": 9
+        },
+        {
+          "min_c": 9,
+          "max_c": 9,
+          "entries": 10,
+          "s_present": 10
+        }
+      ],
+      "high_importance_entries": 21,
+      "high_importance_s_absent": 0,
+      "high_importance_s_absent_percent": 0
+    }
+  },
+  "locale_migration": {
+    "active": false,
+    "header": {
+      "total": 0,
+      "pending": 0
+    },
+    "ordinary_entries": {
+      "total": 0,
+      "pending": 0
+    },
+    "governance_entries": {
+      "total": 0,
+      "pending": 0
+    },
+    "curation": {
+      "total": 0,
+      "pending": 0
+    },
+    "managed_index_text": {
+      "total": 0,
+      "pending": 0
+    },
+    "agents_managed_block": {
+      "total": 0,
+      "pending": 0,
+      "status": "aligned"
+    },
+    "runtime_contracts": {
+      "total": 0,
+      "pending": 0,
+      "status": "aligned"
+    },
+    "excluded": [
+      {
+        "surface": "paths_identifiers_apis_and_project_names",
+        "reason": "路径、标识符、API与项目专有名词是受保护的仓库事实，不属于自然语言迁移目标"
+      },
+      {
+        "surface": "source_and_source_comments",
+        "reason": "项目源码与原始源码注释不属于AOCI托管翻译内容"
+      },
+      {
+        "surface": "agents_unmanaged_region_and_user_documents",
+        "reason": "AGENTS非托管区与用户自行维护的文档不属于AOCI托管表面"
+      }
+    ],
+    "unresolved": []
+  }
+}

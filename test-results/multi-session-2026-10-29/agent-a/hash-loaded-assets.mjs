@@ -1,0 +1,13 @@
+import { chromium } from '/root/Codex/.toolchains/playwright/node_modules/playwright/index.mjs';
+import fs from 'node:fs/promises';
+import crypto from 'node:crypto';
+const dir='/tmp/codex-collab-audit-20261029/agent-a';
+const targets=new Set(['app.js','subagents.js','databases.js','analysis-evidence.js','native-ui.css']);
+const assets=[];const jobs=[];
+const browser=await chromium.launch({executablePath:'/root/Codex/.toolchains/playwright-browsers/chromium-1248/chrome-linux64/chrome',headless:true,args:['--no-sandbox']});
+const page=await browser.newPage();
+page.on('response',r=>{const file=new URL(r.url()).pathname.split('/').pop();if(targets.has(file))jobs.push((async()=>{const b=await r.body();assets.push({path:file,status:r.status(),sha256:crypto.createHash('sha256').update(b).digest('hex')});})());});
+await page.goto('http://127.0.0.1:44437/',{waitUntil:'domcontentloaded'});
+await Promise.all(jobs);
+const out={observedAt:new Date().toISOString(),source:'Playwright actual browser asset responses',assets};
+await fs.writeFile(`${dir}/regression-loaded-assets.json`,JSON.stringify(out,null,2));console.log(JSON.stringify(out));await browser.close();

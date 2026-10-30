@@ -1,0 +1,81 @@
+--- before/web/public/app.js
++++ after/web/public/app.js
+@@ -746,6 +746,21 @@
+ }
+ function setCwd(path) { state.selectedCwd = path; localStorage.setItem('codex.cwd', path); const name = path.split('/').filter(Boolean).pop() || path; $('#project-name').textContent = name; $('#breadcrumb').textContent = name; $('#cwd-label').textContent = path; }
+ function threadRoute(){const params=new URLSearchParams(location.search);return {id:params.get('thread'),archived:params.get('archived')==='1'};}
++// The static page is neutral until its route is known. Render before any
++// startup await; restoring a conversation must never display the new-task view.
++function renderThreadLoading(id){
++  const thread=state.knownThreads.get(id)||(state.thread?.id===id?state.thread:null);
++  $('#welcome').hidden=true;$('#view-chat').classList.remove('empty');$('#prompt').disabled=true;$('#jump-latest').hidden=true;
++  $('#page-title').textContent=thread?.name||thread?.preview||'正在恢复分析…';
++  const notice=el('div','loading','正在恢复当前分析…');notice.setAttribute('role','status');$('#messages').replaceChildren(notice);
++}
++function renderInitialConversation(){
++  const route=threadRoute();state.threadLoading=!!route.id;
++  if(route.id)renderThreadLoading(route.id);
++  else{$('#welcome').hidden=false;$('#view-chat').classList.add('empty');$('#messages').replaceChildren();$('#page-title').textContent='新分析';$('#prompt').disabled=false;}
++  return route;
++}
++
+ function setThreadRoute(id=null,archived=false,replace=false){const url=new URL(location.href);url.searchParams.delete('token');url.searchParams.delete('thread');url.searchParams.delete('archived');if(id){url.searchParams.set('thread',id);if(archived)url.searchParams.set('archived','1');}if(url.href!==location.href)history[replace?'replaceState':'pushState'](null,'',url);}
+ function resetChat(route=true) {closeThreadMenu(false);rememberScroll();const fresh=state.composerKey==='new'&&composerState().pending;switchComposer('new',fresh);restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.hydration=null;state.historyPage=null;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='描述分析问题、指标和时间范围，或添加资料'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false;$('#jump-latest').hidden=true;  $('#page-title').textContent = '新分析'; $('#plan-summary').hidden = true; renderContextUsage(); renderThreadList(); renderRequests(); updateSend(); resetNativeUI(); }
+ function adoptThread(thread,archived=false,busy=false) { state.knownThreads.set(thread.id,thread);if(state.composerKey!==thread.id)switchComposer(thread.id);if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=busy||archived;$('#prompt').placeholder=busy?'会话只读：请关闭占用页面后重试继续对话':archived?'会话已归档：请在侧栏恢复后继续对话':'继续提问、调整分析口径或补充资料';$('#page-title').textContent=thread.name||thread.preview||'新分析';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); adoptNativeUI(thread); }
+@@ -762,7 +777,7 @@
+ }
+ async function openThread(id,{archived=state.archived&&state.threads.some(thread=>thread.id===id),replace=false}={}) {
+   closeThreadMenu(false);rememberScroll();saveComposer();const generation=++state.navigationGeneration;state.hydration={threadId:id,generation,events:[]};state.historyPage=null;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
+-  showView('chat');$('#jump-latest').hidden=true;$('#view-chat').classList.remove('empty');$('#prompt').disabled=true;$('#welcome').hidden=true;$('#messages').replaceChildren(el('div','loading','读取原生会话…'));state.items.clear();state.live.clear();
++  showView('chat');renderThreadLoading(id);state.items.clear();state.live.clear();
+   try {
+     // Viewing history and reattaching native approvals do not consume analysis
+     // memory. Fetch it before an actual submission in submitPrompt instead;
+@@ -799,7 +814,7 @@
+     if(generation!==state.navigationGeneration)return;
+     const maintenance=error.nativeError?.data?.webMemoryMaintenance;
+     if(maintenance||isMemoryMaintenanceThread(id)){showMemoryMaintenanceThread(id,maintenance);return;}
+-    state.restoreError=true;state.thread=null;
++    state.restoreError=true;state.thread=null;$('#page-title').textContent='会话恢复失败';
+     $('#messages').replaceChildren(el('div','panel-error','无法恢复此会话：'+nativeErrorMessage(error)),button('重试恢复会话',()=>openThread(id,{archived,replace:true})),button('携带草稿新建分析',()=>recoverAnalysisDraft(id)),button('新分析',()=>resetChat()));
+   } finally {if(generation===state.navigationGeneration){state.hydration=null;state.threadLoading=false;$('#prompt').disabled=state.restoreError;updateSend();restoreScroll();}}
+ }
+@@ -1056,7 +1071,7 @@
+   state.view = view; $$('.main-nav .nav-button,.sidebar-footer .nav-button').forEach(node => node.classList.toggle('active', node.dataset.view === view));
+   $('#view-chat').hidden = view !== 'chat'; $('#view-panel').hidden = view === 'chat';
+   if(window.innerWidth<760)document.body.classList.add('sidebar-hidden');
+-  if (view === 'chat') { $('#page-title').textContent = state.thread?.name || state.thread?.preview || '新分析'; $('#prompt').focus(); return; }
++  if (view === 'chat') { $('#page-title').textContent = state.restoreError?'会话恢复失败':state.threadLoading?'正在恢复分析…':state.thread?.name||state.thread?.preview||'新分析'; $('#prompt').focus(); return; }
+   const title = {databases:'数据源',skills:'技能',mcp:'MCP 服务',plugins:'本地插件',protocol:'原生能力',settings:'设置',account:'模型服务'}[view]; $('#page-title').textContent = title;
+   $('#panel-content').replaceChildren(el('div', 'loading', '正在加载…'));
+   ({ databases:renderDatabases, skills:renderSkills, mcp:renderMcp, plugins:renderPlugins, protocol:renderProtocol, settings:renderSettings, account:renderAccount })[view]?.().catch(error => { if (state.view === view) panelError(error); });
+@@ -1546,7 +1561,7 @@
+ function toggleTheme(){const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;localStorage.setItem('codex.theme',theme);}
+ async function fetchJSON(path){const response=await fetch(path);if(!response.ok)throw new Error((await response.json()).error||'HTTP '+response.status);return response.json();}
+ async function init(){
+-  const cleanURL=new URL(location.href);cleanURL.searchParams.delete('token');history.replaceState(null,'',cleanURL);switchComposer(threadRoute().id||'new');state.threadLoading=!!threadRoute().id;updateSend();window.addEventListener('popstate',()=>restoreThreadRoute().catch(report));document.documentElement.dataset.theme=localStorage.getItem('codex.theme')||'light';if(innerWidth<760)document.body.classList.add('sidebar-hidden');
++  const cleanURL=new URL(location.href);cleanURL.searchParams.delete('token');history.replaceState(null,'',cleanURL);const route=renderInitialConversation();switchComposer(route.id||'new');updateSend();window.addEventListener('popstate',()=>restoreThreadRoute().catch(report));document.documentElement.dataset.theme=localStorage.getItem('codex.theme')||'light';if(innerWidth<760)document.body.classList.add('sidebar-hidden');
+   $$('[data-view]').forEach(node=>node.onclick=()=>{if(node.id==='new-chat'){resetChat();}showView(node.dataset.view);});
+   $('#collapse').onclick=()=>document.body.classList.add('sidebar-hidden');$('#show-sidebar').onclick=()=>document.body.classList.remove('sidebar-hidden');$('#theme-toggle').onclick=toggleTheme;
+   $('#project-edit').onclick=()=>editProject().catch(report);$('#project-button').onclick=$('#project-edit').onclick;$('#cwd-button').onclick=$('#project-edit').onclick;
+--- before/web/public/index.html
++++ after/web/public/index.html
+@@ -77,14 +77,14 @@
+ </aside>
+ <div id="thread-context-menu" class="thread-context-menu" role="menu" aria-label="会话操作" hidden></div>
+ <main class="main">
+-  <header class="topbar"><div class="topbar-left"><button class="icon-button" id="show-sidebar" aria-label="展开侧栏"><svg><use href="#i-panel"/></svg></button><div class="assistant-picker"><span class="assistant-name">Codex</span></div><span id="breadcrumb" hidden>工作区</span><span class="slash" hidden>/</span><strong id="page-title">新建会话</strong><span id="thread-archive-status" class="thread-archive-status" hidden>已归档 · 历史已保留</span></div><div class="topbar-right"><span class="connection" id="connection"><i></i>连接中</span><button class="icon-button" id="files-toggle" hidden title="分析资料与成果" aria-label="分析资料与成果"><svg><use href="#i-folder"/></svg></button><button class="icon-button" id="terminal-toggle" hidden aria-hidden="true" title="原生终端" aria-label="原生终端"><svg><use href="#i-terminal"/></svg></button><button class="icon-button" id="theme-toggle" title="切换主题" aria-label="切换主题">◐</button></div></header>
++  <header class="topbar"><div class="topbar-left"><button class="icon-button" id="show-sidebar" aria-label="展开侧栏"><svg><use href="#i-panel"/></svg></button><div class="assistant-picker"><span class="assistant-name">Codex</span></div><span id="breadcrumb" hidden>工作区</span><span class="slash" hidden>/</span><strong id="page-title">正在加载…</strong><span id="thread-archive-status" class="thread-archive-status" hidden>已归档 · 历史已保留</span></div><div class="topbar-right"><span class="connection" id="connection"><i></i>连接中</span><button class="icon-button" id="files-toggle" hidden title="分析资料与成果" aria-label="分析资料与成果"><svg><use href="#i-folder"/></svg></button><button class="icon-button" id="terminal-toggle" hidden aria-hidden="true" title="原生终端" aria-label="原生终端"><svg><use href="#i-terminal"/></svg></button><button class="icon-button" id="theme-toggle" title="切换主题" aria-label="切换主题">◐</button></div></header>
+   <div class="error-banner" id="connection-error" hidden></div>
+   <div class="workspace-body">
+-    <section class="chat-view empty" id="view-chat">
+-      <div class="conversation-scroll" id="conversation-scroll"><div class="welcome" id="welcome"><h1>今天想了解哪些数据？</h1><p class="analysis-welcome-description">描述你的问题，让 Codex 查询数据、生成图表并说明分析结论。</p><div class="starter-suggestions" id="starter-suggestions"><button data-prompt="我想查询一个业务指标，请先确认数据源、指标定义和时间范围，再使用真实数据回答。"><svg><use href="#i-database"/></svg>查询指标</button><button data-prompt="我想比较不同时间或维度的数据变化，请先了解我的分析对象、对比基准和口径。"><svg><use href="#i-search"/></svg>解释变化</button><button data-prompt="请根据真实查询结果生成合适的图表，先确认要展示的指标、维度和时间范围。"><svg><use href="#i-grid"/></svg>生成图表</button><button data-prompt="我想形成一份数据分析报告，请先确认分析目标、受众、数据范围和结论要求，并提出分析方案供我确认。"><svg><use href="#i-file"/></svg>分析报告</button></div></div><div class="messages" id="messages" aria-live="polite"></div></div>
++    <section class="chat-view" id="view-chat">
++      <div class="conversation-scroll" id="conversation-scroll"><div class="welcome" id="welcome" hidden><h1>今天想了解哪些数据？</h1><p class="analysis-welcome-description">描述你的问题，让 Codex 查询数据、生成图表并说明分析结论。</p><div class="starter-suggestions" id="starter-suggestions"><button data-prompt="我想查询一个业务指标，请先确认数据源、指标定义和时间范围，再使用真实数据回答。"><svg><use href="#i-database"/></svg>查询指标</button><button data-prompt="我想比较不同时间或维度的数据变化，请先了解我的分析对象、对比基准和口径。"><svg><use href="#i-search"/></svg>解释变化</button><button data-prompt="请根据真实查询结果生成合适的图表，先确认要展示的指标、维度和时间范围。"><svg><use href="#i-grid"/></svg>生成图表</button><button data-prompt="我想形成一份数据分析报告，请先确认分析目标、受众、数据范围和结论要求，并提出分析方案供我确认。"><svg><use href="#i-file"/></svg>分析报告</button></div></div><div class="messages" id="messages" aria-live="polite"><div class="loading" role="status">正在加载分析页面…</div></div></div>
+       <button id="jump-latest" class="small-button jump-latest" type="button" hidden>回到最新消息 ↓</button>
+       <div id="requests" class="requests" aria-live="assertive"></div>
+-      <div class="composer-area"><div class="plan-summary" id="plan-summary" hidden></div><div class="composer"><div id="command-menu" class="command-menu" role="listbox" aria-label="对话命令" hidden></div><div class="attachments" id="attachments"></div><textarea id="prompt" placeholder="描述你的数据问题，或输入 /plan 先制定分析计划…" rows="1" aria-label="分析问题" aria-autocomplete="list" aria-controls="command-menu" aria-expanded="false"></textarea><div class="composer-bottom"><div class="composer-options"><button class="icon-button" id="attach-button" title="添加图片（PNG、JPEG、GIF、WebP）" aria-label="添加图片（PNG、JPEG、GIF、WebP）"><svg><use href="#i-plus"/></svg></button><button id="exit-plan-mode" type="button" class="composer-plan-mode" role="switch" aria-checked="false" aria-label="计划模式" title="开启计划模式，也可输入 /plan"><span>计划模式</span><span class="composer-plan-track" aria-hidden="true"></span></button><input type="file" id="file-input" accept=".png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp" multiple hidden><button type="button" id="usage-label" class="context-meter" hidden aria-label="查看上下文占用">上下文 · 待统计</button></div><button id="send" class="send-button" title="发送" aria-label="发送任务"><svg><use href="#i-arrow"/></svg></button></div></div><p id="composer-status" class="composer-status" role="status"></p><div class="composer-meta"><button id="cwd-button" hidden><svg><use href="#i-folder"/></svg><span id="cwd-label">工作区</span><svg><use href="#i-down"/></svg></button><button id="unassigned-chat-button" type="button" hidden title="新建不关联项目的聊天，保留当前工作目录">新建聊天</button><span>Enter 发送 · Shift Enter 换行</span></div></div>
++      <div class="composer-area"><div class="plan-summary" id="plan-summary" hidden></div><div class="composer"><div id="command-menu" class="command-menu" role="listbox" aria-label="对话命令" hidden></div><div class="attachments" id="attachments"></div><textarea id="prompt" disabled placeholder="描述你的数据问题，或输入 /plan 先制定分析计划…" rows="1" aria-label="分析问题" aria-autocomplete="list" aria-controls="command-menu" aria-expanded="false"></textarea><div class="composer-bottom"><div class="composer-options"><button class="icon-button" id="attach-button" title="添加图片（PNG、JPEG、GIF、WebP）" aria-label="添加图片（PNG、JPEG、GIF、WebP）"><svg><use href="#i-plus"/></svg></button><button id="exit-plan-mode" type="button" class="composer-plan-mode" role="switch" aria-checked="false" aria-label="计划模式" title="开启计划模式，也可输入 /plan"><span>计划模式</span><span class="composer-plan-track" aria-hidden="true"></span></button><input type="file" id="file-input" accept=".png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp" multiple hidden><button type="button" id="usage-label" class="context-meter" hidden aria-label="查看上下文占用">上下文 · 待统计</button></div><button id="send" disabled class="send-button" title="发送" aria-label="发送任务"><svg><use href="#i-arrow"/></svg></button></div></div><p id="composer-status" class="composer-status" role="status"></p><div class="composer-meta"><button id="cwd-button" hidden><svg><use href="#i-folder"/></svg><span id="cwd-label">工作区</span><svg><use href="#i-down"/></svg></button><button id="unassigned-chat-button" type="button" hidden title="新建不关联项目的聊天，保留当前工作目录">新建聊天</button><span>Enter 发送 · Shift Enter 换行</span></div></div>
+ 
+     </section>
+     <section class="content-view" id="view-panel" hidden><div id="panel-content"></div></section>

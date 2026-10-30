@@ -1,0 +1,627 @@
+.EEEEF..EEEEE.EEEEE.EEEF................E...................EE............................................EE...EE............F.E.E..............EE.....................F......E...........................................sss...........EEE.......s..............................E
+======================================================================
+ERROR: test_calculation_titles_may_include_user_ranges_without_certifying_title (test_analysis_evidence.EvidenceTests.test_calculation_titles_may_include_user_ranges_without_certifying_title)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 150, in test_calculation_titles_may_include_user_ranges_without_certifying_title
+    result=self.compute(title='2025年范围与三角形')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_every_published_value_resolves_exact_row_column_and_sha (test_analysis_evidence.EvidenceTests.test_every_published_value_resolves_exact_row_column_and_sha)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 83, in test_every_published_value_resolves_exact_row_column_and_sha
+    result=self.compute();answer=self.tools.publish('合计 {{amount}}，日期 {{day}}。',{'amount':self.ref(result),'day':self.ref(result,'date')})
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_exact_large_integer_decimal_and_source_text_are_not_model_formatted (test_analysis_evidence.EvidenceTests.test_exact_large_integer_decimal_and_source_text_are_not_model_formatted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 137, in test_exact_large_integer_decimal_and_source_text_are_not_model_formatted
+    result=self.compute("result=[{'integer':900719925474099312345,'decimal':Decimal('12345678901234567890.123456789'),'text':'<img src=x> [link](javascript:bad)'}]")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_fetch_real_http_document_redirect_errors_and_allowlist (test_analysis_evidence.EvidenceTests.test_fetch_real_http_document_redirect_errors_and_allowlist)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 232, in test_fetch_real_http_document_redirect_errors_and_allowlist
+    server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Fixture);threading.Thread(target=server.serve_forever,daemon=True).start();self.addCleanup(server.server_close);self.addCleanup(server.shutdown)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_local_file_import_and_raw_json_computation_have_real_source_metadata (test_analysis_evidence.EvidenceTests.test_local_file_import_and_raw_json_computation_have_real_source_metadata)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 215, in test_local_file_import_and_raw_json_computation_have_real_source_metadata
+    result=self.compute("result=[{'value':sum(Decimal(row['amount']) for row in documents[parameters['doc']])}]",document_ids=[doc['documentId']],parameters={'doc':doc['documentId']})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_mixed_numeric_types_preserve_exact_cells_and_ambiguous_text_is_rejected (test_analysis_evidence.EvidenceTests.test_mixed_numeric_types_preserve_exact_cells_and_ambiguous_text_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 180, in test_mixed_numeric_types_preserve_exact_cells_and_ambiguous_text_is_rejected
+    result=self.compute("result=[{'v':900719925474099312345},{'v':Decimal('1.20')}]")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_modified_published_text_and_numbers_are_not_verified (test_analysis_evidence.EvidenceTests.test_modified_published_text_and_numbers_are_not_verified)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 120, in test_modified_published_text_and_numbers_are_not_verified
+    result=self.compute();answer=self.tools.publish('合计 {{amount}}。',{'amount':self.ref(result)})
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_native_parent_can_explicitly_read_child_output_but_unrelated_thread_cannot (test_analysis_evidence.EvidenceTests.test_native_parent_can_explicitly_read_child_output_but_unrelated_thread_cannot)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 158, in test_native_parent_can_explicitly_read_child_output_but_unrelated_thread_cannot
+    result=AnalysisTools(child,'child').calculate("result=[{'value':sum([1,2,3])}]")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_no_silent_exceptions_for_bad_placeholders_or_markup (test_analysis_evidence.EvidenceTests.test_no_silent_exceptions_for_bad_placeholders_or_markup)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 132, in test_no_silent_exceptions_for_bad_placeholders_or_markup
+    result=self.compute()
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_pandas_decimal_computation_and_chart_require_no_database (test_analysis_evidence.EvidenceTests.test_pandas_decimal_computation_and_chart_require_no_database)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 73, in test_pandas_decimal_computation_and_chart_require_no_database
+    result=self.compute("import pandas as pd\nresult=pd.DataFrame([{'label':'合计','value':Decimal('1.20')+Decimal('2.30')}])")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_percentage_units_and_literal_escaped_paragraphs (test_analysis_evidence.EvidenceTests.test_percentage_units_and_literal_escaped_paragraphs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 100, in test_percentage_units_and_literal_escaped_paragraphs
+    result=self.compute();refs={'v':self.ref(result)}
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_permanent_thread_delete_removes_its_raw_documents_and_proof_but_archive_keeps_them (test_analysis_evidence.EvidenceTests.test_permanent_thread_delete_removes_its_raw_documents_and_proof_but_archive_keeps_them)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 41, in test_permanent_thread_delete_removes_its_raw_documents_and_proof_but_archive_keeps_them
+    result=self.compute();answer=self.tools.publish('金额 {{v}}',{'v':self.ref(result)})
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_proposed_plan_wrapper_can_match_native_body_without_changing_numbers (test_analysis_evidence.EvidenceTests.test_proposed_plan_wrapper_can_match_native_body_without_changing_numbers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 169, in test_proposed_plan_wrapper_can_match_native_body_without_changing_numbers
+    result=self.compute();answer=self.tools.publish('<proposed_plan>日期 {{day}} 的分析方案</proposed_plan>',{'day':self.ref(result,'date')})
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_python_cannot_read_host_files_environment_or_use_network (test_analysis_evidence.EvidenceTests.test_python_cannot_read_host_files_environment_or_use_network)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 175, in test_python_cannot_read_host_files_environment_or_use_network
+    with patch.dict(os.environ,{'DEEPSEEK_API_KEY':'test-only-not-a-real-credential'}):result=self.compute(code,parameters={'host_file':str(secret)})
+                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_same_text_in_a_new_turn_cannot_reuse_an_old_publication (test_analysis_evidence.EvidenceTests.test_same_text_in_a_new_turn_cannot_reuse_an_old_publication)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 142, in test_same_text_in_a_new_turn_cannot_reuse_an_old_publication
+    result=self.compute();answer=self.tools.publish('值 {{v}}',{'v':self.ref(result)})
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_table_shape_rejected_before_publishing_and_corrected_text_still_verifies (test_analysis_evidence.EvidenceTests.test_table_shape_rejected_before_publishing_and_corrected_text_still_verifies)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 111, in test_table_shape_rejected_before_publishing_and_corrected_text_still_verifies
+    result=self.compute();reference={'v':self.ref(result)}
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_thread_and_missing_data_guards_cannot_borrow_other_evidence (test_analysis_evidence.EvidenceTests.test_thread_and_missing_data_guards_cannot_borrow_other_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 125, in test_thread_and_missing_data_guards_cannot_borrow_other_evidence
+    result=self.compute();other=AnalysisTools(Gateway(directory=self.temp.name,thread_id='thread-B',turn_id='turn-B'),'thread-B')
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_actual_python_and_duckdb_keep_original_source_time (test_data_freshness.DataFreshnessTests.test_actual_python_and_duckdb_keep_original_source_time)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_data_freshness.py", line 71, in test_actual_python_and_duckdb_keep_original_source_time
+    output=self.tools.calculate("result=[{'value':sum(row['amount'] for row in datasets[parameters['id']])}]",[result['resultId']],parameters={'id':result['resultId']})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_cancel_before_response_headers (test_database.SlowHttpTests.test_cancel_before_response_headers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_database.py", line 64, in test_cancel_before_response_headers
+    def test_cancel_before_response_headers(self):self.run_transport(False)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_database.py", line 52, in run_transport
+    server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Slow);threading.Thread(target=server.serve_forever,daemon=True).start()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_cancel_during_response_body (test_database.SlowHttpTests.test_cancel_during_response_body)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_database.py", line 65, in test_cancel_during_response_body
+    def test_cancel_during_response_body(self):self.run_transport(True)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_database.py", line 52, in run_transport
+    server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Slow);threading.Thread(target=server.serve_forever,daemon=True).start()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_corrupt_template_cannot_be_recertified_after_removing_digit_scanner (test_evidence_scope.EvidenceScope.test_corrupt_template_cannot_be_recertified_after_removing_digit_scanner)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_evidence_scope.py", line 63, in test_corrupt_template_cannot_be_recertified_after_removing_digit_scanner
+    result=self.compute();answer=self.tools.publish('字段 {{v}}',{'v':self.ref(result)})
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_empty_results_use_actual_snapshot_metadata_without_fabricated_sql_or_python (test_evidence_scope.EvidenceScope.test_empty_results_use_actual_snapshot_metadata_without_fabricated_sql_or_python)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_evidence_scope.py", line 75, in test_empty_results_use_actual_snapshot_metadata_without_fabricated_sql_or_python
+    result=self.compute("result=[];columns=['category','value']")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_text_and_boolean_fields_receive_actual_reference_proof (test_evidence_scope.EvidenceScope.test_text_and_boolean_fields_receive_actual_reference_proof)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_evidence_scope.py", line 36, in test_text_and_boolean_fields_receive_actual_reference_proof
+    result=self.compute("result=[{'category':'类别甲','flag':True,'stamp':'2025-01-01'}]")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_unreferenced_prose_is_never_included_in_the_verified_field_set (test_evidence_scope.EvidenceScope.test_unreferenced_prose_is_never_included_in_the_verified_field_set)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_evidence_scope.py", line 48, in test_unreferenced_prose_is_never_included_in_the_verified_field_set
+    result=self.compute();answer=self.tools.publish('普通说明999；字段 {{value}}',{'value':self.ref(result)})
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_original_edit_requires_new_import_and_keeps_historical_result_readable (test_file_inputs.FileInputs.test_original_edit_requires_new_import_and_keeps_historical_result_readable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_file_inputs.py", line 23, in test_original_edit_requires_new_import_and_keeps_historical_result_readable
+    doc=self.imported();result=self.from_document(doc)
+                               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_file_inputs.py", line 20, in from_document
+    return self.compute("result=[{'value':sum(Decimal(row['amount']) for row in documents[parameters['document']])}]",document_ids=[document['documentId']],parameters={'document':document['documentId']})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_touch_same_content_is_allowed_but_delete_blocks_derivatives (test_file_inputs.FileInputs.test_touch_same_content_is_allowed_but_delete_blocks_derivatives)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_file_inputs.py", line 47, in test_touch_same_content_is_allowed_but_delete_blocks_derivatives
+    doc=self.imported();result=self.from_document(doc)
+                               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_file_inputs.py", line 20, in from_document
+    return self.compute("result=[{'value':sum(Decimal(row['amount']) for row in documents[parameters['document']])}]",document_ids=[document['documentId']],parameters={'document':document['documentId']})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_corrupt_index_fails_explicitly_instead_of_hiding_discovery_failure (test_known_forks.KnownForkHttpTests.test_corrupt_index_fails_explicitly_instead_of_hiding_discovery_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_known_forks.py", line 297, in setUp
+    self.server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_endpoint_uses_existing_session_and_origin_boundary (test_known_forks.KnownForkHttpTests.test_endpoint_uses_existing_session_and_origin_boundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_known_forks.py", line 297, in setUp
+    self.server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_original_output_is_imported_without_transcription_or_refreshing_age (test_mcp_data_inputs.McpDataInputs.test_original_output_is_imported_without_transcription_or_refreshing_age)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_mcp_data_inputs.py", line 22, in test_original_output_is_imported_without_transcription_or_refreshing_age
+    result=self.compute("result=[{'value':sum(Decimal(row['amount']) for row in documents[parameters['doc']]['structuredContent']['sales'])}]",document_ids=[doc['documentId']],parameters={'doc':doc['documentId']})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_auxiliary_plan_and_legacy_unclassified_publications_are_not_complete_reports (test_published_reports.PublishedReports.test_auxiliary_plan_and_legacy_unclassified_publications_are_not_complete_reports)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_published_reports.py", line 23, in test_auxiliary_plan_and_legacy_unclassified_publications_are_not_complete_reports
+    result=self.compute()
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_latest_explicit_answer_is_used_and_corrupt_evidence_is_not_delivered (test_published_reports.PublishedReports.test_latest_explicit_answer_is_used_and_corrupt_evidence_is_not_delivered)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_published_reports.py", line 29, in test_latest_explicit_answer_is_used_and_corrupt_evidence_is_not_delivered
+    result=self.compute()
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: test_rewritten_native_text_is_rejected_but_canonical_report_is_available (test_published_reports.PublishedReports.test_rewritten_native_text_is_rejected_but_canonical_report_is_available)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_published_reports.py", line 14, in test_rewritten_native_text_is_rejected_but_canonical_report_is_available
+    result=self.compute();answer=self.tools.publish('原始金额 {{v}}',{'v':self.ref(result)},purpose='answer')
+           ^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 35, in compute
+    return self.tools.calculate(code,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/analysis_tools.py", line 138, in calculate
+    output = run_python(code, datasets, documents, parameters, self.gateway.snapshots, self.gateway.cancel, thread_id=self.thread)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/database/calculation.py", line 74, in run_python
+    raise ValueError('Python 计算失败，未发布结果：'+detail)
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+======================================================================
+ERROR: setUpClass (test_transport.HttpBoundaryTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_transport.py", line 66, in setUpClass
+    cls.server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+FAIL: test_inflight_cancel_kills_only_its_python_process (test_analysis_evidence.EvidenceTests.test_inflight_cancel_kills_only_its_python_process)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 207, in test_inflight_cancel_kills_only_its_python_process
+    self.assertTrue(self.gateway.cancel.callbacks);self.gateway.cancel.cancel();worker.join(3)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {} is not true
+
+======================================================================
+FAIL: test_timeout_terminates_real_calculation_and_cancelled_request_starts_no_process (test_analysis_evidence.EvidenceTests.test_timeout_terminates_real_calculation_and_cancelled_request_starts_no_process)
+----------------------------------------------------------------------
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 192, in test_timeout_terminates_real_calculation_and_cancelled_request_starts_no_process
+    with self.assertRaisesRegex(ValueError,'超时'):run_python('while True: pass',{}, {},{},self.gateway.snapshots,self.gateway.cancel,timeout=1)
+AssertionError: "超时" does not match "Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+"
+
+======================================================================
+FAIL: test_edit_during_calculation_is_checked_before_snapshot_commit (test_file_inputs.FileInputs.test_edit_during_calculation_is_checked_before_snapshot_commit)
+----------------------------------------------------------------------
+ValueError: Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_file_inputs.py", line 43, in test_edit_during_calculation_is_checked_before_snapshot_commit
+    with self.assertRaisesRegex(ValueError,'依赖文件'):self.from_document(doc)
+AssertionError: "依赖文件" does not match "Python 计算失败，未发布结果：bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+"
+
+======================================================================
+FAIL: test_bad_table_rejected_then_valid_publication_verified_through_worker (test_markdown_publication_mcp.MarkdownPublicationMcpTests.test_bad_table_rejected_then_valid_publication_verified_through_worker)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_markdown_publication_mcp.py", line 28, in test_bad_table_rejected_then_valid_publication_verified_through_worker
+    self.assertFalse(result['isError']);identifier=result['structuredContent']['resultId']
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 273 tests in 29.453s
+
+FAILED (failures=4, errors=33, skipped=4)

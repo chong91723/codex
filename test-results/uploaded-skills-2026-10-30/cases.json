@@ -1,0 +1,132 @@
+{
+  "model": "deepseek-flash",
+  "provider": "deepseek",
+  "nativeSourceCommit": "970111f6cb62cc02fe36a82ea7d71b37a2889c97",
+  "currentPolicy": {
+    "productionInstall": "local-upload-only",
+    "chatAttachments": "images-only",
+    "newSkillsDisabledByDefault": true,
+    "nativeSkillDiscoveryEnablementInvocation": true,
+    "publicGithubProductDownloadEntry": false,
+    "agentNetworkFirewallClaim": false,
+    "tenantIsolationClaim": false
+  },
+  "realWorkflowCases": [
+    {
+      "id": "U01",
+      "workflow": "ZIP原生解析、默认停用",
+      "status": "passed",
+      "evidence": "native-install-probe.json"
+    },
+    {
+      "id": "U02",
+      "workflow": "非法包与CAS错误，失败回滚",
+      "status": "passed",
+      "evidence": "native-invalid-and-rollback.json"
+    },
+    {
+      "id": "U03",
+      "workflow": "真实浏览器上传、启用、停用及刷新草稿保留",
+      "status": "passed",
+      "evidence": "ui-disabled-draft.json"
+    },
+    {
+      "id": "U04",
+      "workflow": "单SKILL.md上传",
+      "status": "passed",
+      "evidence": "ui-single-markdown.json"
+    },
+    {
+      "id": "U05",
+      "workflow": "原生turn准入前拒绝停用的显式skill输入",
+      "status": "passed",
+      "evidence": "native-disabled-admission.json"
+    },
+    {
+      "id": "U06",
+      "workflow": "损坏包独立展示与可移除，健康包可用",
+      "status": "passed",
+      "evidence": "ui-broken-isolation.json"
+    },
+    {
+      "id": "U07",
+      "workflow": "损坏包原生卸载与注册表清理",
+      "status": "passed",
+      "evidence": "ui-broken-remove.json"
+    },
+    {
+      "id": "U08",
+      "workflow": "安装入口打开本地文件选择器，未发模型任务",
+      "status": "passed",
+      "evidence": "ui-installer-local-route.json"
+    },
+    {
+      "id": "U09",
+      "workflow": "含空格技能名称、双技能选择刷新保留",
+      "status": "passed",
+      "evidence": "ui-multiword-selection.json"
+    },
+    {
+      "id": "U10",
+      "workflow": "Flash双技能实际reference/脚本/文件、运行期拒绝移除停用",
+      "status": "passed",
+      "evidence": "flash-use.json"
+    },
+    {
+      "id": "U11",
+      "workflow": "新会话共享目录、移除后草稿拒发且保留、原生目录及产物保留",
+      "status": "passed",
+      "evidence": "ui-remove-restore.json"
+    },
+    {
+      "id": "U12",
+      "workflow": "日常实例空闲更新、历史保留、本地上传入口和Flash配置",
+      "status": "passed",
+      "evidence": "daily-smoke.json"
+    }
+  ],
+  "engineering": {
+    "backend": {
+      "total": 478,
+      "passed": 474,
+      "conditionalSkipped": 4,
+      "evidence": "backend-full-regression.log"
+    },
+    "nativeOptIn": {
+      "passed": 4,
+      "evidence": "native-opt-in-regression.log"
+    },
+    "frontendBehavior": {
+      "files": 23,
+      "passed": 369,
+      "evidence": "js-summary.json",
+      "firstAttempt": "first-js-summary.json",
+      "firstAttemptNote": "5 old VM fixture dependency omissions corrected; original failures retained."
+    },
+    "syntax": {
+      "pythonAst": 100,
+      "javascript": 138,
+      "evidence": "static-checks.json"
+    },
+    "nativeIntegrity": "native-source-integrity.json"
+  },
+  "evidenceNotes": [
+    "ui-upload-disabled.png records the first upload before the installer wording was changed; final current wording is in daily-smoke.png and ui-remove-restore.png.",
+    "The tested package uses only standard-library Python; success does not certify arbitrary uploaded Skill dependencies or network services.",
+    "Package installation never executes scripts or installs dependencies. Script execution in U10 was an explicitly selected native model task.",
+    "Scope is isolated serial user acceptance, not production multi-tenant security/capacity certification."
+  ],
+  "retainedOutstanding": [
+    {
+      "item": "Edited global memory remerge",
+      "status": "scheduled-not-verified-in-this-round",
+      "scheduledAt": "2026-10-30T16:40:00+08:00",
+      "note": "Original42399 service, history and timer untouched; separate from uploaded Skill feature."
+    },
+    {
+      "item": "Universal document CAS/full Git recovery",
+      "status": "previous-scope-deferred",
+      "note": "No new blanket file conflict guarantee introduced."
+    }
+  ]
+}

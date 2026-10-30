@@ -1,0 +1,14 @@
+..E...
+======================================================================
+ERROR: test_decimal_values_stay_exact_through_adaptive_read_and_chart (test_result_context.ResultContextTests.test_decimal_values_stay_exact_through_adaptive_read_and_chart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_result_context.py", line 28, in test_decimal_values_stay_exact_through_adaptive_read_and_chart
+    exact=Decimal('0.12345678901234567890123456789');rid=self.write([{'index':i,'text':'x'*900,'value':exact} for i in range(7)],[{'name':'index','type':'number','nativeType':'int'},{'name':'text','type':'string','nativeType':'str'},{'name':'value','type':'number','nativeType':'Decimal'}]);p=self.gateway.result(rid,model=True);self.assertTrue(p['pageLimitedByContext']);self.assertEqual(p['rows'][0]['value'],str(exact));chart=self.gateway.chart(rid,'bar','index',['value'],'Decimal directly');self.assertEqual(chart['rows'][0]['value'],str(exact));self.assertIn('近似',chart['precisionNotice'])
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ~~~~~^^^^^^^^
+KeyError: 'rows'
+
+----------------------------------------------------------------------
+Ran 6 tests in 3.613s
+
+FAILED (errors=1)

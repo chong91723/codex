@@ -1,0 +1,133 @@
+{
+  "title": "分析结论",
+  "threadId": "01a186b7-c9cd-7452-bf3b-efbe212ec4e0",
+  "turnId": "01a186b8-44a1-7ba2-9b2c-40874d6cbfbe",
+  "exportedAt": "2026-10-29T08:13:36.037Z",
+  "knowledgeStatus": {
+    "status": "current",
+    "changes": [],
+    "notice": "依赖变化只表示报告需复核，不证明每个数值都错误；历史正文不会被静默改写。"
+  },
+  "verification": {
+    "status": "verified",
+    "strict": true,
+    "answerId": "17d3bac5e91cb9784ff0bb34fe955e875c358d96c8e13d003848507deb7b76cd",
+    "version": "data-evidence-v2",
+    "verificationScope": "referenced-fields",
+    "assurance": {
+      "scope": "referenced-fields",
+      "source": {
+        "status": "linked",
+        "fields": [
+          "item_name",
+          "item_class"
+        ]
+      },
+      "execution": {
+        "status": "recorded",
+        "kinds": [
+          "database"
+        ]
+      },
+      "metric": {
+        "status": "not-applied",
+        "fields": []
+      },
+      "narrative": {
+        "status": "not-assessed",
+        "reason": "解释、比较与因果判断未作语义正确性认证；仅所列字段引用与执行记录匹配。"
+      }
+    },
+    "evidence": [
+      {
+        "name": "item_name",
+        "value": "LL Crankarm",
+        "resultId": "9baa73cfd384eb3c0192040d87fac722",
+        "row": 0,
+        "column": "item_name",
+        "sha256": "862f5c81b20e6bb06afb770138c7ae7239e27cecc7bd59b65e39b1dc3816e7b8",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 用户体验审计（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186b7-c9cd-7452-bf3b-efbe212ec4e0",
+            "turnId": "01a186b8-44a1-7ba2-9b2c-40874d6cbfbe",
+            "retrievedAt": "2026-10-29T08:13:21.917001+00:00",
+            "connectionId": "5b454de4f4a6a824fc1564b2"
+          }
+        ]
+      },
+      {
+        "name": "item_class",
+        "value": "Black",
+        "resultId": "9baa73cfd384eb3c0192040d87fac722",
+        "row": 0,
+        "column": "item_class",
+        "sha256": "862f5c81b20e6bb06afb770138c7ae7239e27cecc7bd59b65e39b1dc3816e7b8",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 用户体验审计（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186b7-c9cd-7452-bf3b-efbe212ec4e0",
+            "turnId": "01a186b8-44a1-7ba2-9b2c-40874d6cbfbe",
+            "retrievedAt": "2026-10-29T08:13:21.917001+00:00",
+            "connectionId": "5b454de4f4a6a824fc1564b2"
+          }
+        ]
+      }
+    ],
+    "sources": {
+      "9baa73cfd384eb3c0192040d87fac722": {
+        "query": "SELECT Name AS item_name, Color AS item_class FROM product WHERE NOT Color IS NULL AND TRIM(Color) <> '' AND NOT REGEXP_LIKE(Name, '[0-9]') LIMIT 1",
+        "pythonCode": null,
+        "inputSources": []
+      }
+    },
+    "publicationChecks": {
+      "version": "analysis-publication-v2",
+      "checkedAt": "2026-10-29T08:13:31.564291+00:00",
+      "freshness": [
+        {
+          "kind": "database",
+          "threadId": "01a186b7-c9cd-7452-bf3b-efbe212ec4e0",
+          "turnId": "01a186b8-44a1-7ba2-9b2c-40874d6cbfbe",
+          "retrievedAt": "2026-10-29T08:13:21.917001+00:00",
+          "connectionId": "5b454de4f4a6a824fc1564b2",
+          "sourceName": "AdventureWorks 用户体验审计（独立只读）",
+          "maxAgeMinutes": null,
+          "status": "notConfigured"
+        }
+      ],
+      "scope": "execution-record-match-only",
+      "note": "读取时间不等于源数据更新时间；未设置时效规则的来源不自动判定为最新。",
+      "knowledge": [
+        {
+          "sourceId": "5b454de4f4a6a824fc1564b2",
+          "token": "735adf9fe690b35eb929059efa8c05eee5f7676d8addf41ccef0cb0b3ecaf80e",
+          "sourceVersion": 1,
+          "businessRevision": 1,
+          "businessStale": false,
+          "knowledgeRevision": 2,
+          "schemaHash": "7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952",
+          "conflicts": 0,
+          "requiresContext": true
+        }
+      ],
+      "metrics": [],
+      "files": []
+    }
+  },
+  "results": [
+    {
+      "id": "9baa73cfd384eb3c0192040d87fac722",
+      "name": "查询结果",
+      "rowCount": 1
+    }
+  ],
+  "charts": [],
+  "artifactScope": "same-turn-and-explicit-evidence-lineage"
+}

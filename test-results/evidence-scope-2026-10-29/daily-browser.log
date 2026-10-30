@@ -1,0 +1,8 @@
+file:///tmp/codex-evidence-scope-20261029/composer_controls_desktop.mjs:26
+  await page.locator('[data-analysis-verification=verified]').last().waitFor({state:'visible',timeout:30000});const proof=await page.evaluate(()=>[...state.items.values()].findLast(e=>e.node?.dataset.analysisVerification==='verified').node.analysisEvidence);assert.equal(proof.assurance.scope,'referenced-fields');assert.equal(proof.assurance.narrative.status,'not-assessed');assert.equal(proof.assurance.metric.status,'not-applied');assert(proof.references.some(ref=>String(ref.value)==='71'));assert(proof.references.some(ref=>String(ref.value)==='3'));await page.screenshot({path:out+'/report-download-formats.png'});checks.push({name:'Reloaded real Flash/Python/publication chain preserves scoped field evidence',passed:true,referenceValues:proof.references.map(ref=>ref.value)});
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ^
+
+TypeError: Cannot read properties of undefined (reading 'some')
+    at file:///tmp/codex-evidence-scope-20261029/composer_controls_desktop.mjs:26:459
+
+Node.js v24.22.1

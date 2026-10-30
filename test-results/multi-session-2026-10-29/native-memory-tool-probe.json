@@ -1,0 +1,44 @@
+{
+  "scope": "Explicit native memory capability only, dedicated isolated thread, no business answer evaluation",
+  "config": {
+    "memories": true,
+    "dedicated_tools": true,
+    "generate_memories": false
+  },
+  "model": "deepseek-flash",
+  "provider": "deepseek",
+  "events": [
+    {
+      "event": "item/completed",
+      "type": "userMessage"
+    },
+    {
+      "event": "item/completed",
+      "type": "reasoning"
+    },
+    {
+      "event": "item/completed",
+      "type": "agentMessage",
+      "text": "The native memory tool was available and returned successfully. No memory content is disclosed."
+    },
+    {
+      "event": "turn/completed",
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "nativeCalls": [
+    {
+      "namespace": "memories",
+      "name": "search",
+      "callId": "call_00_7SnRegbMJIdcQpdXfUk25771"
+    }
+  ],
+  "nativeOutputs": [
+    {
+      "callId": "call_00_7SnRegbMJIdcQpdXfUk25771",
+      "hasOutput": true
+    }
+  ],
+  "nativeSearchProved": true
+}

@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-30T05:18:30.414813+00:00",
+  "phase": "setup",
+  "error": "Controller response unavailable; retained request is not a product result",
+  "traceback": "Traceback (most recent call last):\n  File \"/tmp/codex-capability-20261030/case_helpers.py\", line 8, in ctl\n    try:x=json.loads(p.stdout)\n          ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/__init__.py\", line 346, in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/decoder.py\", line 337, in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/decoder.py\", line 355, in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/tmp/codex-capability-20261030/document_lifecycle_cases.py\", line 285, in main\n    result=globals()[args_.phase.replace('-','_')](state)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/codex-capability-20261030/document_lifecycle_cases.py\", line 131, in setup\n    ensure_idle();phase=state['phases'].setdefault('setup',{'startedAt':utc()})\n    ^^^^^^^^^^^^^\n  File \"/tmp/codex-capability-20261030/document_lifecycle_cases.py\", line 52, in ensure_idle\n    def ensure_idle():ensure_lab();return helper.idle()\n                                          ^^^^^^^^^^^^^\n  File \"/tmp/codex-capability-20261030/case_helpers.py\", line 14, in idle\n    v=ctl('return (await status(native)).nativeRuntime.execution;');assert v['status']=='idle',v;return v\n      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/codex-capability-20261030/case_helpers.py\", line 9, in ctl\n    except ValueError:raise RuntimeError('Controller response unavailable; retained request is not a product result')\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Controller response unavailable; retained request is not a product result\n",
+  "state": {
+    "version": 1,
+    "sourceId": "a931f5e7e98df570960c7abc",
+    "phases": {}
+  }
+}

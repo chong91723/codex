@@ -1,0 +1,154 @@
+{
+  "tester": "A",
+  "phase": "明确授权修复回归；自由探索结束后独立记录",
+  "finishedAt": "2026-10-29T10:24:08.094486+00:00",
+  "scope": "同一隔离服务/配置空间；仅真实deepseek-flash与原生委派；不评价业务答案正确性或生产并发能力",
+  "version": {
+    "patchId": "multi-session-native-first-20261029-v2 + subagents.js最终v3",
+    "manifest": "../live/applied-code.json",
+    "manifestRecordedAtIsNotFirstApplicationTime": true,
+    "asset": "subagents.js",
+    "responseStatus": 200,
+    "responseSha256": "7f3d0e61ccee635844bf51a9a1e436747a32929ace50bddc712f6aebe01e6d55",
+    "observedAt": "2026-10-29T10:15:44.947Z",
+    "evidence": "regression-subagents-response-hashes.json"
+  },
+  "nativePanel": {
+    "result": "通过已测路径",
+    "parentThread": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+    "parentUrlUnchangedAfterReads": true,
+    "model": "deepseek-flash",
+    "taskRequirementsAndReturnedContentVisible": true,
+    "summary": "2 / 2 已完成",
+    "children": [
+      {
+        "id": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+        "nativeReadAt": "2026-10-29T10:17:56.952Z",
+        "nativeResponseAt": "2026-10-29T10:17:58.024Z",
+        "nativeThreadStatus": "notLoaded",
+        "turnCount": 1,
+        "readProcessExecutionState": "已完成",
+        "cardState": "已完成"
+      },
+      {
+        "id": "01a186fd-03a6-7951-a8af-7066c837ebbf",
+        "nativeReadAt": "2026-10-29T10:17:57.275Z",
+        "nativeResponseAt": "2026-10-29T10:17:58.277Z",
+        "nativeThreadStatus": "notLoaded",
+        "turnCount": 2,
+        "readProcessExecutionState": "已完成",
+        "cardState": "已完成"
+      }
+    ],
+    "mechanism": "UI按钮真实发送原生thread/read includeTurns=true；摘要与读取过程一致，两个已展开过程保留，未混入另一个子任务",
+    "evidence": [
+      "regression-native-read-summary.json",
+      "regression-events.jsonl",
+      "23-regression-child1-native-process.png",
+      "33-regression-1440-child-content.png"
+    ]
+  },
+  "responsive": {
+    "1440": "面板/卡片约800/798px；文档scrollWidth=1440；折叠和展开可操作",
+    "1024": "面板/卡片约746/744px；文档scrollWidth=1024；折叠和展开可操作",
+    "evidence": [
+      "24-regression-1440-collapsed.png",
+      "27-regression-1440-expanded.png",
+      "30-regression-1024-collapsed.png",
+      "32-regression-1024-child-content.png"
+    ]
+  },
+  "liveChildAndStop": {
+    "parentThread": "01a18715-259e-70a1-8aeb-5b2d6d5c05e1",
+    "childThread": "01a18715-3e72-7440-879d-904595d76f4f",
+    "realSpawnAndInProgressObserved": true,
+    "observation": "短子任务实际发生无关命令偏离，已通过主任务UI停止并请求原生closeAgent；没有等待其重新做业务计算",
+    "finalReadUiAt": "2026-10-29T10:16:20.761Z",
+    "finalSummaryAndProcess": "已中断；不同父回合两张旧/新卡均已中断，0 / 1 已完成，展开过程保留",
+    "distinction": "主模型文字曾报告shutdown；本报告只认实际读取后UI的已中断，不将模型文字当原生状态证明",
+    "ownMainRunningButtonsAfterStop": 0,
+    "evidence": [
+      "25-regression-live-child-initializing.png",
+      "26-regression-live-child-process.png",
+      "38-regression-final-v3-native-closed.png",
+      "39-regression-final-v3-after-native-read.png",
+      "events.jsonl"
+    ]
+  },
+  "oldReportReview": {
+    "result": "通过",
+    "nativeCompletedParent": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+    "uiStatus": "affected",
+    "visibleMessage": "业务知识、指标口径或来源文件已变化，此报告需要复核。原报告保留，不代表其中所有数值均错误。",
+    "oldReportRetained": true,
+    "evidence": "40-regression-report-needs-review-v3.png"
+  },
+  "dependencyChange": {
+    "result": "通过：真实旧依赖拒绝→重读重查→真实发布",
+    "thread": "01a18719-4adb-7ae0-b08f-bf3c47d991b5",
+    "turn": "01a18719-4bee-77e1-9ddd-dfb60170c923",
+    "timeline": {
+      "queryFirstObserved": {
+        "at": "2026-10-29T09:59:19.055Z",
+        "event": "UI真实24行查询卡可见"
+      },
+      "bSaveClickAt": "2026-10-29T09:59:44.085Z",
+      "bSaveSuccessAt": "2026-10-29T09:59:45.773Z",
+      "rejectFirstObserved": {
+        "at": "2026-10-29T10:00:49.636Z",
+        "event": "UI原生run_python拒绝详情可见"
+      },
+      "republishFirstObserved": {
+        "at": "2026-10-29T10:01:18.928Z",
+        "event": "revision4发布回答可见"
+      },
+      "scope": "记录UI观测时间，未冒称这些是服务端query_database精确起止时间；B时间来自其实际保存请求/响应协议。"
+    },
+    "businessRevision": "3→4；knowledgeRevision仍3；B通过UI保留原意追加呈现要求",
+    "rejectedTool": "run_python",
+    "rejectedCallId": "call_00_E81jtJCv9MWps5IeqUba1495",
+    "rejectedOldResultId": "6d937358b33fd9d7eb5ccb18534c6283",
+    "rejection": "结果所用的业务知识已变化或缺少版本记录，不能继续计算、绘图或发布。请重新读取当前知识并重新查询；旧报告保留为历史版本。",
+    "recovery": "真实读取revision4，重新查询24行、计算12行、绘图并publish_answer成功；技术导出publicationChecks为current",
+    "evidence": [
+      "28-regression-query-before-knowledge-change.png",
+      "29-regression-republished-revision4.png",
+      "分析结论-依据.json",
+      "dependency-change-timeline.json",
+      "../agent-b/protocol.jsonl"
+    ]
+  },
+  "ownTasks": {
+    "unapprovedFreePlan": "01a1870a-8b1e-7210-b3a2-3cf9109cd2ef 已通过UI停止，未批准正式分析，历史保留",
+    "shortNativeTask": "已停止，最终读取已中断",
+    "complexAnalysis": "已完成，历史保留",
+    "dependencyRegression": "已完成，历史保留",
+    "noFurtherModelTasksStarted": true
+  },
+  "browserCleanup": {
+    "originalDriver": {
+      "session": 39799,
+      "method": "UI driver close → browser.close",
+      "exitCode": 0
+    },
+    "regressionDriver": {
+      "session": 23079,
+      "method": "SIGINT；Playwright signal cleanup",
+      "exitCode": 130
+    },
+    "ownDriverProcessesRemaining": 0,
+    "otherTestersAndServiceUntouched": true
+  },
+  "limitsAndTestHarnessErrors": [
+    "offline切换未使现有WebSocket断开，未证明真实thread/read失败提示；未注入假失败",
+    "无认证的辅助asset探针401、辅助新浏览器导航超时已保留，未归因为产品Bug；最终哈希取自既有认证浏览器真实HTTP200响应",
+    "对复核提示文字使用click曾超时；提示为非按钮p[data-status=affected]且可见，已保存截图，未认为应可点击",
+    "时效陈旧编辑最终回归由B负责；此报告不替代B证据"
+  ],
+  "preservedReports": [
+    "directed-report.json",
+    "free-report.json",
+    "regression-report.json"
+  ],
+  "allEvidencePreserved": true
+}

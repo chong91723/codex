@@ -1,0 +1,149 @@
+{
+  "case": "T30-004C",
+  "phase": "baseline2",
+  "startedAt": "2026-10-30T03:43:52.717774+00:00",
+  "model": "deepseek-flash",
+  "fault": "SIGKILL owned Web during actual native command",
+  "commandsBefore": [
+    {
+      "pid": 604280,
+      "birth": "49427140"
+    }
+  ],
+  "root": "01a18ae8-2c28-72d1-bc65-12d9179404c2",
+  "nativeBefore": {
+    "pid": 604044,
+    "birth": "49425486"
+  },
+  "faultAt": "2026-10-30T03:43:57.710589+00:00",
+  "nativeAliveAfter8s": true,
+  "commandsAfter8s": [
+    {
+      "pid": 604280,
+      "birth": "49427140"
+    }
+  ],
+  "automaticOwnerCleanupPassed": false,
+  "manualOwnedNativeCleanupRequired": true,
+  "recovery": {
+    "history": {
+      "id": "audit30-ceca78bc-e09d-4a64-aee9-0cfdcadc9ffd",
+      "result": {
+        "thread": {
+          "id": "01a18ae8-2c28-72d1-bc65-12d9179404c2",
+          "environments": [
+            {
+              "environmentId": "local",
+              "cwd": "/tmp/codex-audit-20261030/live/workspace",
+              "runtimeWorkspaceRoots": [
+                "/tmp/codex-audit-20261030/live/workspace"
+              ]
+            }
+          ],
+          "extra": null,
+          "sessionId": "01a18ae8-2c28-72d1-bc65-12d9179404c2",
+          "forkedFromId": null,
+          "parentThreadId": null,
+          "preview": "这是独立 Web 进程崩溃验收。实际执行 python3 -u -c \"import time; print('T30_WEB_CRASH_BASELINE2',flush=True); time.sleep(180)\" 并等待结束。不要查数据库、联网、改文件或新增记忆。",
+          "ephemeral": false,
+          "section": null,
+          "sectionEnteredAt": null,
+          "projectId": null,
+          "historyMode": "paginated",
+          "modelProvider": "deepseek",
+          "model": "deepseek-flash",
+          "reasoningEffort": "high",
+          "createdAt": 1793331833,
+          "updatedAt": 1793331837,
+          "recencyAt": 1793331834,
+          "status": {
+            "type": "idle"
+          },
+          "path": "/tmp/codex-audit-20261030/live/profile/sessions/2026/10/30/rollout-2026-10-30T11-43-53-01a18ae8-2c28-72d1-bc65-12d9179404c2.jsonl",
+          "cwd": "/tmp/codex-audit-20261030/live/workspace",
+          "cliVersion": "0.0.0",
+          "originator": "codex_web_observer",
+          "source": "vscode",
+          "canAcceptDirectInput": true,
+          "threadSource": null,
+          "agentNickname": null,
+          "agentRole": null,
+          "gitInfo": null,
+          "name": "这是独立 Web 进程崩溃验收。实际执行 python3 -u -c \"import time; print('T30_WEB_CRASH_BASELINE2'",
+          "daybreakEnabled": null,
+          "turns": [
+            {
+              "id": "01a18ae8-2e0b-7f71-a91b-b63f3585e999",
+              "rootTurnId": "01a18ae8-2e0b-7f71-a91b-b63f3585e999",
+              "items": [
+                {
+                  "type": "userMessage",
+                  "id": "01a18ae8-2f3f-7b00-9eaf-4987100c15b2",
+                  "clientId": null,
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "这是独立 Web 进程崩溃验收。实际执行 python3 -u -c \"import time; print('T30_WEB_CRASH_BASELINE2',flush=True); time.sleep(180)\" 并等待结束。不要查数据库、联网、改文件或新增记忆。",
+                      "text_elements": []
+                    }
+                  ]
+                },
+                {
+                  "type": "reasoning",
+                  "id": "3d8a2680-0996-458b-83c3-1c2ac9462cc0",
+                  "summary": [],
+                  "content": [
+                    "We need need execute exact command, wait until end. User explicitly says actual execution wait. Need tool call commentary. No DB/network/file edits. Exec command with yield 30 sec, likely session. Need run in workspace. Must not modify file. Command won't. Need commentary start before tool. Then poll under 60s. We need ensure waits to end. Command exact."
+                  ]
+                },
+                {
+                  "type": "agentMessage",
+                  "id": "ec8b692a-73de-48bc-a990-32f429062187",
+                  "text": "立即在当前工作区执行指定命令，并持续查看进程直到它自行结束。不会进行其他操作。",
+                  "phase": "commentary",
+                  "memoryCitation": null,
+                  "delivery": null,
+                  "questions": null
+                }
+              ],
+              "itemsView": "full",
+              "status": "interrupted",
+              "error": null,
+              "startedAt": 1793331834,
+              "completedAt": null,
+              "durationMs": null
+            }
+          ]
+        },
+        "readState": {
+          "firstUnread": null,
+          "revision": "initial:01a18ae8-2c28-72d1-bc65-12d9179404c2"
+        }
+      }
+    },
+    "execution": {
+      "ownerThreadId": null,
+      "threadId": null,
+      "turnId": null,
+      "status": "idle",
+      "pendingCount": 0,
+      "pendingChildThreadIds": [],
+      "activeThreadIds": [],
+      "activeTurns": [],
+      "cleanupHolds": [],
+      "blockedRootThreadIds": [],
+      "revision": 0,
+      "closedCleanupProofs": [],
+      "backgroundCommands": [],
+      "activeHooks": [],
+      "goalActive": false,
+      "queuedSubmissions": 0,
+      "nativeQueueDispatchPending": false,
+      "observerReady": true,
+      "pendingNativeAcks": [],
+      "drainingConnections": 0
+    }
+  },
+  "restartedPid": 604372,
+  "finishedAt": "2026-10-30T03:44:15.432421+00:00"
+}

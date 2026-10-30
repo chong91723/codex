@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "plan_id": "d1256ea06ab0862421fa20038b6e517ed270075fbabcbae39a08619255c6652a",
+  "agent": "codex",
+  "entries": [
+    {
+      "path": "web/database/learning.py",
+      "source_sha256": "17afeec446e0085af8335105e5197d58b3a7f80ecd37d773209f603cda4babf4",
+      "entry": "learning.py[SK9S]: F:知识依赖守门 | R:web/database/database_knowledge.py,web/database/service.py,web/database/analysis_tools.py,web/database/metric_rules.py,web/database/file_inputs.py | A:Learning.record_read,before_query,check,check_result,history,manage | S:同轮凭据累计实际交付正文,相关表与源通用说明需读齐;token反映有效语义,拒绝修订或同结构重采不误伤旧结果;争议阻止全源;旧报告只读复核知识/指标/文件依赖,不改原文"
+    },
+    {
+      "path": "web/database/metric_rules.py",
+      "source_sha256": "b9a39a61459c3cc079e53eaf2daeccdd34083a38ce4ea2c19ea2737a5495deac",
+      "entry": "metric_rules.py[SN9L]: F:确认口径执行 | R:web/database/service.py,web/database/snapshots.py,web/database/analysis_tools.py,web/database/learning.py | A:metric_dependencies,MetricRules.manage,available,assert_current,execute,verify | S:只执行当前确认版本,全源先核类型及唯一键再筛选,分数计算最后舍入;证明绑定输入输出指纹;派生仅继承规则有效性而非公式认证,旧链缺祖先拒绝新用;确认角色为用户声明,非业务真理认证"
+    },
+    {
+      "path": "web/database/service.py",
+      "source_sha256": "1deecf93a79fbc85c2d92924a894408665d9d03ac299cd0c4e6b2bfd191ee0f8",
+      "entry": "service.py[SN9M]: F:只读分析网关 | R:web/database/adapters.py,web/database/sql_guard.py,web/database/snapshots.py,web/database/learning.py,web/database/metric_rules.py,web/database/file_inputs.py,web/data_freshness.py,web/database/store.py | A:Gateway.query,result,result_owner,analyze,chart,manage | S:整批SQL先验,Agent查询须读物理表并读齐适用知识;查询后先比连接版本再查状态;Agent新用复核知识/指标/文件与原始时效,历史可读;派生与图表写后复核失败仅删新产物;模型页连续缩量且nextOffset真实;时效CAS独立于连接版本"
+    },
+    {
+      "path": "web/public/app.js",
+      "source_sha256": "a3ecb8b5e55ad6bbbe7102333099df0049a56e50a177fc77c436e654c166b89c",
+      "entry": "app.js[UC9L]: F:原生会话交互 | R:web/server.py,web/native_runtime.py,web/public/native-ui.js,web/public/permissions.js,web/public/analysis-workspace.js,web/public/analysis-evidence.js,web/public/subagents.js,web/image_inputs.py | A:rpc,handleEvent,openThread,submitPrompt,interruptTurn,useAnalysisSkill,writeMcpConfig | S:执行快照权威,单用户单root;回执未知/观察失败禁提交和steer;父回合结束仍追踪迟到children,停止绑定原连接等root释放,ACK非回收;其他root占用只read历史,发送前resume;断线不杀runtime且不重发,审批不迁移;导航隔代,快照delta不重放且保留独立usage/plan/settings;会话草稿持久技能身份,发送重验启用,ACK只清已发版本/附件;MCP比对原配置后用户版本CAS写再reload,参数/密钥不回显且留空保留,高级项保留;原值不写不reload,保存非就绪,删除读回辨继承;脱敏保留工具schema;子任务只读不改父导航或伪造完成;图片解码验证且总量16MiB"
+    }
+  ]
+}

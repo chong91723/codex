@@ -1,0 +1,68 @@
+test_independent_command_cannot_bypass_thread_admission (test_native.NativeIntegrationTests.test_independent_command_cannot_bypass_thread_admission) ... ERROR
+test_native_filesystem_and_errors (test_native.NativeIntegrationTests.test_native_filesystem_and_errors) ... ERROR
+test_native_model_catalog_and_ephemeral_thread (test_native.NativeIntegrationTests.test_native_model_catalog_and_ephemeral_thread) ... ERROR
+test_raw_socket_cannot_bypass_scope_and_allowed_native_rpc_still_works (test_scope_policy.RawWebSocketScopeTests.test_raw_socket_cannot_bypass_scope_and_allowed_native_rpc_still_works) ... ERROR
+
+======================================================================
+ERROR: test_independent_command_cannot_bypass_thread_admission (test_native.NativeIntegrationTests.test_independent_command_cannot_bypass_thread_admission)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_native.py", line 17, in setUp
+    self.client=BrowserNativeClient(os.environ['CODEX_WEB_TEST_URL'],Path(self.temp.name)/'requests.json')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/browser_client.py", line 17, in __init__
+    self.process=subprocess.Popen([os.environ.get('CODEX_TEST_NODE','node'),str(Path(__file__).with_name('browser_transport.mjs'))],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1,env=env)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/usr/lib/python3.12/subprocess.py", line 1955, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'node'
+
+======================================================================
+ERROR: test_native_filesystem_and_errors (test_native.NativeIntegrationTests.test_native_filesystem_and_errors)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_native.py", line 17, in setUp
+    self.client=BrowserNativeClient(os.environ['CODEX_WEB_TEST_URL'],Path(self.temp.name)/'requests.json')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/browser_client.py", line 17, in __init__
+    self.process=subprocess.Popen([os.environ.get('CODEX_TEST_NODE','node'),str(Path(__file__).with_name('browser_transport.mjs'))],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1,env=env)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/usr/lib/python3.12/subprocess.py", line 1955, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'node'
+
+======================================================================
+ERROR: test_native_model_catalog_and_ephemeral_thread (test_native.NativeIntegrationTests.test_native_model_catalog_and_ephemeral_thread)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_native.py", line 17, in setUp
+    self.client=BrowserNativeClient(os.environ['CODEX_WEB_TEST_URL'],Path(self.temp.name)/'requests.json')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/browser_client.py", line 17, in __init__
+    self.process=subprocess.Popen([os.environ.get('CODEX_TEST_NODE','node'),str(Path(__file__).with_name('browser_transport.mjs'))],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1,env=env)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/usr/lib/python3.12/subprocess.py", line 1955, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'node'
+
+======================================================================
+ERROR: test_raw_socket_cannot_bypass_scope_and_allowed_native_rpc_still_works (test_scope_policy.RawWebSocketScopeTests.test_raw_socket_cannot_bypass_scope_and_allowed_native_rpc_still_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_scope_policy.py", line 278, in test_raw_socket_cannot_bypass_scope_and_allowed_native_rpc_still_works
+    client = RawSocket(os.environ['CODEX_WEB_TEST_URL'])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_scope_policy.py", line 236, in __init__
+    raise ValueError('CODEX_TEST_HOME must explicitly match the isolated /tmp profile')
+ValueError: CODEX_TEST_HOME must explicitly match the isolated /tmp profile
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.188s
+
+FAILED (errors=4)

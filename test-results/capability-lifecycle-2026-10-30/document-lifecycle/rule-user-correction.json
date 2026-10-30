@@ -1,0 +1,135 @@
+{
+  "before": {
+    "createdAt": "2026-10-30T05:23:35.162575+00:00",
+    "definition": {
+      "description": "独立验收用字段统计；不声明收入、币种或业务指标含义。",
+      "fields": {
+        "amount": {
+          "column": "TotalDue",
+          "type": "decimal",
+          "unit": "1"
+        },
+        "order_key": {
+          "column": "SalesOrderID",
+          "type": "int",
+          "unit": "1"
+        }
+      },
+      "filters": [],
+      "formulas": [],
+      "groupBy": [],
+      "measures": [
+        {
+          "field": "amount",
+          "id": "total",
+          "name": "TotalDue字段合计",
+          "nullPolicy": "reject",
+          "op": "sum",
+          "rounding": "HALF_UP",
+          "scale": 2,
+          "unit": "1"
+        },
+        {
+          "field": "order_key",
+          "id": "records",
+          "name": "记录数",
+          "nullPolicy": "reject",
+          "op": "count",
+          "rounding": "HALF_UP",
+          "scale": 0,
+          "unit": "1"
+        }
+      ],
+      "name": "依赖验收-订单字段统计",
+      "parameters": {},
+      "ranges": [],
+      "recordKey": [
+        "order_key"
+      ],
+      "table": {
+        "name": "salesorderheader",
+        "schema": "adventureworks"
+      }
+    },
+    "hash": "1cc1ee847d1d483b748679350500edbf0b1356c005214fcfb9e70047ef274fd9",
+    "id": "2c4705ed00007fcfe28c0f591342f6e3",
+    "sourceId": "a931f5e7e98df570960c7abc",
+    "sourceVersion": 1,
+    "status": "confirmed",
+    "version": 1,
+    "confirmedAt": "2026-10-30T05:23:35.787291+00:00",
+    "confirmation": {
+      "businessOwner": "验收用户",
+      "dataSteward": "验收数据管理",
+      "note": "仅核验真实字段汇总及依赖失效，不声明业务指标含义。"
+    },
+    "confirmationScope": "Current authenticated user acknowledgment; role names are declarations, not verified identities or dual approval."
+  },
+  "after": {
+    "createdAt": "2026-10-30T05:29:09.811208+00:00",
+    "definition": {
+      "description": "模拟用户根据真实schema修订：仅汇总OrderQty整数字段，不声明金额或币种。",
+      "fields": {
+        "amount": {
+          "column": "OrderQty",
+          "type": "int",
+          "unit": "1"
+        },
+        "order_key": {
+          "column": "SalesOrderDetailID",
+          "type": "int",
+          "unit": "1"
+        }
+      },
+      "filters": [],
+      "formulas": [],
+      "groupBy": [],
+      "measures": [
+        {
+          "field": "amount",
+          "id": "total",
+          "name": "OrderQty字段合计",
+          "nullPolicy": "reject",
+          "op": "sum",
+          "rounding": "HALF_UP",
+          "scale": 0,
+          "unit": "1"
+        },
+        {
+          "field": "order_key",
+          "id": "records",
+          "name": "记录数",
+          "nullPolicy": "reject",
+          "op": "count",
+          "rounding": "HALF_UP",
+          "scale": 0,
+          "unit": "1"
+        }
+      ],
+      "name": "依赖验收-订单明细数量统计",
+      "parameters": {},
+      "ranges": [],
+      "recordKey": [
+        "order_key"
+      ],
+      "table": {
+        "name": "salesorderdetail",
+        "schema": "adventureworks"
+      }
+    },
+    "hash": "78572de230f2ee25e50dfb7026ec99eda33b7803104061cb6c8e68e17a582171",
+    "id": "2c4705ed00007fcfe28c0f591342f6e3",
+    "sourceId": "a931f5e7e98df570960c7abc",
+    "sourceVersion": 1,
+    "status": "confirmed",
+    "version": 2,
+    "confirmedAt": "2026-10-30T05:29:10.448614+00:00",
+    "confirmation": {
+      "businessOwner": "验收用户",
+      "dataSteward": "验收数据管理",
+      "note": "已核对真实MySQL字段OrderQty smallint、SalesOrderDetailID int；仅修订示例映射，不更改数据库字段。"
+    },
+    "confirmationScope": "Current authenticated user acknowledgment; role names are declarations, not verified identities or dual approval."
+  },
+  "physicalDatabaseChanged": false
+}

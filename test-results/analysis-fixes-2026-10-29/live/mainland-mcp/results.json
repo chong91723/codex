@@ -1,0 +1,378 @@
+{
+  "scope": "One real public read-only remote MCP; deepseek-flash only; no ChatGPT or custom Skills; not an all-provider or strict-egress claim",
+  "base": "http://127.0.0.1:45703",
+  "workspace": "/tmp/codex-analysis-live-audit-DWQ7NI/workspace",
+  "endpoint": "https://mcp.24haowan.com/mcp",
+  "documentation": "https://mcp.24haowan.com/",
+  "name": "mainland24_1793251316324_4013249",
+  "results": [
+    {
+      "name": "MCP管理页添加匿名远端，原生返回真实工具目录",
+      "status": "passed",
+      "evidence": {
+        "endpoint": "https://mcp.24haowan.com/mcp",
+        "documentation": "https://mcp.24haowan.com/",
+        "authRequired": false,
+        "nativeToolCount": 8,
+        "tools": [
+          "get_template",
+          "list_industries",
+          "get_industry_benchmark",
+          "get_case",
+          "get_player_behavior",
+          "search_knowledge",
+          "search_templates",
+          "list_cases"
+        ],
+        "configuredViaManagementPage": true,
+        "authStatus": "unsupported",
+        "realResources": 1
+      }
+    },
+    {
+      "name": "Flash 从真实远端搜索转盘模板并取详情，结果展示可核验",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a1861b-ccab-7543-abe1-5efbede9a883",
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "realToolCalls": [
+          {
+            "tool": "search_templates",
+            "status": "completed",
+            "arguments": {
+              "query": "转盘",
+              "limit": 2
+            }
+          },
+          {
+            "tool": "get_template",
+            "status": "completed",
+            "arguments": {
+              "id": "336"
+            }
+          }
+        ],
+        "detailId": "336",
+        "noCommandOrFileFallback": true,
+        "originalMcpDocumentImported": true,
+        "pythonCalculatedAndPublished": true
+      }
+    },
+    {
+      "name": "真实配置停用与重新启用，目录随原生状态恢复",
+      "status": "passed",
+      "evidence": {
+        "disabledConfigConfirmed": true,
+        "toolsHiddenWhileDisabled": true,
+        "reenabledConfigConfirmed": true,
+        "realRemoteDirectoryReturned": true
+      }
+    },
+    {
+      "name": "清理唯一远端配置，保留已有模型/审批与其他服务",
+      "status": "passed",
+      "evidence": {
+        "removedUniqueServer": "mainland24_1793251316324_4013249",
+        "modelAndApprovalPreserved": true,
+        "unrelatedMcpPreserved": true
+      }
+    }
+  ],
+  "errors": [],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/batchWrite"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1861b-ccab-7543-abe1-5efbede9a883",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "threadId": "01a1861b-ccab-7543-abe1-5efbede9a883"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/batchWrite"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "threadId": "01a1861b-ccab-7543-abe1-5efbede9a883"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/batchWrite"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "threadId": "01a1861b-ccab-7543-abe1-5efbede9a883"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "threadId": "01a1861b-ccab-7543-abe1-5efbede9a883"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/value/write",
+      "keyPath": "mcp_servers.\"mainland24_1793251316324_4013249\""
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/read"
+    }
+  ],
+  "mcpItems": [
+    {
+      "method": "item/started",
+      "threadId": "01a1861b-ccab-7543-abe1-5efbede9a883",
+      "turnId": "01a1861b-cdd4-79c0-9449-aa04643c7213",
+      "item": {
+        "type": "mcpToolCall",
+        "id": "call_00_FSoS7djOyeGg6xuFDLrR6537",
+        "server": "mainland24_1793251316324_4013249",
+        "tool": "search_templates",
+        "status": "inProgress",
+        "arguments": {
+          "query": "转盘",
+          "limit": 2
+        },
+        "appContext": null,
+        "mcpAppResourceUri": "ui://24haowan/templates",
+        "mcpAppUi": null,
+        "pluginId": null,
+        "readOnlyHint": true,
+        "result": null,
+        "error": null,
+        "durationMs": null
+      }
+    },
+    {
+      "method": "item/completed",
+      "threadId": "01a1861b-ccab-7543-abe1-5efbede9a883",
+      "turnId": "01a1861b-cdd4-79c0-9449-aa04643c7213",
+      "item": {
+        "type": "mcpToolCall",
+        "id": "call_00_FSoS7djOyeGg6xuFDLrR6537",
+        "server": "mainland24_1793251316324_4013249",
+        "tool": "search_templates",
+        "status": "completed",
+        "arguments": {
+          "query": "转盘",
+          "limit": 2
+        },
+        "appContext": null,
+        "mcpAppResourceUri": "ui://24haowan/templates",
+        "mcpAppUi": null,
+        "pluginId": null,
+        "readOnlyHint": true,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "在 276 个模板中找到 2 个：\n\n## 大转盘抽奖\n- 模板 id: 336\n- 玩法类别: 抽奖类（标签：抽奖、转盘）\n- 适用行业: 商超\n- 详情/试玩: https://www.24haowan.com/games/336\n- 预览图: https://static-cdn.24haowan.com/public_resource/24admin/1483496922516转盘大抽奖.png\n\n转盘抽奖模版，适合各种营销活动，可与其他H5游戏或互动相结合，或者作为周年庆、促销等活动的抽奖手段。用户可以自定义转盘奖品结果的种类和概率的大小。\n\n## 新春大转盘\n- 模板 id: 343\n- 玩法类别: 抽奖类（标签：春节、节日、抽奖）\n- 适用行业: 商超\n- 详情/试玩: https://www.24haowan.com/games/343\n- 预览图: https://static-cdn.24haowan.com/public_resource/24admin/14836860924211483496922516转盘大抽奖.jpg\n\n转盘抽奖模版，适合各种营销活动，可与其他H5游戏或互动相结合，或者作为周年庆、促销等活动的抽奖手段。用户可以自定义转盘奖品结果的种类和概率的大小。\n\n用 get_template 传入模板 id 可获取单个模板的适用场景、玩法说明与常见问题。"
+            }
+          ],
+          "structuredContent": {
+            "items": [
+              {
+                "id": "336",
+                "name": "大转盘抽奖",
+                "category": "lottery",
+                "categoryName": "抽奖类",
+                "labels": [
+                  "抽奖",
+                  "转盘"
+                ],
+                "industry": "商超",
+                "phoneOnly": false,
+                "detailUrl": "https://www.24haowan.com/games/336",
+                "previewImage": "https://static-cdn.24haowan.com/public_resource/24admin/1483496922516转盘大抽奖.png",
+                "description": "转盘抽奖模版，适合各种营销活动，可与其他H5游戏或互动相结合，或者作为周年庆、促销等活动的抽奖手段。用户可以自定义转盘奖品结果的种类和概率的大小。"
+              },
+              {
+                "id": "343",
+                "name": "新春大转盘",
+                "category": "lottery",
+                "categoryName": "抽奖类",
+                "labels": [
+                  "春节",
+                  "节日",
+                  "抽奖"
+                ],
+                "industry": "商超",
+                "phoneOnly": false,
+                "detailUrl": "https://www.24haowan.com/games/343",
+                "previewImage": "https://static-cdn.24haowan.com/public_resource/24admin/14836860924211483496922516转盘大抽奖.jpg",
+                "description": "转盘抽奖模版，适合各种营销活动，可与其他H5游戏或互动相结合，或者作为周年庆、促销等活动的抽奖手段。用户可以自定义转盘奖品结果的种类和概率的大小。"
+              }
+            ]
+          },
+          "_meta": {
+            "ui": {
+              "resourceUri": "ui://24haowan/templates"
+            }
+          }
+        },
+        "error": null,
+        "durationMs": 145
+      }
+    },
+    {
+      "method": "item/started",
+      "threadId": "01a1861b-ccab-7543-abe1-5efbede9a883",
+      "turnId": "01a1861b-cdd4-79c0-9449-aa04643c7213",
+      "item": {
+        "type": "mcpToolCall",
+        "id": "call_00_t8VcOM5VUb8Dxpx1gscS0156",
+        "server": "mainland24_1793251316324_4013249",
+        "tool": "get_template",
+        "status": "inProgress",
+        "arguments": {
+          "id": "336"
+        },
+        "appContext": null,
+        "mcpAppUi": null,
+        "pluginId": null,
+        "readOnlyHint": true,
+        "result": null,
+        "error": null,
+        "durationMs": null
+      }
+    },
+    {
+      "method": "item/completed",
+      "threadId": "01a1861b-ccab-7543-abe1-5efbede9a883",
+      "turnId": "01a1861b-cdd4-79c0-9449-aa04643c7213",
+      "item": {
+        "type": "mcpToolCall",
+        "id": "call_00_t8VcOM5VUb8Dxpx1gscS0156",
+        "server": "mainland24_1793251316324_4013249",
+        "tool": "get_template",
+        "status": "completed",
+        "arguments": {
+          "id": "336"
+        },
+        "appContext": null,
+        "mcpAppUi": null,
+        "pluginId": null,
+        "readOnlyHint": true,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "# 大转盘抽奖\n\n- 模板 id: 336\n- 玩法类别: 抽奖类\n- 标签: 抽奖、转盘\n- 适用行业: 商超\n- 是否仅手机端: 否\n- 详情页（可直接试玩 Demo）: https://www.24haowan.com/games/336\n- 预览图: https://static-cdn.24haowan.com/public_resource/24admin/1483496922516转盘大抽奖.png\n\n## 玩法介绍\n\n转盘抽奖模版，适合各种营销活动，可与其他H5游戏或互动相结合，或者作为周年庆、促销等活动的抽奖手段。用户可以自定义转盘奖品结果的种类和概率的大小。\n\n## 怎么用\n\n在活动市场模板详情页点「立即使用」即可复制成自己的活动并进入编辑器，配置奖品与文案后发布即可上线。详细步骤可用 search_knowledge 查询「创建活动」。\n"
+            }
+          ],
+          "structuredContent": null,
+          "_meta": null
+        },
+        "error": null,
+        "durationMs": 84
+      }
+    }
+  ]
+}

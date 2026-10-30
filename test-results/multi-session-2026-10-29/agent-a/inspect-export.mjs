@@ -1,0 +1,13 @@
+import { chromium } from '/root/Codex/.toolchains/playwright/node_modules/playwright/index.mjs';
+import fs from 'node:fs/promises';
+import {pathToFileURL} from 'node:url';
+const dir='/tmp/codex-collab-audit-20261029/agent-a';
+const file=(await fs.readdir(dir)).find(x=>x.startsWith('我想分析')&&x.endsWith('.html'));
+const browser=await chromium.launch({executablePath:'/root/Codex/.toolchains/playwright-browsers/chromium-1248/chrome-linux64/chrome',headless:true,args:['--no-sandbox']});
+const page=await browser.newPage({viewport:{width:1500,height:1100}});
+await page.goto(pathToFileURL(`${dir}/${file}`).href,{waitUntil:'load'});
+const summary=await page.evaluate(()=>({title:document.title,images:[...document.images].map(i=>({complete:i.complete,width:i.naturalWidth,height:i.naturalHeight,type:i.src.split(';')[0]})),textLength:document.body.innerText.length}));
+await page.screenshot({path:`${dir}/18-exported-html-preview.png`,fullPage:false});
+await fs.writeFile(`${dir}/html-render-summary.json`,JSON.stringify(summary,null,2));
+console.log(JSON.stringify(summary));
+await browser.close();

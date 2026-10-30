@@ -1,0 +1,16 @@
+from case_helpers import *
+import hashlib,sqlite3
+rec={'case':'actual-browser-delete-history-keeps-independent-preferences','startedAt':utc()};home=Path(json.loads((B/'context.json').read_text())['home']);target='01a18bf1-8470-7920-9a54-389aa8698aa5'
+def docs():return {str(p.relative_to(home)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (home/'memories_v2/extensions/ad_hoc/notes').glob('*.md')}
+try:
+ idle();rec['beforeNotes']=docs()
+ rec['result']=ctl('''await native.reload();await native.waitForFunction(()=>state.ready&&state.runtimeDefaults&&!state.threadLoading);const id='01a18bf1-8470-7920-9a54-389aa8698aa5';
+async function menu(){await native.locator('.thread-row[data-thread-id="'+id+'"]').click({button:'right'});await native.locator('[data-thread-action=delete]').click();await native.locator('#dialog-title').filter({hasText:'永久删除会话'}).waitFor();}
+await menu();const confirmation=await native.locator('#dialog-body').innerText();if(!confirmation.includes('对应原生会话摘要')||!confirmation.includes('后台异步整理')||!confirmation.includes('独立保存的长期偏好'))throw Error('Deletion consequences incomplete');await native.screenshot({path:'/tmp/codex-memory-management-20261030/ui-delete-confirmation.png'});
+await native.getByRole('button',{name:'管理长期记忆',exact:true}).click();const d=native.locator('.analysis-memory-dialog');await d.locator('[data-memory-status=preference]').waitFor();const routedMemory=await d.locator('#analysis-user-memory').inputValue();if(!routedMemory.includes('溪云验收'))throw Error('Management navigation missing actual preference');await d.getByRole('button',{name:'关闭',exact:true}).click();await native.evaluate(()=>showView('chat'));await menu();await native.getByRole('button',{name:'管理数据源业务知识',exact:true}).click();await native.waitForFunction(()=>state.view==='databases');const knowledgeNavigation=await native.locator('#view-panel').innerText();await native.evaluate(()=>showView('chat'));await menu();const start=wire.length;await native.locator('#dialog-submit').click();await native.waitForFunction(id=>!state.threads.some(t=>t.id===id),'01a18bf1-8470-7920-9a54-389aa8698aa5');await native.locator('#dialog').waitFor({state:'hidden'});const stateNow=await api(native,'result',{nativeMemory:{operation:'state'}});if(!stateNow.body.content.includes('溪云验收'))throw Error('Deletion removed independent edited preference');const response=await raw(native,'thread/read',{threadId:id,includeTurns:false});if(!response.error)throw Error('Deleted native history still readable');return {confirmation,routedMemory,knowledgeNavigation,stateNow:stateNow.body,nativeReadAfterDelete:response,wire:wire.slice(start)};''',t=70)
+ rec['afterNotes']=docs();assert rec['beforeNotes']==rec['afterNotes'];present=[]
+ for path in home.glob('state_*.sqlite'):
+  with sqlite3.connect(path.as_uri()+'?mode=ro',uri=True) as db:present.extend(db.execute('SELECT id FROM threads WHERE id=?',(target,)).fetchall())
+ assert not present;rec['nativeHistoryRowRemoved']=True;rec['passed']=True
+finally:
+ rec['finishedAt']=utc();save('ui-delete-independent-memory',rec);print(json.dumps({k:v for k,v in rec.items() if k in ('case','passed','startedAt','finishedAt','nativeHistoryRowRemoved')},ensure_ascii=False))

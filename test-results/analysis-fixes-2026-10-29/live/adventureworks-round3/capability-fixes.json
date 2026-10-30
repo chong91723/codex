@@ -1,0 +1,321 @@
+{
+  "scope": "Actual current browser and deepseek-flash; owned MySQL AdventureWorks, real isolated Python/ECharts. No model credential access.",
+  "checks": [
+    {
+      "name": "真实浏览器拒绝Excel，数据附件刷新恢复并由Flash导入计算绘图",
+      "passed": true,
+      "evidence": {
+        "restoredAfterRefresh": true,
+        "exactTotal": "3.50",
+        "nativeTools": [
+          "run_python",
+          "read_result",
+          "run_python",
+          "create_chart",
+          "run_python",
+          "read_result",
+          "read_result",
+          "publish_answer"
+        ]
+      }
+    },
+    {
+      "name": "真实Flash分析中修改原文件会拒绝旧副本，重新导入才采用新值",
+      "passed": true,
+      "evidence": {
+        "editedAfterActualImport": true,
+        "finalTotal": "30.00",
+        "toolErrors": []
+      }
+    },
+    {
+      "name": "真实数据库数值经Flash和Python生成大整数，图表提示保留精确值",
+      "passed": true,
+      "evidence": {
+        "exactValue": "1424000000000000001",
+        "approximateCoordinateClearlyLabelled": true,
+        "actualBrowserTooltipPreserved": true
+      }
+    },
+    {
+      "name": "跨轮继续分析的最终报告包含前轮明确引用的真实图表",
+      "passed": true,
+      "evidence": {
+        "priorChartId": "6cbb446f0b8780358271e4f6acd514c5",
+        "figures": 1,
+        "offlineHTML": true
+      }
+    },
+    {
+      "name": "Flash自主选择已确认指标，停用后旧报告显示需要复核",
+      "passed": false,
+      "error": "TypeError: Cannot read properties of undefined (reading 'ruleId')\n    at file:///root/Codex/web/tests/analysis_cross_feature_live.mjs:92:312\n    at async check (file:///root/Codex/web/tests/analysis_cross_feature_live.mjs:20:52)\n    at async file:///root/Codex/web/tests/analysis_cross_feature_live.mjs:83:2"
+    }
+  ],
+  "errors": [],
+  "turns": [
+    {
+      "turnId": "01a18605-9ebd-7240-acee-b8ed2ba36af6",
+      "status": "completed",
+      "tools": [
+        {
+          "tool": "run_python",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "run_python",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "create_chart",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "run_python",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "publish_answer",
+          "status": "completed",
+          "isError": false
+        }
+      ],
+      "verification": [
+        {},
+        {
+          "status": "rejected"
+        },
+        {
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "turnId": "01a18606-1360-7dc3-ad0b-07ff55413a6a",
+      "status": "completed",
+      "tools": [
+        {
+          "tool": "import_data_file",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "run_python",
+          "status": "failed",
+          "isError": false
+        },
+        {
+          "tool": "import_data_file",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "run_python",
+          "status": "failed",
+          "isError": false
+        },
+        {
+          "tool": "run_python",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "publish_answer",
+          "status": "completed",
+          "isError": false
+        }
+      ],
+      "verification": [
+        {
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "turnId": "01a18606-49eb-7ee1-8378-cb8b15a1079e",
+      "status": "completed",
+      "tools": [
+        {
+          "tool": "list_databases",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "list_metric_rules",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "describe_database",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "read_database_context",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "query_database",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "run_python",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "run_python",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "create_chart",
+          "status": "failed",
+          "isError": false
+        },
+        {
+          "tool": "run_python",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "create_chart",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "publish_answer",
+          "status": "completed",
+          "isError": false
+        }
+      ],
+      "verification": [
+        {},
+        {},
+        {
+          "status": "rejected"
+        },
+        {},
+        {
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "turnId": "01a18607-0a2b-7cf0-8ca9-04d973eef83a",
+      "status": "completed",
+      "tools": [
+        {
+          "tool": "publish_answer",
+          "status": "completed",
+          "isError": false
+        }
+      ],
+      "verification": [
+        {},
+        {
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "turnId": "01a18607-5cea-7712-9539-cb6ce35b794d",
+      "status": "completed",
+      "tools": [
+        {
+          "tool": "list_metric_rules",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "execute_metric",
+          "status": "failed",
+          "isError": false
+        },
+        {
+          "tool": "read_database_context",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "execute_metric",
+          "status": "failed",
+          "isError": false
+        },
+        {
+          "tool": "describe_database",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "describe_database",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "execute_metric",
+          "status": "failed",
+          "isError": false
+        },
+        {
+          "tool": "query_database",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false
+        },
+        {
+          "tool": "publish_answer",
+          "status": "completed",
+          "isError": false
+        }
+      ],
+      "verification": [
+        {},
+        {},
+        {
+          "status": "verified"
+        }
+      ]
+    }
+  ]
+}

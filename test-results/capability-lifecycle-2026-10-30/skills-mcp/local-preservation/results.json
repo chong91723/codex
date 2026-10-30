@@ -1,0 +1,137 @@
+{
+  "scope": "Actual browser and pinned native MCP lifecycle; fixture explicitly not production service",
+  "name": "lifecycle_1793337283443",
+  "results": [
+    {
+      "label": "添加本地 MCP：原生保存、重载与实际工具发现",
+      "status": "passed",
+      "evidence": {
+        "nativeConfigSaved": true,
+        "toolCount": 1,
+        "runtimeStatus": null,
+        "toolsError": null
+      }
+    },
+    {
+      "label": "编辑实际启动参数并保留高级工具配置",
+      "status": "passed",
+      "evidence": {
+        "advancedSettingPreserved": true,
+        "argumentsUpdated": true,
+        "toolCount": 1,
+        "runtimeStatus": null,
+        "toolsError": null
+      }
+    },
+    {
+      "label": "停用、刷新持久化、重新启用并恢复原生工具目录",
+      "status": "passed",
+      "evidence": {
+        "disabled": {
+          "toolCount": 0,
+          "runtimeStatus": null,
+          "toolsError": null
+        },
+        "reenabled": {
+          "toolCount": 1,
+          "runtimeStatus": null,
+          "toolsError": null
+        }
+      }
+    },
+    {
+      "label": "编辑冲突保留别人配置且保留未保存输入",
+      "status": "passed",
+      "evidence": {
+        "staleSaveRejected": true,
+        "draftPreserved": true
+      }
+    },
+    {
+      "label": "移除连接通过可见入口调用原生删除，刷新后仍不存在",
+      "status": "passed",
+      "evidence": {
+        "configAbsent": true,
+        "nativeToolsAbsent": true,
+        "afterRefreshAbsent": true
+      }
+    },
+    {
+      "label": "无关配置及模型保持不变，页面无异常",
+      "status": "passed",
+      "evidence": {
+        "unrelatedConfigHash": "19207a5147c6da93420de3817bc488f878afe8206a3fa0beb26684da90e2d46a",
+        "modelPolicyPreserved": true,
+        "pageErrors": 0,
+        "modelUsed": false
+      }
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337283443\""
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337283443\".tool_timeout_sec"
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337283443\""
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337283443\".enabled"
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337283443\".enabled"
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337283443\".tool_timeout_sec"
+      ]
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337283443\""
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    }
+  ],
+  "nativeErrors": [],
+  "cleanup": {
+    "ownedConfigurationRemoved": true
+  }
+}

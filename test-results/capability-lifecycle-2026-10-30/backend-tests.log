@@ -1,0 +1,31 @@
+........F...................................................................................................................................................................F.........................................................sss.........................................................................................................................................................................s.......................................
+======================================================================
+FAIL: test_local_file_import_and_raw_json_computation_have_real_source_metadata (test_analysis_evidence.EvidenceTests.test_local_file_import_and_raw_json_computation_have_real_source_metadata) (text='amount,amount\n1.20,2.30\n')
+----------------------------------------------------------------------
+ValueError: Python 计算超时，执行进程已终止，未发布结果。
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_analysis_evidence.py", line 222, in test_local_file_import_and_raw_json_computation_have_real_source_metadata
+    with self.assertRaisesRegex(ValueError,'CSV'):self.compute("result=documents[parameters['doc']]",document_ids=[document['documentId']],parameters={'doc':document['documentId']})
+AssertionError: "CSV" does not match "Python 计算超时，执行进程已终止，未发布结果。"
+
+======================================================================
+FAIL: test_bad_table_rejected_then_valid_publication_verified_through_worker (test_markdown_publication_mcp.MarkdownPublicationMcpTests.test_bad_table_rejected_then_valid_publication_verified_through_worker)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/test_markdown_publication_mcp.py", line 27, in test_bad_table_rejected_then_valid_publication_verified_through_worker
+    result=tool('run_python',{'code':"result=[{'label':'示例','amount':Decimal('1.20')+Decimal('2.30'),'percentage':Decimal(1)/Decimal(8)*Decimal(100)}]"})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_markdown_publication_mcp.py", line 24, in tool
+    def tool(name,args):return request('tools/call',{'name':name,'arguments':args,'_meta':{'threadId':'markdown-fixture','x-codex-turn-metadata':json.dumps({'turn_id':'native-turn-fixture'})}})
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Codex/web/tests/test_markdown_publication_mcp.py", line 22, in request
+    self.assertTrue(select.select([process.stdout],[],[],25)[0],'Actual stdio MCP response timed out')
+AssertionError: [] is not true : Actual stdio MCP response timed out
+
+----------------------------------------------------------------------
+Ran 442 tests in 265.898s
+
+FAILED (failures=2, skipped=4)

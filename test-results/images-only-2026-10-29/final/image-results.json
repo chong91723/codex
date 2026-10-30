@@ -1,0 +1,156 @@
+{
+  "scope": "Actual browser, native runtime and deepseek-flash; separate profile; no credential access",
+  "checks": [
+    {
+      "name": "普通文本对话仍通过真实 Flash 完成",
+      "passed": true,
+      "evidence": {
+        "threadId": "01a1866d-2926-7b62-8539-7277e567fde5",
+        "model": "deepseek-flash",
+        "completed": true
+      }
+    },
+    {
+      "name": "全部非图片、伪装图片和损坏图片被拒绝且草稿保留",
+      "passed": true,
+      "evidence": {
+        "nonImageTypesRejected": 12,
+        "truncatedImageDecodeRejected": true,
+        "rawWebSocketRejected": true,
+        "oldUploadEndpoint": 400,
+        "oldLargeBodyAllowance": 413,
+        "nativeTurnsUnchanged": true
+      }
+    },
+    {
+      "name": "支持格式可预览和移除，图片草稿刷新恢复，旧文件草稿不再加载",
+      "passed": true,
+      "evidence": {
+        "formatsDecoded": [
+          "png",
+          "jpeg",
+          "webp",
+          "gif"
+        ],
+        "removed": 2,
+        "restored": 2,
+        "oldNonImageDraftStoreRemoved": true
+      }
+    },
+    {
+      "name": "真实后台拒绝保留图片与问题，再次发送由 Flash 实际识图",
+      "passed": true,
+      "evidence": {
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "turnId": "01a1866d-478d-71b1-88a6-a511b59b5295",
+        "actualAnswer": "英文单词：CEDAR；背景颜色：淡黄色；图形：中央为紫色三角形。",
+        "imagesSent": 2,
+        "failedRequestPreservedDraft": true,
+        "successfulRequestClearedSentImages": true
+      }
+    },
+    {
+      "name": "识图历史恢复且发送后图片草稿已清理",
+      "passed": true,
+      "evidence": {
+        "historyRestored": true,
+        "unsentImages": 0
+      }
+    },
+    {
+      "name": "图片草稿按会话隔离，读取中切换和中文输入不触发任务",
+      "passed": true,
+      "evidence": {
+        "draftIsolation": true,
+        "lateReadStaysWithOriginalThread": true,
+        "imeDoesNotSend": true,
+        "shiftEnterDoesNotSend": true
+      }
+    }
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "method": "turn/start",
+      "threadId": "01a1866d-2926-7b62-8539-7277e567fde5",
+      "model": "deepseek-flash",
+      "inputs": [
+        {
+          "type": "text",
+          "text": "请仅回答：准备就绪。无需使用工具。"
+        }
+      ]
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1866d-2926-7b62-8539-7277e567fde5",
+      "inputs": [
+        {
+          "type": "audio",
+          "mime": "data:audio/wav"
+        }
+      ]
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1866d-2926-7b62-8539-7277e567fde5",
+      "inputs": [
+        {
+          "type": "image",
+          "mime": "data:image/png"
+        }
+      ]
+    },
+    {
+      "method": "turn/steer",
+      "threadId": "01a1866d-2926-7b62-8539-7277e567fde5",
+      "inputs": [
+        {
+          "type": "audio",
+          "mime": "data:audio/wav"
+        }
+      ]
+    },
+    {
+      "method": "turn/steer",
+      "threadId": "01a1866d-2926-7b62-8539-7277e567fde5",
+      "inputs": [
+        {
+          "type": "image",
+          "mime": "data:image/png"
+        }
+      ]
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1866d-2926-7b62-8539-7277e567fde5",
+      "model": "deepseek-flash",
+      "inputs": [
+        {
+          "type": "image",
+          "mime": "data:image/png"
+        }
+      ]
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a1866d-2926-7b62-8539-7277e567fde5",
+      "model": "deepseek-flash",
+      "inputs": [
+        {
+          "type": "text",
+          "text": "请读取图片中的英文单词，并描述背景颜色和中央图形的形状、颜色。只依据图片，使用“英文单词：…；背景颜色：…；图形：…”的格式回答，不计数，无需工具。"
+        },
+        {
+          "type": "image",
+          "mime": "data:image/png"
+        },
+        {
+          "type": "image",
+          "mime": "data:image/jpeg"
+        }
+      ]
+    }
+  ]
+}

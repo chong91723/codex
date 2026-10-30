@@ -1,0 +1,26 @@
+{
+  "case": "T30-001",
+  "kind": "realMySQLAndWebGateway",
+  "modelUsed": false,
+  "query": "SELECT SUM(a.OrderQty * b.OrderQty) AS audit30_inflight FROM salesorderdetail a CROSS JOIN salesorderdetail b WHERE a.SalesOrderDetailID <= 7000 AND b.SalesOrderDetailID <= 7000",
+  "beforeRevision": 3,
+  "startedAt": "2026-10-30T02:17:10.963441+00:00",
+  "dataModified": false,
+  "sqlObservedAt": "2026-10-30T02:17:11.626144+00:00",
+  "mysqlProcess": "153\t0\texecuting",
+  "mutationSentAt": "2026-10-30T02:17:11.626168+00:00",
+  "mutationAcknowledgedAt": "2026-10-30T02:17:12.241047+00:00",
+  "afterRevision": 4,
+  "queryResponse": {
+    "startedAt": "2026-10-30T02:17:11.051Z",
+    "finishedAt": "2026-10-30T02:17:17.682Z",
+    "status": 400,
+    "body": {
+      "error": "查询期间业务知识发生变化，请重新读取知识并查询；旧结果未用于回答。"
+    }
+  },
+  "passed": true,
+  "restoredContentRevision": 5,
+  "restoreIsNewHistoryVersion": true,
+  "finishedAt": "2026-10-30T02:17:18.465148+00:00"
+}

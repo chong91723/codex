@@ -1,0 +1,49 @@
+{
+  "scope": "Real Flash/naturally aged native extraction, no timestamp or memory DB edits; isolated service/profile only.",
+  "checks": [
+    {
+      "name": "服务重启后仍能从设置页面读取真实原生历史提取",
+      "passed": true,
+      "threadId": "01a185d8-d8a7-7653-8d44-7c9f4bfaf71e",
+      "sourceUpdatedAt": 1793246946,
+      "sha256": "ae8d3dadfd987233c86ab1f8793935d9be66b45a11d9455db52be64840b04b85"
+    },
+    {
+      "name": "真实Flash新会话按需查阅原生提取的旧会话总结",
+      "passed": true,
+      "threadId": "01a1861a-d7ea-7582-a86b-be19f284ffde",
+      "model": "deepseek-flash",
+      "final": "以后报告默认使用中文，结构为：**先说明结论，再说明数据依据**。"
+    },
+    {
+      "name": "原生全局合并状态如实报告",
+      "passed": true,
+      "nativePipeline": {
+        "running": false,
+        "failed": false,
+        "jobs": 2,
+        "extracted": 1,
+        "consolidated": false
+      },
+      "nativeControl": {
+        "state": "waiting_native_cooldown",
+        "until": 1793268730
+      },
+      "scheduler": {
+        "version": "native-memory-scheduler-v7",
+        "pid": 4010948,
+        "birth": "41357660",
+        "ownerPid": 4010841,
+        "status": "waiting_native_cooldown",
+        "checkedAt": "2026-10-29T05:19:02.721206+00:00",
+        "intervalSeconds": 300,
+        "nativeControl": {
+          "state": "waiting_native_cooldown",
+          "until": 1793268730
+        }
+      },
+      "notice": "历史提取已经完成；未强制清除六小时全局合并冷却。"
+    }
+  ],
+  "errors": []
+}

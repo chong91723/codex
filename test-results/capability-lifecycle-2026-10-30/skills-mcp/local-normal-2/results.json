@@ -1,0 +1,83 @@
+{
+  "scope": "Actual browser and pinned native MCP lifecycle; fixture explicitly not production service",
+  "name": "lifecycle_1793336954419",
+  "results": [
+    {
+      "label": "添加本地 MCP：原生保存、重载与实际工具发现",
+      "status": "passed",
+      "evidence": {
+        "nativeConfigSaved": true,
+        "toolCount": 1,
+        "runtimeStatus": null,
+        "toolsError": null
+      }
+    },
+    {
+      "label": "编辑实际启动参数并保留高级工具配置",
+      "status": "passed",
+      "evidence": {
+        "advancedSettingPreserved": true,
+        "argumentsUpdated": true,
+        "toolCount": 1,
+        "runtimeStatus": null,
+        "toolsError": null
+      }
+    },
+    {
+      "label": "真实 Flash 在原生回合调用已安装的本地 MCP",
+      "status": "failed",
+      "error": "page.waitForFunction: Timeout 180000ms exceeded.",
+      "feedback": "MCP 配置已保存，下一次任务使用更新后的工具配置×"
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793336954419\""
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793336954419\".tool_timeout_sec"
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793336954419\""
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a18b36-68f2-75b1-be4a-c8bc2f52b755"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793336954419\""
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    }
+  ],
+  "nativeErrors": [],
+  "cleanup": {
+    "ownedConfigurationRemoved": true
+  }
+}

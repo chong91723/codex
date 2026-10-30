@@ -1,0 +1,67 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>请先按原生计划模式为当前只读 AdventureWorks 样例设计一个分析方案：选择实际存在的销售事实与产品维度，分析最近两个可比完整年度的产品类别销售变化，</title><style>body{font:16px/1.85 system-ui,sans-serif;color:#202124;max-width:980px;margin:48px auto;padding:0 28px;overflow-wrap:anywhere}h1,h2,h3{line-height:1.4;margin-top:1.6em}table{border-collapse:collapse;min-width:50%;font-size:14px}td,th{padding:10px 14px;border:1px solid #ddd;text-align:left}th{background:#f7f8fa}pre{white-space:pre-wrap;background:#f6f7f8;padding:18px;font-size:13px}blockquote{border-left:3px solid #bbb;margin-left:0;padding-left:16px;color:#555}.table-scroll{overflow:auto}img{max-width:100%}figure{margin:28px 0;break-inside:avoid}figcaption{color:#555}footer{border-top:1px solid #ddd;margin-top:40px;font-size:13px;color:#666}@media print{body{margin:0;max-width:none;padding:0;font-size:11pt}.table-scroll{overflow:visible}table{max-width:100%}pre{white-space:pre-wrap}h1,h2,h3{break-after:avoid}}</style><body><header><h1>请先按原生计划模式为当前只读 AdventureWorks 样例设计一个分析方案：选择实际存在的销售事实与产品维度，分析最近两个可比完整年度的产品类别销售变化，</h1><p>分析报告 · 10/29/2026, 8:21:31 PM</p><p>此历史报告没有完整的业务知识版本记录，不能判断纠错影响。</p></header><main><p>基础只读查询已完成，当前停在确认门。2002 与 2003 为数据中最近两个完整自然年度；金额核对发现 2,578 个订单的明细 <code>LineTotal</code> 合计低于订单头 <code>SubTotal</code>，后续将按已确认的 <code>LineTotal</code> 口径分析并明确披露差异。</p>
+<h3>基础 result ID</h3>
+<div class="table-scroll" tabindex="0" role="region" aria-label="表格，可横向滚动"><table>
+<thead>
+<tr>
+<th>结果</th>
+<th>result ID</th>
+<th align="right">行数 × 字段数</th>
+<th>读取时间（UTC）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>年度覆盖</td>
+<td><code>d9132122bb53c4363f2d72d4636306ba</code></td>
+<td align="right">4 × 5</td>
+<td>2026-10-29 12:16:36.050316</td>
+</tr>
+<tr>
+<td>类别净额</td>
+<td><code>0e9dd589751158577fe3433846fb6785</code></td>
+<td align="right">8 × 5</td>
+<td>2026-10-29 12:18:48.744112</td>
+</tr>
+<tr>
+<td>币种覆盖</td>
+<td><code>a42ecd6c67a06dc79fa01c35a7e459f8</code></td>
+<td align="right">5 × 4</td>
+<td>2026-10-29 12:18:48.744622</td>
+</tr>
+<tr>
+<td>状态分布</td>
+<td><code>7a1e49ad702fa14ec847c179724f60c9</code></td>
+<td align="right">1 × 2</td>
+<td>2026-10-29 12:18:48.744301</td>
+</tr>
+<tr>
+<td>行级金额核对</td>
+<td><code>6b6f264beb2b0e722aaf6f1026c5163d</code></td>
+<td align="right">1 × 4</td>
+<td>2026-10-29 12:18:49.067055</td>
+</tr>
+<tr>
+<td>订单级金额核对</td>
+<td><code>3ed5a945cedf4b7ffcd33f58c7811204</code></td>
+<td align="right">1 × 10</td>
+<td>2026-10-29 12:18:50.877674</td>
+</tr>
+</tbody></table></div>
+<p>年度覆盖结果复用了 schema 子 agent 的既有只读结果，其余五项由 root 执行。</p>
+<h3>依赖版本</h3>
+<ul>
+<li>分析口径：<code>aw-category-sales-v1</code></li>
+<li>连接版本：<code>1</code></li>
+<li>查询结果版本：<code>2</code></li>
+<li><code>sourceVersion</code>：<code>1</code></li>
+<li><code>businessRevision</code>：<code>1</code></li>
+<li><code>knowledgeRevision</code>：<code>1</code></li>
+<li>Schema snapshot：<code>b2c19d14ecc00d1361cf4f9ab1e1380d</code></li>
+<li>数据源：<code>36390c697136fae83168e7fb</code></li>
+<li>五份 SQL 均为 <code>v1</code>，SHA-256 和完整基础观测已记录在<a target="_blank" rel="noopener noreferrer">基础结果清单</a>。</li>
+</ul>
+<p>尚未执行 Python 同比及贡献计算、未创建 ECharts、未启动 check 子 agent，也未发布报告。请确认以上 result ID 和依赖版本；收到“确认基础结果，继续派生与发布”后，我才继续后续步骤。</p>
+</main><footer><h2>数据依据范围</h2>
+<blockquote>
+<p>未关联可确认的字段执行依据。原文可阅读，本文件不能作为已核验数据结果。</p>
+</blockquote>
+<p>图表为导出时的静态快照；交互图表和完整 CSV 保留在原对话。技术依据可从原回答单独下载，不在正文中重复展开。</p><p>分析记录：01a18792-f467-7381-ad49-d53194336270</p></footer></body></html>

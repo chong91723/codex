@@ -1,0 +1,95 @@
+{
+  "scope": "Actual built-in native skill lifecycle; no custom installs or fake bundled uninstalls",
+  "results": [
+    {
+      "label": "原生随运行时部署：四个保留技能路径和源码哈希一致",
+      "status": "passed",
+      "evidence": {
+        "installedBy": "native bundled cache",
+        "pathsMatchSystemScope": true,
+        "hashes": {
+          "openai-docs": "aa6829e21df2223167c85d2e49b6337a7345c84c1033f1ec10182c7882b36d45",
+          "review-agent": "07079efd0dc76f05fade424e5dfb048dce1de2df7626e1a4f56292a4f3f92228",
+          "skill-creator": "6656e54755638e8efcf275a472b9672eaa8a9a1b9e59dc210e275b03b59e1e66",
+          "skill-installer": "d68b77e5bbb34dedab89d134da52855f140fc4b4299b80104f534e3b9e98f8ee"
+        },
+        "customSkillInstalled": false
+      }
+    },
+    {
+      "label": "从技能页选择后刷新保留原生技能意图和完整草稿",
+      "status": "passed",
+      "evidence": {
+        "before": {
+          "text": "$openai-docs 请使用所选原生技能，检查本地文档，不联网。",
+          "skills": [
+            {
+              "name": "openai-docs",
+              "path": "/tmp/codex-capability-20261030/live/profile/skills/.system/openai-docs/SKILL.md"
+            }
+          ]
+        },
+        "after": {
+          "text": "$openai-docs 请使用所选原生技能，检查本地文档，不联网。",
+          "skills": [
+            {
+              "name": "openai-docs",
+              "path": "/tmp/codex-capability-20261030/live/profile/skills/.system/openai-docs/SKILL.md"
+            }
+          ]
+        },
+        "submissions": 0
+      }
+    },
+    {
+      "label": "原生停用及刷新持久化，已选停用技能拒绝发送并保留草稿",
+      "status": "passed",
+      "evidence": {
+        "nativeDisabled": true,
+        "disabledAfterRefresh": true,
+        "noTaskSubmitted": true,
+        "draftPreserved": true
+      }
+    },
+    {
+      "label": "重新启用后原生发现恢复，实际模型收到结构化Skill输入",
+      "status": "passed",
+      "evidence": {
+        "nativeEnabled": true,
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "threadId": "01a18b3b-f574-74e2-a625-0b7743eeaaf1",
+        "structuredSkillInput": true,
+        "actualNativeSuccessfulCommands": 1
+      }
+    },
+    {
+      "label": "没有启用外部技能，其他MCP及模型策略保持不变",
+      "status": "passed",
+      "evidence": {
+        "unrelatedMcpPreserved": true,
+        "modelPolicyPreserved": true,
+        "customSkillsInstalledOrActivated": false,
+        "bundledUninstall": "not_a_native_operation"
+      }
+    }
+  ],
+  "pageErrors": [],
+  "submissions": [
+    {
+      "method": "turn/start",
+      "threadId": "01a18b3b-f574-74e2-a625-0b7743eeaaf1",
+      "skills": [
+        {
+          "type": "skill",
+          "name": "openai-docs",
+          "path": "/tmp/codex-capability-20261030/live/profile/skills/.system/openai-docs/SKILL.md"
+        }
+      ]
+    }
+  ],
+  "cleanup": {
+    "originalEnabledState": true
+  },
+  "ownThread": "01a18b3b-f574-74e2-a625-0b7743eeaaf1"
+}

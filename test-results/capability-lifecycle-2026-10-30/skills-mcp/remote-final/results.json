@@ -1,0 +1,263 @@
+{
+  "scope": "One real public read-only remote MCP; deepseek-flash only; no ChatGPT or custom Skills; not an all-provider or strict-egress claim",
+  "base": "http://127.0.0.1:34733",
+  "workspace": "/tmp/codex-capability-20261030/live/workspace",
+  "endpoint": "https://mcp.24haowan.com/mcp",
+  "documentation": "https://mcp.24haowan.com/",
+  "name": "lifecycle_remote_1793337421959",
+  "results": [
+    {
+      "name": "MCP管理页添加匿名远端，原生返回真实工具目录",
+      "status": "passed",
+      "evidence": {
+        "endpoint": "https://mcp.24haowan.com/mcp",
+        "documentation": "https://mcp.24haowan.com/",
+        "authRequired": false,
+        "nativeToolCount": 8,
+        "tools": [
+          "get_case",
+          "list_industries",
+          "get_player_behavior",
+          "get_industry_benchmark",
+          "list_cases",
+          "search_templates",
+          "get_template",
+          "search_knowledge"
+        ],
+        "configuredViaManagementPage": true,
+        "authStatus": "unsupported",
+        "realResources": 1
+      }
+    },
+    {
+      "name": "远端配置可通过编辑入口保存且不改变连接目标",
+      "status": "failed",
+      "error": "locator.waitFor: Timeout 90000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#dialog') to be hidden\u001b[22m\n\u001b[2m    182 × locator resolved to visible <dialog open=\"\" id=\"dialog\">…</dialog>\u001b[22m\n\n    at /root/Codex/web/tests/flash_mainland_remote_mcp_desktop.mjs?lifecycle=1:46:520\n    at async check (/root/Codex/web/tests/flash_mainland_remote_mcp_desktop.mjs?lifecycle=1:25:86)\n    at async file:///root/Codex/web/tests/flash_mainland_remote_mcp_desktop.mjs?lifecycle=1:45:2"
+    },
+    {
+      "name": "Flash 实际调用一个真实远端只读工具",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a18b3f-1789-7f03-a799-9cf72b10e109",
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "realTool": "search_templates",
+        "status": "completed",
+        "readOnly": true,
+        "scope": "One actual remote tool call; does not certify downstream import, calculation, or report publication"
+      }
+    },
+    {
+      "name": "清理唯一远端配置，保留已有模型/审批与其他服务",
+      "status": "passed",
+      "evidence": {
+        "removedUniqueServer": "lifecycle_remote_1793337421959",
+        "modelAndApprovalPreserved": true,
+        "unrelatedMcpPreserved": true
+      }
+    }
+  ],
+  "errors": [],
+  "calls": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/batchWrite"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "mcpServerStatus/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/batchWrite"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a18b3f-1789-7f03-a799-9cf72b10e109",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "threadId": "01a18b3f-1789-7f03-a799-9cf72b10e109"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/batchWrite"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "threadId": "01a18b3f-1789-7f03-a799-9cf72b10e109"
+    },
+    {
+      "method": "config/read"
+    }
+  ],
+  "mcpItems": [
+    {
+      "method": "item/started",
+      "threadId": "01a18b3f-1789-7f03-a799-9cf72b10e109",
+      "turnId": "01a18b3f-1b27-7911-a657-31bcd7558101",
+      "item": {
+        "type": "mcpToolCall",
+        "id": "call_00_vYsi3hJQ8yk7GtEhB3kV5327",
+        "server": "lifecycle_remote_1793337421959",
+        "tool": "search_templates",
+        "status": "inProgress",
+        "arguments": {
+          "query": "转盘",
+          "limit": 1
+        },
+        "appContext": null,
+        "mcpAppResourceUri": "ui://24haowan/templates",
+        "mcpAppUi": null,
+        "pluginId": null,
+        "readOnlyHint": true,
+        "result": null,
+        "error": null,
+        "durationMs": null
+      }
+    },
+    {
+      "method": "item/completed",
+      "threadId": "01a18b3f-1789-7f03-a799-9cf72b10e109",
+      "turnId": "01a18b3f-1b27-7911-a657-31bcd7558101",
+      "item": {
+        "type": "mcpToolCall",
+        "id": "call_00_vYsi3hJQ8yk7GtEhB3kV5327",
+        "server": "lifecycle_remote_1793337421959",
+        "tool": "search_templates",
+        "status": "completed",
+        "arguments": {
+          "query": "转盘",
+          "limit": 1
+        },
+        "appContext": null,
+        "mcpAppResourceUri": "ui://24haowan/templates",
+        "mcpAppUi": null,
+        "pluginId": null,
+        "readOnlyHint": true,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "在 276 个模板中找到 1 个：\n\n## 大转盘抽奖\n- 模板 id: 336\n- 玩法类别: 抽奖类（标签：抽奖、转盘）\n- 适用行业: 商超\n- 详情/试玩: https://www.24haowan.com/games/336\n- 预览图: https://static-cdn.24haowan.com/public_resource/24admin/1483496922516转盘大抽奖.png\n\n转盘抽奖模版，适合各种营销活动，可与其他H5游戏或互动相结合，或者作为周年庆、促销等活动的抽奖手段。用户可以自定义转盘奖品结果的种类和概率的大小。\n\n用 get_template 传入模板 id 可获取单个模板的适用场景、玩法说明与常见问题。"
+            }
+          ],
+          "structuredContent": {
+            "items": [
+              {
+                "id": "336",
+                "name": "大转盘抽奖",
+                "category": "lottery",
+                "categoryName": "抽奖类",
+                "labels": [
+                  "抽奖",
+                  "转盘"
+                ],
+                "industry": "商超",
+                "phoneOnly": false,
+                "detailUrl": "https://www.24haowan.com/games/336",
+                "previewImage": "https://static-cdn.24haowan.com/public_resource/24admin/1483496922516转盘大抽奖.png",
+                "description": "转盘抽奖模版，适合各种营销活动，可与其他H5游戏或互动相结合，或者作为周年庆、促销等活动的抽奖手段。用户可以自定义转盘奖品结果的种类和概率的大小。"
+              }
+            ]
+          },
+          "_meta": {
+            "ui": {
+              "resourceUri": "ui://24haowan/templates"
+            }
+          }
+        },
+        "error": null,
+        "durationMs": 162
+      }
+    }
+  ]
+}

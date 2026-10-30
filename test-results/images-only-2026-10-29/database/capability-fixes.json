@@ -1,0 +1,169 @@
+{
+  "scope": "Actual current browser and deepseek-flash; owned MySQL AdventureWorks, real isolated Python/ECharts. No model credential access.",
+  "checks": [
+    {
+      "name": "浏览器拒绝所有非图片附件且保留问题草稿",
+      "passed": true,
+      "evidence": {
+        "nonImagesRejected": true,
+        "draftRetained": true
+      }
+    },
+    {
+      "name": "真实数据库数值经Flash和Python生成大整数，图表提示保留精确值",
+      "passed": true,
+      "evidence": {
+        "exactValue": "1424000000000000001",
+        "approximateCoordinateClearlyLabelled": true,
+        "actualBrowserTooltipPreserved": true
+      }
+    },
+    {
+      "name": "跨轮继续分析的最终报告包含前轮明确引用的真实图表",
+      "passed": true,
+      "evidence": {
+        "priorChartId": "e0e5dbc5abe23c64e83e931b39fba8e6",
+        "figures": 1,
+        "offlineHTML": true
+      }
+    }
+  ],
+  "errors": [],
+  "turns": [
+    {
+      "turnId": "01a18665-e634-7122-a585-81e02d48142e",
+      "status": "completed",
+      "tools": [
+        {
+          "tool": "list_databases",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "list_metric_rules",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "describe_database",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "query_database",
+          "status": "failed",
+          "isError": true,
+          "error": null
+        },
+        {
+          "tool": "read_database_context",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "query_database",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "run_python",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "create_chart",
+          "status": "failed",
+          "isError": true,
+          "error": null
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "run_python",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "create_chart",
+          "status": "failed",
+          "isError": true,
+          "error": null
+        },
+        {
+          "tool": "run_python",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "create_chart",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "read_result",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        },
+        {
+          "tool": "publish_answer",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        }
+      ],
+      "verification": [
+        {},
+        {
+          "status": "rejected"
+        },
+        {
+          "status": "rejected"
+        },
+        {
+          "status": "rejected"
+        },
+        {
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "turnId": "01a18666-a1b6-74e0-a189-b128317e8615",
+      "status": "completed",
+      "tools": [
+        {
+          "tool": "publish_answer",
+          "status": "completed",
+          "isError": false,
+          "error": null
+        }
+      ],
+      "verification": [
+        {},
+        {
+          "status": "verified"
+        }
+      ]
+    }
+  ]
+}

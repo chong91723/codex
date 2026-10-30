@@ -1,0 +1,67 @@
+{
+  "scope": "Fake clock/fake HTTP scheduling fixtures only; no actual timer launch, Web/native process, model request, DB access or global consolidation result.",
+  "firstCheckUTC": "2026-10-29T19:45:11Z",
+  "firstCheckBeijing": "2026-10-30T03:45:11+08:00",
+  "realProductRequests": 0,
+  "realModelRequests": 0,
+  "scenarios": [
+    {
+      "name": "new_completion_then_idle",
+      "result": "retrievalVerified",
+      "reason": null,
+      "simulatedFirstHTTPAt": 1100.0,
+      "fakeHTTPChecks": 1,
+      "fakeRecallCalls": 1,
+      "simulatedEndAt": 1100.0,
+      "longestSleepSegment": 45,
+      "secondInvocation": "alreadyFired"
+    },
+    {
+      "name": "stale_consolidated_true",
+      "result": "blocked",
+      "reason": "noFreshConsolidationAndIdleSlotWithinObservationWindow",
+      "simulatedFirstHTTPAt": 1100.0,
+      "fakeHTTPChecks": 81,
+      "fakeRecallCalls": 0,
+      "simulatedEndAt": 4700.0,
+      "longestSleepSegment": 45,
+      "secondInvocation": "alreadyFired"
+    },
+    {
+      "name": "cancel_before_due",
+      "result": "cancelled",
+      "reason": null,
+      "simulatedFirstHTTPAt": null,
+      "fakeHTTPChecks": 0,
+      "fakeRecallCalls": 0,
+      "simulatedEndAt": 1045,
+      "longestSleepSegment": 45,
+      "secondInvocation": "cancelled"
+    },
+    {
+      "name": "uncertain_ack_never_retry",
+      "result": "blocked",
+      "reason": "recallOutcomeUnknownOrRejectedNeverRetry",
+      "simulatedFirstHTTPAt": 1100.0,
+      "fakeHTTPChecks": 1,
+      "fakeRecallCalls": 1,
+      "simulatedEndAt": 1100.0,
+      "longestSleepSegment": 45,
+      "secondInvocation": "alreadyFired"
+    }
+  ],
+  "summaryOnlyFixture": {
+    "scope": "Fake native responses and isolated generated-file fixture only",
+    "status": "nativeSummaryBoundAndReplyObserved",
+    "nativeGlobalSummaryBindingVerified": true,
+    "FlashReplyObserved": true,
+    "nativeReadToolVerified": false,
+    "semanticCoverage": "manualReviewRequiredNoExpectedAnswerInjected",
+    "fakeNativeMethods": [
+      "thread/start",
+      "thread/memory/read",
+      "turn/start",
+      "thread/read"
+    ]
+  }
+}

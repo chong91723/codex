@@ -1,0 +1,241 @@
+[
+  {
+    "tester": "B",
+    "childThreadIds": [],
+    "slotBefore": null,
+    "slotAfter": null,
+    "versionsBeforeAfter": {},
+    "caseId": "B-01",
+    "status": "observed-pass",
+    "startedAtUtc": "2026-10-29T13:11:33.384Z",
+    "finishedAtUtc": "2026-10-29T13:14:45.508Z",
+    "rootThreadId": "01a187c9-87c8-7093-b1de-151ffaf83ce9",
+    "actualObservation": "Independent B thread actually read current confirmed source knowledge (businessRevision 2), and native memories.search/read retrieved the shared explicit report preferences, including the serial-A report preference note. Current temporary conditions were reported unknown. Initial turn ended with preparation text only; later actual tools supply the evidence.",
+    "evidencePaths": [
+      "/tmp/codex-lifecycle-20261029/serial-b/B01-native-memory-receipts.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/wire.jsonl"
+    ],
+    "limitations": [
+      "Initial turn 13:11:34–13:11:36 was model-not-executed: no tool calls.",
+      "The combined phrase query matched zero; separate report/Chinese terms found four files and actual native reads.",
+      "The product automatically sends same-user thread/list previews. One controller console dump exposed an A temporary-thread preview accidentally; B did not open that thread/directory or copy its content into any product B prompt. Blind tester isolation is limited; this is not evidence of model conversation leakage.",
+      "Preference file names/ordering were interpreted by the model; the test establishes retrieval receipts, not correctness of its preference precedence interpretation."
+    ]
+  },
+  {
+    "tester": "B",
+    "childThreadIds": [],
+    "slotBefore": null,
+    "slotAfter": null,
+    "versionsBeforeAfter": {},
+    "caseId": "B-02",
+    "status": "observed-pass",
+    "startedAtUtc": "2026-10-29T13:15:14.299Z",
+    "finishedAtUtc": "2026-10-29T13:20:44.388Z",
+    "rootThreadId": "01a187c9-87c8-7093-b1de-151ffaf83ce9",
+    "actualObservation": "Chat correction was registered only after a later native tool approval, as pendingUserReview with conflictsTotal=1. Source page displayed original and candidate. Tester acting as user adopted the revised scope with a written reason. Original/history remained. A stale second tab then tried the old business revision; HTTP400 and a version-conflict message rejected it and retained its draft. Current later query receipts show businessRevision 3 / knowledgeRevision 3.",
+    "evidencePaths": [
+      "/tmp/codex-lifecycle-20261029/serial-b/B02-pending-before-user-decision.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B02-user-adopt-and-stale-draft.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B02-stale-save-settled.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/management-http-failures.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B03-current-definition-query-chart-receipts.json"
+    ],
+    "limitations": [
+      "The knowledge rejection HTTP body was not separately captured; HTTP400 timestamp and exact UI conflict feedback are preserved. It is not recorded as HTTP409.",
+      "Tester adopted only the scope clarification, without adjudicating a business data answer."
+    ]
+  },
+  {
+    "tester": "B",
+    "childThreadIds": [],
+    "slotBefore": null,
+    "slotAfter": null,
+    "versionsBeforeAfter": {},
+    "caseId": "B-03",
+    "status": "observed-pass",
+    "startedAtUtc": "2026-10-29T13:24:03.313Z",
+    "finishedAtUtc": "2026-10-29T13:25:11.240Z",
+    "rootThreadId": "01a187d4-f8bb-72c2-b3a5-b2d426b0a716",
+    "turnId": "01a187d4-fbf9-7420-b74b-7a7c70406e8c",
+    "actualObservation": "New B analysis actually called current context and read_knowledge_history, queried the read-only source, created two ECharts, and published field-linked output using businessRevision 3. Old A report was cold-resumed as history without a new A turn; it retained its original content and displayed a needs-review dependency warning.",
+    "evidencePaths": [
+      "/tmp/codex-lifecycle-20261029/serial-b/B03-current-definition-query-chart-receipts.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B03-old-report-retained-affected.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B03-old-report-affected-current-query.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B08-current-report.png"
+    ],
+    "limitations": [
+      "The initial full-main historical screenshot timed out; JSON evidence survived and later affected-warning text was captured.",
+      "No business answer was recalculated by the tester or compared to A for correctness."
+    ]
+  },
+  {
+    "tester": "B",
+    "childThreadIds": [],
+    "slotBefore": null,
+    "slotAfter": null,
+    "versionsBeforeAfter": {},
+    "caseId": "B-04",
+    "status": "observed-pass",
+    "startedAtUtc": "2026-10-29T13:21:36.508Z",
+    "finishedAtUtc": "2026-10-29T13:29:18.015Z",
+    "rootThreadId": "01a187d4-f8bb-72c2-b3a5-b2d426b0a716",
+    "actualObservation": "Two tabs read an unset freshness rule. One saved maxAgeMinutes=0; stale saves were rejected with HTTP400 and a version-conflict toast, retaining input. Cross-turn run_python on old result 02d67395af0bd31a40389eb28034b5a2 actually failed for freshness, explicitly saying result reads/Python do not refresh source time. Context was reread; a real new query produced a06ee2f1efb6ac6b9bf806455257e39d with acquisition 2026-10-29T13:28:53.772407Z, followed by a chart and successful publication.",
+    "evidencePaths": [
+      "/tmp/codex-lifecycle-20261029/serial-b/B04-policy-http.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B04-freshness-CAS-retained-draft-confirmed.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B04-freshness-conflict-feedback.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B04-cross-turn-refusal-and-real-requery.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B03-old-report-affected-current-query.json"
+    ],
+    "limitations": [
+      "Initial error wait targeted the dialog, while conflict feedback was in a toast; retained first attempts and captured the real HTTP400/toast on a subsequent stale save.",
+      "Exact freshnessRevision number was not separately recorded; the version conflict and effective maxAgeMinutes=0 publication checks are recorded."
+    ]
+  },
+  {
+    "tester": "B",
+    "childThreadIds": [],
+    "slotBefore": null,
+    "slotAfter": null,
+    "versionsBeforeAfter": {},
+    "caseId": "B-05",
+    "status": "observed-pass",
+    "startedAtUtc": "2026-10-29T13:15:28.248Z",
+    "finishedAtUtc": "2026-10-29T13:18:57.225Z",
+    "rootThreadId": "01a187c9-87c8-7093-b1de-151ffaf83ce9",
+    "turnId": "01a187cc-e658-7f13-99e8-122f53105a6f",
+    "actualObservation": "Real native MCP approval wait retained the root slot. UI preserved a second-root draft; well-formed server turn/start was rejected executionBusy. Unknown-thread interrupt and wrong-turn interrupt returned real native errors without changing owner, active turn, blocked roots or cleanup holds. Independent process/spawn was explicitly rejected by the backend. Native elicitation id0 received action=decline at 13:18:12.887Z; propose_database_correction completed failed at 13:18:13.058Z with result=null, error=\"user rejected MCP tool call\", durationMs=0. The rejected candidate write did not execute; later accepted id1 was a separate invocation.",
+    "evidencePaths": [
+      "/tmp/codex-lifecycle-20261029/serial-b/B05-approval-slot-exception-rpc.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B05-second-root-server-rejection.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B05-denied-correction-no-execution.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B05-native-denial-tool-receipts.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B05-second-root-rejected.png"
+    ],
+    "limitations": [
+      "First controller replay used already-redacted config and then an undefined threadId, producing configuration/schema errors; these are preserved and are not the admission-pass evidence.",
+      "The denied operation was a knowledge-candidate write, so no target-file existence claim is made.",
+      "A separate native user-input request wait was not exercised by B; real approval wait was exercised."
+    ]
+  },
+  {
+    "tester": "B",
+    "childThreadIds": [],
+    "slotBefore": null,
+    "slotAfter": null,
+    "versionsBeforeAfter": {},
+    "caseId": "B-06",
+    "status": "observed-pass",
+    "startedAtUtc": "2026-10-29T13:29:59.637Z",
+    "finishedAtUtc": "2026-10-29T13:32:22.922Z",
+    "rootThreadId": "01a187da-6913-74d1-bd6a-908768d66052",
+    "turnId": "01a187dc-896b-75d2-b61e-a15d852752b3",
+    "actualObservation": "A harmless native Python wait really started. Correct UI Stop produced cleaningUp/interruptRequested hold and immediate second-root rejection. Native turn then interrupted, command completed failed exitCode=-1, followed by execution idle and no matching wait process. After cleanup another root started and completed successfully.",
+    "evidencePaths": [
+      "/tmp/codex-lifecycle-20261029/serial-b/B06-stop-cleanup-admission.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B08-new-root-after-stop-cleanup.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/wire.jsonl"
+    ],
+    "limitations": [
+      "The initial 90-second wait completed naturally before the tester reached Stop; it is retained as an initial Stop-not-covered attempt. Retry used a 300-second nonblocking wait and stopped it immediately after the native command-start event.",
+      "B created no native child agents; child-stop behavior was not independently tested by B."
+    ]
+  },
+  {
+    "tester": "B",
+    "childThreadIds": [],
+    "slotBefore": null,
+    "slotAfter": null,
+    "versionsBeforeAfter": {},
+    "caseId": "B-07",
+    "status": "observed-pass",
+    "startedAtUtc": "2026-10-29T13:36:03.244Z",
+    "finishedAtUtc": "2026-10-29T13:38:29.530Z",
+    "rootThreadId": "01a187da-6913-74d1-bd6a-908768d66052",
+    "turnId": "01a187df-f763-7e40-95bf-8daa90371c91",
+    "actualObservation": "A native harmless wait continued through refresh, with the same root/turn/Python PID and only one original submission. Second root remained rejected. All pages were then measured closed (zero pages); reconnect saw the same running root/turn/PID, rejected another root with its draft retained, and submitted no duplicate original turn. Correct Stop after reconnect yielded native interrupted and idle with the wait PID gone.",
+    "evidencePaths": [
+      "/tmp/codex-lifecycle-20261029/serial-b/B07-refresh-no-duplicate-cleanup.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B07-actual-zero-pages.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B07-full-close-reconnect-no-duplicate.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B07-full-close-reconnect-final-stop-cleanup.json"
+    ],
+    "limitations": [
+      "This final service continued the native task after refresh/full page closure; it did not behave like the older documentation snapshot that interrupted on refresh. Actual behavior is recorded.",
+      "First post-close history selector was inaccessible behind a collapsed sidebar; the failed attempt was retained, followed by a measured zero-page repeat on the same active command and the visible View-running-session control.",
+      "After the final reconnect Stop, native command-completed notification was not observed on the new socket; native turn interrupted, resource cleanup/idle and OS absence provide cleanup evidence."
+    ]
+  },
+  {
+    "tester": "B",
+    "childThreadIds": [],
+    "slotBefore": null,
+    "slotAfter": null,
+    "versionsBeforeAfter": {},
+    "caseId": "B-08",
+    "status": "observed-pass",
+    "startedAtUtc": "2026-10-29T13:25:31.616Z",
+    "finishedAtUtc": "2026-10-29T13:34:03.678Z",
+    "rootThreadId": "01a187d4-f8bb-72c2-b3a5-b2d426b0a716",
+    "actualObservation": "Real read-only query report exported CSV, ECharts PNG, Markdown, HTML and evidence JSON to files. CSV has header+4 rows; PNG signature is valid. Offline HTML actually loaded two complete 1000x520 images. Evidence JSON contains the corresponding query result and thread IDs. A distinct root successfully ran after verified Stop cleanup. Later history listing exposed 16 records including 6 loaded idle histories without a 3-thread cap.",
+    "evidencePaths": [
+      "/tmp/codex-lifecycle-20261029/serial-b/B08-exports-manifest.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B08-local-artifact-verification.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B08-export-html-readable.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B08-new-root-after-stop-cleanup.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B09-free-independent-root-history-layout.json"
+    ],
+    "limitations": [
+      "CSV is an anchor, not a button. The first wrong selector left an unhandled download wait and crashed the test controller while the product was idle; failure retained, browser restarted, completed report cold-resumed without resubmission, and actual exports then succeeded.",
+      "HTML report uses embedded raster chart images; actual evidence is two loaded images, not SVG count."
+    ]
+  },
+  {
+    "tester": "B",
+    "childThreadIds": [],
+    "slotBefore": null,
+    "slotAfter": null,
+    "versionsBeforeAfter": {},
+    "caseId": "B-FILE-HASH",
+    "status": "observed-pass",
+    "startedAtUtc": "2026-10-29T13:34:27.121Z",
+    "finishedAtUtc": "2026-10-29T13:35:04.175Z",
+    "rootThreadId": "01a187da-6913-74d1-bd6a-908768d66052",
+    "actualObservation": "Product Flash used native command/file tools solely in its own workspace/serial-b-input directory. Initial real import document a95c6233c5f9df31cce0e435fc9cec2e hash6e938baba047c65919049c9243b021205b018e6a2d0793b91d388bed63a95021. Native file rewrite changed the same CSV. Actual run_python on the old ID failed because the dependency file changed. Reimport created new immutable document8d5c65fa4e51b25cb3956e12e9d3d136 hash82fcecf8b2ae75e3e0c357e934d1d3c9a841d6bcc3fa91b940eb33e1844f8284. New run_python completed with new result b62b0288e4c057fcc732010a91538fa0.",
+    "evidencePaths": [
+      "/tmp/codex-lifecycle-20261029/serial-b/B-filehash-native-import-mutate-reject-reimport-receipts.json"
+    ],
+    "limitations": [
+      "Final file-test narrative did not call publish_answer and retained the UI unverified-narrative warning; this is not represented as field-verified report publication.",
+      "This file hash case is independent of, and does not cover, dependency mutation during an in-flight SQL query."
+    ]
+  },
+  {
+    "tester": "B",
+    "childThreadIds": [],
+    "slotBefore": null,
+    "slotAfter": null,
+    "versionsBeforeAfter": {},
+    "caseId": "B-09",
+    "status": "observed-pass",
+    "startedAtUtc": "2026-10-29T13:39:50.482Z",
+    "finishedAtUtc": "2026-10-29T13:43:47.543Z",
+    "actualObservation": "One immutable independent free window lasted 237.061 seconds, with last product action before its 300-second deadline. Native Plan completed with a confirm-and-run button and execution idle; a different root then actually completed. Plan was left unexecuted. Memory settings were only viewed and remained unpaused; history/notes/results were retained. 1024px layout showed no horizontal overflow. Final native idle/resources and all browser closure were verified.",
+    "evidencePaths": [
+      "/tmp/codex-lifecycle-20261029/serial-b/timing.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B09-completed-native-Plan-idle.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B09-memory-management-unpaused-final.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B09-free-independent-root-history-layout.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/B09-free-1024.png",
+      "/tmp/codex-lifecycle-20261029/serial-b/final-native-idle-resources.json",
+      "/tmp/codex-lifecycle-20261029/serial-b/final-browser-closed.json"
+    ],
+    "limitations": [
+      "Free exploration ended early; no deliberate new operation after the deadline was attempted.",
+      "Plan button selector initially used button instead of its explicit switch role; retained as a tester selector error.",
+      "Only 1024px free layout was dimension-checked; this is not a general responsive-accessibility audit."
+    ]
+  }
+]

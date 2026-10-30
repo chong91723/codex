@@ -1,0 +1,113 @@
+{
+  "threadId": "01a18abf-1706-7fc0-b60d-1bd8c440ff94",
+  "turns": [],
+  "execution": {
+    "ownerThreadId": "01a18abf-1706-7fc0-b60d-1bd8c440ff94",
+    "threadId": "01a18abf-1706-7fc0-b60d-1bd8c440ff94",
+    "turnId": "01a18abf-1975-7c92-811c-e7fe711ba841",
+    "status": "waitingForInput",
+    "pendingCount": 0,
+    "pendingChildThreadIds": [],
+    "activeThreadIds": [
+      "01a18abf-1706-7fc0-b60d-1bd8c440ff94"
+    ],
+    "activeTurns": [
+      {
+        "threadId": "01a18abf-1706-7fc0-b60d-1bd8c440ff94",
+        "turnId": "01a18abf-1975-7c92-811c-e7fe711ba841"
+      }
+    ],
+    "cleanupHolds": [],
+    "blockedRootThreadIds": [
+      "01a18abf-1706-7fc0-b60d-1bd8c440ff94"
+    ],
+    "revision": 4,
+    "closedCleanupProofs": [],
+    "backgroundCommands": [],
+    "activeHooks": [],
+    "goalActive": false,
+    "queuedSubmissions": 0,
+    "nativeQueueDispatchPending": false,
+    "observerReady": true,
+    "pendingNativeAcks": [],
+    "drainingConnections": 0
+  },
+  "requests": [
+    {
+      "method": "item/tool/requestUserInput",
+      "id": 0,
+      "params": {
+        "threadId": "01a18abf-1706-7fc0-b60d-1bd8c440ff94",
+        "turnId": "01a18abf-1975-7c92-811c-e7fe711ba841",
+        "itemId": "call_00_156G6FpM7AFoPZvr5h0V3042",
+        "questions": [
+          {
+            "id": "time_range",
+            "header": "时间范围",
+            "question": "分析时间范围选哪一个？",
+            "isOther": true,
+            "isSecret": "[REDACTED]",
+            "options": [
+              {
+                "label": "最近一个月",
+                "description": "聚焦近期变化与短期情况。"
+              },
+              {
+                "label": "最近一年",
+                "description": "观察较长周期内的变化与整体情况。"
+              }
+            ]
+          },
+          {
+            "id": "output_focus",
+            "header": "输出重点",
+            "question": "输出重点选哪一个？",
+            "isOther": true,
+            "isSecret": "[REDACTED]",
+            "options": [
+              {
+                "label": "趋势",
+                "description": "重点呈现指标随时间的变化。"
+              },
+              {
+                "label": "分组比较",
+                "description": "重点比较不同类别或群体之间的差异。"
+              }
+            ]
+          }
+        ],
+        "isBlocking": true,
+        "autoResolutionMs": null
+      }
+    }
+  ],
+  "items": [
+    {
+      "turnId": "01a18abf-1975-7c92-811c-e7fe711ba841",
+      "item": {
+        "type": "userMessage",
+        "id": "01a18abf-1a6d-76f2-99b1-4ab24a676845",
+        "clientId": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "为一个陌生只读数据库准备分析方案。现在先用原生 request_user_input 向我确认两个问题：分析时间范围选择最近一个月或最近一年；输出重点选择趋势或分组比较。信息确认前不要查库、执行命令、写文件或启动子任务，也不要自行猜选项。",
+            "text_elements": []
+          }
+        ]
+      }
+    },
+    {
+      "turnId": "01a18abf-1975-7c92-811c-e7fe711ba841",
+      "item": {
+        "type": "reasoning",
+        "id": "f8be8aca-d86b-4bb9-8b8b-51d5b01d38d8",
+        "summary": [],
+        "content": [
+          "We need respond using request_user_input exactly, two questions. In plan mode, tool available. No exploration because user explicitly says confirm two questions before any DB etc. Need ask time range recent month/year, output focus trend/group comparison. Chinese. Use recommended option? The instruction says options recommended first with \"(Recommended)\" suffix. But user says don't guess. We can present choices without recommending? The tool schema says put recommended first and suffix; but if no basis, maybe we should avoid recommendation? We need comply user's explicit no guessing. We can phrase neutral options, perhaps client may require suffix? The schema says recommended option first with \"(Recommended)\". But user asks confirm two questions. Could label first choice \"最近一个月\" and second \"最近一年\"; no recommended tag. It likely accepts. Need perhaps question text concise. Let's use two questions."
+        ]
+      }
+    }
+  ],
+  "prompt": ""
+}

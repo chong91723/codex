@@ -1,0 +1,393 @@
+{
+  "scope": "Pinned-source built-in skills only; real DeepSeek Flash turns and native structured skill inputs; no custom skill fixtures, no ChatGPT auth, no online installations",
+  "results": [
+    {
+      "name": "原生来源与列表：仅源码内置技能，openai-docs 保留，生图禁用",
+      "status": "passed",
+      "evidence": {
+        "embedded": [
+          "imagegen",
+          "openai-docs",
+          "review-agent",
+          "skill-creator",
+          "skill-installer"
+        ],
+        "retained": [
+          "openai-docs",
+          "review-agent",
+          "skill-creator",
+          "skill-installer"
+        ],
+        "allRetainedFilesMatchSource": true,
+        "hashes": {
+          "openai-docs": {
+            "files": 17,
+            "skillSha256": "aa6829e21df2223167c85d2e49b6337a7345c84c1033f1ec10182c7882b36d45"
+          },
+          "review-agent": {
+            "files": 2,
+            "skillSha256": "07079efd0dc76f05fade424e5dfb048dce1de2df7626e1a4f56292a4f3f92228"
+          },
+          "skill-creator": {
+            "files": 9,
+            "skillSha256": "6656e54755638e8efcf275a472b9672eaa8a9a1b9e59dc210e275b03b59e1e66"
+          },
+          "skill-installer": {
+            "files": 8,
+            "skillSha256": "d68b77e5bbb34dedab89d134da52855f140fc4b4299b80104f534e3b9e98f8ee"
+          }
+        },
+        "imagegenNativeDisabled": true,
+        "nonNativeListed": false
+      }
+    },
+    {
+      "name": "review-agent：技能页选择、原生 Skill 输入与真实只读缺陷审查",
+      "status": "passed",
+      "evidence": {
+        "skill": "review-agent",
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "threadId": "01a185fe-b8fb-77e3-802e-3719571c47fc",
+        "structuredSkillInput": true,
+        "commands": [
+          {
+            "command": "/bin/bash -c \"pwd && rg --files -g 'AGENTS.md' -g '\"'!node_modules'\"' -g '\"'!vendor'\"' /tmp/codex-analysis-live-audit-DWQ7NI/workspace/native-review-case-1793249422881 /tmp/codex-analysis-live-audit-DWQ7NI/workspace 2>/dev/null | head -50 && git -C /tmp/codex-analysis-live-audit-DWQ7NI/workspace/native-review-case-1793249422881 status --short --branch && git -C /tmp/codex-analysis-live-audit-DWQ7NI/workspace/native-review-case-1793249422881 diff --stat && git -C /tmp/codex-analysis-live-audit-DWQ7NI/workspace/native-review-case-1793249422881 diff --no-ext-diff --unified=80\"",
+            "exitCode": 0,
+            "output": "/tmp/codex-analysis-live-audit-DWQ7NI/workspace\n## master\n M first_positive.py\n first_positive.py | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\ndiff --git a/first_positive.py b/first_positive.py\nindex da6d994..c945418 100644\n--- a/first_positive.py\n+++ b/first_positive.py\n@@ -1,6 +1,6 @@\n def first_positive(values):\n     \"\"\"Return first strictly positive value, or None.\"\"\"\n     for value in values:\n-        if value > 0:\n+        if value >= 0:\n             return value\n     return None\n"
+          },
+          {
+            "command": "/bin/bash -c 'find . -name AGENTS.md -print'",
+            "exitCode": 0,
+            "output": null
+          },
+          {
+            "command": "/bin/bash -c \"rg --files -g '\"'!*.pyc'\"' -g '\"'!__pycache__'\"' | sort\"",
+            "exitCode": 0,
+            "output": "first_positive.py\n"
+          },
+          {
+            "command": "/bin/bash -c 'git log --oneline --decorate -10 && git diff --check && git diff --name-only'",
+            "exitCode": 0,
+            "output": "c077b32 (HEAD -> master) Baseline correct positive selection\nfirst_positive.py\n"
+          },
+          {
+            "command": "/bin/bash -c \"git grep -n -e 'first_positive' -e 'strictly positive' HEAD -- . ':\"'!*.pyc'\"'\"",
+            "exitCode": 0,
+            "output": "HEAD:first_positive.py:1:def first_positive(values):\nHEAD:first_positive.py:2:    \"\"\"Return first strictly positive value, or None.\"\"\"\n"
+          },
+          {
+            "command": "/bin/bash -c 'nl -ba first_positive.py && git show HEAD:first_positive.py | nl -ba'",
+            "exitCode": 0,
+            "output": "     1\tdef first_positive(values):\n     2\t    \"\"\"Return first strictly positive value, or None.\"\"\"\n     3\t    for value in values:\n     4\t        if value >= 0:\n     5\t            return value\n     6\t    return None\n     1\tdef first_positive(values):\n     2\t    \"\"\"Return first strictly positive value, or None.\"\"\"\n     3\t    for value in values:\n     4\t        if value > 0:\n     5\t            return value\n     6\t    return None\n"
+          },
+          {
+            "command": "/bin/bash -c \"python3 -c 'from first_positive import first_positive; cases=[[0, 1], [0], [0, -1], [-1, 0, 2], [1, -2]]; print([(case, first_positive(case)) for case in cases])'\"",
+            "exitCode": 0,
+            "output": "[([0, 1], 0), ([0], 0), ([0, -1], 0), ([-1, 0, 2], 0), ([1, -2], 1)]\n"
+          },
+          {
+            "command": "/bin/bash -c 'git diff --no-ext-diff --unified=3 -- first_positive.py'",
+            "exitCode": 0,
+            "output": "diff --git a/first_positive.py b/first_positive.py\nindex da6d994..c945418 100644\n--- a/first_positive.py\n+++ b/first_positive.py\n@@ -1,6 +1,6 @@\n def first_positive(values):\n     \"\"\"Return first strictly positive value, or None.\"\"\"\n     for value in values:\n-        if value > 0:\n+        if value >= 0:\n             return value\n     return None\n"
+          }
+        ],
+        "realGitDiffInspected": true,
+        "readOnlyTargetPreserved": true,
+        "actionableFinding": true
+      }
+    },
+    {
+      "name": "skill-creator：运行源码自带验证器校验原生技能，不新建自定义技能",
+      "status": "passed",
+      "evidence": {
+        "skill": "skill-creator",
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "threadId": "01a185ff-19fa-7923-a89b-a7efce19ba6e",
+        "structuredSkillInput": true,
+        "commands": [
+          {
+            "command": "/bin/bash -c 'python3 /tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/skill-creator/scripts/quick_validate.py /tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/skill-creator'",
+            "exitCode": 0,
+            "output": "Skill is valid!\n"
+          },
+          {
+            "command": "/bin/bash -c 'python3 /tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/skill-creator/scripts/quick_validate.py /tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/skill-installer'",
+            "exitCode": 0,
+            "output": "Skill is valid!\n"
+          },
+          {
+            "command": "/bin/bash -c 'python3 /tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/skill-creator/scripts/quick_validate.py /tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/openai-docs'",
+            "exitCode": 0,
+            "output": "Skill is valid!\n"
+          },
+          {
+            "command": "/bin/bash -c 'python3 /tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/skill-creator/scripts/quick_validate.py /tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/review-agent'",
+            "exitCode": 0,
+            "output": "Skill is valid!\n"
+          }
+        ],
+        "nativeValidatorActuallyExecuted": true,
+        "validatedNativeSkills": [
+          "openai-docs",
+          "review-agent",
+          "skill-creator",
+          "skill-installer"
+        ],
+        "customSkillCreated": false
+      }
+    },
+    {
+      "name": "skill-installer：原生离线入口可运行，GitHub 下载明确未验证",
+      "status": "passed",
+      "evidence": {
+        "skill": "skill-installer",
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "threadId": "01a185ff-5a4b-7092-89be-bd1ce66abbca",
+        "structuredSkillInput": true,
+        "commands": [
+          {
+            "command": "/bin/bash -c 'python3 /tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/skill-installer/scripts/list-skills.py --help'",
+            "exitCode": 0,
+            "output": "usage: list-skills.py [-h] [--repo REPO] [--path PATH] [--ref REF]\n                      [--format {text,json}]\n\nList skills.\n\noptions:\n  -h, --help            show this help message and exit\n  --repo REPO\n  --path PATH           Repo path to list (default: skills/.curated)\n  --ref REF\n  --format {text,json}  Output format\n"
+          },
+          {
+            "command": "/bin/bash -c 'python3 /tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/skill-installer/scripts/install-skill-from-github.py --help'",
+            "exitCode": 0,
+            "output": "usage: install-skill-from-github.py [-h] [--repo REPO] [--url URL]\n                                    [--path PATH [PATH ...]] [--ref REF]\n                                    [--dest DEST] [--name NAME]\n                                    [--method {auto,download,git}]\n\nInstall a skill from GitHub.\n\noptions:\n  -h, --help            show this help message and exit\n  --repo REPO           owner/repo\n  --url URL             https://github.com/owner/repo[/tree/ref/path]\n  --path PATH [PATH ...]\n                        Path(s) to skill(s) inside repo\n  --ref REF\n  --dest DEST           Destination skills directory\n  --name NAME           Destination skill name (defaults to basename of path)\n  --method {auto,download,git}\n"
+          }
+        ],
+        "offlineEntrypointsPassed": true,
+        "onlineListing": "not_verified_network_scope",
+        "onlineInstallation": "not_verified_nonNativeSkillsExcluded",
+        "skillInstalled": false
+      }
+    },
+    {
+      "name": "openai-docs：保留原生绑定与离线参考读取，官方在线检索受网络条件阻塞",
+      "status": "passed",
+      "evidence": {
+        "skill": "openai-docs",
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "threadId": "01a185ff-85ee-7cf2-bc33-63695ac6d88b",
+        "structuredSkillInput": true,
+        "commands": [
+          {
+            "command": "/bin/bash -lc 'cat /tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/openai-docs/references/codex-self-knowledge.md'",
+            "exitCode": 0,
+            "output": "# Codex self-knowledge\n\nUse this manual-first route only for genuinely broad Codex setup, orientation, customization, troubleshooting, local-state guidance, or system-map synthesis across skills, plugins, MCP, hooks, `AGENTS.md`, automations, and product surfaces. Mixed Chat/Work/Codex comparisons belong to `official-docs.md` instead.\n\nNarrow Codex documentation questions require official documentation search first, then an actual page open or fetch using an available documentation or official-domain web capability. This includes a single feature such as Codex Goals, a specific setting, documented behavior, exact error, or requested page citation. Search and fetch the exact official topic before inspecting local files or bundled references. Do not fetch the manual, read bundled references, inspect local configuration or caches, or turn a targeted documentation lookup into broad product synthesis. Current or latest model questions follow the model-selection route.\n\n## Start with the manual\n\nReuse a manual path and outline path already established in the same thread when both remain usable and current. Refresh before relying on a path fetched more than about a day ago, obtained from another thread or uncertain source, or missing likely-current information.\n\nOtherwise, run the bundled manual helper first. Skip it without probing only when policy explicitly makes the session read-only, shell execution unavailable, or every allowed temporary cache location unavailable. Workspace-only write access is not enough: the helper needs an allowed writable temp cache. A guessed sandbox restriction is not evidence that the helper is unavailable.\n\nResolve `<skill-dir>` to the actual installed skill directory, then run:\n\n```bash\nnode <skill-dir>/scripts/fetch-codex-manual.mjs\n```\n\nThe helper automatically chooses the first usable cache location in this order:\n\n1. `$TMPDIR/openai-docs-cache`\n2. `%TEMP%\\openai-docs-cache`\n3. `%TMP%\\openai-docs-cache`\n4. `/private/tmp/openai-docs-cache`\n5. `/tmp/openai-docs-cache`\n\nUse an explicit override only when the allowed cache must be selected manually:\n\n```bash\nnode <skill-dir>/scripts/fetch-codex-manual.mjs --cache-dir <cache-dir>\n```\n\nOn Windows, `%TEMP%` and `%TMP%` are discovered automatically; `$env:TEMP\\openai-docs-cache` is a typical PowerShell override. The helper handles configured HTTP(S) proxies and falls back to `curl` when needed. Do not require a POSIX-only environment prefix or an unnecessary cache override.\n\nThe helper verifies the current source and returns a manual path, outline path, freshness status, and heading outline. Use that outline to locate relevant headings and line ranges, then read or search only the returned manual and outline paths. Do not inspect unrelated repositories, caches, source trees, or local state to establish a public Codex product claim.\n\nFor follow-up questions in the same thread, reuse those fresh paths instead of fetching again. If asked whether the manual is current enough to rely on now, rerun the helper when an allowed temp cache is available and answer from its reported status and returned paths.\n\n## Fill only genuine documentation gaps\n\nIf the manual answers a claim, stop retrieving sources for that claim. Its official source pages and known anchors are sufficient citation support. Continue the user's broader task when the documentation lookup was only one dependency.\n\nIf the helper was legitimately skipped, actually fails, or the fresh manual lacks a material or likely-current claim, use the narrowest official follow-up. Search the exact topic using an available documentation or approved-domain web capability, then actually open or fetch a clearly relevant official result. A page-specific citation can justify the same narrow follow-up.\n\nFor an undocumented Codex term, mode, acronym, or exact error, first check adjacent manual terminology. Map it to the closest documented concept when possible. If the exact term is material or likely current, perform one targeted official search-and-fetch; if it remains undocumented, say so. Do not expand into internal knowledge bases, private source trees, guessed roadmap details, or account-specific workarounds.\n\nIf official documentation conflicts with a callable capability verified in the current session, explicitly state the conflict and prefer that verified behavior for this environment. Otherwise, resolve unsupported claims with bounded uncertainty or route the user to support, an administrator, or product feedback.\n\n## Choose the smallest matching Codex surface\n\n- Prompt or thread context: one-off task constraints.\n- Repository `AGENTS.md`: durable team conventions, commands, and verification expectations; nested files apply more specifically within their subtree.\n- Project `.codex/config.toml`: settings for a trusted repository, including sandbox, MCP, hooks, model, and reasoning defaults.\n- Global config or global guidance: personal defaults across repositories.\n- Skill: a reusable workflow, optionally with focused references or scripts.\n- Plugin: an installable bundle of skills, tools, commands, MCP configuration, hooks, apps, assets, or related metadata.\n- MCP server or app connector: authorized live external data and actions. Use an authenticated connector, not web search or memory, for private Google Docs, Calendar, Slack, GitHub, Notion, or similar workspace data.\n- Automation: scheduled checks, reminders, monitors, or follow-ups; use an existing-thread heartbeat when continuity matters.\n- Hook: mechanical enforcement around lifecycle events, tool calls, commands, or edits.\n\nSplit requests that combine one-off, durable, repository-scoped, and recurring behavior instead of forcing them onto a single surface. For example, \"always do this, but only for this PR\" belongs in the current prompt or thread unless the user explicitly wants persistence or enforcement.\n\nFor a surface recommendation, state what to use, why it fits, what to avoid, and the manual or official documentation supporting the answer.\n\nFor product surfaces, distinguish terminal-first CLI work, editor-attached IDE work, desktop planning or review, hosted cloud execution, in-app browser testing, the user's existing Chrome session, and desktop Computer Use. Keep `config.toml` defaults, `requirements.toml` constraints, and managed or administrator policy separate. An API key does not establish ChatGPT, Codex cloud, connector, or account access.\n\nFor plugin or app failures, check the installed bundle, enabled state, connector authorization, MCP setup, restart or new-thread expectations, and workspace policy before inferring a cause. Route billing, entitlements, undocumented rollout labels, and unsupported access paths to the appropriate support or administrative owner.\n\nMemory can provide user preferences or context, but explicit prompt instructions win and memory is not a source for current external facts. Sandbox or network denials require narrowly scoped escalation with a clear justification; destructive commands, writes outside the workspace, and broad access changes require explicit approval.\n\nWhen a page-specific citation helps, useful official anchors include `concepts/customization#agents-guidance`, `concepts/customization#skills`, `plugins/build#plugin-structure`, `concepts/customization#mcp`, `config-advanced#hooks`, `app/automations#thread-automations`, and `config-reference#configtoml`.\n"
+          }
+        ],
+        "nativeReferenceRead": true,
+        "officialOnlineDocumentation": "blocked_by_target_network_scope",
+        "chatgptLoginUsed": false
+      }
+    }
+  ],
+  "errors": [],
+  "sent": [
+    {
+      "method": "initialize"
+    },
+    {
+      "method": "initialized"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "model/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "threadId": "01a185fe-b8fb-77e3-802e-3719571c47fc",
+      "input": [
+        {
+          "type": "text"
+        },
+        {
+          "type": "skill",
+          "name": "review-agent",
+          "path": "/tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/review-agent/SKILL.md"
+        }
+      ]
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "threadId": "01a185ff-19fa-7923-a89b-a7efce19ba6e",
+      "input": [
+        {
+          "type": "text"
+        },
+        {
+          "type": "skill",
+          "name": "skill-creator",
+          "path": "/tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/skill-creator/SKILL.md"
+        }
+      ]
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "threadId": "01a185ff-5a4b-7092-89be-bd1ce66abbca",
+      "input": [
+        {
+          "type": "text"
+        },
+        {
+          "type": "skill",
+          "name": "skill-installer",
+          "path": "/tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/skill-installer/SKILL.md"
+        }
+      ]
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "skills/list"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "config/read"
+    },
+    {
+      "method": "thread/start",
+      "model": "deepseek-flash"
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "turn/start",
+      "model": "deepseek-flash",
+      "threadId": "01a185ff-85ee-7cf2-bc33-63695ac6d88b",
+      "input": [
+        {
+          "type": "text"
+        },
+        {
+          "type": "skill",
+          "name": "openai-docs",
+          "path": "/tmp/codex-analysis-live-audit-DWQ7NI/profile/skills/.system/openai-docs/SKILL.md"
+        }
+      ]
+    },
+    {
+      "method": "thread/list"
+    },
+    {
+      "method": "thread/list"
+    }
+  ],
+  "conditions": {
+    "onlineSkillInstallation": "not_verified",
+    "openaiDocsOnlineRetrieval": "not_verified_target_network_scope"
+  }
+}

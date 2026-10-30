@@ -1,0 +1,670 @@
+/root/Codex/web/tests/analysis_artifacts.mjs
+✔ only completed successful MCP items expose actual well formed result ids (12.48581ms)
+✔ result refs merge structured and JSON content without using row values or arbitrary text ids (2.415671ms)
+✔ invalid identifiers and overly deep payloads cannot produce internal download paths (2.111595ms)
+✔ inline database result auto-loads a table and has exactly one CSV below it without a detail popup (55.972886ms)
+✔ read_result, foreign MCP servers and unfinished calls do not create duplicate database result cards (1.849446ms)
+✔ pager requests actual offsets 20 and 40 and returns to 20 on previous (3.694348ms)
+✔ concurrent page actions are blocked while one real page request is pending (3.413745ms)
+✔ invalid and out of range jumps produce no API calls and retain current page (4.568729ms)
+✔ failed page keeps previous rows and retry uses the failed target instead of edited jump input (3.081267ms)
+✔ initial read failure exposes retry without inventing rows and succeeds only after actual reply (7.645452ms)
+✔ zero row result is one empty page with no invalid next or previous request (2.804315ms)
+✔ repeated result ids across completed tool items keep one visible table while other ids remain visible (4.965097ms)
+✔ report snapshots include exactly the chosen actual answer and same-turn completed results (3.266707ms)
+✔ same-turn failed or error tool results never become report query evidence (2.302539ms)
+✔ explicit verified history references include earlier charts without unrelated or future artifacts (2.729406ms)
+✔ derived report values trace actual parent datasets to earlier charts (5.231723ms)
+✔ report rejects pending answer (6.469126ms)
+✔ report rejects commentary (2.326113ms)
+✔ report rejects running turn (2.740879ms)
+✔ report rejects failed turn (2.043923ms)
+✔ report rejects interrupted turn (2.412609ms)
+✔ report rejects proposal (1.84554ms)
+✔ report rejects non-answer (1.861919ms)
+✔ unknown answer or missing turn cannot be exported as a completed conclusion (1.916421ms)
+✔ snapshot remains a stable value after the current answer text and thread change (1.890667ms)
+✔ report download refuses stale or recovering view: thread (2.82526ms)
+✔ report download refuses stale or recovering view: generation (2.176901ms)
+✔ report download refuses stale or recovering view: loading (2.285954ms)
+✔ report download refuses stale or recovering view: restore failure (1.822296ms)
+✔ Markdown export contains actual selected answer and same-turn ids without other-turn material (21.744479ms)
+✔ answer download is attached inside existing message actions and bound to its original navigation (2.523511ms)
+✔ pending, commentary and proposal messages receive no conclusion download action (1.550323ms)
+✔ download visibility follows actual completed turn status rather than done message alone (1.442673ms)
+✔ legacy and unknown verification warnings survive actual Markdown download (3.94467ms)
+✔ report keeps proof version and acquisition policy while copying a stable evidence snapshot (2.582268ms)
+✔ metric execution exposes only its final dataset card, not proof input snapshots (1.499008ms)
+✔ download retains confirmed metric version and field scope without upgrading ordinary values (1.578048ms)
+✔ export rechecks server-owned field status rather than trusting a DOM badge (2.370124ms)
+✔ unlinked body remains exportable with its unverified scope and no successful-field claim (2.589264ms)
+✔ field appendix escapes source text rather than allowing Markdown injection (1.663831ms)
+✔ server-authoritative export scope excludes historical artifacts injected through stale DOM proof (2.777965ms)
+✔ report formats explicitly describe downloads rather than response rendering (2.680152ms)
+✔ field linkage before turn completion defers knowledge check, then native completion refreshes it (3.994992ms)
+ℹ tests 43
+ℹ suites 0
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 228.842921
+
+/root/Codex/web/tests/analysis_auto_plan.mjs
+✔ only one complete nonempty proposal block is an autonomous mode decision (4.484809ms)
+✔ rendering a historical model proposal does not issue settings or task requests (1.317022ms)
+✔ a live proposal without an owned web submission cannot switch modes (3.132359ms)
+✔ native Plan submissions are not registered for default-to-Plan adaptation (1.426911ms)
+✔ failed default turn does not enter native Plan (1.160517ms)
+✔ interrupted default turn does not enter native Plan (1.550385ms)
+✔ commentary and ordinary final answers are not mode decisions (2.45896ms)
+✔ a completed proposal waits for turn completion instead of changing an active turn (1.908467ms)
+✔ ACK alone cannot claim native Plan; only a matching real-event fixture confirms it (1.57242ms)
+✔ matching settings notification before delayed ACK resolves without waiting or later reversal (1.703804ms)
+✔ duplicated item and turn completion events make only one native settings request (1.824724ms)
+✔ real completion events arriving before submission ACK are associated after ownership registration (1.563136ms)
+✔ native settings rejection preserves the proposal and never retries or starts a model task (2.461963ms)
+✔ connection close fails pending adaptation; a late ACK cannot display success (1.163786ms)
+✔ confirmation deadline preserves a diagnostic without automatic resend or fake success (1.328445ms)
+✔ an owner connection replaced before adaptation makes no settings request (1.133432ms)
+✔ a disconnected runtime cannot apply a queued proposal (1.139964ms)
+✔ a newer active task prevents retroactively changing that task to Plan (1.322531ms)
+✔ switching visible analysis B keeps background A adaptation and pending ownership on A only (1.274623ms)
+✔ events from another thread cannot associate their proposal with the owned task (1.030322ms)
+✔ the last final answer must itself be a proposal; a superseding ordinary answer cancels adaptation (1.051778ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 50.599201
+
+/root/Codex/web/tests/approved_plan_submission.mjs
+✔ approved-plan submission sends only approved text and preserves unsent text, attachments and skills (5.230524ms)
+✔ ordinary submission still sends selected skill and attachment, then clears sent text and attachment (3.956426ms)
+✔ delayed approved-task acknowledgement cannot overwrite text or attachments entered meanwhile (3.129632ms)
+✔ ordinary delayed acknowledgement keeps later edits and newly added attachments (1.713348ms)
+✔ repeated confirmation while pending produces exactly one protocol request (1.331992ms)
+✔ approved-task transport rejection preserves the original draft sentinel, attachments and skills (1.756093ms)
+✔ ordinary transport rejection also retains its original input and attachment for retry (1.5604ms)
+✔ actual analysis confirmation uses the edited whole plan, genuine progress instructions and preserved user draft (1.999588ms)
+✔ native mode-switch rejection aborts analysis confirmation without submitting a task or losing the draft (1.368111ms)
+✔ an empty edited analysis plan is rejected before mode changes or protocol submissions (1.654589ms)
+✔ an active analysis cannot open a second confirmation while the model is still planning (1.145905ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 35.631266
+
+/root/Codex/web/tests/analysis_numeric_state.mjs
+✔ existing explicit MCP disable is never silently overridden (3.502056ms)
+✔ fresh analysis provisions its existing managed tools without needing a database connection (1.17994ms)
+✔ managed extension upgrade fills missing roots and origins while preserving its custom settings (1.335367ms)
+✔ explicit roots and API policy or a custom same-name server are never overwritten (1.995988ms)
+✔ old running backend reads current worker configuration without a service restart (2.36425ms)
+✔ submission acknowledgement registers strict evidence even if turn-start notification is late (5.51165ms)
+✔ fresh managed-tool initialization waits for idle instead of reloading active calls (1.705764ms)
+✔ metric proof download rejects navigation changes and mismatched execution evidence (2.705054ms)
+✔ tool schema migration waits until all active analyses finish, without reloading running MCP (1.163837ms)
+✔ ordinary numbers, terms, user parameters and error codes do not trigger reads or body blocking (1.523341ms)
+✔ native plan and commentary do not require data execution or publication (1.19904ms)
+✔ data activity triggers association even for a text-only fact; streaming stays readable (2.240309ms)
+✔ failed association preserves visible body without giving it a verified state or submitting model work (1.994683ms)
+✔ transport failure is visible, never certified, and retry associates the same text (2.427972ms)
+✔ late source association cannot replace another conversation or detached answer (3.192626ms)
+✔ canonical report is delivered without certifying rewritten narration (1.29884ms)
+✔ source, actual execution and configured metric scope remain distinct (2.00868ms)
+✔ native-observed current turns register locally without ordinary-chat HTTP reads (1.19212ms)
+✔ a failed tool response does not force a runtime error into data-field verification (1.037692ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 52.896256
+
+/root/Codex/web/tests/analysis_settings.mjs
+✔ advanced controls stay the same connected objects across rerenders and unrelated panels (7.417402ms)
+✔ advanced collapse remains open during native settings refresh (2.043608ms)
+✔ hidden engineering actions retain their real handler and do not execute while rendering (4.171423ms)
+✔ older settings response cannot replace a newer settings render (2.201177ms)
+✔ settings response after navigation does not rebuild the destination panel (1.0257ms)
+✔ failed config load propagates its diagnostic and preserves connected controls (1.424471ms)
+✔ removed slash command stays local: /init (4.667874ms)
+✔ removed slash command stays local: /goal (1.086846ms)
+✔ removed slash command stays local: /chat (1.083115ms)
+✔ removed slash command stays local: /compact (1.082081ms)
+✔ removed slash command stays local: /model (0.903821ms)
+✔ removed slash command stays local: /mcp (1.068801ms)
+✔ removed slash command stays local: /review (0.837546ms)
+✔ removed slash command stays local: /export (0.894972ms)
+✔ removed slash command stays local: /rollback (0.877277ms)
+✔ removed slash command stays local: /fork (0.852647ms)
+✔ removed slash command stays local: /status (0.860444ms)
+✔ normal analysis questions, absolute paths and embedded slashes are permitted (1.062728ms)
+✔ planning slash entry remains available while unrelated removed commands stay guarded (0.886361ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46.365843
+
+/root/Codex/web/tests/composer_permissions_state.mjs
+✔ sandbox confirmation ignores JSON field order (3.671944ms)
+✔ native custom read-only permissions never masquerade as a workspace preset (1.015892ms)
+✔ matching native notification settles before a held acknowledgement and cancels deadline (1.477917ms)
+✔ fresh native resume snapshot can confirm an operation without replaying old notifications (1.285114ms)
+✔ another conversation snapshot cannot settle a pending update (1.190917ms)
+✔ deadline ends UI waiting even while acknowledgement remains pending, without replaying request (1.773566ms)
+✔ disconnect settles once, blocks new submission, and a later genuine snapshot restores known state (2.65903ms)
+✔ native rejection keeps previous permissions and does not fabricate success (1.099672ms)
+✔ reviewer-only changes preserve native permission-profile provenance (1.319005ms)
+✔ new native thread permission mismatch blocks task submission and retains requested choice (1.897015ms)
+✔ matching new-thread receipt clears only its pending choice after native confirmation (1.00748ms)
+✔ uncertain permission changes block sending but keep an active task stoppable (2.853008ms)
+✔ command cleanup keeps permission changes disabled after its turn has already ended (1.339717ms)
+✔ fresh global defaults refresh only a new chat summary, preserving existing native thread snapshots (1.419983ms)
+✔ archived history with a stale in-progress turn cannot bypass readonly via removed slash export or show a stop action (2.200641ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 39.059454
+
+/root/Codex/web/tests/context_hydration.mjs
+✔ usage before the final turns page survives resume without embedded turns (5.370821ms)
+✔ snapshot-covered deltas are not replayed; full terminal items and turns remain idempotent (1.317278ms)
+✔ settings use the resume snapshot boundary rather than the later turn-page boundary (1.133158ms)
+✔ navigation generation change cancels an old hydration even when the same thread is selected again (1.171759ms)
+✔ embedded native recent page renders chronologically without another history request (1.136995ms)
+✔ plan progress survives a later history snapshot that has no progress field (0.960933ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22.80991
+
+/root/Codex/web/tests/context_sampling.mjs
+✔ default Flash keeps complete-window denominator when native headroom matches catalog exactly (2.643719ms)
+✔ thread runtime window override cannot be overwritten by global catalog metadata (0.211755ms)
+✔ a changed safety percentage is not silently assumed to be 95 percent (0.217589ms)
+✔ unknown model metadata uses only the actual native available window (0.207703ms)
+✔ unknown native window cannot be replaced with an unverified global full window (0.200692ms)
+✔ cumulative billing total is not the numerator (0.195169ms)
+✔ cached input and reasoning output are already in provider total and never added or subtracted (0.197587ms)
+✔ native post-compaction history estimate remains explicitly approximate (0.221927ms)
+✔ running status is distinct from the last completed sample (0.312818ms)
+✔ missing and negative sample counters produce no invented usage (0.512911ms)
+✔ zero is accepted only as an explicitly reported last sample (0.25076ms)
+✔ unknown safety metadata does not authorize reverse calculation of full context (0.18281ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16.841878
+
+/root/Codex/web/tests/database_chart_view.mjs
+✔ only completed successful calls with actual well formed chart identifiers are accepted (3.836158ms)
+✔ plot view contains no independent table, SQL, CSV or extra result card (2.087458ms)
+✔ v1 initializes only after visible dimensions and exports the actual ECharts image (2.385444ms)
+✔ v2 waits for attachment, reads chart once, and renders the original full option (1.621293ms)
+✔ a failed full-chart request exposes its error and retries the same reference (3.233695ms)
+✔ mismatched v2 result cannot render data from another query (1.3038ms)
+✔ switching to data and back retains a single chart and resizes on reactivation (1.441857ms)
+✔ detachment disposes ECharts and disconnects both observers (1.28488ms)
+✔ disposed pending v2 ignores late responses and cancels queued rendering (1.499928ms)
+✔ a removed pending view ignores late responses even before mutation delivery (2.072168ms)
+✔ legacy fallback can be inserted after construction without a second explicit activate (1.239426ms)
+✔ theme patch reads page variables and leaves actual datasets and semantic series colors unchanged (1.197934ms)
+✔ live theme changes patch the same chart instance and keep dark PNG backgrounds readable (1.232991ms)
+✔ unrelated body mutations do not reactivate or resize an already connected chart (1.166512ms)
+✔ a hidden chart applies the latest page theme when shown without creating a second instance (1.055241ms)
+✔ PNG download applies a just-changed theme before the next animation frame (1.062044ms)
+✔ render failure offers a retry and does not report success or export an image (1.219719ms)
+✔ legacy render path delegates to unified result card without creating another plot (0.915926ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 41.890842
+
+/root/Codex/web/tests/group_stop_state.mjs
+✔ completed parent still has a real Stop button while its native child runs (4.838568ms)
+✔ child native ACK is insufficient: wait for authoritative terminal and cleanup release (6.373379ms)
+✔ stop root and descendants once, including a child appearing during cancellation (3.217398ms)
+✔ foreign or conflicting roots never expose a group stop for the selected conversation (1.350406ms)
+✔ native interrupt failure remains diagnostic and does not release execution or replay (2.131747ms)
+✔ connection loss fails the current stop without sending it through the replacement connection (1.743171ms)
+✔ an unready observer cannot prove a stop complete even when no owner is reported (1.406536ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 29.032057
+
+/root/Codex/web/tests/image_attachments.mjs
+✔ non-images including disguised text are rejected and existing picture stays (6.654569ms)
+✔ actual image bytes determine MIME; output remains native image input (1.575166ms)
+✔ outbound validation rejects audio, raw text attachments, remote paths and spoofed data (1.550268ms)
+✔ total image budget rejects additional picture without losing the first (337.111783ms)
+✔ decode failure gives feedback and preserves previously added picture (1.909084ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 360.182851
+
+/root/Codex/web/tests/memory_runtime_config.mjs
+✔ nullable native fields are omitted before returning config to native (4.376103ms)
+✔ explicit false and zero remain valid retention settings (3.223538ms)
+✔ pause disables both injection and generation (2.030588ms)
+✔ explicit disabled native feature is respected (0.968296ms)
+✔ DeepSeek compaction config and auxiliary identity remain explicit (1.105213ms)
+✔ legacy browser roots do not own background jobs or share temporary task context (0.956134ms)
+✔ service-owned native runtime enables native tools without sharing raw task history (1.294702ms)
+✔ paused service-owned threads retain native tools disabled (0.940228ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 30.332299
+
+/root/Codex/web/tests/goal_usage_observer.mjs
+✔ first goal real usage is visible even when native budget counter stays zero; cached and reasoning output are not double counted (2.132231ms)
+✔ cumulative snapshots replace checkpoints; repeated snapshots cannot double count (0.356341ms)
+✔ reload replay keeps the observed total; the next real usage delta is counted once (0.400994ms)
+✔ paused ordinary turns are excluded; resumed goal continues from the later cumulative baseline (0.468979ms)
+✔ final statistics still count when update_goal complete preceded the final response (0.277032ms)
+✔ existing goals without a baseline are unknown, then report only the confirmed lower bound (0.318078ms)
+✔ an existing session with real pre-goal usage has an exact local baseline (0.329273ms)
+✔ threads and profile namespaces cannot mix usage (0.314737ms)
+✔ goal clear removes old accounting even when the replacement shares the native seconds timestamp (0.457424ms)
+✔ a different goal creation timestamp cannot inherit old usage (0.589217ms)
+✔ regressing native counters cannot inflate usage and mark coverage incomplete (1.538906ms)
+✔ malformed and estimate-only counters do not invent paid usage (0.173945ms)
+✔ storage failure is diagnostic and in-memory real accounting remains usable (0.556002ms)
+✔ failed goal set cancels the prepared zero baseline rather than applying it to a later unknown goal (0.228942ms)
+✔ missing goal turn events after a connection gap mark coverage incomplete without attributing unknown usage (0.385761ms)
+✔ corrupt browser history is diagnosed and never becomes an invented zero baseline (0.295117ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 20.529893
+
+/root/Codex/web/tests/markdown_tables.mjs
+✔ missing delimiter column renders every original header and data cell (30.839764ms)
+✔ surplus delimiter syntax is removed without deleting a value or column (5.293003ms)
+✔ correct tables remain byte-for-byte unchanged with alignment and inline formatting (5.113539ms)
+✔ escaped pipes and escaped backslashes follow GFM cell boundaries (0.510984ms)
+✔ fenced and indented code remain literal (1.991839ms)
+✔ raw HTML and multiline code spans are not rewritten (0.411167ms)
+✔ incomplete streaming rows and ambiguous body widths are preserved without inventing cells (0.471968ms)
+✔ plain text, setext headings, quoted and list blocks retain standard semantics (2.695055ms)
+✔ multiple paragraphs and CRLF preserve prose and numerical strings (1.08896ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 58.73176
+
+/root/Codex/web/tests/plan_submission.mjs
+✔ slash menu exposes only native Plan; initialization and goals stay in advanced settings (6.565505ms)
+✔ Plan menu filters without fetching installed skills and closes for Chinese composition (1.655915ms)
+✔ stale former slash options cannot fill the composer or invoke advanced actions (2.30007ms)
+✔ menu selection fills Plan without executing; sending enters actual Plan with no task (2.608645ms)
+✔ opening Plan menu preserves existing drafts; empty composer receives only slash text (2.038166ms)
+✔ Plan menu respects Chinese IME and Escape; Tab selects without submitting (1.750297ms)
+✔ removed bare slash commands cannot execute tools, change views, create threads, or become model prompts (23.442044ms)
+✔ bare Plan entry is idempotent, including surrounding whitespace, and makes no task (1.758516ms)
+✔ inline Plan input strips the prefix and sends exactly one task in actual Plan mode (6.307466ms)
+✔ inline Plan keeps attachments and skill validation while bare Plan rejects attached files (3.431665ms)
+✔ inline Plan failure preserves the entire command and attached files for retry (1.360768ms)
+✔ old commands with arguments and attachments cannot bypass removal or lose unsent files (4.898636ms)
+✔ active turns reject new Plan requests and removed commands instead of steering (2.973497ms)
+✔ a read-only archive cannot use the former /export exception to invoke an operation (1.83226ms)
+✔ Plan switch on a fresh draft changes only draft mode and leaves the typed task intact (1.142173ms)
+✔ an existing-thread Plan switch uses native settings and stays pending until its ACK (1.322677ms)
+✔ a rejected native Plan switch preserves default mode and the whole composer, then can be retried (3.235036ms)
+✔ busy, archived, loading, restoring, and active conversations cannot change Plan mode (4.632976ms)
+✔ repeat switch attempts while pending produce only one settings update (1.174941ms)
+✔ late switch completion updates its original thread without announcing Plan in the newly selected thread (1.079017ms)
+✔ ordinary task after explicit Plan switch sends unmodified text and native Plan/model settings (1.36745ms)
+✔ a fresh explicitly enabled Plan draft supplies Plan to thread creation and exactly one task (1.429201ms)
+✔ explicit exit sends no task; the next ordinary task uses default collaboration mode (1.294998ms)
+✔ an ordinary task keeps supported image attachments and explicitly selected native skills (1.367818ms)
+✔ Plan does not bypass Flash image capability checks or lose unsupported input (1.287373ms)
+✔ failed Plan task submission preserves its whole input for retry (1.417061ms)
+✔ pending ordinary Plan submission cannot create a duplicate turn (1.309018ms)
+✔ late task ACK preserves later text and newly attached images (1.493828ms)
+✔ approved-plan independent text is not reinterpreted as a composer slash command (1.223837ms)
+✔ composer Plan switch reflects only the confirmed native mode (1.298536ms)
+✔ Plan on/off settings are idempotent when the native snapshot already confirms that mode (1.137039ms)
+✔ unassigned chat can submit in Plan while retaining its actual working directory (1.223501ms)
+✔ unlisted slash words and removed commands with Unicode-separated arguments cannot fall through as tasks (3.643922ms)
+✔ ordinary prose mentioning a former command and absolute file paths remain valid tasks (2.158163ms)
+✔ autonomous handoff prevents manual mode changes until native Plan confirmation (1.35861ms)
+✔ Plan switch remains visible and disabled during execution or handoff (0.973959ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.370154
+
+/root/Codex/web/tests/mode_recovery.mjs
+✔ late native resume reply cannot overwrite a newer navigation mode cache (4.774966ms)
+✔ a real later settings event replay keeps priority over the successful resume snapshot (1.296135ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13.846806
+
+/root/Codex/web/tests/single_execution_state.mjs
+✔ other conversation is blocked during starting (5.98285ms)
+✔ other conversation is blocked during running (3.966863ms)
+✔ other conversation is blocked during waitingForApproval (2.706878ms)
+✔ other conversation is blocked during waitingForInput (1.875762ms)
+✔ other conversation is blocked during reconciling (2.785436ms)
+✔ other conversation is blocked during cleaningUp (1.358712ms)
+✔ other conversation is blocked during cleanupFailed (1.034667ms)
+✔ other conversation is blocked during backgroundRunning (0.958074ms)
+✔ other conversation is blocked during conflicted (1.620101ms)
+✔ owner cannot submit a new message during starting (2.90403ms)
+✔ owner cannot submit a new message during reconciling (1.363065ms)
+✔ owner cannot submit a new message during cleaningUp (1.018693ms)
+✔ owner cannot submit a new message during cleanupFailed (1.098791ms)
+✔ owner cannot submit a new message during backgroundRunning (1.034838ms)
+✔ owner cannot submit a new message during conflicted (0.945839ms)
+✔ owner can steer native turn during running (1.541005ms)
+✔ owner can steer native turn during waitingForApproval (1.116529ms)
+✔ owner can steer native turn during waitingForInput (1.139428ms)
+✔ idle execution permits another history or a new conversation and does not cap history count (2.229801ms)
+✔ fresh execution snapshot releases prior snapshot turns and cannot revive a finished turn (1.024735ms)
+✔ stale history inProgress cannot expose Stop or steer in a different executing conversation (1.29646ms)
+✔ another tab winning while tools load aborts submission and preserves draft without native turn request (1.15092ms)
+✔ native rejection after initial idle admission preserves text and attachments (1.412464ms)
+✔ service-owned tasks do not warn on navigation; an unresolved send acknowledgement still warns (1.172845ms)
+✔ persistent disconnection interruption notice does not claim browser killed the native process (1.119867ms)
+✔ cleanup retry uses native thread/turn identities and refreshes actual service state (1.341361ms)
+✔ native terminal interrupt response does not become fake cleanup success (1.516406ms)
+✔ cleanup never guesses a command PID when native turn identity is missing (2.067423ms)
+✔ native busy error carries authoritative execution state back into composer without a retry (2.553669ms)
+✔ bridge snapshot is processed before initialization and persistent disconnect never resends (2.072234ms)
+✔ completed owner with active native child cannot start a second root turn (1.341516ms)
+✔ replayed native terminal turn does not remain steerable while service reconciles (1.0379ms)
+✔ repeated cleanup click while native request is pending submits only once (3.335611ms)
+✔ opening another conversation during a native task reads history without native resume and keeps its draft editable (2.742488ms)
+✔ native resume race rejection falls back to history instead of falsely showing restore failure (1.803514ms)
+✔ deferred conversation native mode and permissions are restored before later submission (2.00477ms)
+✔ losing the slot again during deferred resume never submits and preserves draft (1.584215ms)
+✔ successful ordinary resume removes an obsolete deferred marker (1.494181ms)
+✔ uncertain acknowledgementUnknown blocks same-owner steering, keeps known-turn Stop, and displays native diagnostic (1.279448ms)
+✔ uncertain observationFailed blocks same-owner steering, keeps known-turn Stop, and displays native diagnostic (1.184462ms)
+✔ uncertain acknowledgementUnknown without known native turn cannot open a second execution (1.256551ms)
+✔ uncertain observationFailed without known native turn cannot open a second execution (1.046593ms)
+✔ an unrecognized execution state stays stoppable with a known turn but cannot steer (1.28258ms)
+✔ archived history stays readable when analysis memory preparation is unavailable (1.384186ms)
+✔ own pending approval can restore through native resume without memory prefetch (3.341759ms)
+✔ submitting a real task waits for current memory preparation before native execution (6.1921ms)
+✔ failed memory preparation blocks native task submission and retains its draft (1.401867ms)
+ℹ tests 47
+ℹ suites 0
+ℹ pass 47
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 98.474737
+
+/root/Codex/web/tests/thread_identity.mjs
+✔ reconnect re-reads authoritative identity despite cached UI provider (8.396689ms)
+✔ an unreadable identity cannot resume or run unknown historical work (1.931448ms)
+✔ archived history reuses the metadata response without duplicate read or resume (1.720365ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23.284504
+
+/root/Codex/web/tests/subagent_state.mjs
+✔ native spawn completion preserves pending child state rather than claiming task success (2.867227ms)
+✔ partial wait and sent correction keep independent child states and native model identity (0.450339ms)
+✔ unavailable and failed states remain visible rather than using successful RPC status (0.400862ms)
+✔ leaving warning follows native active turns or unacknowledged submissions, including another local conversation (1.152042ms)
+✔ actual child read updates a pending summary until a newer native state event arrives (0.417623ms)
+✔ later native close across parent turns remains authoritative over historical read (0.41308ms)
+✔ departure explanation is retained only for the affected interrupted native turn (1.413246ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19.987507
+
+/root/Codex/web/tests/unified_results.mjs
+✔ query, read_result and create_chart references share one card and one CSV footer (36.539892ms)
+✔ chart-first events and history replay keep the same mounted result and cached table (7.239683ms)
+✔ restoring a running turn merges its already completed query and two charts through actual renderItem (5.725106ms)
+ℹ {"turnStatus":"inProgress","completedToolStatuses":["completed","completed","completed"],"entryDone":[false,false,false],"visibleCards":1,"csvLinks":1}
+✔ different results retain separate cards while repeated result references merge across turns (7.511902ms)
+✔ two charts for one snapshot use one chart selector and preserve both chart identities (5.246557ms)
+✔ shared result tabs expose linked ARIA panels and keyboard switching hides the other view (5.144187ms)
+✔ single-page result omits pagination controls while keeping row status and one download (3.892198ms)
+✔ late result page from another navigation cannot update or attach to the current thread (2.975828ms)
+✔ PNG is unavailable until the shared ECharts view has actually initialized (3.366293ms)
+✔ data/chart switching and a late second chart preserve the page selected by the user (5.798018ms)
+✔ selecting the second chart changes only the plot and duplicate chart events create no duplicate option (6.237053ms)
+✔ re-rendering a history item moves its existing result without resetting page or chart (7.316819ms)
+✔ a different thread context disposes previous chart state and creates an independent result card (11.501375ms)
+✔ failed or incomplete tool calls never expose a chart, rows or a successful download (2.588661ms)
+✔ a failed chart remains in the same card and retry enables PNG only after ECharts succeeds (8.678937ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.942193
+
+/root/Codex/web/tests/mcp_management_state.mjs
+✔ editing preserves advanced options and unexposed credentials through native CAS and reload (8.658715ms)
+✔ stale editor refuses overwrite even when changed server is in the same browser (1.844095ms)
+✔ server change before opening editor is refused instead of showing stale settings (2.670506ms)
+✔ transport switch removes obsolete fields and keeps unrelated options (2.099607ms)
+✔ HTTP editing retains headers without echoing them; explicit empty objects clear them (2.549693ms)
+✔ invalid JSON leaves config unchanged and does not reload (1.809685ms)
+✔ new server cannot overwrite a newly appeared configuration (1.417214ms)
+✔ native write rejection is not hidden or followed by reload and success (3.056621ms)
+✔ reload failure states that config was saved without claiming ready tools (2.62098ms)
+✔ remove uses native deletion and read-back, preserves success distinction from inherited config (2.777342ms)
+✔ remove refuses stale configuration and canonical comparisons preserve array order (1.137378ms)
+✔ one malformed address can be displayed without crashing the MCP service list (0.982982ms)
+✔ visible enable/disable handler refuses an outdated card instead of overwriting external changes (5.466412ms)
+✔ existing command-line secrets and credential URLs never enter edit controls and are preserved (3.575736ms)
+✔ actual config/detail display redaction hides password variants, arbitrary env/header values, args and URL credentials (1.715148ms)
+✔ unchanged HTTP editor validates current config, reports no change, and never writes or reloads (2.634863ms)
+✔ switching local HTTP with a header helper to stdio removes every HTTP-only field (1.5819ms)
+✔ config redaction preserves MCP tool schemas including fields named args, env and password (0.962004ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 56.88917
+
+/root/Codex/web/tests/skill_draft_state.mjs
+✔ selected native skill and draft text survive a fresh page context (5.444417ms)
+✔ draft skill selections stay isolated per conversation and empty drafts clear stale selections (1.926725ms)
+✔ legacy text-only drafts remain readable and malformed stored metadata is ignored (1.662421ms)
+✔ deleting a conversation clears both its text and native skill draft metadata only (1.160445ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17.76
+
+/root/Codex/web/tests/uploaded_skills_state.mjs
+✔ only retained native skills or exact registered name/path pairs are allowed (4.251131ms)
+✔ registration errors retain diagnostics and do not promote a stale uploaded skill (2.055002ms)
+✔ skill mention boundaries support spaces and punctuation without matching another skill or ordinary substring (2.783747ms)
+✔ upload is refused while execution is starting (1.588774ms)
+✔ upload is refused while execution is running (1.068529ms)
+✔ upload is refused while execution is waitingForApproval (1.065971ms)
+✔ upload is refused while execution is waitingForInput (1.398466ms)
+✔ upload is refused while execution is reconciling (0.999677ms)
+✔ upload is refused while execution is cleaningUp (1.388903ms)
+✔ upload is refused while execution is cleanupFailed (1.631555ms)
+✔ upload is refused while execution is backgroundRunning (0.992447ms)
+✔ upload is refused while execution is acknowledgementUnknown (0.994148ms)
+✔ upload is refused while execution is observationFailed (0.913429ms)
+✔ upload is refused while execution is conflicted (0.904373ms)
+✔ unknown observer state and unresolved browser submission cannot install a skill (1.131304ms)
+✔ upload accepts only ZIP or SKILL.md within the declared limit and sends the actual bytes (1.700393ms)
+✔ a rejected upload remains retryable and never reports success (1.123259ms)
+✔ removal requires explicit confirmation and sends the original version for server CAS (3.338164ms)
+✔ execution beginning after removal dialog opens prevents the mutation (1.024851ms)
+✔ uploaded card is separate, disabled by native state, and builtin cards have no removal action (2.770545ms)
+✔ registry failure still displays builtin skills and a clear retryable error (1.283774ms)
+✔ a fresh page can send a registered skill with spaces as native UserInput.skill without visiting settings (2.02544ms)
+✔ removed or disabled selections are rejected before turn/start and their draft is retained (2.584724ms)
+✔ selected skill with spaces is not duplicated when returning from its management card (1.081096ms)
+✔ names sharing a prefix do not preserve a removed shorter mention by matching the longer one (1.405366ms)
+✔ one damaged upload remains removable but cannot be enabled or used and does not hide healthy skills (2.173621ms)
+✔ a damaged upload left in native cache is refused before execution and its removal uses the damaged-state token (1.915756ms)
+✔ installer card opens local upload without model execution while the other native skills keep structured use (4.907799ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 66.970189
+
+/root/Codex/web/tests/memory_management_state.mjs
+✔ preference availability and native consolidation are independent: pending (3.403145ms)
+✔ preference availability and native consolidation are independent: cooling_down (1.027066ms)
+✔ preference availability and native consolidation are independent: retrying (2.786174ms)
+✔ preference availability and native consolidation are independent: running (0.930424ms)
+✔ preference availability and native consolidation are independent: completed (1.03886ms)
+✔ preference availability and native consolidation are independent: failed (1.20189ms)
+✔ preference availability and native consolidation are independent: no_work (0.973928ms)
+✔ preference availability and native consolidation are independent: unknown (0.869482ms)
+✔ old global summary and a prior completed scheduler do not prove the new merge succeeded (1.175404ms)
+✔ paused memory retains saved preferences without promising new-task availability (1.552077ms)
+✔ cooldown dates and explicit backend notices remain visible without changing availability (20.100341ms)
+✔ memory enable never turns ordinary chat extraction on (1.852702ms)
+✔ memory pause never turns ordinary chat extraction on (1.095355ms)
+✔ native write conflict keeps paused preference state and is not reported as enabled (1.386788ms)
+✔ executing analysis refuses memory-config mutation before any request (1.092719ms)
+✔ only server-registered exact IDs leave normal history; matching titles stay visible (1.884594ms)
+✔ maintenance ID refresh is shared and leaves normal history usable while pending (1.048497ms)
+✔ missing management API cannot hide ordinary history and keeps a diagnostic (0.994056ms)
+✔ direct maintenance navigation opens memory management without an analysis task (0.9385ms)
+✔ maintenance writer rejection explains browser closure cannot release the owned lock (1.048047ms)
+✔ ordinary native writer rejection retains retry guidance and exact upstream cause (0.958095ms)
+✔ fork references stay diagnostic and do not become a false success (0.938634ms)
+✔ empty history does not imply ordinary new analysis will be extracted after an hour (1.522327ms)
+✔ historical summary shows source and freshness: current (1.205222ms)
+✔ historical summary shows source and freshness: stale (1.028505ms)
+✔ historical summary shows source and freshness: missing (0.89551ms)
+✔ historical summary shows source and freshness: unknown (0.941103ms)
+✔ opening an exact internal URL reads native identity but never resumes maintenance as analysis (1.802165ms)
+✔ status rendering tolerates defaults not yet loaded on direct maintenance navigation (0.843679ms)
+✔ open visible memory dialog polls only state every five seconds and preserves an unsaved editor (9.509745ms)
+✔ closing the memory dialog stops the poll timer and an already started read cannot repaint it (2.148579ms)
+✔ hidden dialog and in-flight reads do not issue duplicate state polling (2.000163ms)
+✔ manual saving invalidates an older poll response and preserves the newly saved document (2.401744ms)
+✔ maintenance list keeps newest twenty of backend newest-first records (1.585479ms)
+✔ generated summaries never prefill an empty user preference editor (3.28182ms)
+✔ polling an external saved edit never upgrades the unsaved draft CAS token (4.343447ms)
+✔ removed internal history routes to memory management using server error metadata without native resume (2.041572ms)
+✔ removed internal history routes to memory management using exact registered cache without native resume (1.58365ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 99.747161
+
+/root/Codex/web/tests/runtime_context.mjs
+✔ all policy and memory values fit the actual pinned native truncation threshold (37.614001ms)
+✔ the complete application policy survives native lexical key ordering with the original first key (17.221713ms)
+✔ current user edits survive from beginning through middle to end without entering developer policy (24.524138ms)
+✔ recent note order, provenance and omitted-note metadata are retained as untrusted data (15.756667ms)
+✔ context delimiter-looking user content remains JSON data with exactly recoverable characters (15.278009ms)
+✔ paused memory exposes no saved user edit or note payload (14.036731ms)
+✔ legacy textual memory instructions remain compatible but transport policy opts out of embedded data (1.493687ms)
+✔ stable inputs produce stable chunk identities, ordering and exact Unicode reassembly (41.271423ms)
+✔ missing native runtime identity still returns no guessed context (1.223625ms)
+✔ native turn start carries freshly prepared memory without altering the visible user message (18.982899ms)
+✔ native steer carries freshly prepared memory without altering the visible user message (12.826311ms)
+✔ the pinned experimental native steer protocol supports additionalContext with untrusted/application roles (1.266826ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 226.92652
+

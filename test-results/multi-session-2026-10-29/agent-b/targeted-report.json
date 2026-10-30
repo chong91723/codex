@@ -1,0 +1,131 @@
+{
+  "agent": "B",
+  "phase": "targeted",
+  "completedAt": "2026-10-29T09:32:04Z",
+  "sourceId": "9f0e887b483dd2f73f189590",
+  "threadId": "01a186f9-9daa-7a30-8fc6-df2f8dc14a33",
+  "completedTurnId": "01a186fa-d49f-7a70-86b1-826baf2bfb14",
+  "scope": "Same user, shared isolated service/profile/workspace, independent browser context; real deepseek-flash, read-only AdventureWorks. No independent business-answer adjudication.",
+  "coverage": [
+    {
+      "scenario": "Shared exploration reused",
+      "evidence": [
+        "10-business-old-version.png"
+      ],
+      "observed": "A exploration visible in B: 70 objects,479 fields; no second exploration submitted."
+    },
+    {
+      "scenario": "User memory edit",
+      "utc": "2026-10-29T09:20:11Z",
+      "evidence": [
+        "06-memory-saved.png",
+        "protocol.jsonl"
+      ],
+      "observed": "Saved Chinese answer preference plus original read-time, knowledge-version and unresolved-dispute display request; UI confirms new and future sessions read it."
+    },
+    {
+      "scenario": "Business context stale edit",
+      "utc": "2026-10-29T09:21:40Z",
+      "evidence": [
+        "10-business-old-version.png",
+        "12-business-draft-b.png",
+        "14-business-saved-b.png"
+      ],
+      "observed": "Both read empty revision0; B saves first. A later reports old save rejected and A draft retained. A evidence is primary for rejection."
+    },
+    {
+      "scenario": "Correction and simulated user decision",
+      "utc": "2026-10-29T09:22:40Z",
+      "evidence": [
+        "18-correction-pending.png",
+        "19-correction-approve.png",
+        "21-correction-record-loaded.png",
+        "protocol.jsonl"
+      ],
+      "observed": "Correction created pending1/conflict1. User reason entered and Adopt clicked. Revision2/knowledgeRevision3 effective; six history records retain original/revision/decision reason."
+    },
+    {
+      "scenario": "Independent task and new session reads adopted knowledge",
+      "utc": "2026-10-29T09:24:26Z",
+      "evidence": [
+        "26-b-progress-detail.png",
+        "46-b-restored-report.png"
+      ],
+      "observed": "Actual list_databases/list_metric_rules/read_database_context/read_knowledge_history; model identifies business revision2 and no confirmed metric rule; real query results and ECharts cards."
+    },
+    {
+      "scenario": "Refresh own active task versus A continues",
+      "utc": "2026-10-29T09:25:13Z",
+      "evidence": [
+        "27-refresh-b-while-a-active.png",
+        "28-after-reconnect-b.png"
+      ],
+      "observed": "Only page.reload submitted; same B thread reconnects with task interrupted, existing result/chart retained. A reports own plan task continued without B messages/approvals."
+    },
+    {
+      "scenario": "Continue using new native turn",
+      "utc": "2026-10-29T09:25:46Z",
+      "evidence": [
+        "29-resume-b-new-turn.png",
+        "46-b-restored-report.png"
+      ],
+      "observed": "New user request resumes; result original acquisition times retained in final answer; not presented as reread acquisition."
+    },
+    {
+      "scenario": "Skills and MCP current entry points",
+      "evidence": [
+        "32-skills-loaded.png",
+        "34-mcp-loaded.png",
+        "38-mcp-tools-loaded.png"
+      ],
+      "observed": "Four native skills visible, MCP codex_web_databases connected with22 tools. Reload config click gave no additional visible feedback; no enabled/disabled mutation performed."
+    },
+    {
+      "scenario": "Freshness stale edit",
+      "utc": "2026-10-29T09:29:56Z",
+      "evidence": [
+        "40-data-freshness-open.png",
+        "41-freshness-b-draft.png",
+        "44-freshness-saved-b.png"
+      ],
+      "observed": "B and A read initial blank. B saves10, UI confirms; A later submits old20 and reports silent success. Window has Cancel/Save only, no Refresh/Recheck."
+    },
+    {
+      "scenario": "Report export and history restoration",
+      "evidence": [
+        "48-export-evidence.png",
+        "49-export-html.png",
+        "54-archive-restore-menu.png",
+        "55-restore-b-history.png",
+        "56-restored-body-confirmation.png"
+      ],
+      "observed": "Evidence JSON and55516-byte HTML exported. Own B thread archived then restored. Completed report, first interrupted round and original acquisition timestamp remained."
+    }
+  ],
+  "issues": [
+    {
+      "id": "B-REFRESH-INTERRUPTS",
+      "severity": "functional observation",
+      "observed": "Browser refresh during native round terminates own task; before refresh no explanatory warning. Root investigating process lifecycle and UX feedback. A unaffected.",
+      "evidence": [
+        "27-refresh-b-while-a-active.png",
+        "28-after-reconnect-b.png"
+      ]
+    },
+    {
+      "id": "FRESHNESS-STALE-OVERWRITE",
+      "severity": "functional defect reproduced with A",
+      "observed": "B saves10 then A stale20 silently overwrites. No conflict or draft retention step.",
+      "evidence": [
+        "44-freshness-saved-b.png",
+        "A report: stale20 save after B10"
+      ]
+    }
+  ],
+  "limits": [
+    "No business answer truth verdict",
+    "No production concurrency or multi-tenant claim",
+    "Native subagent coverage led by A",
+    "No prohibited uploads or database writes performed"
+  ]
+}

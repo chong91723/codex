@@ -1,0 +1,24 @@
+{"oracleGroups": ["annual", "region", "category", "repeat", "grain_check", "detail_identity_observation"], "years": [2002, 2003], "allReadOnly": true}
+PASS 真实浏览器拒绝Excel，数据附件刷新恢复并由Flash导入计算绘图
+PASS 真实Flash分析中修改原文件会拒绝旧副本，重新导入才采用新值
+PASS 真实数据库数值经Flash和Python生成大整数，图表提示保留精确值
+PASS 跨轮继续分析的最终报告包含前轮明确引用的真实图表
+file:///root/Codex/web/tests/analysis_cross_feature_live.mjs:92
+  await fresh();const result=await run('仅使用数据源 '+sourceId+'，按已确认的业务口径告诉我有效线上订单总数。请选择适用的已确认指标执行，不要自行重写普通SQL。全部历史范围，直接执行。');verified(result);const executed=result.items.find(item=>item.tool==='execute_metric'&&!item.result?.isError);assert(executed);const actual=payload(executed);assert.equal(actual.metricProof.ruleId,selected.id);
+                                                                                                                                                                                                                                                                                                                       ^
+
+TypeError: Cannot read properties of undefined (reading 'ruleId')
+    at file:///root/Codex/web/tests/analysis_cross_feature_live.mjs:92:312
+    at async check (file:///root/Codex/web/tests/analysis_cross_feature_live.mjs:20:52)
+    at async file:///root/Codex/web/tests/analysis_cross_feature_live.mjs:83:2
+
+Node.js v24.22.1
+{"sourceRemoved":true,"remainingOwnedResultsRemoved":0,"ownedChartsRemoved":0}
+Traceback (most recent call last):
+  File "/root/Codex/web/tests/run_adventureworks_audit.py", line 58, in <module>
+    node('analysis_cross_feature_live.mjs' if phase=='capability-fixes' else 'adventureworks_analyst_live.mjs',phase)
+  File "/root/Codex/web/tests/run_adventureworks_audit.py", line 52, in node
+    subprocess.run([str(ROOT/'.toolchains/node24/bin/node'),str(ROOT/'web/tests'/script)],env=current,cwd=ROOT,check=True,timeout=1800)
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/root/Codex/.toolchains/node24/bin/node', '/root/Codex/web/tests/analysis_cross_feature_live.mjs']' returned non-zero exit status 1.

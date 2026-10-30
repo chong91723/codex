@@ -1,0 +1,2875 @@
+{
+  "title": "我想分析 AdventureWorks 最近一个数据覆盖完整的年度：按月、销售区域比较订单数、SubTotal 销售金额和每单金额，并与前一年可比月份比较；选出销售变化最明显的三个区域，区分订单量与每单金额的贡献。最后提供月度趋势图、可下载明细和网页报告。先复用已探索的结构与已采用业务补充，若年度、订单状态或金额口径不明确，请先澄清并给我可修改的方案，确认后再执行正式分析。",
+  "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+  "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+  "exportedAt": "2026-10-29T09:38:41.239Z",
+  "knowledgeStatus": {
+    "status": "current",
+    "changes": [],
+    "notice": "依赖变化只表示报告需复核，不证明每个数值都错误；历史正文不会被静默改写。"
+  },
+  "verification": {
+    "status": "verified",
+    "strict": true,
+    "answerId": "c4c8b09afe63f786faef23306d2f5e5fea9253cb10181a303f04eb73b586443d",
+    "version": "data-evidence-v2",
+    "verificationScope": "referenced-fields",
+    "assurance": {
+      "scope": "referenced-fields",
+      "source": {
+        "status": "linked",
+        "fields": [
+          "s_orders03",
+          "s_orders02",
+          "s_sub03",
+          "s_sub02",
+          "s_subdiff",
+          "s_subpct",
+          "s_aov02",
+          "s_aov03",
+          "s_month_orders",
+          "dl_monthly_rows",
+          "s_month_aov",
+          "s_max_month",
+          "s_max_change",
+          "t1_delta",
+          "t2_delta",
+          "t3_delta",
+          "negative_region_count",
+          "t8_delta",
+          "t8_pct",
+          "t1_rank",
+          "t1_name",
+          "t1_pct",
+          "t2_rank",
+          "t2_name",
+          "t2_pct",
+          "t3_rank",
+          "t3_name",
+          "t3_pct",
+          "t4_rank",
+          "t4_name",
+          "t4_delta",
+          "t4_pct",
+          "t5_rank",
+          "t5_name",
+          "t5_delta",
+          "t5_pct",
+          "t6_rank",
+          "t6_name",
+          "t6_delta",
+          "t6_pct",
+          "t7_rank",
+          "t7_name",
+          "t7_delta",
+          "t7_pct",
+          "t8_rank",
+          "t8_name",
+          "t9_rank",
+          "t9_name",
+          "t9_delta",
+          "t9_pct",
+          "t10_rank",
+          "t10_name",
+          "t10_delta",
+          "t10_pct",
+          "r1_rank",
+          "r1_name",
+          "r1_orders02",
+          "r1_orders03",
+          "r1_orderpct",
+          "r1_sub02",
+          "r1_sub03",
+          "r1_subdelta",
+          "r1_subpct",
+          "r1_aov02",
+          "r1_aov03",
+          "r1_aovpct",
+          "r2_rank",
+          "r2_name",
+          "r2_orders02",
+          "r2_orders03",
+          "r2_orderpct",
+          "r2_sub02",
+          "r2_sub03",
+          "r2_subdelta",
+          "r2_subpct",
+          "r2_aov02",
+          "r2_aov03",
+          "r2_aovpct",
+          "r3_rank",
+          "r3_name",
+          "r3_orders02",
+          "r3_orders03",
+          "r3_orderpct",
+          "r3_sub02",
+          "r3_sub03",
+          "r3_subdelta",
+          "r3_subpct",
+          "r3_aov02",
+          "r3_aov03",
+          "r3_aovpct",
+          "c1_vol",
+          "c1_aov",
+          "c1_int",
+          "c1_round",
+          "c1_net",
+          "c2_vol",
+          "c2_aov",
+          "c2_int",
+          "c2_round",
+          "c2_net",
+          "c3_vol",
+          "c3_aov",
+          "c3_int",
+          "c3_round",
+          "c3_net",
+          "dl_region_month_rows",
+          "all_regions",
+          "dl_region_year_rows",
+          "dl_top3_rows",
+          "coverage_min_month",
+          "coverage_max_month",
+          "monthly_region_row_count",
+          "months_per_region_min",
+          "months_per_region_max",
+          "max_display_residual",
+          "status_value",
+          "status_orders"
+        ]
+      },
+      "execution": {
+        "status": "recorded",
+        "kinds": [
+          "database",
+          "python"
+        ]
+      },
+      "metric": {
+        "status": "not-applied",
+        "fields": []
+      },
+      "narrative": {
+        "status": "not-assessed",
+        "reason": "解释、比较与因果判断未作语义正确性认证；仅所列字段引用与执行记录匹配。"
+      }
+    },
+    "evidence": [
+      {
+        "name": "s_orders03",
+        "value": 12510,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "orders_2003",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "s_orders02",
+        "value": 3720,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "orders_2002",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "s_sub03",
+        "value": 49578680.86,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "subtotal_2003",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "s_sub02",
+        "value": 36812964.63,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "subtotal_2002",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "s_subdiff",
+        "value": 12765716.23,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "subtotal_difference",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "s_subpct",
+        "value": 34.68,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "subtotal_change_pct",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "s_aov02",
+        "value": 9895.96,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "average_order_2002",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "s_aov03",
+        "value": 3963.12,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "average_order_2003",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "s_month_orders",
+        "value": 12,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "months_order_growth",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "dl_monthly_rows",
+        "value": 12,
+        "resultId": "e6618f65e2047f997bc5a56d98549c74",
+        "row": null,
+        "column": "@rowCount",
+        "sha256": "322d8d5fe935880fb3b1db582811829ecbf4e3d892d0f539f235b3dff641a1e5",
+        "referenceKind": "metadata",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "s_month_aov",
+        "value": 1,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "months_average_order_growth",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "s_max_month",
+        "value": 11,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "max_subtotal_change_month",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "s_max_change",
+        "value": 2482547.26,
+        "resultId": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+        "row": 0,
+        "column": "max_subtotal_abs_change",
+        "sha256": "b72b27d74c0fbdae1ab796a0990bc6b6f3f62da3a2c204a7015dc8d7f82bd1da",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t1_delta",
+        "value": 2363319.84,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 0,
+        "column": "SubTotalDifference",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t2_delta",
+        "value": 2357439.52,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 1,
+        "column": "SubTotalDifference",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t3_delta",
+        "value": 2072805.32,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 2,
+        "column": "SubTotalDifference",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "negative_region_count",
+        "value": 1,
+        "resultId": "39bfa9bf662cc9df5d39e783ca30ee81",
+        "row": 0,
+        "column": "negative_change_regions",
+        "sha256": "48b0391964f8e846fb7abea03a604c3fc919016e1b173ca5d73b159df7b8bcf1",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t8_delta",
+        "value": -432948.78,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 7,
+        "column": "SubTotalDifference",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t8_pct",
+        "value": -12.84,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 7,
+        "column": "SubTotalChangePct",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t1_rank",
+        "value": 1,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 0,
+        "column": "AbsChangeRank",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t1_name",
+        "value": "France",
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 0,
+        "column": "Name",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t1_pct",
+        "value": 148.3,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 0,
+        "column": "SubTotalChangePct",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t2_rank",
+        "value": 2,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 1,
+        "column": "AbsChangeRank",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t2_name",
+        "value": "United Kingdom",
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 1,
+        "column": "Name",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t2_pct",
+        "value": 142.55,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 1,
+        "column": "SubTotalChangePct",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t3_rank",
+        "value": 3,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 2,
+        "column": "AbsChangeRank",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t3_name",
+        "value": "Germany",
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 2,
+        "column": "Name",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t3_pct",
+        "value": 396.02,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 2,
+        "column": "SubTotalChangePct",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t4_rank",
+        "value": 4,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 3,
+        "column": "AbsChangeRank",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t4_name",
+        "value": "Australia",
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 3,
+        "column": "Name",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t4_delta",
+        "value": 2044279.28,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 3,
+        "column": "SubTotalDifference",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t4_pct",
+        "value": 94.89,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 3,
+        "column": "SubTotalChangePct",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t5_rank",
+        "value": 5,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 4,
+        "column": "AbsChangeRank",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t5_name",
+        "value": "Northwest",
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 4,
+        "column": "Name",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t5_delta",
+        "value": 1699304.22,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 4,
+        "column": "SubTotalDifference",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t5_pct",
+        "value": 32.73,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 4,
+        "column": "SubTotalChangePct",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t6_rank",
+        "value": 6,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 5,
+        "column": "AbsChangeRank",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t6_name",
+        "value": "Southwest",
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 5,
+        "column": "Name",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t6_delta",
+        "value": 1471785.41,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 5,
+        "column": "SubTotalDifference",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t6_pct",
+        "value": 16.01,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 5,
+        "column": "SubTotalChangePct",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t7_rank",
+        "value": 7,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 6,
+        "column": "AbsChangeRank",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t7_name",
+        "value": "Canada",
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 6,
+        "column": "Name",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t7_delta",
+        "value": 732925.81,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 6,
+        "column": "SubTotalDifference",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t7_pct",
+        "value": 11.03,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 6,
+        "column": "SubTotalChangePct",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t8_rank",
+        "value": 8,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 7,
+        "column": "AbsChangeRank",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t8_name",
+        "value": "Southeast",
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 7,
+        "column": "Name",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t9_rank",
+        "value": 9,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 8,
+        "column": "AbsChangeRank",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t9_name",
+        "value": "Central",
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 8,
+        "column": "Name",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t9_delta",
+        "value": 290135.76,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 8,
+        "column": "SubTotalDifference",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t9_pct",
+        "value": 8.79,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 8,
+        "column": "SubTotalChangePct",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t10_rank",
+        "value": 10,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 9,
+        "column": "AbsChangeRank",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t10_name",
+        "value": "Northeast",
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 9,
+        "column": "Name",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t10_delta",
+        "value": 166669.84,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 9,
+        "column": "SubTotalDifference",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "t10_pct",
+        "value": 5.24,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": 9,
+        "column": "SubTotalChangePct",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_rank",
+        "value": 1,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "AbsChangeRank",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_name",
+        "value": "France",
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "Name",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_orders02",
+        "value": 272,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "Orders2002",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_orders03",
+        "value": 1127,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "Orders2003",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_orderpct",
+        "value": "314.34",
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "OrderCountChangePct",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_sub02",
+        "value": 1593617.93,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "SubTotal2002",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_sub03",
+        "value": 3956937.78,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "SubTotal2003",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_subdelta",
+        "value": 2363319.84,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "SubTotalDifference",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_subpct",
+        "value": 148.3,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "SubTotalChangePct",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_aov02",
+        "value": 5858.89,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "AverageOrder2002",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_aov03",
+        "value": 3511.04,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "AverageOrder2003",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r1_aovpct",
+        "value": -40.07,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "AverageOrderChangePct",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_rank",
+        "value": 2,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "AbsChangeRank",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_name",
+        "value": "United Kingdom",
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "Name",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_orders02",
+        "value": 304,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "Orders2002",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_orders03",
+        "value": 1360,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "Orders2003",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_orderpct",
+        "value": "347.37",
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "OrderCountChangePct",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_sub02",
+        "value": 1653761.75,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "SubTotal2002",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_sub03",
+        "value": 4011201.27,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "SubTotal2003",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_subdelta",
+        "value": 2357439.52,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "SubTotalDifference",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_subpct",
+        "value": 142.55,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "SubTotalChangePct",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_aov02",
+        "value": 5440.01,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "AverageOrder2002",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_aov03",
+        "value": 2949.41,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "AverageOrder2003",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r2_aovpct",
+        "value": -45.78,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "AverageOrderChangePct",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_rank",
+        "value": 3,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "AbsChangeRank",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_name",
+        "value": "Germany",
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "Name",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_orders02",
+        "value": 234,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "Orders2002",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_orders03",
+        "value": 1075,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "Orders2003",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_orderpct",
+        "value": "359.40",
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "OrderCountChangePct",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_sub02",
+        "value": 523412.41,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "SubTotal2002",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_sub03",
+        "value": 2596217.73,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "SubTotal2003",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_subdelta",
+        "value": 2072805.32,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "SubTotalDifference",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_subpct",
+        "value": 396.02,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "SubTotalChangePct",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_aov02",
+        "value": 2236.81,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "AverageOrder2002",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_aov03",
+        "value": 2415.09,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "AverageOrder2003",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "r3_aovpct",
+        "value": 7.97,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "AverageOrderChangePct",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c1_vol",
+        "value": 5009350.48,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "OrderVolumeContribution",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c1_aov",
+        "value": -638616.09,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "AverageOrderContribution",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c1_int",
+        "value": -2007414.55,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "InteractionContribution",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c1_round",
+        "value": -0.01,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "RoundingAdjustment",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c1_net",
+        "value": 2363319.84,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 0,
+        "column": "DisplayedContributionSum",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c2_vol",
+        "value": 5744646.09,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "OrderVolumeContribution",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c2_aov",
+        "value": -757140.29,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "AverageOrderContribution",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c2_int",
+        "value": -2630066.28,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "InteractionContribution",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c2_round",
+        "value": 0,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "RoundingAdjustment",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c2_net",
+        "value": 2357439.52,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 1,
+        "column": "DisplayedContributionSum",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c3_vol",
+        "value": 1881153.16,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "OrderVolumeContribution",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c3_aov",
+        "value": 41717.77,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "AverageOrderContribution",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c3_int",
+        "value": 149934.39,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "InteractionContribution",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c3_round",
+        "value": 0.01,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "RoundingAdjustment",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "c3_net",
+        "value": 2072805.32,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": 2,
+        "column": "DisplayedContributionSum",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "dl_region_month_rows",
+        "value": 120,
+        "resultId": "2787d603720b8cef2060dc4aabb1529c",
+        "row": null,
+        "column": "@rowCount",
+        "sha256": "9baa5e7b74d57f75f47d40fe806256729d9b379e244c41e17085393e854bdaae",
+        "referenceKind": "metadata",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fd-03a6-7951-a8af-7066c837ebbf",
+            "turnId": "01a186fd-0ebc-74c1-b435-b0128f9c43b8",
+            "retrievedAt": "2026-10-29T09:28:57.131708+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "all_regions",
+        "value": 10,
+        "resultId": "39bfa9bf662cc9df5d39e783ca30ee81",
+        "row": 0,
+        "column": "region_count",
+        "sha256": "48b0391964f8e846fb7abea03a604c3fc919016e1b173ca5d73b159df7b8bcf1",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "dl_region_year_rows",
+        "value": 10,
+        "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+        "row": null,
+        "column": "@rowCount",
+        "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab",
+        "referenceKind": "metadata",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "dl_top3_rows",
+        "value": 3,
+        "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+        "row": null,
+        "column": "@rowCount",
+        "sha256": "8811714fe058e63bab0289fec2ef22bad99db11d8f1ebd52c262270f57293dfc",
+        "referenceKind": "metadata",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "coverage_min_month",
+        "value": 1,
+        "resultId": "3b0ce6068ef7fa384982963fa1aadb3f",
+        "row": 0,
+        "column": "min_month",
+        "sha256": "a0b1dc94a6c7a637f262396b777642f240f8becce3352e353264caebec33b095",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "coverage_max_month",
+        "value": 12,
+        "resultId": "3b0ce6068ef7fa384982963fa1aadb3f",
+        "row": 0,
+        "column": "max_month",
+        "sha256": "a0b1dc94a6c7a637f262396b777642f240f8becce3352e353264caebec33b095",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "monthly_region_row_count",
+        "value": 120,
+        "resultId": "2787d603720b8cef2060dc4aabb1529c",
+        "row": null,
+        "column": "@rowCount",
+        "sha256": "9baa5e7b74d57f75f47d40fe806256729d9b379e244c41e17085393e854bdaae",
+        "referenceKind": "metadata",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fd-03a6-7951-a8af-7066c837ebbf",
+            "turnId": "01a186fd-0ebc-74c1-b435-b0128f9c43b8",
+            "retrievedAt": "2026-10-29T09:28:57.131708+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "months_per_region_min",
+        "value": 12,
+        "resultId": "da676cda418213c3b0fab4856c60003d",
+        "row": 0,
+        "column": "min_months_per_territory",
+        "sha256": "dabf27eaa656404371c7cb2177676e64d1d0f604a93817e849f63ce18248d52e",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fd-03a6-7951-a8af-7066c837ebbf",
+            "turnId": "01a186fd-0ebc-74c1-b435-b0128f9c43b8",
+            "retrievedAt": "2026-10-29T09:28:57.131708+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "months_per_region_max",
+        "value": 12,
+        "resultId": "da676cda418213c3b0fab4856c60003d",
+        "row": 0,
+        "column": "max_months_per_territory",
+        "sha256": "dabf27eaa656404371c7cb2177676e64d1d0f604a93817e849f63ce18248d52e",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fd-03a6-7951-a8af-7066c837ebbf",
+            "turnId": "01a186fd-0ebc-74c1-b435-b0128f9c43b8",
+            "retrievedAt": "2026-10-29T09:28:57.131708+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "max_display_residual",
+        "value": 0,
+        "resultId": "39bfa9bf662cc9df5d39e783ca30ee81",
+        "row": 0,
+        "column": "max_display_residual",
+        "sha256": "48b0391964f8e846fb7abea03a604c3fc919016e1b173ca5d73b159df7b8bcf1",
+        "referenceKind": "field",
+        "sourceKind": "python",
+        "sourceName": "本地快照 SQL 计算",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+            "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+            "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "status_value",
+        "value": 5,
+        "resultId": "30836edfc58f10ecf14a849c941b4876",
+        "row": 0,
+        "column": "Status",
+        "sha256": "57a7bbb577f71ff0e6998d9cf6a994c75b003ce3ef311c1721735e7895a944e0",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:21.604099+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      },
+      {
+        "name": "status_orders",
+        "value": 16230,
+        "resultId": "30836edfc58f10ecf14a849c941b4876",
+        "row": 0,
+        "column": "order_count",
+        "sha256": "57a7bbb577f71ff0e6998d9cf6a994c75b003ce3ef311c1721735e7895a944e0",
+        "referenceKind": "field",
+        "sourceKind": "database",
+        "sourceName": "AdventureWorks 双会话体验（独立只读）",
+        "acquisition": [
+          {
+            "kind": "database",
+            "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+            "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+            "retrievedAt": "2026-10-29T09:28:21.604099+00:00",
+            "connectionId": "9f0e887b483dd2f73f189590"
+          }
+        ]
+      }
+    ],
+    "sources": {
+      "6e85b2b6d68af5c9ba66fe6aeb41d091": {
+        "query": "SELECT SUM(order_count_2002) AS orders_2002, SUM(order_count_2003) AS orders_2003, ROUND(SUM(subtotal_2002), 2) AS subtotal_2002, ROUND(SUM(subtotal_2003), 2) AS subtotal_2003, ROUND(SUM(subtotal_2003) - SUM(subtotal_2002), 2) AS subtotal_difference, ROUND((SUM(subtotal_2003) - SUM(subtotal_2002)) / SUM(subtotal_2002) * 100, 2) AS subtotal_change_pct, ROUND(SUM(subtotal_2002) / SUM(order_count_2002), 2) AS average_order_2002, ROUND(SUM(subtotal_2003) / SUM(order_count_2003), 2) AS average_order_2003, SUM(CASE WHEN order_count_abs_change > 0 THEN 1 ELSE 0 END) AS months_order_growth, SUM(CASE WHEN subtotal_abs_change > 0 THEN 1 ELSE 0 END) AS months_subtotal_growth, SUM(CASE WHEN avg_order_value_abs_change > 0 THEN 1 ELSE 0 END) AS months_average_order_growth, (SELECT month FROM result ORDER BY subtotal_abs_change DESC LIMIT 1) AS max_subtotal_change_month, (SELECT ROUND(subtotal_abs_change, 2) FROM result ORDER BY subtotal_abs_change DESC LIMIT 1) AS max_subtotal_abs_change FROM result",
+        "pythonCode": "# Python Snapshots.analyze executes this read-only DuckDB query\nSELECT SUM(order_count_2002) AS orders_2002, SUM(order_count_2003) AS orders_2003, ROUND(SUM(subtotal_2002), 2) AS subtotal_2002, ROUND(SUM(subtotal_2003), 2) AS subtotal_2003, ROUND(SUM(subtotal_2003) - SUM(subtotal_2002), 2) AS subtotal_difference, ROUND((SUM(subtotal_2003) - SUM(subtotal_2002)) / SUM(subtotal_2002) * 100, 2) AS subtotal_change_pct, ROUND(SUM(subtotal_2002) / SUM(order_count_2002), 2) AS average_order_2002, ROUND(SUM(subtotal_2003) / SUM(order_count_2003), 2) AS average_order_2003, SUM(CASE WHEN order_count_abs_change > 0 THEN 1 ELSE 0 END) AS months_order_growth, SUM(CASE WHEN subtotal_abs_change > 0 THEN 1 ELSE 0 END) AS months_subtotal_growth, SUM(CASE WHEN avg_order_value_abs_change > 0 THEN 1 ELSE 0 END) AS months_average_order_growth, (SELECT month FROM result ORDER BY subtotal_abs_change DESC LIMIT 1) AS max_subtotal_change_month, (SELECT ROUND(subtotal_abs_change, 2) FROM result ORDER BY subtotal_abs_change DESC LIMIT 1) AS max_subtotal_abs_change FROM result",
+        "inputSources": [
+          {
+            "kind": "dataset",
+            "resultId": "cc3d63b047c84ac74e015ebdbbd5c7b2",
+            "sha256": "be0b67196a762e5de85811b6fb35077019d070449083a8f8c34fbc48d355c5d1"
+          }
+        ]
+      },
+      "e6618f65e2047f997bc5a56d98549c74": {
+        "query": "SELECT month, order_count_2002, order_count_2003, ROUND(subtotal_2002, 2) AS subtotal_2002, ROUND(subtotal_2003, 2) AS subtotal_2003, ROUND(avg_order_value_2002, 2) AS average_order_2002, ROUND(avg_order_value_2003, 2) AS average_order_2003, order_count_abs_change, ROUND(subtotal_abs_change, 2) AS subtotal_abs_change, ROUND(avg_order_value_abs_change, 2) AS average_order_abs_change, ROUND(order_count_yoy_percent * 100, 2) AS order_count_yoy_pct, ROUND(subtotal_yoy_percent * 100, 2) AS subtotal_yoy_pct, ROUND(avg_order_value_yoy_percent * 100, 2) AS average_order_yoy_pct FROM result ORDER BY month",
+        "pythonCode": "# Python Snapshots.analyze executes this read-only DuckDB query\nSELECT month, order_count_2002, order_count_2003, ROUND(subtotal_2002, 2) AS subtotal_2002, ROUND(subtotal_2003, 2) AS subtotal_2003, ROUND(avg_order_value_2002, 2) AS average_order_2002, ROUND(avg_order_value_2003, 2) AS average_order_2003, order_count_abs_change, ROUND(subtotal_abs_change, 2) AS subtotal_abs_change, ROUND(avg_order_value_abs_change, 2) AS average_order_abs_change, ROUND(order_count_yoy_percent * 100, 2) AS order_count_yoy_pct, ROUND(subtotal_yoy_percent * 100, 2) AS subtotal_yoy_pct, ROUND(avg_order_value_yoy_percent * 100, 2) AS average_order_yoy_pct FROM result ORDER BY month",
+        "inputSources": [
+          {
+            "kind": "dataset",
+            "resultId": "cc3d63b047c84ac74e015ebdbbd5c7b2",
+            "sha256": "be0b67196a762e5de85811b6fb35077019d070449083a8f8c34fbc48d355c5d1"
+          }
+        ]
+      },
+      "575ca822fb6a210b5d340d9ee6e8627d": {
+        "query": "SELECT\n AbsChangeRank, TerritoryID, Name, CountryRegionCode, GroupName,\n Orders2002, SubTotal2002, AverageOrder2002, Orders2003, SubTotal2003, AverageOrder2003,\n OrderCountDifference, OrderCountChangePct, SubTotalDifference, SubTotalChangePct,\n AverageOrderDifference, AverageOrderChangePct,\n CASE WHEN ABS(ROUND(OrderVolumeContribution, 2)) >= ABS(ROUND(AverageOrderContribution, 2)) AND ABS(ROUND(OrderVolumeContribution, 2)) >= ABS(ROUND(InteractionContribution, 2)) THEN ROUND(OrderVolumeContribution, 2) + ROUND(SubTotalDifference, 2) - (ROUND(OrderVolumeContribution, 2) + ROUND(AverageOrderContribution, 2) + ROUND(InteractionContribution, 2)) ELSE ROUND(OrderVolumeContribution, 2) END AS OrderVolumeContribution,\n CASE WHEN ABS(ROUND(AverageOrderContribution, 2)) > ABS(ROUND(OrderVolumeContribution, 2)) AND ABS(ROUND(AverageOrderContribution, 2)) >= ABS(ROUND(InteractionContribution, 2)) THEN ROUND(AverageOrderContribution, 2) + ROUND(SubTotalDifference, 2) - (ROUND(OrderVolumeContribution, 2) + ROUND(AverageOrderContribution, 2) + ROUND(InteractionContribution, 2)) ELSE ROUND(AverageOrderContribution, 2) END AS AverageOrderContribution,\n CASE WHEN ABS(ROUND(InteractionContribution, 2)) > ABS(ROUND(OrderVolumeContribution, 2)) AND ABS(ROUND(InteractionContribution, 2)) > ABS(ROUND(AverageOrderContribution, 2)) THEN ROUND(InteractionContribution, 2) + ROUND(SubTotalDifference, 2) - (ROUND(OrderVolumeContribution, 2) + ROUND(AverageOrderContribution, 2) + ROUND(InteractionContribution, 2)) ELSE ROUND(InteractionContribution, 2) END AS InteractionContribution,\n ROUND(SubTotalDifference, 2) - (ROUND(OrderVolumeContribution, 2) + ROUND(AverageOrderContribution, 2) + ROUND(InteractionContribution, 2)) AS RoundingAdjustment,\n ROUND(SubTotalDifference, 2) AS ContributionSum,\n 0.0 AS ContributionResidual\nFROM (SELECT AbsChangeRank, TerritoryID, Name, CountryRegionCode, GroupName, Orders2002, ROUND(SubTotal2002, 2) AS SubTotal2002, ROUND(AverageOrder2002, 2) AS AverageOrder2002, Orders2003, ROUND(SubTotal2003, 2) AS SubTotal2003, ROUND(AverageOrder2003, 2) AS AverageOrder2003, OrderCountDifference, ROUND(OrderCountChangePct, 2) AS OrderCountChangePct, ROUND(SubTotalDifference, 2) AS SubTotalDifference, ROUND(SubTotalChangePct, 2) AS SubTotalChangePct, ROUND(AverageOrderDifference, 2) AS AverageOrderDifference, ROUND(AverageOrderChangePct, 2) AS AverageOrderChangePct, OrderVolumeContribution, AverageOrderContribution, InteractionContribution FROM result) x\nORDER BY AbsChangeRank",
+        "pythonCode": "# Python Snapshots.analyze executes this read-only DuckDB query\nSELECT\n AbsChangeRank, TerritoryID, Name, CountryRegionCode, GroupName,\n Orders2002, SubTotal2002, AverageOrder2002, Orders2003, SubTotal2003, AverageOrder2003,\n OrderCountDifference, OrderCountChangePct, SubTotalDifference, SubTotalChangePct,\n AverageOrderDifference, AverageOrderChangePct,\n CASE WHEN ABS(ROUND(OrderVolumeContribution, 2)) >= ABS(ROUND(AverageOrderContribution, 2)) AND ABS(ROUND(OrderVolumeContribution, 2)) >= ABS(ROUND(InteractionContribution, 2)) THEN ROUND(OrderVolumeContribution, 2) + ROUND(SubTotalDifference, 2) - (ROUND(OrderVolumeContribution, 2) + ROUND(AverageOrderContribution, 2) + ROUND(InteractionContribution, 2)) ELSE ROUND(OrderVolumeContribution, 2) END AS OrderVolumeContribution,\n CASE WHEN ABS(ROUND(AverageOrderContribution, 2)) > ABS(ROUND(OrderVolumeContribution, 2)) AND ABS(ROUND(AverageOrderContribution, 2)) >= ABS(ROUND(InteractionContribution, 2)) THEN ROUND(AverageOrderContribution, 2) + ROUND(SubTotalDifference, 2) - (ROUND(OrderVolumeContribution, 2) + ROUND(AverageOrderContribution, 2) + ROUND(InteractionContribution, 2)) ELSE ROUND(AverageOrderContribution, 2) END AS AverageOrderContribution,\n CASE WHEN ABS(ROUND(InteractionContribution, 2)) > ABS(ROUND(OrderVolumeContribution, 2)) AND ABS(ROUND(InteractionContribution, 2)) > ABS(ROUND(AverageOrderContribution, 2)) THEN ROUND(InteractionContribution, 2) + ROUND(SubTotalDifference, 2) - (ROUND(OrderVolumeContribution, 2) + ROUND(AverageOrderContribution, 2) + ROUND(InteractionContribution, 2)) ELSE ROUND(InteractionContribution, 2) END AS InteractionContribution,\n ROUND(SubTotalDifference, 2) - (ROUND(OrderVolumeContribution, 2) + ROUND(AverageOrderContribution, 2) + ROUND(InteractionContribution, 2)) AS RoundingAdjustment,\n ROUND(SubTotalDifference, 2) AS ContributionSum,\n 0.0 AS ContributionResidual\nFROM (SELECT AbsChangeRank, TerritoryID, Name, CountryRegionCode, GroupName, Orders2002, ROUND(SubTotal2002, 2) AS SubTotal2002, ROUND(AverageOrder2002, 2) AS AverageOrder2002, Orders2003, ROUND(SubTotal2003, 2) AS SubTotal2003, ROUND(AverageOrder2003, 2) AS AverageOrder2003, OrderCountDifference, ROUND(OrderCountChangePct, 2) AS OrderCountChangePct, ROUND(SubTotalDifference, 2) AS SubTotalDifference, ROUND(SubTotalChangePct, 2) AS SubTotalChangePct, ROUND(AverageOrderDifference, 2) AS AverageOrderDifference, ROUND(AverageOrderChangePct, 2) AS AverageOrderChangePct, OrderVolumeContribution, AverageOrderContribution, InteractionContribution FROM result) x\nORDER BY AbsChangeRank",
+        "inputSources": [
+          {
+            "kind": "dataset",
+            "resultId": "dca50c23380fae5d8c5eb0a5a9530f44",
+            "sha256": "79c08b774f07fb1d4ad333e49d8d85a5d770dc18ba6df8854a84c812d18b96ff"
+          }
+        ]
+      },
+      "39bfa9bf662cc9df5d39e783ca30ee81": {
+        "query": "SELECT COUNT(*) AS region_count, MIN(AbsChangeRank) AS min_rank, MAX(AbsChangeRank) AS max_rank, SUM(Orders2002) AS orders_2002, SUM(Orders2003) AS orders_2003, ROUND(SUM(SubTotal2002), 2) AS subtotal_2002, ROUND(SUM(SubTotal2003), 2) AS subtotal_2003, SUM(CASE WHEN SubTotalDifference < 0 THEN 1 ELSE 0 END) AS negative_change_regions, ROUND(MAX(ABS(OrderVolumeContribution + AverageOrderContribution + InteractionContribution - SubTotalDifference)), 2) AS max_display_residual, MAX(CASE WHEN AbsChangeRank = 1 THEN Name END) AS rank1_name, MAX(CASE WHEN AbsChangeRank = 2 THEN Name END) AS rank2_name, MAX(CASE WHEN AbsChangeRank = 3 THEN Name END) AS rank3_name, MAX(CASE WHEN AbsChangeRank = 3 THEN ABS(SubTotalDifference) END) > MAX(CASE WHEN AbsChangeRank = 4 THEN ABS(SubTotalDifference) END) AS top3_boundary_valid FROM result",
+        "pythonCode": "# Python Snapshots.analyze executes this read-only DuckDB query\nSELECT COUNT(*) AS region_count, MIN(AbsChangeRank) AS min_rank, MAX(AbsChangeRank) AS max_rank, SUM(Orders2002) AS orders_2002, SUM(Orders2003) AS orders_2003, ROUND(SUM(SubTotal2002), 2) AS subtotal_2002, ROUND(SUM(SubTotal2003), 2) AS subtotal_2003, SUM(CASE WHEN SubTotalDifference < 0 THEN 1 ELSE 0 END) AS negative_change_regions, ROUND(MAX(ABS(OrderVolumeContribution + AverageOrderContribution + InteractionContribution - SubTotalDifference)), 2) AS max_display_residual, MAX(CASE WHEN AbsChangeRank = 1 THEN Name END) AS rank1_name, MAX(CASE WHEN AbsChangeRank = 2 THEN Name END) AS rank2_name, MAX(CASE WHEN AbsChangeRank = 3 THEN Name END) AS rank3_name, MAX(CASE WHEN AbsChangeRank = 3 THEN ABS(SubTotalDifference) END) > MAX(CASE WHEN AbsChangeRank = 4 THEN ABS(SubTotalDifference) END) AS top3_boundary_valid FROM result",
+        "inputSources": [
+          {
+            "kind": "dataset",
+            "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+            "sha256": "a879d7768c1dd45282a3378244448f6e0d555de813ec0742e45128a4e714bfab"
+          }
+        ]
+      },
+      "d3e9a6f2655185c586cd99b5bfa73e7c": {
+        "query": "SELECT AbsChangeRank, TerritoryID, Name, CountryRegionCode, GroupName, Orders2002, Orders2003, OrderCountDifference, OrderCountChangePct, SubTotal2002, SubTotal2003, SubTotalDifference, SubTotalChangePct, AverageOrder2002, AverageOrder2003, AverageOrderDifference, AverageOrderChangePct, ROUND(OrderVolumeContribution, 2) AS OrderVolumeContribution, ROUND(AverageOrderContribution, 2) AS AverageOrderContribution, ROUND(InteractionContribution, 2) AS InteractionContribution, ROUND(RoundingAdjustment, 2) AS RoundingAdjustment, ROUND(DisplayedContributionSum, 2) AS DisplayedContributionSum FROM result ORDER BY AbsChangeRank",
+        "pythonCode": "# Python Snapshots.analyze executes this read-only DuckDB query\nSELECT AbsChangeRank, TerritoryID, Name, CountryRegionCode, GroupName, Orders2002, Orders2003, OrderCountDifference, OrderCountChangePct, SubTotal2002, SubTotal2003, SubTotalDifference, SubTotalChangePct, AverageOrder2002, AverageOrder2003, AverageOrderDifference, AverageOrderChangePct, ROUND(OrderVolumeContribution, 2) AS OrderVolumeContribution, ROUND(AverageOrderContribution, 2) AS AverageOrderContribution, ROUND(InteractionContribution, 2) AS InteractionContribution, ROUND(RoundingAdjustment, 2) AS RoundingAdjustment, ROUND(DisplayedContributionSum, 2) AS DisplayedContributionSum FROM result ORDER BY AbsChangeRank",
+        "inputSources": [
+          {
+            "kind": "dataset",
+            "resultId": "2064ca27c3d618bbcf25bdccbe687fbc",
+            "sha256": "577fe3ebae7967882ff36f7676f70af140c8072c2c587bd11c0f8711466d7d88"
+          }
+        ]
+      },
+      "2787d603720b8cef2060dc4aabb1529c": {
+        "query": "SELECT TerritoryID, Name, CountryRegionCode, GroupName, MonthNum AS month, Orders2002, ROUND(SubTotal2002, 2) AS SubTotal2002, ROUND(AverageOrder2002, 2) AS AverageOrder2002, Orders2003, ROUND(SubTotal2003, 2) AS SubTotal2003, ROUND(AverageOrder2003, 2) AS AverageOrder2003, OrderCountDifference, ROUND(OrderCountChangePct, 2) AS OrderCountChangePct, ROUND(SubTotalDifference, 2) AS SubTotalDifference, ROUND(SubTotalChangePct, 2) AS SubTotalChangePct, ROUND(AverageOrderDifference, 2) AS AverageOrderDifference, ROUND(AverageOrderChangePct, 2) AS AverageOrderChangePct FROM result ORDER BY TerritoryID, month",
+        "pythonCode": "# Python Snapshots.analyze executes this read-only DuckDB query\nSELECT TerritoryID, Name, CountryRegionCode, GroupName, MonthNum AS month, Orders2002, ROUND(SubTotal2002, 2) AS SubTotal2002, ROUND(AverageOrder2002, 2) AS AverageOrder2002, Orders2003, ROUND(SubTotal2003, 2) AS SubTotal2003, ROUND(AverageOrder2003, 2) AS AverageOrder2003, OrderCountDifference, ROUND(OrderCountChangePct, 2) AS OrderCountChangePct, ROUND(SubTotalDifference, 2) AS SubTotalDifference, ROUND(SubTotalChangePct, 2) AS SubTotalChangePct, ROUND(AverageOrderDifference, 2) AS AverageOrderDifference, ROUND(AverageOrderChangePct, 2) AS AverageOrderChangePct FROM result ORDER BY TerritoryID, month",
+        "inputSources": [
+          {
+            "kind": "dataset",
+            "resultId": "87a336efb57976727efc3d992f1930e7",
+            "sha256": "0b5a00b09da0507bf8eeb9250b46d5811302ddf46f3f8fa1c8832789e47b2ed4"
+          }
+        ]
+      },
+      "3b0ce6068ef7fa384982963fa1aadb3f": {
+        "query": "SELECT COUNT(*) AS row_count, MIN(month) AS min_month, MAX(month) AS max_month, SUM(order_count_2002) AS orders_2002, SUM(order_count_2003) AS orders_2003, ROUND(SUM(subtotal_2002), 2) AS subtotal_2002, ROUND(SUM(subtotal_2003), 2) AS subtotal_2003, SUM(CASE WHEN subtotal_abs_change > 0 THEN 1 ELSE 0 END) AS months_subtotal_growth, SUM(CASE WHEN average_order_abs_change > 0 THEN 1 ELSE 0 END) AS months_average_order_growth FROM result",
+        "pythonCode": "# Python Snapshots.analyze executes this read-only DuckDB query\nSELECT COUNT(*) AS row_count, MIN(month) AS min_month, MAX(month) AS max_month, SUM(order_count_2002) AS orders_2002, SUM(order_count_2003) AS orders_2003, ROUND(SUM(subtotal_2002), 2) AS subtotal_2002, ROUND(SUM(subtotal_2003), 2) AS subtotal_2003, SUM(CASE WHEN subtotal_abs_change > 0 THEN 1 ELSE 0 END) AS months_subtotal_growth, SUM(CASE WHEN average_order_abs_change > 0 THEN 1 ELSE 0 END) AS months_average_order_growth FROM result",
+        "inputSources": [
+          {
+            "kind": "dataset",
+            "resultId": "e6618f65e2047f997bc5a56d98549c74",
+            "sha256": "322d8d5fe935880fb3b1db582811829ecbf4e3d892d0f539f235b3dff641a1e5"
+          }
+        ]
+      },
+      "da676cda418213c3b0fab4856c60003d": {
+        "query": "SELECT COUNT(*) AS row_count, COUNT(DISTINCT TerritoryID) AS territory_count, MIN(min_month) AS min_month, MAX(max_month) AS max_month, MIN(rows_per_territory) AS min_rows_per_territory, MAX(rows_per_territory) AS max_rows_per_territory, MIN(month_count) AS min_months_per_territory, MAX(month_count) AS max_months_per_territory FROM (SELECT TerritoryID, COUNT(*) AS rows_per_territory, COUNT(DISTINCT month) AS month_count, MIN(month) AS min_month, MAX(month) AS max_month FROM result GROUP BY TerritoryID) territory_checks",
+        "pythonCode": "# Python Snapshots.analyze executes this read-only DuckDB query\nSELECT COUNT(*) AS row_count, COUNT(DISTINCT TerritoryID) AS territory_count, MIN(min_month) AS min_month, MAX(max_month) AS max_month, MIN(rows_per_territory) AS min_rows_per_territory, MAX(rows_per_territory) AS max_rows_per_territory, MIN(month_count) AS min_months_per_territory, MAX(month_count) AS max_months_per_territory FROM (SELECT TerritoryID, COUNT(*) AS rows_per_territory, COUNT(DISTINCT month) AS month_count, MIN(month) AS min_month, MAX(month) AS max_month FROM result GROUP BY TerritoryID) territory_checks",
+        "inputSources": [
+          {
+            "kind": "dataset",
+            "resultId": "2787d603720b8cef2060dc4aabb1529c",
+            "sha256": "9baa5e7b74d57f75f47d40fe806256729d9b379e244c41e17085393e854bdaae"
+          }
+        ]
+      },
+      "30836edfc58f10ecf14a849c941b4876": {
+        "query": "SELECT Status, COUNT(DISTINCT SalesOrderID) AS order_count FROM salesorderheader WHERE OrderDate >= '2002-01-01' AND OrderDate < '2004-01-01' GROUP BY Status ORDER BY Status",
+        "pythonCode": null,
+        "inputSources": []
+      }
+    },
+    "publicationChecks": {
+      "version": "analysis-publication-v2",
+      "checkedAt": "2026-10-29T09:35:51.179460+00:00",
+      "freshness": [
+        {
+          "kind": "database",
+          "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+          "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+          "retrievedAt": "2026-10-29T09:28:26.479941+00:00",
+          "connectionId": "9f0e887b483dd2f73f189590",
+          "sourceName": "AdventureWorks 双会话体验（独立只读）",
+          "maxAgeMinutes": 20,
+          "status": "withinLimit"
+        },
+        {
+          "kind": "database",
+          "threadId": "01a186f9-639f-7240-b83d-cfed34b4da8f",
+          "turnId": "01a186fc-9812-78c2-9b1c-2e1970315919",
+          "retrievedAt": "2026-10-29T09:32:12.487359+00:00",
+          "connectionId": "9f0e887b483dd2f73f189590",
+          "sourceName": "AdventureWorks 双会话体验（独立只读）",
+          "maxAgeMinutes": 20,
+          "status": "withinLimit"
+        },
+        {
+          "kind": "database",
+          "threadId": "01a186fd-03a6-7951-a8af-7066c837ebbf",
+          "turnId": "01a186fd-0ebc-74c1-b435-b0128f9c43b8",
+          "retrievedAt": "2026-10-29T09:28:57.131708+00:00",
+          "connectionId": "9f0e887b483dd2f73f189590",
+          "sourceName": "AdventureWorks 双会话体验（独立只读）",
+          "maxAgeMinutes": 20,
+          "status": "withinLimit"
+        },
+        {
+          "kind": "database",
+          "threadId": "01a186fc-f593-7c22-9141-19cc01b7d7b4",
+          "turnId": "01a186fc-f640-7481-a5ed-efdab45aca12",
+          "retrievedAt": "2026-10-29T09:28:21.604099+00:00",
+          "connectionId": "9f0e887b483dd2f73f189590",
+          "sourceName": "AdventureWorks 双会话体验（独立只读）",
+          "maxAgeMinutes": 20,
+          "status": "withinLimit"
+        }
+      ],
+      "scope": "execution-record-match-only",
+      "note": "读取时间不等于源数据更新时间；未设置时效规则的来源不自动判定为最新。",
+      "knowledge": [
+        {
+          "sourceId": "9f0e887b483dd2f73f189590",
+          "token": "b9129caaf4621fdaf3973c2c50abb2a5a93f20da58e80c9cb40a3670cc0a6597",
+          "sourceVersion": 1,
+          "businessRevision": 2,
+          "businessStale": false,
+          "knowledgeRevision": 3,
+          "schemaHash": "7c401791866a9f444fee2befd5902715229b130f19848d57ab71cb4e956f3952",
+          "conflicts": 0,
+          "requiresContext": true
+        }
+      ],
+      "metrics": [],
+      "files": []
+    }
+  },
+  "results": [
+    {
+      "id": "c3fbdd8a0378c9d30fd164acded79ba1",
+      "name": "查询结果",
+      "rowCount": 38
+    },
+    {
+      "id": "9dc7f641bbaa3274778631d2ee15fd8f",
+      "name": "查询结果",
+      "rowCount": 1
+    },
+    {
+      "id": "b6fd2e5ab744dc3731a20f471c6fcf43",
+      "name": "查询结果",
+      "rowCount": 10
+    },
+    {
+      "id": "cc3d63b047c84ac74e015ebdbbd5c7b2",
+      "name": "查询结果",
+      "rowCount": 12
+    },
+    {
+      "id": "76c4e703235b4ff5c66fd68b7d803a47",
+      "name": "查询结果",
+      "rowCount": 2
+    },
+    {
+      "id": "55af9ce60e4799d09a6617fc9549b0eb",
+      "name": "查询结果",
+      "rowCount": 2
+    },
+    {
+      "id": "2e625a812a1a05d6248da2a0ee6ea9ae",
+      "name": "查询结果",
+      "rowCount": 3
+    },
+    {
+      "id": "31d26e7367fa8fdbb520ee573d6e59ec",
+      "name": "查询结果",
+      "rowCount": 10
+    },
+    {
+      "id": "23f4798b256d6189f122a741c04bed15",
+      "name": "查询结果",
+      "rowCount": 10
+    },
+    {
+      "id": "87a336efb57976727efc3d992f1930e7",
+      "name": "查询结果",
+      "rowCount": 120
+    },
+    {
+      "id": "0457e9c551a6d3e480906b6b8090606e",
+      "name": "本地快照 SQL 计算",
+      "rowCount": 1
+    },
+    {
+      "id": "dca50c23380fae5d8c5eb0a5a9530f44",
+      "name": "查询结果",
+      "rowCount": 10
+    },
+    {
+      "id": "e6618f65e2047f997bc5a56d98549c74",
+      "name": "查询结果",
+      "rowCount": 12
+    },
+    {
+      "id": "0002f49589feca750f3b0496c289eb25",
+      "name": "查询结果",
+      "rowCount": 10
+    },
+    {
+      "id": "2787d603720b8cef2060dc4aabb1529c",
+      "name": "本地快照 SQL 计算",
+      "rowCount": 120
+    },
+    {
+      "id": "700f53c6a4902879f261d3b65925b98e",
+      "name": "查询结果",
+      "rowCount": 3
+    },
+    {
+      "id": "75737b30f27c02f393ca6feb2a4e7ea1",
+      "name": "查询结果",
+      "rowCount": 12
+    },
+    {
+      "id": "6e85b2b6d68af5c9ba66fe6aeb41d091",
+      "name": "查询结果",
+      "rowCount": 1
+    },
+    {
+      "id": "30836edfc58f10ecf14a849c941b4876",
+      "name": "查询结果",
+      "rowCount": 1
+    },
+    {
+      "id": "03961a90bbffcca672117b0295bf5a59",
+      "name": "查询结果",
+      "rowCount": 2
+    },
+    {
+      "id": "9bf812eb313b4e893fbc7d9b846ee188",
+      "name": "查询结果",
+      "rowCount": 20
+    },
+    {
+      "id": "575ca822fb6a210b5d340d9ee6e8627d",
+      "name": "查询结果",
+      "rowCount": 10
+    },
+    {
+      "id": "2064ca27c3d618bbcf25bdccbe687fbc",
+      "name": "查询结果",
+      "rowCount": 3
+    },
+    {
+      "id": "d3e9a6f2655185c586cd99b5bfa73e7c",
+      "name": "查询结果",
+      "rowCount": 3
+    },
+    {
+      "id": "3b0ce6068ef7fa384982963fa1aadb3f",
+      "name": "查询结果",
+      "rowCount": 1
+    },
+    {
+      "id": "39bfa9bf662cc9df5d39e783ca30ee81",
+      "name": "查询结果",
+      "rowCount": 1
+    },
+    {
+      "id": "897d6e39676e146874fe905068e7711f",
+      "name": "查询结果",
+      "rowCount": 1
+    },
+    {
+      "id": "da676cda418213c3b0fab4856c60003d",
+      "name": "查询结果",
+      "rowCount": 1
+    }
+  ],
+  "charts": [
+    {
+      "version": 2,
+      "chartId": "589d4f127646f2ba53a7067458027a99",
+      "resultId": "0002f49589feca750f3b0496c289eb25",
+      "title": "10 个销售区域 SubTotal 年度对比",
+      "rowCount": 10,
+      "complete": true
+    },
+    {
+      "version": 2,
+      "chartId": "e1f9aaace12cad87a04438bfc99def8b",
+      "resultId": "e6618f65e2047f997bc5a56d98549c74",
+      "title": "2002 与 2003 月度 SubTotal 趋势",
+      "rowCount": 12,
+      "complete": true
+    },
+    {
+      "version": 2,
+      "chartId": "0fb5dca4c22f19f76ea959fdd52a19e8",
+      "resultId": "e6618f65e2047f997bc5a56d98549c74",
+      "title": "2002 与 2003 月度订单数趋势",
+      "rowCount": 12,
+      "complete": true
+    },
+    {
+      "version": 2,
+      "chartId": "d13955eadae62f4782ed93c020989e94",
+      "resultId": "e6618f65e2047f997bc5a56d98549c74",
+      "title": "2002 与 2003 月度每单金额趋势",
+      "rowCount": 12,
+      "complete": true
+    },
+    {
+      "version": 2,
+      "chartId": "066e8ac28f4a0ceffbf4cb9a9a7a6fd7",
+      "resultId": "700f53c6a4902879f261d3b65925b98e",
+      "title": "前三区域 SubTotal 同比贡献分解",
+      "rowCount": 3,
+      "complete": true
+    },
+    {
+      "version": 2,
+      "chartId": "737b73ee6340389d26705681afde9c67",
+      "resultId": "75737b30f27c02f393ca6feb2a4e7ea1",
+      "title": "前三区域月度 SubTotal 趋势",
+      "rowCount": 12,
+      "complete": true
+    },
+    {
+      "version": 2,
+      "chartId": "d0cacf3ce3acdef4c189201e901fb145",
+      "resultId": "d3e9a6f2655185c586cd99b5bfa73e7c",
+      "title": "前三区域 SubTotal 同比贡献分解（整分展示）",
+      "rowCount": 3,
+      "complete": true
+    },
+    {
+      "version": 2,
+      "chartId": "7a7f370f7e5a3fd4de74d266f2702b29",
+      "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+      "title": "10 个销售区域每单金额年度对比",
+      "rowCount": 10,
+      "complete": true
+    },
+    {
+      "version": 2,
+      "chartId": "7f1c056a24e1346600fbea88dca9dc94",
+      "resultId": "575ca822fb6a210b5d340d9ee6e8627d",
+      "title": "10 个销售区域订单数年度对比",
+      "rowCount": 10,
+      "complete": true
+    }
+  ],
+  "artifactScope": "same-turn-and-explicit-evidence-lineage"
+}

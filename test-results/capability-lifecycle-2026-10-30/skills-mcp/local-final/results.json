@@ -1,0 +1,150 @@
+{
+  "scope": "Actual browser and pinned native MCP lifecycle; fixture explicitly not production service",
+  "name": "lifecycle_1793337196798",
+  "results": [
+    {
+      "label": "添加本地 MCP：原生保存、重载与实际工具发现",
+      "status": "passed",
+      "evidence": {
+        "nativeConfigSaved": true,
+        "toolCount": 1,
+        "runtimeStatus": null,
+        "toolsError": null
+      }
+    },
+    {
+      "label": "编辑实际启动参数并保留高级工具配置",
+      "status": "passed",
+      "evidence": {
+        "advancedSettingPreserved": true,
+        "argumentsUpdated": true,
+        "toolCount": 1,
+        "runtimeStatus": null,
+        "toolsError": null
+      }
+    },
+    {
+      "label": "真实 Flash 在原生回合调用已安装的本地 MCP",
+      "status": "passed",
+      "evidence": {
+        "threadId": "01a18b3a-1677-70a3-ad72-9eb4060eb0ae",
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "actualNativeMcpCalls": 1
+      }
+    },
+    {
+      "label": "停用、刷新持久化、重新启用并恢复原生工具目录",
+      "status": "passed",
+      "evidence": {
+        "disabled": {
+          "toolCount": 0,
+          "runtimeStatus": null,
+          "toolsError": null
+        },
+        "reenabled": {
+          "toolCount": 1,
+          "runtimeStatus": null,
+          "toolsError": null
+        }
+      }
+    },
+    {
+      "label": "编辑冲突保留别人配置且保留未保存输入",
+      "status": "passed",
+      "evidence": {
+        "staleSaveRejected": true,
+        "draftPreserved": true
+      }
+    },
+    {
+      "label": "移除连接通过可见入口调用原生删除，刷新后仍不存在",
+      "status": "passed",
+      "evidence": {
+        "configAbsent": true,
+        "nativeToolsAbsent": true,
+        "afterRefreshAbsent": true
+      }
+    },
+    {
+      "label": "无关配置及模型保持不变，页面无异常",
+      "status": "failed",
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'c5325fc8ba64aa90fe8f27b1e2767966879e83e1b6739178405e8bf8676d7ef8'\n- '401f7c27045447e555bdc85beb50ae9ca952dc471e1aceb1af12097d98a65887'\n",
+      "feedback": ""
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337196798\""
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337196798\".tool_timeout_sec"
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337196798\""
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "turn/start",
+      "threadId": "01a18b3a-1677-70a3-ad72-9eb4060eb0ae"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337196798\".enabled"
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337196798\".enabled"
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337196798\".tool_timeout_sec"
+      ]
+    },
+    {
+      "method": "config/batchWrite",
+      "keys": [
+        "mcp_servers.\"lifecycle_1793337196798\""
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload"
+    }
+  ],
+  "nativeErrors": [],
+  "cleanup": {
+    "ownedConfigurationRemoved": true
+  }
+}

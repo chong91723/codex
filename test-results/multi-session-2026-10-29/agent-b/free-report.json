@@ -1,0 +1,74 @@
+{
+  "agent": "B",
+  "phase": "free",
+  "window": {
+    "startedAt": "2026-10-29T09:33:17.753398+00:00",
+    "deadline": "2026-10-29T09:37:55+00:00",
+    "durationSeconds": 277.246602,
+    "phase": "free",
+    "rule": "Check deadline before each new UI action; do not begin new actions at or after deadline.",
+    "lastExploratoryActionAt": "2026-10-29T09:37:37.245Z",
+    "newActionsStopped": true,
+    "backgroundTasksAtStop": [],
+    "stopRecordedAt": "2026-10-29T09:38:18.001505+00:00",
+    "newActionsStoppedBy": "2026-10-29T09:37:55+00:00"
+  },
+  "model": "deepseek-flash",
+  "coverage": [
+    {
+      "scenario": "Explicit stop scoped to own task",
+      "threadId": "01a18701-c391-77e2-8263-370a7855b618",
+      "submittedAt": "2026-10-29T09:33:20.496Z",
+      "stoppedAt": "2026-10-29T09:33:50.630Z",
+      "observed": "12 tool activities before stop. Final UI interrupted and confirmed no native background terminal commands from current round. A independently confirmed ongoing4/6 and no B stop/message leakage.",
+      "evidence": [
+        "free-02-running-check.png",
+        "free-03-stop-own-task.png",
+        "free-04-stop-result-details.png"
+      ],
+      "AComparisonEvidence": "A/14-b-stop-a-continues (exact suffix in A report)"
+    },
+    {
+      "scenario": "Paused memory enforcement",
+      "threadId": "01a18703-8a16-7363-a863-7bd10f94d23c",
+      "pausedAt": "2026-10-29T09:34:48.639Z",
+      "observed": "UI saved paused=true; new task actual search_analysis_memory failed and model stated paused prevents reading. No database access.",
+      "evidence": [
+        "free-07-memory-paused-state.png",
+        "free-09-memory-paused-task-result.png",
+        "protocol.jsonl"
+      ]
+    },
+    {
+      "scenario": "Memory reenabled and user preference search",
+      "threadId": "01a18704-9de4-7ab0-a903-c149994a3440",
+      "enabledAt": "2026-10-29T09:35:53.333Z",
+      "observed": "UI restored enabled. New task context receives full saved Chinese content, revision1/pausedfalse, but recent totalFiles0. Model search using Chinese preference keywords produces empty matches. Empty query returns only summary/instructions indexes, not immediate note files listed in settings state.",
+      "evidence": [
+        "free-11-memory-enabled-confirm.png",
+        "free-13-memory-read-result.png",
+        "free-15-memory-unfiltered-result.png",
+        "protocol.jsonl"
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "id": "MEMORY-IMMEDIATE-NOTE-SEARCH",
+      "status": "reported to root for mechanism investigation",
+      "observed": "Setting preserves saved Chinese preference and lists memories/extensions/ad_hoc/notes/... plus memories_v2/extensions/ad_hoc/notes/...; actual native search cannot locate Chinese preference keywords. Emptyquery returns2 summary/instructions files, omitting notes. This is an observed retrieval inconsistency, not a business-answer verdict.",
+      "evidence": [
+        "free-13-memory-read-result.png",
+        "free-15-memory-unfiltered-result.png",
+        "protocol.jsonl"
+      ]
+    }
+  ],
+  "nonbugsAndLimits": [
+    "One explore_database failure before B stop and three memory search failures visible in tool activities; not automatically classified as product defects without argument/error inspection.",
+    "No independent calculation adjudicated business output.",
+    "No production load, multi-tenant isolation, write-database or prohibited upload claims.",
+    "No task remains running in B at stop.",
+    "No further exploratory action will be initiated after window stop."
+  ]
+}

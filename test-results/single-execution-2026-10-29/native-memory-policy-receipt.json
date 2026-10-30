@@ -1,0 +1,71 @@
+{
+  "scope": "Pinned native protocol only; no model call, no credentials, explicit injected history fixture",
+  "steps": [
+    {
+      "step": "subscribed warm override",
+      "memoriesEnabled": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "step": "enable",
+      "memoriesEnabled": true,
+      "sameThreadId": true,
+      "sameNativePid": true,
+      "allKnownConnectionsUnsubscribedBeforeResume": true,
+      "passed": true
+    },
+    {
+      "step": "pause",
+      "memoriesEnabled": false,
+      "sameThreadId": true,
+      "sameNativePid": true,
+      "allKnownConnectionsUnsubscribedBeforeResume": true,
+      "passed": true
+    },
+    {
+      "step": "reenable",
+      "memoriesEnabled": true,
+      "sameThreadId": true,
+      "sameNativePid": true,
+      "allKnownConnectionsUnsubscribedBeforeResume": true,
+      "passed": true
+    },
+    {
+      "step": "unregistered subscriber",
+      "rejectedUnappliedPolicy": true,
+      "message": "原生会话的记忆设置尚未实际生效，请确认任务结束后重新打开会话；本次未启动分析。",
+      "cachedPolicyUnchanged": true,
+      "passed": true
+    },
+    {
+      "step": "retry after unregistered subscriber leaves",
+      "memoriesEnabled": false,
+      "sameThreadId": true,
+      "sameNativePid": true,
+      "passed": true
+    },
+    {
+      "step": "unchanged repeat",
+      "nativeRequests": 0,
+      "passed": true
+    }
+  ],
+  "nativeSha256": "3bc8aa3dd336f2f72c9d929cd613271519519aca2c44fcd8def3956287337374",
+  "threadId": "01a18770-db4d-7972-a4b3-ffde72a5d158",
+  "model": "deepseek-flash",
+  "provider": "deepseek",
+  "noTurnStarted": true,
+  "fixturePreserved": true,
+  "featureShape": {
+    "name": "memories",
+    "stage": "stable",
+    "displayName": null,
+    "description": null,
+    "announcement": null,
+    "enabled": false,
+    "defaultEnabled": false
+  },
+  "nativeCallCount": 70,
+  "passed": true
+}

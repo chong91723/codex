@@ -1,0 +1,233 @@
+{
+  "tester": "A",
+  "preparedAtUtc": null,
+  "goAtUtc": "2026-10-29T12:08:29.788Z",
+  "directionStartedAtUtc": "2026-10-29T12:09:26.604Z",
+  "directionFinishedAtUtc": "2026-10-29T12:49:13.137Z",
+  "freeStartedAtUtc": "2026-10-29T12:49:13.159Z",
+  "freeDeadlineUtc": "2026-10-29T12:54:13.159Z",
+  "freeLastOperationAtUtc": "2026-10-29T12:50:56.079Z",
+  "finishedAtUtc": "2026-10-29T12:51:35.123Z",
+  "cases": [
+    {
+      "caseId": "A-01",
+      "status": "observed-pass",
+      "startedAtUtc": "2026-10-29T12:09:54.012Z",
+      "finishedAtUtc": "2026-10-29T12:10:17.373Z",
+      "rootThreadId": null,
+      "turnId": null,
+      "childThreadIds": [],
+      "slotBefore": null,
+      "slotAfter": null,
+      "versionsBeforeAfter": {
+        "sourceVersion": 1,
+        "businessRevision": [
+          0,
+          1
+        ],
+        "knowledgeRevision": [
+          0,
+          1
+        ],
+        "snapshotId": "b2c19d14ecc00d1361cf4f9ab1e1380d"
+      },
+      "actualObservation": "UI测试连接成功；用户点击一键探索job fd0d0f74d98a6be136488dd08a6a80fb，completed 70对象479字段；业务补充savedByUser，实际结构查看并切到第2页。",
+      "evidencePaths": [
+        "wire.jsonl",
+        "screenshots/A-01-explored.png",
+        "screenshots/A-01-structure-page2.png"
+      ],
+      "limitations": []
+    },
+    {
+      "caseId": "A-02",
+      "status": "observed-pass",
+      "startedAtUtc": null,
+      "finishedAtUtc": null,
+      "rootThreadId": "01a18792-f467-7381-ad49-d53194336270",
+      "turnId": "01a18792-f8b6-7be2-bbbd-0151afa5be3f",
+      "childThreadIds": [],
+      "slotBefore": null,
+      "slotAfter": null,
+      "versionsBeforeAfter": {},
+      "actualObservation": "原生plan模式，两轮request_user_input并实际提交；修改分析方案重新生成，UI双确认后以修订正文进入default原生执行。计划已完成等点击时不视为活动等待。",
+      "evidencePaths": [
+        "wire.jsonl",
+        "screenshots/A-02-final-plan.png"
+      ],
+      "limitations": []
+    },
+    {
+      "caseId": "A-03",
+      "status": "observed-pass",
+      "startedAtUtc": null,
+      "finishedAtUtc": null,
+      "rootThreadId": "01a18792-f467-7381-ad49-d53194336270",
+      "turnId": "01a18796-49bc-73c3-af79-b55be56223b4",
+      "childThreadIds": [
+        "01a18796-7b72-7081-b3e6-c5f33278a3f7",
+        "01a187ad-360a-7472-b241-b953081a8f31"
+      ],
+      "slotBefore": null,
+      "slotAfter": null,
+      "versionsBeforeAfter": {},
+      "actualObservation": "原root真实派发两个deepseek-flash原生child，独立schema/check目录审计文件；root真实query→Python→2 ECharts→publish。首次schema child close后触发cleanupFailed机制Bug，保留原始失败；修复加载后同root第二check child完成→closeAgent，真实closedThreadHistory proof，slot idle。",
+      "evidencePaths": [
+        "wire.jsonl",
+        "A-cleanupFailed-public-snapshot.json",
+        "A-report-final-idle-status.json",
+        "A-final-cleanup-status.json"
+      ],
+      "limitations": [
+        "首次Bug未因服务重启算通过；实际第二child关闭链路才作为修复回归。",
+        "check child早期工具入口调查产生多条shell失败，之后恢复到本任务实际MCP结果/文件审计。",
+        "未证明任意shell强制遵守文件所有权，所有权为root明确分配及实际产物路径。"
+      ]
+    },
+    {
+      "caseId": "A-04",
+      "status": "not-covered",
+      "startedAtUtc": null,
+      "finishedAtUtc": null,
+      "rootThreadId": "01a18792-f467-7381-ad49-d53194336270",
+      "turnId": null,
+      "childThreadIds": [],
+      "slotBefore": null,
+      "slotAfter": null,
+      "versionsBeforeAfter": {},
+      "actualObservation": "真实blocking request_user_input期间同tester第2tab普通发送入口受执行占用限制，草稿完整保留；原root可实际提交澄清。",
+      "evidencePaths": [
+        "wire.jsonl",
+        "screenshots/A-04-second-root.png"
+      ],
+      "limitations": [
+        "完整A-04服务端拒绝未单独构造验证，不能用UI禁用替代。"
+      ],
+      "subchecks": {
+        "blockingInputUiAndDraft": "observed-pass",
+        "serverRejectionByActualTurnStart": "not-covered",
+        "otherVisibleExecutionEntries": "not-covered"
+      }
+    },
+    {
+      "caseId": "A-05",
+      "status": "observed-pass",
+      "startedAtUtc": null,
+      "finishedAtUtc": null,
+      "rootThreadId": null,
+      "turnId": null,
+      "childThreadIds": [],
+      "slotBefore": null,
+      "slotAfter": null,
+      "versionsBeforeAfter": {
+        "businessRevision": [
+          1,
+          2
+        ]
+      },
+      "actualObservation": "用户管理页业务补充rev1→2发生在query后。修复后原root用旧类别result做run_python，12:38:32.520真实拒绝业务知识已变化；read_database_context读rev2，重新查询后生成新result及派生，最终publish使用rev2。",
+      "evidencePaths": [
+        "wire.jsonl",
+        "screenshots/A-05-knowledge-revision2.png",
+        "exports/final-report.json"
+      ],
+      "limitations": [
+        "查询中修改未覆盖。"
+      ],
+      "subchecks": {
+        "postQueryBusinessVersionChange": "observed-pass",
+        "oldResultPythonRejection": "observed-pass",
+        "inFlightQueryMutation": "not-covered"
+      }
+    },
+    {
+      "caseId": "A-06",
+      "status": "not-covered",
+      "startedAtUtc": null,
+      "finishedAtUtc": null,
+      "rootThreadId": null,
+      "turnId": null,
+      "childThreadIds": [],
+      "slotBefore": null,
+      "slotAfter": null,
+      "versionsBeforeAfter": {},
+      "actualObservation": "check child后期实际使用import_data_file导入本轮审计资料，但没有受控改写输入文件并触发hash变更验证；没有浏览器上传文档。",
+      "evidencePaths": [],
+      "limitations": [
+        "文件hash受控修改/拒绝未覆盖，不能用知识版本拒绝冒充。"
+      ]
+    },
+    {
+      "caseId": "A-07",
+      "status": "observed-pass",
+      "startedAtUtc": null,
+      "finishedAtUtc": null,
+      "rootThreadId": "01a18792-f467-7381-ad49-d53194336270",
+      "turnId": "01a187aa-d5fb-7972-8a24-775e434c074b",
+      "childThreadIds": [],
+      "slotBefore": null,
+      "slotAfter": null,
+      "versionsBeforeAfter": {},
+      "actualObservation": "原root真实query→Python新result d3134169f35b072016ea2be520b68a94→两张ECharts→publish_answer字段来源verified/referenced-fields。最终CSV、2 PNG、Markdown/HTML/依据JSON真实导出；HTML离线浏览器渲染2张静态图片和来源记录。此前离线DB查询完成后恢复原turn结果/CSV可用且0重复turn，基础门回答未字段关联原始证据另存。",
+      "evidencePaths": [
+        "exports/final-report.md",
+        "exports/final-report.html",
+        "exports/final-report.json",
+        "exports/result-d3134169f35b072016ea2be520b68a94.csv",
+        "exports/2002-2003 产品类别商品净额对比（存储金额原值）.png",
+        "exports/产品类别对总体商品净额同比变化的贡献率.png",
+        "screenshots/A-final-export-html.png",
+        "screenshots/A-07-echarts-visible.png",
+        "timeline.json"
+      ],
+      "limitations": [
+        "字段verified不等于整篇解释、业务真理或因果认证。",
+        "首轮基础门原文未publish字段关联，base-report.json明确rejected，已保留。"
+      ]
+    },
+    {
+      "caseId": "A-08",
+      "status": "observed-pass",
+      "startedAtUtc": null,
+      "finishedAtUtc": null,
+      "rootThreadId": "01a187b3-9458-7771-829a-397d5e30ab13",
+      "turnId": "01a187b3-96a4-7142-833c-462bee569f15",
+      "childThreadIds": [],
+      "slotBefore": null,
+      "slotAfter": null,
+      "versionsBeforeAfter": {},
+      "actualObservation": "单独thread临时标记和限制明确不保存；原生memories.add_ad_hoc_note实际成功{}并memories.read读回，仅含中文/报告开头读取时间与限制偏好；首次filename格式拒绝后模型按工具格式重试。thread/start有generate_memories=false和features/use/dedicated_tools启用。新草稿为空，memory thread经UI改名避免临时标记进入侧栏标题。",
+      "evidencePaths": [
+        "A-08-native-memory-receipts.jsonl",
+        "wire.jsonl",
+        "A-before-free-idle-status.json"
+      ],
+      "limitations": [
+        "A未在新root要求检索偏好/猜临时条件，跨会话实际检索和未知临时标记由B独立验证。",
+        "原生后台历史提取/全局合并时间条件未加速或伪造，未声称本窗口完成全局合并。",
+        "Web活动计数未显示memory专用工具，实际调用用本thread原生rollout过滤function_call/output收据核验。"
+      ]
+    },
+    {
+      "caseId": "A-09",
+      "status": "observed-pass",
+      "startedAtUtc": "2026-10-29T12:49:13.159Z",
+      "finishedAtUtc": "2026-10-29T12:51:35.123Z",
+      "rootThreadId": null,
+      "turnId": null,
+      "childThreadIds": [],
+      "slotBefore": null,
+      "slotAfter": "idle",
+      "versionsBeforeAfter": {},
+      "actualObservation": "自由窗口102.927秒，逐操作deadline guard；检查1024记忆弹窗/历史重命名/原生技能列表，无新模型任务。窗口结束后只清理状态核验和关闭全部测试浏览器。最终idle，无active turns/children/cleanup holds/backgroundCommands/pendingNativeAcks，第二child closedCleanupProof保留。",
+      "evidencePaths": [
+        "free-window.json",
+        "A-final-cleanup-status.json",
+        "screenshots/A-free-memory-1024.png",
+        "timeline.json"
+      ],
+      "limitations": []
+    }
+  ],
+  "freeFinishedAtUtc": "2026-10-29T12:50:56.086Z"
+}
