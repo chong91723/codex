@@ -7,6 +7,9 @@ const pretty = value => JSON.stringify(value, null, 2);
 function configDiff(before,after,prefix=''){const edits=[];const object=value=>value&&typeof value==='object'&&!Array.isArray(value);for(const key of new Set([...Object.keys(before),...Object.keys(after)])){const segment=/^[A-Za-z0-9_-]+$/.test(key)?key:JSON.stringify(key);const path=prefix?prefix+'.'+segment:segment;if(!(key in after)){edits.push({keyPath:path,value:null,mergeStrategy:'replace'});continue;}if(object(before[key])&&object(after[key]))edits.push(...configDiff(before[key],after[key],path));else if(JSON.stringify(before[key])!==JSON.stringify(after[key]))edits.push({keyPath:path,value:after[key],mergeStrategy:'replace'});}return edits;}
 const safeURL = value => { try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : null; } catch { return null; } };
 const state = { ws: null, pending: new Map(), counter: 0, ready: false, view: 'chat', thread: null, threadArchived:false, threadBusy:false, attachmentLoads:0, threadSettings:new Map(), imageCache:new Map(), mcpCache:new Map(), mcpRequests:new Map(), mcpRevision:0, skillGroups:new Set(["common","custom"]), skillQuery:"", runtimeDefaults:null, turns: [], items: new Map(), live: new Map(), activeTurns: new Map(), threads: [], cursor: null, archived: false, attachments: [], events: [], requests: new Map(), models: [], status: null, schema: null, serverSchema: null, currentMethod: null, reconnect: null, selectedCwd: localStorage.getItem('codex.cwd') || '', listGeneration: 0, navigationGeneration:0, threadLoading:false, restoreError:false };
+state.execution=null;state.executionTurns=new Set();state.deferredResumes=new Set();
+state.maintenanceThreadIds=new Set();state.maintenanceSessions=new Map();state.maintenanceRefresh=null;
+state.uploadedSkills=[];state.skillRegistryLoaded=false;state.skillRegistryError=null;state.skillUploadPending=false;
 state.knownThreads=new Map();state.responseSequence=new WeakMap();state.eventSequence=0;state.hydration=null;
 try{state.archived=sessionStorage.getItem('codex.historyArchived')==='1';}catch{}
 state.composers = new Map(); state.composerKey = 'new'; state.finishedTurns = new Set(); state.interrupting = new Set(); state.stopOperations = new Map(); state.turnCommands = new Map();
@@ -17,17 +20,28 @@ function positionToast(){const root=$('#toast'),text=$('.toast-message',root);if
 function composerState(key=state.composerKey) {
   if(!state.composers.has(key)) {
     let text='';try{text=JSON.parse(sessionStorage.getItem('codex.drafts')||'{}')[key]||'';}catch{}
-    state.composers.set(key,{text,attachments:[],loads:0,pending:false,follow:true,scrollTop:null});
+    let skills=[];try{const saved=JSON.parse(sessionStorage.getItem('codex.draftSkills')||'{}')[key];if(Array.isArray(saved))skills=saved.filter(skill=>skill&&typeof skill.name==='string'&&typeof skill.path==='string').map(skill=>({name:skill.name,path:skill.path}));}catch{}
+    state.composers.set(key,{text,skills,attachments:[],loads:0,pending:false,follow:true,scrollTop:null});
+    if(typeof restoreImageAttachments==='function')restoreImageAttachments(key,state.composers.get(key));
   }
   return state.composers.get(key);
 }
 function persistDrafts() {
-  try { const drafts=JSON.parse(sessionStorage.getItem('codex.drafts')||'{}');for(const [key,draft]of state.composers){if(draft.text)drafts[key]=draft.text;else delete drafts[key];}sessionStorage.setItem('codex.drafts',JSON.stringify(drafts)); }
+  try {
+    const drafts=JSON.parse(sessionStorage.getItem('codex.drafts')||'{}');let skills={};
+    try{const saved=JSON.parse(sessionStorage.getItem('codex.draftSkills')||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))skills=saved;}catch{}
+    for(const [key,draft]of state.composers){
+      if(draft.text)drafts[key]=draft.text;else delete drafts[key];
+      if(draft.text&&draft.skills?.length)skills[key]=draft.skills.map(skill=>({name:skill.name,path:skill.path}));else delete skills[key];
+    }
+    sessionStorage.setItem('codex.drafts',JSON.stringify(drafts));sessionStorage.setItem('codex.draftSkills',JSON.stringify(skills));
+  }
   catch { if(!state.draftStorageError){state.draftStorageError=true;toast('浏览器无法保存草稿；当前页面仍保留输入，请在关闭前复制。');} }
 }
 function forgetThreadDraft(threadId){
   state.composers.delete(threadId);
-  try{const drafts=JSON.parse(sessionStorage.getItem('codex.drafts')||'{}');delete drafts[threadId];sessionStorage.setItem('codex.drafts',JSON.stringify(drafts));}
+  if(typeof imageAttachmentStorage==='function')imageAttachmentStorage('delete',threadId).catch(report);
+  try{for(const storageKey of ['codex.drafts','codex.draftSkills']){const drafts=JSON.parse(sessionStorage.getItem(storageKey)||'{}');delete drafts[threadId];sessionStorage.setItem(storageKey,JSON.stringify(drafts));}}
   catch(error){toast('会话历史已删除，但浏览器草稿未能清除：'+nativeErrorMessage(error)+'。请清除此页面的站点数据。');}
 }
 function resizePrompt(){const node=$('#prompt');node.style.height='auto';node.style.height=Math.min(240,node.scrollHeight)+'px';positionToast();}
@@ -43,7 +57,16 @@ function updateScrollControl(){const node=$('#conversation-scroll');$('#jump-lat
 function nativeErrorMessage(error){const message=error?.message||String(error);if(/cf_chl_|challenge-platform/i.test(message))return '远端服务要求浏览器验证（HTTP 403）。请检查代理出口，或在官方服务完成验证后重试。';if(/<html/i.test(message))return '远端服务返回网页错误，请检查网络连接和登录状态。';return message;}
 function report(error) { toast(nativeErrorMessage(error)); }
 function button(label, fn, cls = 'small-button') { const node = el('button', cls, label); node.type = 'button'; node.onclick = () => Promise.resolve().then(fn).catch(report); return node; }
-function redact(value) { if (Array.isArray(value)) return value.map(redact); if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, /token|secret|api.?key|authorization/i.test(key) && typeof val === 'string' ? '[已隐藏]' : redact(val)])); return value; }
+function redact(value) {
+  if(Array.isArray(value))return value.map(redact);
+  if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,val])=>{
+    if(/^(?:inputSchema|outputSchema)$/i.test(key)&&val&&typeof val==='object')return [key,val];
+    if(key==='args'&&Array.isArray(val)||key==='http_headers_helper'&&typeof val==='string'||/^(?:env|http_headers|env_http_headers)$/i.test(key)&&val&&typeof val==='object'&&!Array.isArray(val)&&Object.values(val).every(value=>typeof value==='string'))return [key,'[已隐藏]'];
+    if(/token|secret|api.?key|authorization|password|passwd|credential|cookie|private.?key|(?:^|_)pwd(?:$|_)/i.test(key)&&typeof val==='string')return [key,'[已隐藏]'];
+    if(/url$/i.test(key)&&typeof val==='string'){try{const url=new URL(val);if(url.username||url.password||[...url.searchParams.keys()].some(name=>/token|key|secret|password|auth/i.test(name)))return [key,url.origin+'/[连接参数已隐藏]'];}catch{}}
+    return [key,redact(val)];
+  }));return value;
+}
 // Product scope follows the pinned runtime; schema visibility is not availability.
 function scopeExclusion(method,params){
   if(method.startsWith('remoteControl/')&&!['remoteControl/disable','remoteControl/status/read'].includes(method))return '此远程控制路径已移除。';
@@ -52,7 +75,7 @@ function scopeExclusion(method,params){
   if(method.startsWith('app/'))return '云端应用已移除；可使用本地插件和自定义 MCP。';
   if(method.startsWith('userVerification/')||method.startsWith('plugin/share/'))return '依赖云端账号的验证与插件分享已移除。';
   if(method==='thread/realtime/start')return '当前没有为 DeepSeek Flash 配置可用的实时语音服务。';
-  if(method==='skills/config/write'&&params?.enabled&&!isRetainedNativeSkill({scope:'system',name:params.path?.split('/').at(-2),path:params.path}))return '仅支持启用本版本 Codex 源码自带的保留技能。';
+  if(method==='skills/config/write'&&params?.enabled&&!isAllowedSkillPath(params.path))return '仅支持启用本版本保留的内置技能或通过技能页上传登记的技能，请刷新技能列表后重试。';
   if(method==='mock/experimentalMethod')return '上游协议测试接口，不属于用户业务能力。';
   return '';
 }
@@ -61,6 +84,171 @@ function isRetainedNativeSkill(skill){
   const names=['openai-docs','review-agent','skill-creator','skill-installer'];
   return skill.scope==='system'&&names.includes(skill.name)&&skill.path===state.runtimeInfo?.codexHome?.replace(/\/$/,'')+'/skills/.system/'+skill.name+'/SKILL.md';
 }
+function isUploadedSkill(skill){return state.skillRegistryLoaded&&!state.skillRegistryError&&(state.uploadedSkills||[]).some(item=>item.path===skill.path&&item.name===skill.name&&item.integrity!==false);}
+function isAllowedSkill(skill){return isRetainedNativeSkill(skill)||isUploadedSkill(skill);}
+function isAllowedSkillPath(path){return isRetainedNativeSkill({scope:'system',name:path?.split('/').at(-2),path})||state.skillRegistryLoaded&&!state.skillRegistryError&&(state.uploadedSkills||[]).some(item=>item.path===path&&item.integrity!==false);}
+async function loadUploadedSkills({force=false}={}){
+  if(state.skillRegistryRequest)return state.skillRegistryRequest;
+  if(state.skillRegistryLoaded&&!force)return {skills:state.uploadedSkills,limits:state.skillLimits};
+  const request=fetchJSON('/api/skills').then(result=>{
+    if(!Array.isArray(result.skills)||result.skills.some(item=>!item||typeof item.id!=='string'||typeof item.name!=='string'||typeof item.path!=='string'||typeof item.version!=='string'))throw new Error('技能注册表返回格式无效，请检查后台服务');
+    state.uploadedSkills=result.skills;state.skillLimits=result.limits||{};state.skillRegistryLoaded=true;state.skillRegistryError=null;return result;
+  }).catch(error=>{state.skillRegistryError=error;throw error;}).finally(()=>{if(state.skillRegistryRequest===request)state.skillRegistryRequest=null;});
+  state.skillRegistryRequest=request;return request;
+}
+function skillMentionPresent(text,name,known=[]){
+  const boundary=value=>!value||/[\s，,。!！?？:：;；()（）\[\]「」]/u.test(value),mention='$'+name;let position=-1;
+  while((position=text.indexOf(mention,position+1))!==-1){
+    if(!boundary(text[position-1])||!boundary(text[position+mention.length]))continue;
+    // A selected name may contain spaces and share another name's prefix.
+    // Associate each occurrence with the longest selected native skill name.
+    if(known.some(skill=>skill.name.length>name.length&&skill.name.startsWith(name)&&text.startsWith('$'+skill.name,position)&&boundary(text[position+skill.name.length+1])))continue;
+    return true;
+  }
+  return false;
+}
+async function validateSelectedSkills(skills,cwd){
+  if(!skills.length)return;
+  // A restored draft can reference a skill removed by another page. Refresh the
+  // service registry before constructing a native turn; never degrade to text.
+  if(skills.some(skill=>!isRetainedNativeSkill({scope:'system',...skill})))await loadUploadedSkills({force:true});
+  const result=await rpc('skills/list',{cwds:[cwd],forceReload:true}),available=(result.data||[]).flatMap(group=>group.skills||[]);
+  for(const skill of skills)if(!available.some(item=>item.path===skill.path&&item.name===skill.name&&item.enabled!==false&&isAllowedSkill(item)))throw new Error('所选技能已停用、移除或不可用：'+skill.name+'。输入已保留，请重新选择。');
+}
+function skillMutationReason(){
+  if(!state.ready)return '请等待原生运行时连接后再管理技能。';
+  if(state.skillUploadPending)return '正在处理技能，请等待当前操作完成。';
+  const execution=state.execution;
+  if(state.status?.nativeProcessLifetime==='web-service'&&(!execution||execution.observerReady!==true))return '后台执行状态尚未确认，请等待状态恢复后再管理技能。';
+  if(execution&&execution.status!=='idle'||execution?.ownerThreadId||state.activeTurns?.size||state.requests?.size||[...(state.composers?.values()||[])].some(draft=>draft.pending)||[...(state.stopOperations?.values()||[])].some(op=>op.status==='pending'))return '请等待当前分析、审批及命令回收结束后再管理技能。';
+  return '';
+}
+function assertSkillMutationAllowed(){const reason=skillMutationReason();if(reason)throw new Error(reason);}
+async function skillManagementRequest(path,payload){
+  const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});let result;
+  try{result=await response.json();}catch{throw new Error('技能服务返回无效响应（HTTP '+response.status+'），请刷新列表核对结果后再重试。');}
+  if(!response.ok)throw new Error(result.error||'技能操作失败：HTTP '+response.status);return result;
+}
+function skillUploadLimit(){return state.skillLimits?.uploadBytes||8*1024*1024;}
+async function uploadSkillFile(file){
+  assertSkillMutationAllowed();if(!file)throw new Error('请先选择技能 ZIP 或 SKILL.md。');
+  if(!/\.zip$/i.test(file.name)&&file.name.toUpperCase()!=='SKILL.MD')throw new Error('只接受包含 SKILL.md 的 ZIP 技能包，或单个 SKILL.md 文件。');
+  if(!file.size||file.size>skillUploadLimit())throw new Error('技能文件不能为空，且不能超过 '+Math.floor(skillUploadLimit()/1024/1024)+' MiB。');
+  state.skillUploadPending=true;state.skillsViewUpdate?.();
+  try{const bytes=new Uint8Array(await file.arrayBuffer());let binary='';for(let offset=0;offset<bytes.length;offset+=32768)binary+=String.fromCharCode(...bytes.subarray(offset,offset+32768));const result=await skillManagementRequest('/api/skills/upload',{filename:file.name,dataBase64:btoa(binary)});try{await loadUploadedSkills({force:true});}catch(error){throw new Error('技能已上传，但登记列表刷新失败：'+nativeErrorMessage(error)+'。请先刷新列表核对，勿重复上传。');}return result;}
+  finally{state.skillUploadPending=false;state.skillsViewUpdate?.();}
+}
+function removeUploadedSkill(skill,record){
+  assertSkillMutationAllowed();
+  openDialog('移除上传的技能',root=>root.append(el('p','','将移除“'+skill.name+'”及其上传文件。已保存的会话和报告保留；仍引用此技能的未发送草稿会保留，并在发送时提示重新选择。')),
+    async()=>{assertSkillMutationAllowed();state.skillUploadPending=true;state.skillsViewUpdate?.();try{await skillManagementRequest('/api/skills/remove',{id:record.id,expectedVersion:record.version});try{await loadUploadedSkills({force:true});}catch(error){throw new Error('技能已移除，但列表刷新失败：'+nativeErrorMessage(error)+'。请刷新列表核对。');}toast('上传的技能已移除');await renderSkills();}finally{state.skillUploadPending=false;state.skillsViewUpdate?.();}},'确认移除');
+}
+// BEGIN service-owned execution state. Native turns remain the execution engine.
+function receiveExecutionSnapshot(snapshot){
+  if(!snapshot||typeof snapshot!=='object'||typeof snapshot.status!=='string')return;
+  state.execution=snapshot;
+  for(const threadId of state.executionTurns||[])state.activeTurns.delete(threadId);
+  state.executionTurns=new Set();
+  for(const turn of snapshot.activeTurns||[])if(turn?.threadId&&turn.turnId&&!state.finishedTurns.has(turn.turnId)){
+    state.activeTurns.set(turn.threadId,turn.turnId);state.executionTurns.add(turn.threadId);
+  }
+  if(typeof updateExecutionStopGroup==='function')updateExecutionStopGroup();
+  renderThreadList();updateSend();state.skillsViewUpdate?.();
+}
+function executionActiveTurn(threadId=state.thread?.id){
+  if(state.status?.nativeProcessLifetime==='web-service'&&state.execution)return (state.execution.activeTurns||[]).find(turn=>turn.threadId===threadId&&!state.finishedTurns.has(turn.turnId))?.turnId;
+  return state.activeTurns.get(threadId);
+}
+function executionStopTargets(threadId=state.thread?.id){
+  if(!threadId)return [];
+  const execution=state.execution;
+  if(state.status?.nativeProcessLifetime==='web-service'&&execution){
+    if(execution.ownerThreadId!==threadId||execution.status==='conflicted'||(execution.blockedRootThreadIds||[]).some(root=>root!==threadId))return [];
+    return (execution.activeTurns||[]).filter(turn=>turn?.threadId&&turn.turnId&&!state.finishedTurns.has(turn.turnId));
+  }
+  const turnId=executionActiveTurn(threadId);return turnId?[{threadId,turnId}]:[];
+}
+function executionStopReleased(root){
+  const execution=state.execution;
+  return !!execution&&execution.observerReady===true&&execution.ownerThreadId!==root&&!(execution.blockedRootThreadIds||[]).includes(root)&&!['acknowledgementUnknown','observationFailed','conflicted'].includes(execution.status);
+}
+function updateExecutionStopGroup(){
+  const group=state.executionStopGroup;if(!group||group.status!=='pending')return;
+  if(group.connection!==state.ws||!state.ready){group.fail(new Error('连接已变化，本任务及子任务的停止结果尚未确认；不会自动重发。'));return;}
+  if(group.requests.size&&executionStopReleased(group.root)){group.finish();return;}
+  for(const target of executionStopTargets(group.root)){
+    const key=JSON.stringify([target.threadId,target.turnId]);if(group.requests.has(key))continue;
+    const op={...target,rootThreadId:group.root,commands:new Set(),connection:group.connection,status:'pending',terminated:[]};
+    group.requests.set(key,op);state.stopOperations.set(target.turnId,op);state.interrupting.add(target.turnId);
+    // Every cancellation is the real native turn/interrupt. New descendants
+    // reported during cancellation join this same bounded cancellation group.
+    Promise.resolve().then(()=>rpc('turn/interrupt',target)).then(()=>{op.interruptAcknowledged=true;}).catch(error=>{
+      if(group.status!=='pending')return;
+      if(executionStopReleased(group.root))group.finish();else group.fail(error);
+    });
+  }
+}
+function interruptExecutionGroup(root){
+  const previous=state.executionStopGroup;if(previous?.root===root&&previous.status==='pending')return previous.promise;
+  if(!executionStopTargets(root).length)return Promise.resolve();
+  const group={root,connection:state.ws,status:'pending',requests:new Map()};state.executionStopGroup=group;
+  let resolve,reject,timer;
+  group.promise=new Promise((yes,no)=>{resolve=yes;reject=no;});
+  const closed=()=>group.fail(new Error('原生连接已断开，本任务及子任务的停止和回收结果尚未确认。'));
+  function settle(error){
+    if(group.status!=='pending')return;
+    group.status=error?'failed':'completed';group.error=error?nativeErrorMessage(error):null;clearTimeout(timer);group.connection.removeEventListener('close',closed);
+    for(const op of group.requests.values()){op.status=group.status;op.error=group.error;state.interrupting.delete(op.turnId);renderStopResult(op);}
+    updateSend();if(error)reject(error);else resolve();
+  }
+  group.fail=error=>settle(error);group.finish=()=>settle();
+  timer=setTimeout(()=>group.fail(new Error('等待本任务及子任务的原生终态和命令回收超时，请核对状态后重试。')),45000);
+  group.connection.addEventListener('close',closed,{once:true});
+  updateExecutionStopGroup();updateSend();return group.promise;
+}
+function executionSubmissionState(threadId=state.thread?.id){
+  const execution=state.execution,owner=execution?.ownerThreadId;
+  const uncertain=['acknowledgementUnknown','observationFailed'].includes(execution?.status);
+  if((!owner||execution.status==='idle')&&!uncertain)return {blocked:false};
+  const labels={acknowledgementUnknown:'原生请求回执尚未确认',observationFailed:'后台原生状态观察失败',starting:'正在发送任务',running:'正在执行任务',waitingForApproval:'正在等待审批',waitingForInput:'正在等待补充信息',reconciling:'正在核对原生任务状态',cleaningUp:'正在确认任务结束并回收命令',cleanupFailed:'任务结束后的命令回收尚未确认',backgroundRunning:'后台命令仍在运行',conflicted:'检测到多个原生任务，需要核对执行状态'};
+  const reason=labels[execution.status]||'原生任务状态尚待确认',foreign=!!owner&&owner!==threadId;
+  const rootTurn=(execution.activeTurns||[]).some(turn=>turn.threadId===owner&&!state.finishedTurns.has(turn.turnId));
+  const blocked=uncertain||foreign||!rootTurn||!['running','waitingForApproval','waitingForInput'].includes(execution.status);
+  const errors=[...(execution.pendingNativeAcks||[]).map(request=>request?.error).filter(Boolean),...(execution.observerError?[execution.observerError]:[])].map(String);
+  const diagnostic=errors.length?' '+[...new Set(errors)].join('；'):'';
+  const message=uncertain?(foreign?'其他会话的':'')+reason+'。'+diagnostic+(execution.status==='observationFailed'?' 请检查后台服务，恢复状态观察后再继续；输入已保留。':' 请等待原生状态确认，不要重复提交；输入已保留。'):foreign?'其他会话'+reason+'。同一用户一次只能在一个会话执行任务；此处可继续编辑草稿。':blocked?reason+'，请等待当前任务及子任务状态确认后继续。':reason+'；可在当前会话补充要求。';
+  return {blocked,foreign,ownerThreadId:owner,status:execution.status,message};
+}
+async function resumeDeferredThreadForSubmission(threadId){
+  if(!threadId||!state.deferredResumes?.has(threadId))return;
+  await openThread(threadId,{archived:false,replace:true});
+  if(state.thread?.id!==threadId||state.restoreError||state.threadBusy||state.deferredResumes.has(threadId))throw new Error('此会话尚未恢复为可执行状态，请等待正在执行的会话结束后重试；输入与附件已保留。');
+}
+async function retryExecutionCleanup(){
+  if(state.executionCleanupPending)return;
+  const execution=state.execution,holds=(execution?.cleanupHolds||[]).filter(hold=>hold.threadId&&hold.turnId);if(!holds.length)throw new Error('缺少原生回合标识，请重新连接核对命令状态。');
+  state.executionCleanupPending=true;updateSend();
+  try{
+    for(const hold of holds){try{await rpc('turn/interrupt',{threadId:hold.threadId,turnId:hold.turnId});}catch(error){if(!state.ready)throw error;toast('已请求重新检查后台命令：'+nativeErrorMessage(error));}}
+    const status=await fetchJSON('/api/status');state.status=status;if(status.nativeRuntime?.execution)receiveExecutionSnapshot(status.nativeRuntime.execution);else{state.execution=null;state.executionTurns=new Set();}
+  }finally{state.executionCleanupPending=false;updateSend();}
+}
+function renderExecutionSubmissionStatus(node,execution){
+  node.replaceChildren(document.createTextNode(execution.message));
+  if(execution.foreign){const link=button('查看执行中的会话',()=>openThread(execution.ownerThreadId),'text-button');link.dataset.executionOwner=execution.ownerThreadId;node.append(' ',link);}
+  if(!execution.foreign&&['cleanupFailed','backgroundRunning'].includes(execution.status)){
+    const retry=button(execution.status==='backgroundRunning'?'停止后台命令并继续':'重试回收后台命令',retryExecutionCleanup,'text-button');retry.dataset.executionCleanup='true';retry.disabled=!state.ready||state.executionCleanupPending;node.append(' ',retry);
+  }
+  const stop=state.executionStopGroup;
+  if(!execution.foreign&&stop?.root===state.thread?.id&&stop.status==='failed'){
+    node.append(' 停止尚未确认：'+stop.error);
+    if(executionStopTargets().length)node.append(' ',button('重试停止本任务及子任务',()=>interruptTurn(),'text-button'));
+  }
+  if(execution.status==='cleanupFailed'){
+    const errors=(state.execution?.cleanupHolds||[]).map(hold=>hold.error).filter(Boolean);if(errors.length)node.title=errors.join('\n');
+  }else node.removeAttribute('title');
+}
+// END service-owned execution state.
 function rpc(method, params = {}, timeout = 120000) {
   const excluded=scopeExclusion(method,params);if(excluded)return Promise.reject(new Error(excluded));
   if (!state.ws || state.ws.readyState !== WebSocket.OPEN) return Promise.reject(new Error('原生运行时尚未连接'));
@@ -77,10 +265,24 @@ function sendResponse(request,result) {
   state.ws.send(JSON.stringify({id:request.id,result}));request.responded=true;renderRequests();
 }
 function setConnection(status, text) { $('#connection').className = 'connection ' + status; $('#connection').replaceChildren(el('i'), document.createTextNode(text)); }
+function warnBeforeLeavingAnalysis(event){
+  const pending=[...state.composers.values()].some(draft=>draft.pending);
+  if((state.status?.nativeProcessLifetime==='web-service'||!state.activeTurns.size)&&!pending)return;
+  event.preventDefault();event.returnValue='';
+}
+function rememberDepartingTurns(){
+  if(!state.activeTurns.size)return;
+  try{const turns=JSON.parse(sessionStorage.getItem('codex.departedTurns')||'{}');for(const [threadId,turnId]of state.activeTurns)turns[turnId]={threadId,lifetime:state.status?.nativeProcessLifetime||'browser'};sessionStorage.setItem('codex.departedTurns',JSON.stringify(Object.fromEntries(Object.entries(turns).slice(-100))));}catch{}
+}
+function departedTurnNotice(turn){
+  if(turn.status!=='interrupted')return '';
+  try{const departure=JSON.parse(sessionStorage.getItem('codex.departedTurns')||'{}')[turn.id];if(departure?.threadId===state.thread?.id)return departure.lifetime==='web-service'?'此任务结束前，本页曾离开或断开连接；后台任务由服务持续管理。当前显示原生中断结果，请核对执行记录后继续；页面不会自动重发任务。':'此任务结束前，本页曾离开或断开连接；当时使用的页面连接可能已停止其原生进程。请核对执行结果后再继续，页面不会自动重发任务。';}catch{}
+  return '';
+}
 async function connect() {
   if(typeof cancelPermissionUpdates==='function')cancelPermissionUpdates('原生连接正在重建，请重新打开会话核对权限');
   const connectionGeneration=state.connectionGeneration=(state.connectionGeneration||0)+1;
-  clearTimeout(state.reconnect);state.threadLoading=!!threadRoute().id;state.ready=false;state.requests.clear();state.activeTurns.clear();state.interrupting.clear();renderRequests();renderThreadList();updateSend();setConnection('', '连接中');
+  clearTimeout(state.reconnect);state.analysisToolsVerified=false;state.threadLoading=!!threadRoute().id;state.ready=false;state.requests.clear();state.activeTurns.clear();state.interrupting.clear();renderRequests();renderThreadList();updateSend();setConnection('', '连接中');
   if (state.ws && state.ws.readyState !== WebSocket.CLOSED) { state.ws.onclose=null; state.ws.close(); for(const pending of state.pending.values()){clearTimeout(pending.timer);pending.reject(new Error('原生连接正在重建'));}state.pending.clear(); }
   state.ws=null;
   // A local server restart rotates its HttpOnly session cookie. Re-establish
@@ -88,6 +290,8 @@ async function connect() {
   try{
     const response=await fetch('/',{cache:'no-store',credentials:'same-origin',signal:AbortSignal.timeout(15000)});
     if(!response.ok)throw Object.assign(new Error(response.status===401?'服务登录已失效，请使用原访问令牌重新打开页面。草稿仍保留。':'Web 服务返回 HTTP '+response.status),{status:response.status});
+    const status=await fetchJSON('/api/status');if(connectionGeneration!==state.connectionGeneration)return;state.status=status;if(status.nativeRuntime?.execution)receiveExecutionSnapshot(status.nativeRuntime.execution);else{state.execution=null;state.executionTurns=new Set();}
+    if(typeof loadUploadedSkills==='function')loadUploadedSkills({force:true}).catch(report);
   }catch(error){
     if(connectionGeneration!==state.connectionGeneration)return;
     setConnection('offline','服务连接失败');showConnectionError(nativeErrorMessage(error));
@@ -98,8 +302,8 @@ async function connect() {
   ws.onmessage = event => {
     if(state.ws!==ws)return;
     let msg; try { msg = JSON.parse(event.data); } catch { return; }
-    if (msg.bridge) { if (msg.bridge === 'error') showConnectionError(msg.message);else if(msg.bridge==='warning')toast(msg.message); return; }
-    if (msg.id != null && !msg.method) { const item = state.pending.get(msg.id); if (item) { state.pending.delete(msg.id); clearTimeout(item.timer); msg.result&&typeof msg.result==='object'&&state.responseSequence.set(msg.result,state.eventSequence);msg.error ? item.reject(Object.assign(new Error(nativeErrorMessage(msg.error)),{nativeError:msg.error})) : item.resolve(msg.result); } return; }
+    if (msg.bridge) { if (msg.bridge === 'error') showConnectionError(msg.message);else if(msg.bridge==='warning')toast(msg.message);else if(msg.bridge==='execution')receiveExecutionSnapshot(msg.execution); return; }
+    if (msg.id != null && !msg.method) { const execution=msg.error?.data?.execution||(msg.error?.data?.ownerThreadId?msg.error.data:null);if(execution)receiveExecutionSnapshot(execution);const item = state.pending.get(msg.id); if (item) { state.pending.delete(msg.id); clearTimeout(item.timer); msg.result&&typeof msg.result==='object'&&state.responseSequence.set(msg.result,state.eventSequence);msg.error ? item.reject(Object.assign(new Error(nativeErrorMessage(msg.error)),{nativeError:msg.error})) : item.resolve(msg.result); } return; }
     if (msg.id != null && msg.method) { Object.defineProperty(msg,'connection',{value:ws});state.requests.set(String(msg.id), msg); renderRequests(); }
     Object.defineProperty(msg,'sequence',{value:++state.eventSequence});addEvent(msg); handleEvent(msg);
   };
@@ -108,23 +312,23 @@ async function connect() {
     try {
       state.runtimeInfo = await rpc('initialize', { clientInfo: { name: 'codex_web_native', title: 'Codex Web', version: '1.0.0' }, capabilities: { experimentalApi: true } });
       if(state.ws!==ws)return;ws.send(JSON.stringify({ method: 'initialized' })); invalidateMcpCache();
-      state.activeTurns.clear();state.interrupting.clear();updateSend();
+      state.activeTurns.clear();state.interrupting.clear();if(state.execution)receiveExecutionSnapshot(state.execution);else updateSend();
       const generation=state.navigationGeneration;
       // Sidebar enrichment must not block opening the selected conversation.
       loadThreads().catch(report);
       await loadModels();
       if(state.ws!==ws)return;
       if(generation===state.navigationGeneration)await restoreThreadRoute();
-      if(state.ws!==ws)return;state.ready=true;setConnection('online','原生已连接');$('#connection-error').hidden=true;updateSend();
+      if(state.ws!==ws)return;state.ready=true;setConnection('online','原生已连接');$('#connection-error').hidden=true;updateSend();state.skillsViewUpdate?.();
       if(/^\/[^\s]*$/.test($('#prompt').value)){closeCommandMenu();updateCommandMenu();}
     } catch (error) { if(state.ws===ws)showConnectionError(error.message); }
   };
   ws.onclose = () => {
     if (state.ws !== ws) return;
     if(typeof cancelPermissionUpdates==='function')cancelPermissionUpdates('连接已断开，请重连后核对原生会话权限');
-    state.ready = false; state.requests.clear();state.activeTurns.clear();state.interrupting.clear(); renderRequests();renderThreadList();updateSend();setConnection('offline', '连接已断开');showConnectionError('连接已断开，执行状态将在重连后恢复；不会自动重发任务。');
+    rememberDepartingTurns();state.ready = false; state.requests.clear();state.activeTurns.clear();state.interrupting.clear(); renderRequests();renderThreadList();updateSend();setConnection('offline', '连接已断开');showConnectionError(state.status?.nativeProcessLifetime==='web-service'?'页面连接已断开。仅页面断连不会停止后台任务；服务重启可能中断任务。重连后恢复原生任务与待处理审批，不会自动重发任务。':'连接已断开，本页执行可能已中断。重连后请核对状态；不会自动重发任务。');
     for (const pending of state.pending.values()) { clearTimeout(pending.timer); pending.reject(new Error('连接已断开，请重连后检查原生执行状态')); } state.pending.clear();
-    state.reconnect = setTimeout(connect, 4000);
+    state.skillsViewUpdate?.();state.reconnect = setTimeout(connect, 4000);
   };
   ws.onerror = () => {if(state.ws===ws)setConnection('offline', '连接失败');};
 }
@@ -150,7 +354,7 @@ function handleEvent(msg) {
   if (method === 'thread/settings/updated') {state.threadSettings.set(p.threadId,p.threadSettings);if(p.threadId===state.thread?.id&&state.view==='settings')renderSettings().catch(report);}
   if(typeof permissionsEvent==='function')permissionsEvent(msg);
   if(method==='thread/started'){if(p.thread)state.knownThreads.set(p.thread.id,p.thread);loadThreads().catch(report);}
-  if (method === 'thread/deleted') {state.knownThreads.delete(p.threadId);state.activeTurns.delete(p.threadId);if(state.thread?.id===p.threadId)resetChat();forgetThreadDraft(p.threadId);state.threadSettings.delete(p.threadId);if(typeof nativeContextUsage!=='undefined')nativeContextUsage.delete(p.threadId);loadThreads().catch(report);}
+  if (method === 'thread/deleted') {state.deferredResumes?.delete(p.threadId);state.knownThreads.delete(p.threadId);state.activeTurns.delete(p.threadId);if(state.thread?.id===p.threadId)resetChat();forgetThreadDraft(p.threadId);state.threadSettings.delete(p.threadId);if(typeof nativeContextUsage!=='undefined')nativeContextUsage.delete(p.threadId);loadThreads().catch(report);}
   if (method === 'turn/started') { state.activeTurns.set(p.threadId, p.turn.id);renderThreadList(); updateSend(); }
   if (method === 'turn/completed') { state.finishedTurns.add(p.turn.id);if(!state.stopOperations.has(p.turn.id))state.interrupting.delete(p.turn.id);state.activeTurns.delete(p.threadId);loadThreads().catch(report);renderThreadList(); updateSend(); if (currentEvent(p)) { if(p.turn.error)toast('任务未完成，详细原因已显示在对话中。'); const items=new Map([...state.items.values()].filter(entry=>entry.turnId===p.turn.id).map(entry=>[entry.item.id,entry.item]));for(const item of p.turn.items||[])items.set(item.id,{...items.get(item.id),...item});const turn={...p.turn,items:[...items.values()]};renderTurnOutcome(turn); const index=state.turns.findIndex(item=>item.id===turn.id); if(index<0)state.turns.push(turn);else state.turns[index]=turn; refreshActivityGroups(turn.id); } }
   if (method === 'thread/tokenUsage/updated') receiveContextUsage(p);
@@ -177,6 +381,7 @@ function renderTurnOutcome(turn) {
   const old=$$('[data-turn-outcome]').find(node=>node.dataset.turnOutcome===turn.id);if(old)old.remove();
   const message=turn.status==='interrupted'?'任务已中断':'原生执行失败：'+(turn.error?.message||'请查看执行过程及原生事件');
   const node=el('div','panel-error message');node.append(el('p','',message));node.dataset.turnOutcome=turn.id;
+  const departure=departedTurnNotice(turn);if(departure)node.append(el('p','',departure));
   const stop=state.stopOperations.get(turn.id);
   if(stop){
     node.append(el('p','',stop.status==='pending'?'回合已结束，正在回收本轮命令…':stop.status==='completed'?'已确认原生后台终端中没有本轮命令。':'本轮命令回收未确认：'+stop.error));
@@ -255,6 +460,7 @@ function renderItem(item, done = false, turnId = null) {
   if(typeof renderAnalysisToolResult==='function'){const result=renderAnalysisToolResult(item,done);if(result)return result;}
   const chart=databaseChart(item);if(chart)return renderDatabaseChart(chart);
   if(item.type==='agentMessage'&&typeof renderAutomaticAnalysisPlan==='function'){const plan=renderAutomaticAnalysisPlan(item,done);if(plan)return plan;}
+  if(item.type==='collabAgentToolCall'&&typeof renderSubagentActivity==='function')return renderSubagentActivity(item,turnId);
   if(item.type==='plan')return renderProposedPlan(item,done);
   if(item.type==='imageGeneration'&&['completed','succeeded'].includes(item.status))return renderGeneratedImage(item);
   if (item.type === 'userMessage') { const node = el('div', 'message user'); for (const content of item.content || []) { if (content.text) node.append(document.createTextNode(content.text)); else if(content.type==='skill'){if(!(item.content||[]).some(part=>part.type==='text'&&part.text?.includes('$'+content.name)))node.append(el('span','skill-mention','$'+content.name));} else if (content.type?.toLowerCase().includes('image')) {const source=content.url||content.imageUrl||content.path;if(source){const image=el('img','user-image');loadImageElement(image,source,content.path||null);node.append(image);}else node.append(el('div','subtle','[图片附件]'));} else node.append(el('div', 'subtle', pretty(redact(content)))); } return node; }
@@ -269,6 +475,7 @@ function renderItem(item, done = false, turnId = null) {
   node.append(body); return node;
 }
 function isActivity(item, turnId) {
+  if(item.type==='collabAgentToolCall')return false;
   if(databaseChart(item)||item.type==='plan'||typeof isAnalysisResultItem==='function'&&isAnalysisResultItem(item))return false;
   if(item.type==='userMessage'||item.type==='imageGeneration'&&['completed','succeeded'].includes(item.status))return false;
   if(item.type!=='agentMessage')return true;
@@ -346,7 +553,7 @@ function mountItem(item, node, done, turnId) {
 }
 function upsertItem(item, done = false, turnId = null) {
   if (!item?.id) return;
-  mountItem(item, renderItem(item, done, turnId), done, turnId); state.live.delete(item.id);
+  mountItem(item, renderItem(item, done, turnId), done, turnId); state.live.delete(item.id);if(item.type==='collabAgentToolCall'&&typeof refreshSubagentPanels==='function')queueMicrotask(refreshSubagentPanels);
 }
 function appendDelta(id, delta, type, turnId = null) {
   if (!id || typeof delta !== 'string') return;
@@ -355,17 +562,42 @@ function appendDelta(id, delta, type, turnId = null) {
   if (type === 'commandExecution') item.aggregatedOutput = text; else if (type === 'reasoning') item.summary = [text]; else item.text = text;
   mountItem(item, renderItem(item, entry?.done || false, turnId||entry?.turnId), entry?.done || false, turnId);
 }
+// Exact profile-owned IDs are registered by the maintenance service. A title
+// resembling a maintenance prompt is still an ordinary user conversation.
+function isMemoryMaintenanceThread(id){return !!id&&state.maintenanceThreadIds?.has(id);}
+function rememberMemoryMaintenance(value){
+  for(const id of value?.threadIds||[])if(typeof id==='string')state.maintenanceThreadIds.add(id);
+  for(const item of value?.sessions||[])if(typeof item?.threadId==='string'){state.maintenanceThreadIds.add(item.threadId);state.maintenanceSessions.set(item.threadId,item);}
+  state.threads=state.threads.filter(thread=>!isMemoryMaintenanceThread(thread.id));
+}
+function refreshMemoryMaintenance(){
+  if(state.maintenanceRefresh)return state.maintenanceRefresh;
+  // Listing normal history must not wait for an optional management endpoint.
+  state.maintenanceRefresh=fetchJSON('/api/memory-maintenance').then(value=>{state.maintenanceRegistryError=null;rememberMemoryMaintenance(value);renderThreadList();}).catch(error=>{state.maintenanceRegistryError=nativeErrorMessage(error);}).finally(()=>{state.maintenanceRefresh=null;});
+  return state.maintenanceRefresh;
+}
+function showMemoryMaintenanceThread(id,metadata){
+  rememberMemoryMaintenance({threadIds:[id],sessions:metadata?[{...metadata,threadId:id}]:[]});
+  resetChat();showView('settings');showAnalysisMemory();toast('这是后台记忆维护记录，已转到长期记忆管理；不会恢复为分析会话。');
+}
+function threadDeletionFailure(error){
+  const native=nativeErrorMessage(error),maintenance=error.nativeError?.data?.webMemoryMaintenance;
+  if(/already has an active writer/i.test(error.message))return maintenance?'此会话属于后台记忆维护，仍由维护进程持有原生写锁，历史尚未删除。关闭浏览器不会解除该占用；请在长期记忆管理查看维护状态，服务释放后再重试。原生原因：'+native:'此会话仍被其他页面或 Codex 进程持有原生写锁，历史尚未删除。请结束占用方的任务或关闭其连接后，再点击「永久删除」重试；当前页面不会强行解除写锁。原生原因：'+native;
+  if(/forked history still references it/i.test(error.message))return '此会话仍被分叉会话引用。请先删除相关分叉会话，再重试永久删除；历史尚未删除。原生原因：'+native;
+  return native;
+}
 async function loadThreads(more = false) {
+  refreshMemoryMaintenance();
   const generation=++state.listGeneration,archived=state.archived,query=$('#thread-search').value||null;
   const result=await rpc('thread/list',{limit:40,archived,searchTerm:query,sortKey:'updated_at',...(more&&state.cursor?{cursor:state.cursor}:{})});
   if(generation!==state.listGeneration)return;
-  const rows=more?[...state.threads,...result.data]:[...result.data];
+  const rows=(more?[...state.threads,...result.data]:[...result.data]).filter(thread=>!isMemoryMaintenanceThread(thread.id));
   state.threads=rows;state.cursor=result.nextCursor;renderThreadList();
   // Native lists omit empty-preview forks. Profile-local read-only discovery
   // and observed IDs are hints; every supplemental fork is verified by native.
   if(state.status?.knownForksSupported){
     try{
-      const index=await fetchJSON('/api/known-forks'),missing=index.threadIds.filter(id=>!rows.some(thread=>thread.id===id));
+      const index=await fetchJSON('/api/known-forks'),missing=index.threadIds.filter(id=>!isMemoryMaintenanceThread(id)&&!rows.some(thread=>thread.id===id));
       const reads=[];
       for(let start=0;start<missing.length;start+=8){
         if(generation!==state.listGeneration)return;
@@ -375,13 +607,14 @@ async function loadThreads(more = false) {
       for(let i=0;i<reads.length;i++){
         const read=reads[i];
         if(read.status==='rejected'){toast('无法恢复已知分叉 '+missing[i]+'：'+nativeErrorMessage(read.reason));continue;}
+        if(read.value.webMemoryMaintenance){rememberMemoryMaintenance({threadIds:[missing[i]],sessions:[{...read.value.webMemoryMaintenance,threadId:missing[i]}]});continue;}
         const thread=read.value.thread,isArchived=String(thread.path||'').split('/').includes('archived_sessions');
         if(thread.forkedFromId&&!thread.ephemeral&&isArchived===archived&&(!query||(thread.name||thread.preview||'').toLocaleLowerCase().includes(query.toLocaleLowerCase())))rows.push(thread);
       }
     }catch(error){if(generation===state.listGeneration)toast('分叉会话发现失败：'+nativeErrorMessage(error));}
   }
   if(generation!==state.listGeneration)return;
-  state.threads=[...new Map(rows.map(thread=>[thread.id,thread])).values()].sort((a,b)=>b.updatedAt-a.updatedAt);
+  state.threads=[...new Map(rows.filter(thread=>!isMemoryMaintenanceThread(thread.id)).map(thread=>[thread.id,thread])).values()].sort((a,b)=>b.updatedAt-a.updatedAt);
   state.cursor=result.nextCursor;renderThreadList();
 }
 function renderThreadArchiveControls() {
@@ -419,6 +652,8 @@ function showHistoryHelp() {
   openDialog('归档与永久删除',root=>{
     root.append(el('p','','归档：从「分析记录」移入左侧「已归档」，保留全部对话历史；可随时打开查看，或在会话右键及「…」菜单中恢复。'));
     root.append(el('p','','永久删除：在左侧对要删除的会话点击右键或「…」，选择「永久删除历史…」，确认后删除原生会话历史及其创建的子代理会话，无法恢复。已归档会话也可以直接永久删除。'));
+    root.append(el('p','','永久删除会清理对应的原生会话摘要；已合入全局摘要的内容需后台异步整理，不会即时从其他会话撤回。独立保存的长期偏好和已确认业务知识保留。'));
+    root.append(button('管理长期记忆',()=>{$('#dialog').close();showView('settings');showAnalysisMemory();}),button('管理数据源业务知识',()=>{$('#dialog').close();showView('databases');}));
     root.append(el('p','','归档或删除会话不会回滚工作区内已修改的文件，也不会删除数据库中的业务数据。'));
   },async()=>{},'知道了');
 }
@@ -437,6 +672,7 @@ function dismissMovedThreadMenu(){
 }
 function threadActionReason(action,target){
   const id=target.thread.id,current=state.thread?.id===id;
+  if(isMemoryMaintenanceThread(id))return '这是后台记忆维护记录，请到长期记忆管理查看。';
   if(!state.ready)return '原生连接尚未就绪';
   if(state.threadActionPending.has(id))return '该会话的操作正在处理，请稍候';
   const thread=state.threads.find(thread=>thread.id===id)||state.knownThreads.get(id)||target.thread;
@@ -484,19 +720,20 @@ function threadMenuKey(event){
   event.preventDefault();const index=items.indexOf(document.activeElement),next=event.key==='Home'?0:event.key==='End'?items.length-1:(index+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;items[next].focus();
 }
 function renderThreadList() {
+  state.threads=state.threads.filter(thread=>!isMemoryMaintenanceThread(thread.id));
   renderThreadArchiveControls();
   // A new thread can start before thread/list has observed its first rollout.
-  if(!state.archived){const query=$('#thread-search').value.toLowerCase();for(const thread of state.knownThreads.values())if(state.activeTurns.has(thread.id)&&!state.threads.some(item=>item.id===thread.id)&&(!query||(thread.name||thread.preview||'').toLowerCase().includes(query)))state.threads.unshift(thread);}
+  if(!state.archived){const query=$('#thread-search').value.toLowerCase();for(const thread of state.knownThreads.values())if(!isMemoryMaintenanceThread(thread.id)&&(state.activeTurns.has(thread.id)||state.execution?.ownerThreadId===thread.id&&state.execution.status!=='idle')&&!state.threads.some(item=>item.id===thread.id)&&(!query||(thread.name||thread.preview||'').toLowerCase().includes(query)))state.threads.unshift(thread);}
   // Native paginated forks can have an empty preview and be omitted from list.
   // The current thread was confirmed by read/resume; keep its actual navigation entry.
   const selected=state.thread,query=$('#thread-search').value.toLowerCase();
-  if(selected&&state.threadArchived===state.archived&&!state.threads.some(thread=>thread.id===selected.id)&&(!query||(selected.name||selected.preview||'').toLowerCase().includes(query)))state.threads.unshift(selected);
+  if(selected&&!isMemoryMaintenanceThread(selected.id)&&state.threadArchived===state.archived&&!state.threads.some(thread=>thread.id===selected.id)&&(!query||(selected.name||selected.preview||'').toLowerCase().includes(query)))state.threads.unshift(selected);
   const list = $('#thread-list'); list.replaceChildren();
   for(const thread of state.threads){
     const row=el('div','thread-row'+(state.thread?.id===thread.id?' active':''));row.dataset.threadId=thread.id;
     const name=thread.name||thread.preview||'未命名分析',target={thread:{...thread},archived:state.archived};
     const open=button('',()=>{closeThreadMenu(false);return openThread(thread.id);},'thread-open');open.dataset.threadOpen=thread.id;
-    const dot=el('span','thread-dot'+(state.activeTurns.has(thread.id)?' running':''));if(state.activeTurns.has(thread.id))dot.title='此页面正在执行任务';
+    const executing=state.activeTurns.has(thread.id)||state.execution?.ownerThreadId===thread.id&&state.execution.status!=='idle',dot=el('span','thread-dot'+(executing?' running':''));if(executing)dot.title='当前用户正在执行任务或确认任务结束状态';
     open.append(dot,el('span','thread-name',name));const date=new Date(thread.updatedAt*1000);open.title=name+' · '+date.toLocaleString();open.append(el('time','',date.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'})));
     const trigger=button('…',()=>openThreadMenu(target,trigger),'menu-trigger');trigger.dataset.threadMenu=thread.id;trigger.ariaLabel='会话操作：'+name;trigger.title='会话操作';trigger.setAttribute('aria-haspopup','menu');trigger.setAttribute('aria-expanded',String(state.threadMenu?.target.thread.id===thread.id));
     row.oncontextmenu=event=>{event.preventDefault();openThreadMenu(target,event.target.closest('button')||open,{x:event.clientX,y:event.clientY});};
@@ -509,31 +746,76 @@ function renderThreadList() {
 }
 function setCwd(path) { state.selectedCwd = path; localStorage.setItem('codex.cwd', path); const name = path.split('/').filter(Boolean).pop() || path; $('#project-name').textContent = name; $('#breadcrumb').textContent = name; $('#cwd-label').textContent = path; }
 function threadRoute(){const params=new URLSearchParams(location.search);return {id:params.get('thread'),archived:params.get('archived')==='1'};}
+// The static page is neutral until its route is known. Render before any
+// startup await; restoring a conversation must never display the new-task view.
+function renderThreadLoading(id){
+  const thread=state.knownThreads.get(id)||(state.thread?.id===id?state.thread:null);
+  $('#welcome').hidden=true;$('#view-chat').classList.remove('empty');$('#prompt').disabled=true;$('#jump-latest').hidden=true;
+  $('#page-title').textContent=thread?.name||thread?.preview||'正在恢复分析…';
+  const notice=el('div','loading','正在恢复当前分析…');notice.setAttribute('role','status');$('#messages').replaceChildren(notice);
+}
+function renderInitialConversation(){
+  const route=threadRoute();state.threadLoading=!!route.id;
+  if(route.id)renderThreadLoading(route.id);
+  else{$('#welcome').hidden=false;$('#view-chat').classList.add('empty');$('#messages').replaceChildren();$('#page-title').textContent='新分析';$('#prompt').disabled=false;}
+  return route;
+}
+
 function setThreadRoute(id=null,archived=false,replace=false){const url=new URL(location.href);url.searchParams.delete('token');url.searchParams.delete('thread');url.searchParams.delete('archived');if(id){url.searchParams.set('thread',id);if(archived)url.searchParams.set('archived','1');}if(url.href!==location.href)history[replace?'replaceState':'pushState'](null,'',url);}
 function resetChat(route=true) {closeThreadMenu(false);rememberScroll();const fresh=state.composerKey==='new'&&composerState().pending;switchComposer('new',fresh);restoreDefaultModelChoice();$('#view-chat').classList.add('empty'); state.navigationGeneration++;state.hydration=null;state.historyPage=null;state.threadLoading=false;state.restoreError=false;if(route)setThreadRoute();state.thread = null; state.threadArchived=false;state.threadBusy=false; $('#prompt').disabled=false; $('#prompt').placeholder='描述分析问题、指标和时间范围，或添加资料'; state.turns = []; state.items.clear(); state.live.clear(); $('#messages').replaceChildren(); $('#welcome').hidden = false;$('#jump-latest').hidden=true;  $('#page-title').textContent = '新分析'; $('#plan-summary').hidden = true; renderContextUsage(); renderThreadList(); renderRequests(); updateSend(); resetNativeUI(); }
 function adoptThread(thread,archived=false,busy=false) { state.knownThreads.set(thread.id,thread);if(state.composerKey!==thread.id)switchComposer(thread.id);if(state.thread?.id!==thread.id)$('#plan-summary').hidden=true; state.thread=thread;state.threadArchived=archived;state.threadBusy=busy;setThreadRoute(thread.id,archived,true);if(thread.cwd)setCwd(thread.cwd);$('#prompt').disabled=busy||archived;$('#prompt').placeholder=busy?'会话只读：请关闭占用页面后重试继续对话':archived?'会话已归档：请在侧栏恢复后继续对话':'继续提问、调整分析口径或补充资料';$('#page-title').textContent=thread.name||thread.preview||'新分析';selectThreadModel(thread.id);renderRequests();updateSend();renderContextUsage(); adoptNativeUI(thread); }
 async function restoreThreadRoute(){const route=threadRoute();if(route.id){setArchiveScope(route.archived);await openThread(route.id,{archived:route.archived,replace:true});loadThreads().catch(report);}else resetChat(false);}
+async function recoverAnalysisDraft(id){
+  const generation=state.navigationGeneration,source=composerState(id);await source.attachmentRestore;
+  if(generation!==state.navigationGeneration||!state.restoreError)throw new Error('当前会话已切换，请在需要恢复的页面操作。');
+  const existing=composerState('new'),texts=[existing.text,source.text].filter(Boolean);
+  const attachments=[...existing.attachments,...source.attachments],seen=new Set();
+  const draft={text:[...new Set(texts)].join('\n\n'),attachments:attachments.filter(item=>{const key=JSON.stringify(item);if(seen.has(key))return false;seen.add(key);return true;}),skills:[...(source.skills||[])],loads:0,pending:false,follow:true,scrollTop:null};
+  state.composers.set('new',draft);$('#prompt').value=draft.text;await persistImageAttachments(draft,'new');
+  if(generation!==state.navigationGeneration)return;
+  resetChat();persistDrafts();toast('未发送的草稿和附件已带到新分析；原会话历史没有删除，也没有自动发送任务。');
+}
 async function openThread(id,{archived=state.archived&&state.threads.some(thread=>thread.id===id),replace=false}={}) {
   closeThreadMenu(false);rememberScroll();saveComposer();const generation=++state.navigationGeneration;state.hydration={threadId:id,generation,events:[]};state.historyPage=null;state.threadLoading=true;state.restoreError=false;setThreadRoute(id,archived,replace);updateSend();
-  showView('chat');$('#jump-latest').hidden=true;$('#view-chat').classList.remove('empty');$('#prompt').disabled=true;$('#welcome').hidden=true;$('#messages').replaceChildren(el('div','loading','读取原生会话…'));state.items.clear();state.live.clear();
+  showView('chat');renderThreadLoading(id);state.items.clear();state.live.clear();
   try {
-    if(typeof prepareAnalysisMemory==='function')await prepareAnalysisMemory();
-    // Each WebSocket owns a new native process and identity guard. UI caches
+    // Viewing history and reattaching native approvals do not consume analysis
+    // memory. Fetch it before an actual submission in submitPrompt instead;
+    // the backend independently applies native memory policy on resume/start.
+    // Each WebSocket has a new native client and identity guard. UI caches
     // survive reconnects, but cannot attest a thread to that new connection.
     const identity=await rpc('thread/read',{threadId:id,includeTurns:false});
     if(generation!==state.navigationGeneration)return;
+    if(identity.webMemoryMaintenance||isMemoryMaintenanceThread(id)){showMemoryMaintenanceThread(id,identity.webMemoryMaintenance);return;}
     const provider=identity.thread.modelProvider;
-    let result,busy=false;
-    for(let attempt=0;attempt<4;attempt++){
-      try{result=archived?identity:await rpc('thread/resume',{threadId:id,config:threadRuntimeConfig(provider),excludeTurns:true,initialTurnsPage:{limit:20,sortDirection:'desc',itemsView:'full'}});break;}
-      catch(error){if(archived||!/already has an active writer/i.test(error.message))throw error;if(generation!==state.navigationGeneration)return;if(attempt<3){await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));if(generation!==state.navigationGeneration)return;}else{result=await rpc('thread/read',{threadId:id,includeTurns:false});busy=true;}}
+    // Resuming native history can restart a saved goal or queued submissions.
+    // Read another conversation without subscribing/resuming until its turn.
+    let result,busy=false,deferred=!!state.execution?.ownerThreadId&&state.execution.ownerThreadId!==id&&state.execution.status!=='idle';
+    if(archived||deferred)result=identity;
+    else for(let attempt=0;attempt<4;attempt++){
+      try{result=await rpc('thread/resume',{threadId:id,config:threadRuntimeConfig(provider),excludeTurns:true,initialTurnsPage:{limit:20,sortDirection:'desc',itemsView:'full'}});break;}
+      catch(error){
+        if(generation!==state.navigationGeneration)return;
+        const execution=error.nativeError?.data?.execution;
+        if(execution?.ownerThreadId&&execution.status!=='idle'){
+          if(typeof receiveExecutionSnapshot==='function')receiveExecutionSnapshot(execution);
+          result=identity;deferred=true;break;
+        }
+        if(!/already has an active writer/i.test(error.message))throw error;
+        if(attempt<3){await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));if(generation!==state.navigationGeneration)return;}else{result=await rpc('thread/read',{threadId:id,includeTurns:false});busy=true;}
+      }
     }
+    if(generation!==state.navigationGeneration)return;
+    state.deferredResumes??=new Set();if(deferred)state.deferredResumes.add(id);else if(!archived&&!busy)state.deferredResumes.delete(id);
     if(generation!==state.navigationGeneration)return;if(result.collaborationMode)state.nativeModes.set(id,result.collaborationMode.mode);if(result.model)state.threadSettings.set(id,{model:result.model,modelProvider:result.modelProvider,serviceTier:result.serviceTier,collaborationMode:result.collaborationMode,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});adoptThread(result.thread,archived,busy);if(typeof permissionsFromSnapshot==='function'&&result.model)permissionsFromSnapshot(id,state.threadSettings.get(id));
     await hydrateThread(result.thread,generation,state.responseSequence.get(result)||0,result.initialTurnsPage||null);
     if(generation!==state.navigationGeneration)return;if(busy){const notice=el('div','panel-error');notice.dataset.threadBusy='';notice.append(el('p','','此会话正在另一个页面中使用，当前显示历史记录。关闭该页面后，可重试继续会话。'),button('重试继续会话',()=>openThread(id,{archived,replace:true})));$('#messages').prepend(notice);}renderThreadList();
   } catch(error) {
-    if(generation!==state.navigationGeneration)return;state.restoreError=true;state.thread=null;
-    $('#messages').replaceChildren(el('div','panel-error','无法恢复此会话：'+nativeErrorMessage(error)),button('重试恢复会话',()=>openThread(id,{archived,replace:true})),button('新分析',()=>resetChat()));
+    if(generation!==state.navigationGeneration)return;
+    const maintenance=error.nativeError?.data?.webMemoryMaintenance;
+    if(maintenance||isMemoryMaintenanceThread(id)){showMemoryMaintenanceThread(id,maintenance);return;}
+    state.restoreError=true;state.thread=null;$('#page-title').textContent='会话恢复失败';
+    $('#messages').replaceChildren(el('div','panel-error','无法恢复此会话：'+nativeErrorMessage(error)),button('重试恢复会话',()=>openThread(id,{archived,replace:true})),button('携带草稿新建分析',()=>recoverAnalysisDraft(id)),button('新分析',()=>resetChat()));
   } finally {if(generation===state.navigationGeneration){state.hydration=null;state.threadLoading=false;$('#prompt').disabled=state.restoreError;updateSend();restoreScroll();}}
 }
 function finishHistoryRender(){for(const group of $$('.activity-group',$('#messages')))updateActivityGroup(group);}
@@ -600,7 +882,8 @@ async function ensureThread(context=null) {
     state.nativeModes.set(result.thread.id,target.mode);
     state.threadSettings.set(result.thread.id,{model:result.model,modelProvider:result.modelProvider,serviceTier:result.serviceTier,collaborationMode:result.collaborationMode,sandboxPolicy:result.sandbox,approvalPolicy:result.approvalPolicy,approvalsReviewer:result.approvalsReviewer,effort:result.reasoningEffort});
     state.composers.set(result.thread.id,draft);
-    if(target.generation===state.navigationGeneration&&composerState()===draft){adoptThread(result.thread);state.composers.set('new',{text:'',attachments:[],loads:0,pending:false,follow:true,scrollTop:null});persistDrafts();}
+    if(typeof persistImageAttachments==='function')await persistImageAttachments(draft,result.thread.id);
+    if(target.generation===state.navigationGeneration&&composerState()===draft){adoptThread(result.thread);state.composers.set('new',{text:'',attachments:[],loads:0,pending:false,follow:true,scrollTop:null});persistDrafts();if(typeof imageAttachmentStorage==='function')imageAttachmentStorage('delete','new').catch(report);}
     loadThreads().catch(report);if(typeof confirmStartedPermissions==='function')confirmStartedPermissions(draft,result);return result.thread;
   })().finally(()=>{delete draft.creation;});
   return draft.creation;
@@ -608,13 +891,16 @@ async function ensureThread(context=null) {
 function updateSend() {
   refreshThreadMenu();
   if(typeof renderPermissions==='function')renderPermissions();
-  const permissionBlocked=typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked(),modeBlocked=state.nativeModePending||(typeof analysisModeChangeBlocked==='function'&&analysisModeChangeBlocked());
-  const stop=[...state.stopOperations.values()].find(op=>op.threadId===state.thread?.id&&op.status==='pending');
-  const turn=state.activeTurns.get(state.thread?.id),running=!state.threadBusy&&!state.threadArchived&&!!turn,stopping=!!stop||state.interrupting.has(turn),pending=composerState().pending;
-  $('#send').disabled=((permissionBlocked||modeBlocked)&&!running)||!state.ready||state.threadLoading||state.restoreError||state.threadBusy||stopping||(!running&&(pending||state.threadArchived||state.attachmentLoads>0));
-  $('#send').classList.toggle('running',running);const label=stopping?'正在停止并回收命令…':running?'中断当前任务':pending?'正在发送…':state.attachmentLoads>0?'正在读取附件':'发送任务';
+  const permissionBlocked=typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked()&&!state.deferredResumes?.has(state.thread?.id),modeBlocked=state.nativeModePending||(typeof analysisModeChangeBlocked==='function'&&analysisModeChangeBlocked());
+  const stop=[...state.stopOperations.values()].find(op=>(op.threadId===state.thread?.id||op.rootThreadId===state.thread?.id)&&op.status==='pending');
+  const execution=typeof executionSubmissionState==='function'?executionSubmissionState():{blocked:false};
+  const turn=typeof executionActiveTurn==='function'?executionActiveTurn():state.activeTurns.get(state.thread?.id),targets=typeof executionStopTargets==='function'?executionStopTargets():turn?[{threadId:state.thread?.id,turnId:turn}]:[],running=!state.threadBusy&&!state.threadArchived&&!execution.foreign&&targets.length>0,stopping=!!stop||state.interrupting.has(turn),pending=composerState().pending;
+  $('#send').disabled=(execution.blocked&&!running)||((permissionBlocked||modeBlocked)&&!running)||!state.ready||state.threadLoading||state.restoreError||state.threadBusy||stopping||(!running&&(pending||state.threadArchived||state.attachmentLoads>0));
+  $('#send').classList.toggle('running',running);const label=stopping?'正在停止并回收命令…':running?(targets.some(target=>target.threadId!==state.thread?.id)?'中断当前任务及子任务':'中断当前任务'):pending?'正在发送…':state.attachmentLoads>0?'正在读取附件':execution.blocked?'等待当前任务结束':'发送任务';
   $('#send').title=label;$('#send').ariaLabel=label;$('#send').setAttribute('aria-busy',String(stopping||pending));
-  $('#composer-status').textContent=modeBlocked?'正在切换模式，请等待原生配置确认':permissionBlocked?'权限更改正在确认或尚未确认，请核对原生状态后再发送任务':stopping?'正在等待回合结束并回收本轮命令…':pending?'正在发送，输入内容会保留至请求确认':state.attachmentLoads>0?'正在读取附件…':!state.ready?'连接尚未就绪，草稿已保留':state.threadBusy?'此会话被其他页面或 Codex 进程占用，当前只读；关闭占用方后重试继续':state.threadArchived?'此会话已归档，只能查看；在侧栏恢复后可继续对话':!running&&typeof currentMode==='function'&&currentMode()==='plan'?'计划模式已开启。输入需求生成计划，由你确认后执行。':'';
+  $('#composer-status').textContent=modeBlocked?'正在切换模式，请等待原生配置确认':permissionBlocked?'权限更改正在确认或尚未确认，请核对原生状态后再发送任务':stopping?'正在等待回合结束并回收本轮命令…':pending?'正在发送，输入内容会保留至请求确认':state.attachmentLoads>0?'正在读取附件…':!state.ready?'连接尚未就绪，草稿已保留':state.threadBusy?'此会话被其他页面或 Codex 进程占用，当前只读；关闭占用方后重试继续':state.threadArchived?'此会话已归档，只能查看；在侧栏恢复后可继续对话':state.deferredResumes?.has(state.thread?.id)?'历史已载入；发送前将恢复此会话的原生设置。':!running&&typeof currentMode==='function'&&currentMode()==='plan'?'计划模式已开启。输入需求生成计划，由你确认后执行。':'';
+  if(!execution.message)$('#composer-status').removeAttribute?.('title');
+  if(state.ready&&execution.message&&(execution.blocked||!$('#composer-status').textContent)){if(typeof renderExecutionSubmissionStatus==='function')renderExecutionSubmissionStatus($('#composer-status'),execution);else $('#composer-status').textContent=execution.message;}
   if(typeof renderExecutionProgressBanner==='function')renderExecutionProgressBanner();
 
   if(typeof refreshAnalysisDownloads==='function')refreshAnalysisDownloads();
@@ -645,7 +931,8 @@ async function backgroundTerminals(op){
   }while(cursor);
   return data;
 }
-async function interruptTurn(threadId=state.thread?.id,turnId=state.activeTurns.get(threadId)){
+async function interruptTurn(threadId=state.thread?.id,turnId=typeof executionActiveTurn==='function'?executionActiveTurn(threadId):state.activeTurns.get(threadId)){
+  if(state.status?.nativeProcessLifetime==='web-service'&&threadId===state.execution?.ownerThreadId&&typeof interruptExecutionGroup==='function'&&executionStopTargets(threadId).length)return interruptExecutionGroup(threadId);
   if(!turnId)return;
   const previous=state.stopOperations.get(turnId);if(previous?.status==='pending')return previous.promise;
   if(previous&&previous.connection!==state.ws)throw new Error('原停止请求所属连接已失效，不能在新运行实例中重试旧进程操作。');
@@ -686,39 +973,46 @@ async function submitPrompt(submission=null) {
   if(!state.ready)return toast('请等待原生运行时连接');
 
   if(state.nativeModePending||(typeof analysisModeChangeBlocked==='function'&&analysisModeChangeBlocked()))throw new Error('模式正在切换，请稍候再发送；输入已保留。');
-  if(typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked())throw new Error('权限更改尚未确认，请重新打开会话核对后再发送任务');
+  if(typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked()&&!state.deferredResumes?.has(state.thread?.id))throw new Error('权限更改尚未确认，请重新打开会话核对后再发送任务');
   if(state.threadLoading||state.restoreError)return toast('请先完成当前会话的恢复');
   if(state.threadArchived)return toast('请先取消归档，再继续这个会话');
   if(state.threadBusy)return toast('会话被其他页面或 Codex 进程占用，当前只读；请关闭占用方后重试继续会话。输入已保留。');
   if(state.attachmentLoads)return toast('附件正在读取，请稍候');
   if([...state.stopOperations.values()].some(op=>op.threadId===state.thread?.id&&op.status==='pending'))return toast('本轮命令仍在回收，请等待停止结果。');
   const draft=saveComposer();if(draft.pending)return;
+  const admission=typeof executionSubmissionState==='function'?executionSubmissionState():{blocked:false};if(admission.blocked)throw new Error(admission.message+' 输入与附件已保留。');
   const raw=preserveDraft?submission.text:draft.text,revision=draft.revision||0,sourceText=raw.trim(),planPrompt=preserveDraft?null:parsePlanPrompt(sourceText),text=planPrompt??sourceText,attachments=preserveDraft?[]:[...draft.attachments];if(!text&&!attachments.length)return;
   if(!preserveDraft)validateComposerCommand(sourceText);
-  if(planPrompt!==null&&state.activeTurns.has(state.thread?.id))throw new Error('请先停止当前任务，再按计划模式发送；输入已保留。');
+  if(planPrompt!==null&&(typeof executionActiveTurn==='function'?executionActiveTurn():state.activeTurns.has(state.thread?.id)))throw new Error('请先停止当前任务，再按计划模式发送；输入已保留。');
+  if(typeof resumeDeferredThreadForSubmission==='function')await resumeDeferredThreadForSubmission(state.thread?.id);
+  if(typeof permissionSubmissionBlocked==='function'&&permissionSubmissionBlocked())throw new Error('权限更改尚未确认，请重新打开会话核对后再发送任务');
   const context={thread:state.thread,generation:state.navigationGeneration,cwd:state.selectedCwd,model:$('#model').value,effort:$('#effort').value,provider:selectedModelProvider(),projectId:state.selectedProject,mode:planPrompt!==null?'plan':currentMode(),draft};
   if(state.thread&&isRemovedModel(state.threadSettings.get(state.thread.id)?.model,modelProvider()))throw new Error('此历史会话使用的模型已移除。请新建 DeepSeek 会话；历史内容仍可查看。');
   if(planPrompt===null&&attachments.length&&(Object.hasOwn(nativeSlashActions(),text)||text==='/'))throw new Error('此本地命令不接收附件，请先移除附件再执行。输入与附件已保留。');
+  imageAttachmentInputs(attachments); // Reject invalid or obsolete attachments before creating a native thread.
   const metadata=state.modelDetails?.find(model=>model.model===(context.model||state.runtimeDefaults?.model));
-  const unsupported=metadata?.inputModalities?.length?attachments.filter(a=>['image','audio'].includes(a.input.type)&&!metadata.inputModalities.includes(a.input.type)):[];
+  const unsupported=metadata?.inputModalities?.length?attachments.filter(a=>a.input.type==='image'&&!metadata.inputModalities.includes(a.input.type)):[];
   if(unsupported.length)throw new Error('当前模型 '+(context.model||state.runtimeDefaults?.model)+' 未声明支持这些附件：'+unsupported.map(a=>a.name).join('、')+'。请选择支持的模型或移除附件；输入与附件已保留。');
-  const skills=preserveDraft?[]:(draft.skills||[]).filter(skill=>text.split(/[\s，,。!！?？]+/).includes('$'+skill.name));
-  const collaborationMode=turnCollaborationMode(context.mode),input=[{type:'text',text,text_elements:[]},...skills.map(skill=>({type:'skill',name:skill.name,path:skill.path})),...attachments.map(a=>a.input)];
+  const skills=preserveDraft?[]:(draft.skills||[]).filter(skill=>skillMentionPresent(text,skill.name,draft.skills));
+  const collaborationMode=turnCollaborationMode(context.mode),input=[{type:'text',text,text_elements:[]},...skills.map(skill=>({type:'skill',name:skill.name,path:skill.path}))];
   draft.pending=true;updateSend();
   try{
-    if(skills.length){const result=await rpc('skills/list',{cwds:[context.cwd],forceReload:true}),available=(result.data||[]).flatMap(group=>group.skills||[]);for(const skill of skills)if(!available.some(item=>item.path===skill.path&&item.name===skill.name&&item.enabled!==false))throw new Error('所选技能已停用或不可用：'+skill.name+'。输入已保留，请重新选择。');}
+    if(skills.length)await validateSelectedSkills(skills,context.cwd);
     if(planPrompt===null&&!preserveDraft&&!attachments.length&&await nativeSlashCommand(text))return;
     if(!preserveDraft&&sourceText==='/'&&!attachments.length)return showNativeMenu();
     if(typeof prepareAnalysisMemory==='function')await prepareAnalysisMemory();
     if(typeof prepareAnalysisTools==='function')await prepareAnalysisTools();
-    const thread=await ensureThread(context),running=state.activeTurns.get(thread.id);
-    const result=running?await rpc('turn/steer',{threadId:thread.id,expectedTurnId:running,input}):await rpc('turn/start',{threadId:thread.id,input,model:context.model||null,effort:context.effort||null,collaborationMode,additionalContext:runtimeModelContext(thread.id,context)});
+    const thread=await ensureThread(context),running=typeof executionActiveTurn==='function'?executionActiveTurn(thread.id):state.activeTurns.get(thread.id);
+    const latestAdmission=typeof executionSubmissionState==='function'?executionSubmissionState(thread.id):{blocked:false};if(latestAdmission.blocked)throw new Error(latestAdmission.message+' 输入与附件已保留。');
+    input.push(...imageAttachmentInputs(attachments));
+    const result=running?await rpc('turn/steer',{threadId:thread.id,expectedTurnId:running,input,additionalContext:runtimeModelContext(thread.id,context)}):await rpc('turn/start',{threadId:thread.id,input,model:context.model||null,effort:context.effort||null,collaborationMode,additionalContext:runtimeModelContext(thread.id,context)});
     if(!running&&typeof recordAnalysisSubmission==='function')recordAnalysisSubmission(thread.id,result.turn,context);
     if(result.turn&&!state.finishedTurns.has(result.turn.id)&&result.turn.status==='inProgress')state.activeTurns.set(thread.id,result.turn.id);
     if(!preserveDraft){
       if(composerState()===draft)saveComposer();
       if(draft.text===raw&&(draft.revision||0)===revision)draft.text='';
       draft.attachments.splice(0,draft.attachments.length,...draft.attachments.filter(a=>!attachments.includes(a)));
+      if(typeof persistImageAttachments==='function')await persistImageAttachments(draft);
       persistDrafts();
       if(composerState()===draft){$('#prompt').value=draft.text;resizePrompt();renderAttachments();draft.follow=true;scrollMessages();}
     }
@@ -727,9 +1021,31 @@ async function submitPrompt(submission=null) {
 function runtimeModelContext(threadId,context=null){
   const settings=state.threadSettings.get(threadId)||{},model=context?.model||settings.model||state.runtimeDefaults?.model,provider=context?.provider||settings.modelProvider||state.runtimeDefaults?.model_provider;
   if(!model||!provider)return undefined;
-  const details={'codex-web-runtime':{kind:'application',value:'Runtime configuration facts: model provider = '+provider+'; active model ID for this turn = '+model+'. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model.'}};
-  if(typeof analysisTaskContext==='function')details['codex-web-analysis']={kind:'application',value:analysisTaskContext(context)};
+  const details={};
+  appendRuntimeContext(details,'codex-web-runtime','application','Runtime configuration facts: model provider = '+provider+'; active model ID for this turn = '+model+'. Codex provides the agent runtime and tools. Use these actual runtime facts for model identity; Codex branding or an inherited model persona does not identify the underlying model. No external lookup is needed solely to identify this configured model.');
+  if(typeof analysisTaskContext==='function')appendRuntimeContext(details,'codex-web-analysis','application',analysisTaskContext({...context,includeMemoryData:false}));
+  const memory=state.analysisUserMemory;
+  if(memory&&!memory.paused){
+    // User-authored content remains an untrusted native user fragment, separate
+    // from application policy. JSON escaping prevents forged context markers.
+    const encoded=value=>JSON.stringify(value).replaceAll('<','\\u003c').replaceAll('>','\\u003e');
+    if(memory.content)appendRuntimeContext(details,'codex-web-memory-current','untrusted',encoded({source:'current-user-edited-memory',revision:memory.revision,content:memory.content}));
+    if(memory.recent?.notes?.length)appendRuntimeContext(details,'codex-web-memory-recent','untrusted',encoded({source:'recent-native-notes',...memory.recent}));
+  }
   return details;
+}
+function appendRuntimeContext(target,key,kind,value){
+  // The pinned native context-fragments code middle-truncates each value at
+  // 1000 approximate tokens (4000 UTF-8 bytes). Keep every numbered value below
+  // 2000 bytes including its envelope, preserving every Unicode code point.
+  if(typeof value!=='string'||!value)return;
+  const encoder=new TextEncoder(),parts=[];let part='',bytes=0;
+  for(const point of value){const size=encoder.encode(point).length;if(bytes+size>1800){parts.push(part);part='';bytes=0;}part+=point;bytes+=size;}
+  if(part)parts.push(part);
+  for(let index=0;index<parts.length;index++){
+    const name=index?key+'-'+String(index+1).padStart(4,'0'):key;
+    target[name]={kind,value:parts.length===1?parts[index]:'Source '+key+'; part '+(index+1)+'/'+parts.length+'. Concatenate this source’s numbered payloads in order.\n'+parts[index]};
+  }
 }
 async function loadModels() {
   const [result,configuration]=await Promise.all([rpc('model/list',{includeHidden:true}),rpc('config/read',{includeLayers:false,cwd:state.selectedCwd})]);
@@ -755,7 +1071,7 @@ function showView(view) {
   state.view = view; $$('.main-nav .nav-button,.sidebar-footer .nav-button').forEach(node => node.classList.toggle('active', node.dataset.view === view));
   $('#view-chat').hidden = view !== 'chat'; $('#view-panel').hidden = view === 'chat';
   if(window.innerWidth<760)document.body.classList.add('sidebar-hidden');
-  if (view === 'chat') { $('#page-title').textContent = state.thread?.name || state.thread?.preview || '新分析'; $('#prompt').focus(); return; }
+  if (view === 'chat') { $('#page-title').textContent = state.restoreError?'会话恢复失败':state.threadLoading?'正在恢复分析…':state.thread?.name||state.thread?.preview||'新分析'; $('#prompt').focus(); return; }
   const title = {databases:'数据源',skills:'技能',mcp:'MCP 服务',plugins:'本地插件',protocol:'原生能力',settings:'设置',account:'模型服务'}[view]; $('#page-title').textContent = title;
   $('#panel-content').replaceChildren(el('div', 'loading', '正在加载…'));
   ({ databases:renderDatabases, skills:renderSkills, mcp:renderMcp, plugins:renderPlugins, protocol:renderProtocol, settings:renderSettings, account:renderAccount })[view]?.().catch(error => { if (state.view === view) panelError(error); });
@@ -776,73 +1092,120 @@ function formField(root,label,id,{value='',type='text',multiline=false,required=
   const group=el('div','form-field'),caption=el('label','',label),input=el(multiline?'textarea':'input',multiline?'code-editor compact-editor':'field-input');
   input.id=id;caption.htmlFor=id;if(!multiline)input.type=type;input.value=value;input.required=required;input.placeholder=placeholder;group.append(caption,input);root.append(group);return input;
 }
-function readBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(new Error('无法读取 '+file.name));reader.readAsDataURL(file);});}
 function skillPresentation(skill){
   const known=state.skillCatalog?.[skill.name];if(known)return known;
+  if(isRetainedNativeSkill(skill)&&skill.name==='skill-installer')return {title:'安装技能',description:'保留 Codex 内置安装器；GitHub 在线下载流程未接入本产品。请通过本页上传本地技能包安装。'};
   const original=skill.shortDescription||skill.description||'';
   return {title:skill.interface?.displayName||skill.name,description:/[\u3400-\u9fff]/.test(original)?original:'已安装的自定义技能，启用后可在对话中让 Agent 按需要调用。',original};
 }
 async function renderSkills(){
-  const data=await rpc('skills/list',{cwds:[state.selectedCwd],forceReload:true});if(state.view!=='skills')return;
-  const root=panelHeading('技能','仅保留本版本 Codex 源码自带的技能。启用后可在对话中说明任务，由 Codex 按技能说明使用。','skill');
-  const toolbar=el('div','skills-toolbar'),search=el('input','field-input');search.type='search';search.ariaLabel=search.placeholder='搜索技能名称或用途';search.value=state.skillQuery;
+  const [nativeResult,registryResult]=await Promise.allSettled([rpc('skills/list',{cwds:[state.selectedCwd],forceReload:true}),loadUploadedSkills({force:true})]);if(state.view!=='skills')return;
+  const root=panelHeading('技能','管理内置技能或上传自己的技能。启用后，Codex 可在现有任务权限内使用；新分析同样生效。','skill');
+  const upload=el('section','card skill-upload'),uploadTitle=el('h2','','上传技能'),file=el('input','field-input'),uploadFeedback=el('p','subtle');file.type='file';file.accept='.zip,.md';file.id='skill-upload-file';file.ariaLabel='选择技能 ZIP 或 SKILL.md';uploadFeedback.setAttribute('role','status');
+  const limit=Math.floor(skillUploadLimit()/1024/1024);upload.append(uploadTitle,el('p','subtle','选择包含 SKILL.md、references 或 scripts 的 ZIP 技能包，或单个 SKILL.md，最大 '+limit+' MiB。上传后默认停用，不自动执行脚本或安装依赖。'),file);
+  const uploadButton=button('上传技能',async()=>{uploadFeedback.textContent='正在校验并安装技能，请稍候…';uploadFeedback.className='subtle';try{await uploadSkillFile(file.files?.[0]);toast('技能已上传并经原生 Codex 解析，当前停用；请确认内容后启用。');await renderSkills();}catch(error){uploadFeedback.textContent=nativeErrorMessage(error);uploadFeedback.className='panel-error';uploadFeedback.setAttribute('role','alert');}},'solid-button'),blocked=el('p','subtle');blocked.setAttribute('role','status');upload.append(uploadButton,uploadFeedback,blocked);root.append(upload);
+  const managementButtons=[uploadButton];
+  state.skillsViewUpdate=()=>{if(state.view!=='skills'||!root.isConnected)return;const reason=skillMutationReason();blocked.textContent=reason;for(const control of managementButtons)control.disabled=!!reason;file.disabled=state.skillUploadPending;};
+  if(registryResult.status==='rejected')root.append(el('p','panel-error','上传技能登记信息读取失败：'+nativeErrorMessage(registryResult.reason)+'。内置技能仍可查看，上传技能暂不供选择。'),button('重试读取技能',renderSkills));
+  if(nativeResult.status==='rejected'){root.append(el('p','panel-error','原生技能目录读取失败：'+nativeErrorMessage(nativeResult.reason)),button('重试读取原生技能',renderSkills));state.skillsViewUpdate();return;}
+  const data=nativeResult.value,toolbar=el('div','skills-toolbar'),search=el('input','field-input');search.type='search';search.ariaLabel=search.placeholder='搜索技能名称或用途';search.value=state.skillQuery;
   toolbar.append(search);root.append(toolbar);
   const seen=new Set(),skills=[];
-  for(const group of data.data||[])for(const skill of group.skills||[]){if(seen.has(skill.path)||!isRetainedNativeSkill(skill))continue;seen.add(skill.path);skills.push(skill);}
+  for(const group of data.data||[])for(const skill of group.skills||[]){if(seen.has(skill.path)||!isAllowedSkill(skill))continue;seen.add(skill.path);skills.push(skill);}
+  if(registryResult.status==='fulfilled')for(const record of state.uploadedSkills)if(!seen.has(record.path)){seen.add(record.path);skills.push({...record,enabled:false,unavailable:true,description:record.integrity===false?'上传的技能文件不可用；请查看原因，移除后可重新上传。':'原生 Codex 暂未发现此技能，请检查文件或移除后重新上传。'});}
   const summary=el('p','subtle skill-count'),groups=el('div','skill-groups');root.append(summary,groups);
-  const category=()=> 'common';
-  const categories=[['common','Codex 原生技能']];
+  const category=skill=>isRetainedNativeSkill(skill)?'common':'uploaded';
+  const categories=[['common','Codex 原生技能'],['uploaded','上传的技能']];
   function draw(){
     const query=state.skillQuery.trim().toLocaleLowerCase(),matching=skills.filter(skill=>{const p=skillPresentation(skill);return !query||[skill.name,p.title,p.description].join(' ').toLocaleLowerCase().includes(query);});
-    summary.textContent=query?'找到 '+matching.length+' 项技能':'共 '+skills.length+' 项 Codex 源码自带技能';groups.replaceChildren();
+    summary.textContent=query?'找到 '+matching.length+' 项技能':'共 '+skills.length+' 项技能';groups.replaceChildren();managementButtons.splice(1);
     for(const [key,label]of categories){
       const members=matching.filter(skill=>category(skill)===key);if(!members.length)continue;
-      const section=el('details','skill-group');section.dataset.skillGroup=key;section.open=!!query||state.skillGroups.has(key);const heading=el('summary');heading.append(el('span','',label),el('span','tag',members.length+' 项'));section.append(heading);section.ontoggle=()=>{if(!query){if(section.open)state.skillGroups.add(key);else state.skillGroups.delete(key);}};
+      const section=el('details','skill-group');section.dataset.skillGroup=key;section.open=!!query||key==='uploaded'||state.skillGroups.has(key);const heading=el('summary');heading.append(el('span','',label),el('span','tag',members.length+' 项'));section.append(heading);section.ontoggle=()=>{if(!query){if(section.open)state.skillGroups.add(key);else state.skillGroups.delete(key);}};
       const grid=el('div','skill-grid');section.append(grid);groups.append(section);
       for(const skill of members){
-        const p=skillPresentation(skill),enabled=skill.enabled!==false,card=el('article','card skill-card');card.dataset.skillPath=skill.path;card.dataset.skillName=skill.name;
-        const header=el('div','skill-card-heading');header.append(el('h3','',p.title),el('span','tag '+(enabled?'enabled-tag':''),enabled?'已启用':'已停用'));card.append(header,el('p','skill-description',p.description));
+        const p=skillPresentation(skill),enabled=skill.enabled!==false&&!skill.unavailable,card=el('article','card skill-card');card.dataset.skillPath=skill.path;card.dataset.skillName=skill.name;
+        const header=el('div','skill-card-heading');header.append(el('h3','',p.title),el('span','tag '+(enabled?'enabled-tag':''),skill.integrity===false?'文件异常':skill.unavailable?'目录中不可用':enabled?'已启用':'已停用'));card.append(header,el('p','skill-description',p.description));
+        if(skill.integrity===false){const error=el('p','panel-error',skill.error||'上传文件已损坏或发生未登记的变化，不能启用或用于分析。');error.setAttribute('role','status');card.append(error);}
         if(p.original&&!/[\u3400-\u9fff]/.test(p.original)){const original=el('details','skill-original');original.append(el('summary','','原始说明'),el('p','',p.original));card.append(original);}
-        const actions=el('div','skill-card-footer');actions.append(el('span','subtle',({common:'内置技能',custom:skill.scope==='repo'?'当前项目':'个人技能',plugins:'插件提供',templates:'模板技能'})[key]),button(enabled?'停用':'启用',async()=>{await rpc('skills/config/write',{path:skill.path,enabled:!enabled});state.attachments=state.attachments.filter(a=>a.input?.path!==skill.path);renderAttachments();toast('技能已'+(enabled?'停用':'启用'));await renderSkills();}));card.append(actions);grid.append(card);
+        const actions=el('div','skill-card-footer');actions.append(el('span','subtle',key==='common'?'内置技能':'用户上传'));
+        if(!skill.unavailable){const toggle=button(enabled?'停用':'启用',async()=>{assertSkillMutationAllowed();await rpc('skills/config/write',{path:skill.path,enabled:!enabled});state.attachments=state.attachments.filter(a=>a.input?.path!==skill.path);renderAttachments();toast('技能已'+(enabled?'停用':'启用'));await renderSkills();});managementButtons.push(toggle);actions.append(toggle);}
+        if(key==='common'&&skill.name==='skill-installer'){const install=button('上传本地技能',()=>{assertSkillMutationAllowed();file.focus();file.click();});managementButtons.push(install);actions.append(install);}
+        else{const use=button('在分析中使用',()=>useAnalysisSkill(skill));use.disabled=!enabled;actions.append(use);}
+        const record=key==='uploaded'&&state.uploadedSkills.find(item=>item.path===skill.path&&item.name===skill.name);if(record){const remove=button('移除',()=>removeUploadedSkill(skill,record));managementButtons.push(remove);actions.append(remove);card.append(el('p','subtle skill-package-info',(record.files??'—')+' 个文件 · '+Math.ceil((record.bytes||0)/1024)+' KiB'));}
+        card.append(actions);grid.append(card);
       }
     }
-    if(!matching.length)groups.append(el('p','empty-small',query?'没有找到匹配的技能。':'未发现本版本自带技能，请检查原生运行时的技能安装状态。'));
+    if(!matching.length)groups.append(el('p','empty-small',query?'没有找到匹配的技能。':'未发现可用技能，请检查原生运行时的技能安装状态。'));state.skillsViewUpdate();
   }
   search.oninput=()=>{state.skillQuery=search.value;draw();};draw();
   for(const group of data.data||[])for(const error of group.errors||[])root.append(el('p','panel-error',nativeErrorMessage(error.message||error)));
 }
+
 function parseStringObject(value,label){const object=JSON.parse(value||'{}');if(!object||Array.isArray(object)||typeof object!=='object'||Object.values(object).some(value=>typeof value!=='string'))throw new Error(label+' 必须是字符串值组成的 JSON 对象');return object;}
-function customMcpDialog(existingNames) {
-  openDialog('添加自定义 MCP',root=>{
-    formField(root,'服务名称','mcp-name',{required:true,placeholder:'my-tools'}).pattern='[A-Za-z0-9][A-Za-z0-9_-]{0,63}';
+function useAnalysisSkill(skill){
+  if(skill.integrity===false||skill.unavailable)throw new Error('此技能文件不可用，请在技能页检查原因并重新上传。');
+  if(skill.enabled===false)throw new Error('请先启用此技能。');
+  const draft=saveComposer();if(draft.pending)throw new Error('当前输入正在发送，请稍后选择技能。');
+  draft.skills=[...(draft.skills||[]).filter(item=>item.path!==skill.path),{name:skill.name,path:skill.path}];
+  const mention='$'+skill.name;
+  if(!skillMentionPresent(draft.text,skill.name,draft.skills))draft.text=(draft.text?draft.text.trimEnd()+' ':'')+mention+' ';
+  showView('chat');$('#prompt').value=draft.text;resizePrompt();persistDrafts();$('#prompt').focus();
+}
+function sameMcpConfig(left,right){
+  const canonical=value=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])])):value;
+  return JSON.stringify(canonical(left))===JSON.stringify(canonical(right));
+}
+function checkMcpConfig(name,expected,before){if(!sameMcpConfig(expected,before.config?.mcp_servers?.[name]))throw new Error('此 MCP 配置已变更，未覆盖已有修改。请刷新服务列表后重试。');}
+async function editMcpConfig(name,expected){
+  const before=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});checkMcpConfig(name,expected,before);
+  customMcpDialog(new Set(Object.keys(before.config?.mcp_servers||{})),{name,config:before.config.mcp_servers[name]});
+}
+function removeMcpConfig(name,expected){
+  openDialog('移除 MCP 配置',root=>root.append(el('p','','将移除“'+name+'”的用户级连接配置，不卸载服务器上的软件，也不删除服务中的数据。已开始的任务按原生运行时的生命周期处理；后续任务将使用更新后的工具配置。')),async()=>{
+    const before=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});checkMcpConfig(name,expected,before);
+    await writeMcpConfig(name,null,before);
+    const after=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});
+    if(Object.hasOwn(after.config?.mcp_servers||{},name)){await renderMcp();throw new Error('用户级配置已移除，但其他配置层仍提供此 MCP。请在原配置位置移除，或在此停用；服务尚未完全移除。');}
+    toast('MCP 连接配置已移除，原生运行时将在下一次任务使用更新后的工具配置');await renderMcp();
+  },'移除连接');
+}
+function mcpConnectionLabel(config){if(!config.url)return config.command+' · stdio';try{return new URL(config.url).origin+' · HTTP';}catch{return 'HTTP 地址无效，请编辑配置';}}
+function customMcpDialog(existingNames,editing=null) {
+  const original=editing?.config||{};
+  openDialog(editing?'编辑 MCP 配置':'添加自定义 MCP',root=>{
+    const name=formField(root,'服务名称','mcp-name',{required:true,placeholder:'my-tools',value:editing?.name||''});name.pattern='[A-Za-z0-9][A-Za-z0-9_-]{0,63}';name.disabled=!!editing;
     const caption=el('label','','连接方式'),transport=el('select','field-input');transport.id='mcp-transport';caption.htmlFor=transport.id;transport.append(new Option('stdio · 启动服务器上的命令','stdio'),new Option('HTTP · 连接 Streamable HTTP 服务','http'));root.append(caption,transport);
     const stdio=el('div'),http=el('div');http.hidden=true;root.append(stdio,http);
-    formField(stdio,'启动命令','mcp-command',{placeholder:'npx / uvx / python3'});
-    formField(stdio,'命令参数（JSON 数组）','mcp-args',{multiline:true,value:'[]',placeholder:'["-y", "@example/mcp-server"]'});
-    formField(stdio,'工作目录（可选，服务器绝对路径）','mcp-cwd');
-    formField(stdio,'环境变量（可选，JSON 对象）','mcp-env',{multiline:true,value:'{}'});
-    formField(http,'服务 URL','mcp-url',{type:'url',placeholder:'https://example.com/mcp'});
-    formField(http,'Bearer Token 环境变量名（可选）','mcp-bearer-env',{placeholder:'MY_MCP_TOKEN'});
-    formField(http,'请求头（可选，JSON 对象）','mcp-headers',{multiline:true,value:'{}'});
-    formField(http,'从环境变量读取请求头（可选，JSON 对象）','mcp-env-headers',{multiline:true,value:'{}',placeholder:'{"Authorization":"MY_AUTH_HEADER"}'});
+    formField(stdio,'启动命令','mcp-command',{value:original.command||'',placeholder:'npx / uvx / python3'});
+    formField(stdio,editing?'命令参数（留空保留，填写 [] 清空）':'命令参数（JSON 数组）','mcp-args',{multiline:true,value:editing?'':JSON.stringify(original.args||[]),placeholder:'["-y", "@example/mcp-server"]'});
+    formField(stdio,'工作目录（可选，服务器绝对路径）','mcp-cwd',{value:original.cwd||''});
+    formField(stdio,editing?'环境变量（留空保留，填写 {} 清空）':'环境变量（可选，JSON 对象）','mcp-env',{multiline:true,value:editing?'':'{}'});
+    formField(http,editing?'服务 URL（留空保留）':'服务 URL','mcp-url',{type:'url',value:'',placeholder:'https://example.com/mcp'});
+    formField(http,'Bearer Token 环境变量名（可选）','mcp-bearer-env',{value:original.bearer_token_env_var||'',placeholder:'MY_MCP_TOKEN'});
+    formField(http,editing?'请求头（留空保留，填写 {} 清空）':'请求头（可选，JSON 对象）','mcp-headers',{multiline:true,value:editing?'':'{}'});
+    formField(http,editing?'环境变量请求头（留空保留，填写 {} 清空）':'从环境变量读取请求头（可选，JSON 对象）','mcp-env-headers',{multiline:true,value:editing?'':'{}',placeholder:'{"Authorization":"MY_AUTH_HEADER"}'});
     transport.onchange=()=>{stdio.hidden=transport.value!=='stdio';http.hidden=transport.value!=='http';$$('input,textarea',stdio).forEach(input=>input.disabled=stdio.hidden);$$('input,textarea',http).forEach(input=>input.disabled=http.hidden);};transport.onchange();
-    const label=el('label','check-label'),enabled=el('input');enabled.type='checkbox';enabled.id='mcp-enabled';enabled.checked=true;label.append(enabled,document.createTextNode(' 添加后启用'));root.append(label,el('p','','命令和环境变量使用服务器环境。需要 OAuth 的 HTTP 服务可在添加后登录。保存的密钥仅写入本机 Codex 配置。'));
+    transport.value=original.url?'http':'stdio';transport.onchange();
+    const label=el('label','check-label'),enabled=el('input');enabled.type='checkbox';enabled.id='mcp-enabled';enabled.checked=original.enabled!==false;label.append(enabled,document.createTextNode(' 启用此服务'));root.append(label,el('p','',editing?'未填写的命令参数、URL、环境变量和请求头保留原值，已有连接参数和密钥不回显。其他高级配置原样保留。':'命令和环境变量使用服务器环境。需要 OAuth 的 HTTP 服务可在添加后登录。保存的密钥仅写入本机 Codex 配置。'));
   },async root=>{
     const value=id=>$('#'+id,root).value.trim(),name=value('mcp-name');if(!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name))throw new Error('服务名只能包含英文字母、数字、短横线和下划线');
-    const before=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});if(existingNames.has(name)||Object.hasOwn(before.config?.mcp_servers||{},name))throw new Error('此服务名已存在，请更换名称');
-    const config={enabled:$('#mcp-enabled',root).checked};
+    const before=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});if(editing)checkMcpConfig(name,original,before);else if(existingNames.has(name)||Object.hasOwn(before.config?.mcp_servers||{},name))throw new Error('此服务名已存在，请更换名称');
+    const config={...original,enabled:$('#mcp-enabled',root).checked};
     if(value('mcp-transport')==='stdio'){
+      for(const key of ['url','bearer_token_env_var','http_headers','env_http_headers','http_headers_helper'])delete config[key];
       if(!value('mcp-command'))throw new Error('请输入启动命令');config.command=value('mcp-command');
-      config.args=JSON.parse(value('mcp-args')||'[]');if(!Array.isArray(config.args)||config.args.some(v=>typeof v!=='string'))throw new Error('命令参数必须为字符串 JSON 数组');
-      const env=parseStringObject(value('mcp-env'),'环境变量');if(Object.keys(env).length)config.env=env;if(value('mcp-cwd')){if(!value('mcp-cwd').startsWith('/'))throw new Error('请输入服务器的绝对工作目录');config.cwd=value('mcp-cwd');}
+      if(value('mcp-args')||!editing){config.args=JSON.parse(value('mcp-args')||'[]');if(!Array.isArray(config.args)||config.args.some(v=>typeof v!=='string'))throw new Error('命令参数必须为字符串 JSON 数组');}
+      if(value('mcp-env'))config.env=parseStringObject(value('mcp-env'),'环境变量');delete config.cwd;if(value('mcp-cwd')){if(!value('mcp-cwd').startsWith('/'))throw new Error('请输入服务器的绝对工作目录');config.cwd=value('mcp-cwd');}
     }else{
-      const url=safeURL(value('mcp-url'));if(!url)throw new Error('请输入有效的 HTTP 或 HTTPS 地址');config.url=url;
-      if(value('mcp-bearer-env'))config.bearer_token_env_var=value('mcp-bearer-env');
-      const headers=parseStringObject(value('mcp-headers'),'请求头'),envHeaders=parseStringObject(value('mcp-env-headers'),'环境变量请求头');
-      if(Object.keys(headers).length)config.http_headers=headers;if(Object.keys(envHeaders).length)config.env_http_headers=envHeaders;
+      for(const key of ['command','args','cwd','env','env_vars'])delete config[key];
+      const url=safeURL(value('mcp-url')||(editing?original.url:''));if(!url)throw new Error('请输入有效的 HTTP 或 HTTPS 地址');config.url=url;
+      delete config.bearer_token_env_var;if(value('mcp-bearer-env'))config.bearer_token_env_var=value('mcp-bearer-env');
+      if(value('mcp-headers'))config.http_headers=parseStringObject(value('mcp-headers'),'请求头');if(value('mcp-env-headers'))config.env_http_headers=parseStringObject(value('mcp-env-headers'),'环境变量请求头');
     }
-    await writeMcpConfig(name,config,before);toast(config.enabled?'MCP 已添加并启用':'MCP 已添加，当前停用');await renderMcp();
-  },'添加');
+    if(editing&&sameMcpConfig(config,original)){toast('配置未变更');return;}
+    await writeMcpConfig(name,config,before);toast(editing?'MCP 配置已保存，下一次任务使用更新后的工具配置':config.enabled?'MCP 已添加并启用':'MCP 已添加，当前停用');await renderMcp();
+  },editing?'保存':'添加');
 }
 async function writeMcpConfig(name,value,before,key='') {
   await rpc('config/batchWrite',{edits:[{keyPath:'mcp_servers.'+JSON.stringify(name)+(key?'.'+key:''),value,mergeStrategy:'replace'}],expectedVersion:before.layers?.find(layer=>layer.name?.type==='user'&&!layer.name?.profile)?.version,reloadUserConfig:true});
@@ -884,7 +1247,8 @@ async function renderMcp(){
   const params={limit:100,detail:'toolsAndAuthOnly'};if(state.thread?.id&&!state.threadBusy&&!state.threadArchived)params.threadId=state.thread.id;
   const cached=state.mcpCache.get(JSON.stringify([state.selectedCwd,params]));if(cached)servers=cached.data;
   const add=button('添加自定义 MCP',()=>customMcpDialog(names),'solid-button'),refresh=button('刷新连接状态',()=>loadStatus(true));
-  actions.append(add,refresh,button('重新加载配置',async()=>{invalidateMcpCache();await rpc('config/mcpServer/reload',null);await renderMcp();}));root.append(actions,status,grid);
+  const reload=button('重新加载配置',async()=>{reload.disabled=true;reload.textContent='正在重新加载…';try{invalidateMcpCache();await rpc('config/mcpServer/reload',null);await renderMcp();toast('原生 MCP 配置已重新加载，正在更新连接状态；工具是否就绪请查看各服务状态。');}finally{if(reload.isConnected){reload.disabled=false;reload.textContent='重新加载配置';}}});
+  actions.append(add,refresh,reload);root.append(actions,status,grid);
   const active=()=>state.view==='mcp'&&grid.isConnected;
   function draw(){
     if(!active())return;names.clear();for(const name of [...Object.keys(configs),...servers.map(server=>server.name)])names.add(name);
@@ -893,9 +1257,10 @@ async function renderMcp(){
     for(const name of names){
       const config=configs[name],server=servers.find(server=>server.name===name),enabled=config?.enabled!==false,card=el('article','card mcp-card');card.dataset.mcpName=name;
       const heading=el('div','skill-card-heading');heading.append(el('h3','',name),el('span','tag',enabled?'已启用':'已停用'));card.append(heading);
-      if(config)card.append(el('p','subtle',config.url?new URL(config.url).origin+' · HTTP':config.command+' · stdio'));
+      if(config)card.append(el('p','subtle',mcpConnectionLabel(config)));
+      if(name==='codex_web_databases'&&config?.env?.CODEX_WEB_ANALYSIS_CONTRACT)card.append(el('p','subtle','内置分析服务：移除连接后，发起分析时会自动重新准备。需要持续关闭时请选择“停用”。'));
       if(enabled){const needsAuth=server?.runtimeStatus==='authenticationRequired'||!!config?.url&&server?.authStatus==='notLoggedIn',runtime=needsAuth?'需要认证':({notStarted:'尚未连接',starting:'连接中',connected:'已连接',authenticationRequired:'需要认证',failed:'连接失败',cancelled:'连接已取消',disabled:'原生策略已停用'}[server?.runtimeStatus]||(server?.toolsError?'连接失败':null));card.append(el('p','mcp-state',server?(runtime||'工具目录已就绪')+' · '+Object.keys(server.tools||{}).length+' 个工具':statusError?'暂时无法获取连接状态':'正在读取连接状态…'));if(server?.toolsError)card.append(el('p','panel-error',nativeErrorMessage(new Error(server.toolsError))));}
-      const controls=el('div','card-actions');if(config)controls.append(button(enabled?'停用':'启用',async()=>{const before=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});await writeMcpConfig(name,!enabled,before,'enabled');toast('MCP 已'+(enabled?'停用':'启用')+'，从下一次任务开始生效');await renderMcp();}));
+      const controls=el('div','card-actions');if(config)controls.append(button(enabled?'停用':'启用',async()=>{const before=await rpc('config/read',{includeLayers:true,cwd:state.selectedCwd});checkMcpConfig(name,config,before);await writeMcpConfig(name,!enabled,before,'enabled');toast('MCP 已'+(enabled?'停用':'启用')+'，从下一次任务开始生效');await renderMcp();}),button('编辑配置',()=>editMcpConfig(name,config)),button('移除连接',()=>removeMcpConfig(name,config)));
       if(enabled)controls.append(button('查看工具与资源',()=>showMcpDetails(name)));if(enabled&&config?.url)controls.append(button('OAuth 登录',async()=>showMcpAuthResult(name,await rpc('mcpServer/oauth/login',{name}))));card.append(controls);grid.append(card);
     }
     if(!names.size)grid.append(el('div','card subtle',configLoading?'正在读取服务配置…':statusLoading?'还没有自定义 MCP，可点击上方按钮添加。正在发现其他工具服务…':'还没有 MCP，点击上方按钮添加。'));
@@ -1044,16 +1409,82 @@ const card=el('div','request-card');card.append(el('h3','',request.method.includ
   if(typeof renderExecutionProgressBanner==='function')renderExecutionProgressBanner();
 }
 function responseSample(request){const method=request.method;if(method.includes('mcpServer/elicitation'))return {action:'decline',content:null};if(method==='item/tool/call')return {contentItems:[{type:'inputText',text:''}],success:false};if(method==='execCommandApproval'||method==='applyPatchApproval')return {decision:'denied'};if(method.includes('requestApproval'))return {decision:'decline'};return {};}
-function renderAttachments(){composerState().attachments=state.attachments;const root=$('#attachments');root.replaceChildren();state.attachments.forEach((a,index)=>{const chip=el('div','attachment');if(a.preview){const img=el('img');img.src=a.preview;img.alt=a.name;chip.append(img);}chip.append(el('span','',a.name),button('×',()=>{state.attachments.splice(index,1);renderAttachments();},''));root.append(chip);});}
+function renderAttachments(){composerState().attachments=state.attachments;const root=$('#attachments');root.replaceChildren();state.attachments.forEach((a,index)=>{const chip=el('div','attachment');if(a.preview){const img=el('img');img.src=a.preview;img.alt=a.name;chip.append(img);}chip.append(el('span','',a.name),button('×',()=>{state.attachments.splice(index,1);composerState().attachmentRevision=(composerState().attachmentRevision||0)+1;renderAttachments();persistImageAttachments(composerState()).catch(report);},''));root.append(chip);});}
+const IMAGE_ATTACHMENT_BUDGET=16*1024*1024;
+function imageAttachmentMime(data){
+  const ascii=(start,end)=>String.fromCharCode(...data.slice(start,end));
+  if(data.length>=24&&ascii(0,8)==='\x89PNG\r\n\x1a\n'&&ascii(12,16)==='IHDR')return 'image/png';
+  if(data.length>=12&&data[0]===255&&data[1]===216&&data[2]===255&&data.at(-2)===255&&data.at(-1)===217)return 'image/jpeg';
+  if(data.length>=14&&['GIF87a','GIF89a'].includes(ascii(0,6))&&data.at(-1)===59)return 'image/gif';
+  if(data.length>=20&&ascii(0,4)==='RIFF'&&ascii(8,12)==='WEBP'&&['VP8 ','VP8L','VP8X'].includes(ascii(12,16))&&new DataView(data.buffer,data.byteOffset,data.byteLength).getUint32(4,true)+8===data.length)return 'image/webp';
+  return null;
+}
+function imageAttachmentInputs(attachments){
+  let total=0;
+  return attachments.map(attachment=>{
+    const input=attachment.input,url=input?.url;
+    if(input?.type!=='image'||typeof url!=='string'||url.length>Math.ceil(IMAGE_ATTACHMENT_BUDGET/3)*4+64)throw new Error('仅支持图片附件，请移除无效附件后重新添加；输入已保留。');
+    const match=/^data:(image\/(?:png|jpeg|gif|webp));base64,([A-Za-z0-9+/]*={0,2})$/.exec(url);
+    let bytes;try{if(!match||match[2].length%4)throw new Error();const binary=atob(match[2]);bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);}catch{throw new Error('图片编码无效，请移除并重新添加；输入已保留。');}
+    if(imageAttachmentMime(bytes)!==match[1])throw new Error('图片内容与格式不符，不接受其他文件改名为图片。');
+    total+=bytes.length;
+    if(total>IMAGE_ATTACHMENT_BUDGET)throw new Error('本次图片总量超过 16 MiB，请减少图片后重试；输入与附件已保留。');
+    return {type:'image',url};
+  });
+}
 async function readAttachments(files,draft=composerState()) {
   for(const file of Array.from(files)){
-    if(file.size>16*1024*1024){toast(file.name+' 超过 16 MiB');continue;}
-    if(file.type.startsWith('image/')||file.type.startsWith('audio/')){
-      const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('无法读取 '+file.name));reader.readAsDataURL(file);});
-      draft.attachments.push({name:file.name,preview:file.type.startsWith('image/')?url:null,input:{type:file.type.startsWith('image/')?'image':'audio',url}});
-    }else{const text=await file.text();draft.attachments.push({name:file.name,input:{type:'text',text:'文件 '+file.name+'\n'+text,text_elements:[]}});}
+    try{
+      if(!/\.(?:png|jpe?g|gif|webp)$/i.test(file.name))throw new Error('仅支持 PNG、JPEG、GIF、WebP 图片，不支持文档、表格或音频。');
+      if(!file.size||file.size>IMAGE_ATTACHMENT_BUDGET)throw new Error('图片为空或超过 16 MiB。');
+      const mime=imageAttachmentMime(new Uint8Array(await file.arrayBuffer()));
+      if(!mime)throw new Error('不是受支持的图片内容，不接受其他文件改名为图片。');
+      const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('无法读取图片'));reader.readAsDataURL(new Blob([file],{type:mime}));});
+      const attachment={name:file.name,preview:url,input:{type:'image',url}};
+      imageAttachmentInputs([...draft.attachments,attachment]);
+      await new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>image.naturalWidth&&image.naturalHeight?resolve():reject(new Error('图片内容为空'));image.onerror=()=>reject(new Error('图片无法解码，请使用有效图片。'));image.src=url;});
+      draft.attachments.push(attachment);
+    }catch(error){toast(file.name+'：'+error.message);}
   }
+  draft.attachmentRevision=(draft.attachmentRevision||0)+1;
   if(composerState()===draft)renderAttachments();
+  await persistImageAttachments(draft);
+}
+
+async function imageAttachmentStorage(operation,key,value){
+  if(typeof indexedDB==='undefined')return null;
+  imageAttachmentStorage.database??=new Promise((resolve,reject)=>{
+    // The retired data-file draft store is never opened or interpreted again.
+    const obsolete=indexedDB.deleteDatabase('codex-analysis-attachments-v1');
+    obsolete.onblocked=()=>toast('请关闭旧版页面，以清理已停用的文件附件草稿。');
+    const request=indexedDB.open('codex-image-attachments-v1',1);
+    request.onupgradeneeded=()=>request.result.createObjectStore('drafts');
+    request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(new Error('浏览器无法保存图片草稿，请在关闭或刷新前完成发送。'));
+    request.onblocked=()=>reject(new Error('图片草稿存储被其他页面阻塞，请关闭旧页面后重试。'));
+  });
+  const database=await imageAttachmentStorage.database;
+  return new Promise((resolve,reject)=>{
+    const transaction=database.transaction('drafts',operation==='get'?'readonly':'readwrite'),store=transaction.objectStore('drafts');
+    const request=operation==='get'?store.get(key):operation==='delete'?store.delete(key):store.put(value,key);
+    transaction.oncomplete=()=>resolve(request.result);transaction.onerror=transaction.onabort=()=>reject(new Error('图片草稿保存失败，当前图片仍保留，请在关闭或刷新前完成发送。'));
+  });
+}
+async function persistImageAttachments(draft,key=null){
+  if(typeof state==='undefined'||!state.composers)return;
+  key??=[...state.composers].find(([name,value])=>name!=='new'&&value===draft)?.[0]||[...state.composers].find(([,value])=>value===draft)?.[0];
+  if(!key)return;
+  const attachments=draft.attachments;
+  if(typeof indexedDB==='undefined'){if(attachments.length)toast('此浏览器无法保存图片草稿，请在关闭或刷新前完成发送。');return;}
+  try{imageAttachmentInputs(attachments);await imageAttachmentStorage(attachments.length?'put':'delete',key,attachments);}catch(error){report(error);}
+}
+function restoreImageAttachments(key,draft){
+  if(typeof indexedDB==='undefined')return;
+  const revision=draft.attachmentRevision||0;draft.loads++;
+  draft.attachmentRestore=imageAttachmentStorage('get',key).then(attachments=>{
+    if(!Array.isArray(attachments)||draft.attachments.length||draft.pending||(draft.attachmentRevision||0)!==revision)return;
+    imageAttachmentInputs(attachments);
+    draft.attachments.push(...attachments);
+  }).catch(report).finally(()=>{draft.loads=Math.max(0,draft.loads-1);if(composerState()===draft){state.attachmentLoads=draft.loads;renderAttachments();updateSend();}});
 }
 
 async function fileBrowser(path=state.selectedCwd){const data=await rpc('fs/readDirectory',{path});$('#file-panel').hidden=false;$('#file-path').textContent=path;$('#file-tree').replaceChildren(button('..',()=>fileBrowser(path.split('/').slice(0,-1).join('/')||'/'),'file-row'));$('#file-preview').hidden=true;for(const entry of data.entries||[]){const name=typeof entry==='string'?entry:entry.fileName||entry.name;const full=path.replace(/\/$/,'')+'/'+name;const isDirectory=entry.isDirectory||entry.type==='directory';const row=button('',async()=>{if(isDirectory)return fileBrowser(full);{const result=await rpc('fs/readFile',{path:full});const pre=$('#file-preview');pre.textContent=result.text||result.content||(result.dataBase64?new TextDecoder().decode(Uint8Array.from(atob(result.dataBase64),c=>c.charCodeAt(0))):pretty(result));pre.hidden=false;}},'file-row');row.append(icon(isDirectory?'folder':'file'),document.createTextNode(name));$('#file-tree').append(row);}}
@@ -1067,6 +1498,8 @@ async function threadAction(action,target=null){
       return openDialog('永久删除会话',root=>{
         root.append(el('p','','将永久删除“'+(thread.name||thread.preview||id)+'”的会话历史及其创建的子代理会话，无法撤销。'));
         root.append(el('p','','如果只是想从分析记录中收起，请取消后选择「归档（保留历史）」。永久删除不会回滚工作区文件或删除业务数据库。'));
+        root.append(el('p','','删除成功后，对应原生会话摘要会被清理；已经合入全局摘要的内容需后台异步整理，不会立即从其他进行中的会话撤回。独立保存的长期偏好和已确认的数据源业务知识保留。'));
+        root.append(button('管理长期记忆',()=>{$('#dialog').close();showView('settings');showAnalysisMemory();}),button('管理数据源业务知识',()=>{$('#dialog').close();showView('databases');}));
         if(state.thread?.id===id&&state.threadBusy)root.append(el('p','','打开此历史时检测到其他页面或 Codex 进程占用。请关闭占用方，再点击「永久删除」重新检查；原生确认释放后才能删除，网页不会强制关闭其他连接。'));
         else if(state.activeTurns.has(id)||thread.status?.type==='active')root.append(el('p','','此会话中的当前任务会被停止。'));
         const error=el('p','thread-removal-error panel-error');error.hidden=true;error.setAttribute('role','alert');root.append(error);
@@ -1074,10 +1507,10 @@ async function threadAction(action,target=null){
         const notice=$('.thread-removal-error',root);notice.hidden=true;
         try{await perform(()=>rpc('thread/delete',{threadId:id}));}
         catch(error){
-          const message=/already has an active writer/i.test(error.message)?'此会话仍被其他页面或 Codex 进程占用，历史尚未删除。请关闭占用方后，在此窗口再次点击「永久删除」重试。原生原因：'+nativeErrorMessage(error):/forked history still references it/i.test(error.message)?'此会话仍被分叉会话引用。请先删除相关分叉会话，再重试永久删除；历史尚未删除。原生原因：'+nativeErrorMessage(error):nativeErrorMessage(error);
+          const message=threadDeletionFailure(error);
           notice.textContent=message;notice.hidden=false;throw new Error(message);
         }
-        if(state.thread?.id===id)resetChat();forgetThreadDraft(id);await loadThreads();toast('会话历史已永久删除，无法恢复。');
+        if(state.thread?.id===id)resetChat();forgetThreadDraft(id);await loadThreads();toast('会话历史已永久删除；全局记忆将由后台异步整理，独立保存的偏好和业务知识保留。');
       },'永久删除');
     case'rename':return askText('重命名会话','会话名称',thread.name||'',async name=>{await perform(()=>rpc('thread/name/set',{threadId:id,name}));if(state.thread?.id===id){state.thread.name=name;$('#page-title').textContent=name;}await loadThreads();});
     case'fork':{await prepareAnalysisMemory();const result=await perform(()=>rpc('thread/fork',{threadId:id,config:threadRuntimeConfig(state.threadSettings.get(id)?.modelProvider||state.runtimeDefaults?.model_provider)}));if(generation===state.navigationGeneration)return openThread(result.thread.id);await loadThreads();return toast('分叉会话已创建，可从侧栏打开。');}
@@ -1128,17 +1561,17 @@ function expandTerminal(){const expanded=$('.main').classList.toggle('terminal-e
 function toggleTheme(){const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;localStorage.setItem('codex.theme',theme);}
 async function fetchJSON(path){const response=await fetch(path);if(!response.ok)throw new Error((await response.json()).error||'HTTP '+response.status);return response.json();}
 async function init(){
-  const cleanURL=new URL(location.href);cleanURL.searchParams.delete('token');history.replaceState(null,'',cleanURL);switchComposer(threadRoute().id||'new');state.threadLoading=!!threadRoute().id;updateSend();window.addEventListener('popstate',()=>restoreThreadRoute().catch(report));document.documentElement.dataset.theme=localStorage.getItem('codex.theme')||'light';if(innerWidth<760)document.body.classList.add('sidebar-hidden');
+  const cleanURL=new URL(location.href);cleanURL.searchParams.delete('token');history.replaceState(null,'',cleanURL);const route=renderInitialConversation();switchComposer(route.id||'new');updateSend();window.addEventListener('popstate',()=>restoreThreadRoute().catch(report));document.documentElement.dataset.theme=localStorage.getItem('codex.theme')||'light';if(innerWidth<760)document.body.classList.add('sidebar-hidden');
   $$('[data-view]').forEach(node=>node.onclick=()=>{if(node.id==='new-chat'){resetChat();}showView(node.dataset.view);});
   $('#collapse').onclick=()=>document.body.classList.add('sidebar-hidden');$('#show-sidebar').onclick=()=>document.body.classList.remove('sidebar-hidden');$('#theme-toggle').onclick=toggleTheme;
   $('#project-edit').onclick=()=>editProject().catch(report);$('#project-button').onclick=$('#project-edit').onclick;$('#cwd-button').onclick=$('#project-edit').onclick;
   $('#dialog-close').onclick=()=>$('#dialog').close();$('#dialog-cancel').onclick=()=>$('#dialog').close();
-  $('#send').onclick=()=>{const active=!state.threadBusy&&!state.threadArchived&&state.activeTurns.get(state.thread?.id);Promise.resolve(active?interruptTurn():submitPrompt()).catch(report);};
+  $('#send').onclick=()=>{const active=!state.threadBusy&&!state.threadArchived&&(typeof executionStopTargets==='function'?executionStopTargets().length:executionActiveTurn());Promise.resolve(active?interruptTurn():submitPrompt()).catch(report);};
   $('#prompt').onkeydown=event=>{if(commandMenuKey(event))return;if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&event.keyCode!==229){event.preventDefault();submitPrompt().catch(report);}};
   $('#prompt').oninput=()=>{const draft=saveComposer();draft.revision=(draft.revision||0)+1;resizePrompt();updateSend();updateCommandMenu();};
   $('#conversation-scroll').onscroll=()=>{rememberScroll();updateScrollControl();};
   $('#jump-latest').onclick=()=>{composerState().follow=true;restoreScroll();};
-  window.addEventListener('pagehide',saveComposer);window.addEventListener('resize',positionToast);
+  window.addEventListener('beforeunload',warnBeforeLeavingAnalysis);window.addEventListener('pagehide',()=>{rememberDepartingTurns();saveComposer();});window.addEventListener('resize',positionToast);
   $$('[data-prompt]').forEach(node=>node.onclick=()=>{$('#prompt').value=node.dataset.prompt;$('#prompt').focus();});
   $('#thread-search').oninput=()=>{closeThreadMenu(false);clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadThreads().catch(report),300);};$('#threads-more').onclick=()=>loadThreads(true).catch(report);
   $('#recent-toggle').onclick=()=>switchArchiveScope(false).catch(report);$('#archive-toggle').onclick=()=>switchArchiveScope(true).catch(report);
@@ -1152,6 +1585,6 @@ async function init(){
   $('#files-toggle').onclick=()=>fileBrowser().catch(report);$('#files-close').onclick=()=>$('#file-panel').hidden=true;
   $('#terminal-toggle').onclick=openTerminal;$('#terminal-start').onclick=()=>{try{startTerminal();}catch(error){report(error);}};$('#terminal-expand').onclick=expandTerminal;$('#terminal-close').onclick=()=>{termWS?.close();$('#terminal-panel').hidden=true;$('.main').classList.remove('terminal-expanded');$('#terminal-expand').textContent='展开';terminalStatus('未启动');};
   document.addEventListener('keydown',event=>{if((event.metaKey||event.ctrlKey)&&event.key==='k'){event.preventDefault();resetChat();showView('chat');}});
-  const [status,schema,serverSchema,skillCatalog]=await Promise.all([fetchJSON('/api/status'),fetchJSON('/api/schema/ClientRequest.json'),fetchJSON('/api/schema/ServerRequest.json'),fetchJSON('/skill-catalog.zh-CN.json').catch(()=>({}))]);state.skillCatalog=skillCatalog;state.status=status;state.schema=schema;state.serverSchema=serverSchema;setCwd(state.selectedCwd||status.workspace);$('#runtime-pill').textContent=status.build?'源码 '+status.build.sourceCommit.slice(0,7):status.version.replace('codex-cli ','v');await connect();
+  const [status,schema,serverSchema,skillCatalog]=await Promise.all([fetchJSON('/api/status'),fetchJSON('/api/schema/ClientRequest.json'),fetchJSON('/api/schema/ServerRequest.json'),fetchJSON('/skill-catalog.zh-CN.json').catch(()=>({}))]);state.skillCatalog=skillCatalog;state.status=status;if(status.nativeRuntime?.execution)receiveExecutionSnapshot(status.nativeRuntime.execution);state.schema=schema;state.serverSchema=serverSchema;setCwd(state.selectedCwd||status.workspace);$('#runtime-pill').textContent=status.build?'源码 '+status.build.sourceCommit.slice(0,7):status.version.replace('codex-cli ','v');await connect();
 }
 init().catch(error=>showConnectionError(error.message));

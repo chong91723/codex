@@ -1,3 +1,4 @@
+import {imageFixture} from './image_fixture.mjs';
 // Sidebar ownership, keyboard and storage regressions. User-only native fixtures,
 // genuine app-server results, zero Agent/model requests and no user conversations.
 import fs from 'node:fs';
@@ -37,7 +38,7 @@ try{
   await rpc('thread/inject_items',{threadId:seed,items:[{type:'message',role:'user',content:[{type:'input_text',text:nonce+'_SEED storage-only user fixture, no Agent answer requested.'}]}]});
   const ids=[];for(const label of ['A','B','C']){const id=(await rpc('thread/fork',{threadId:seed,model:'deepseek-flash'})).thread.id;owned.add(id);ids.push(id);await rpc('thread/inject_items',{threadId:id,items:[{type:'message',role:'user',content:[{type:'input_text',text:nonce+'_'+label+' storage-only user fixture, no Agent answer requested.'}]}]});await rpc('thread/name/set',{threadId:id,name:nonce+'_'+label});}
   [a,b,c]=ids;await rpc('thread/archive',{threadId:c});await page.evaluate(()=>loadThreads());await choose(a);
-  await page.locator('#prompt').fill(nonce+'_A_UNSENT');await page.locator('#file-input').setInputFiles({name:'sidebar-draft-a.txt',mimeType:'text/plain',buffer:Buffer.from(nonce+'_A_ATTACHMENT_UNSENT')});await page.waitForFunction(()=>!state.attachmentLoads&&state.attachments.length===1);baseline=await snapshot();
+  await page.locator('#prompt').fill(nonce+'_A_UNSENT');await page.locator('#file-input').setInputFiles(imageFixture('sidebar-draft-a.png'));await page.waitForFunction(()=>!state.attachmentLoads&&state.attachments.length===1);baseline=await snapshot();
   assert.equal(calls.filter(value=>value.method==='turn/start').length,0);return{ownedUserOnlyThreadIds:ids,archivedFixture:c,newModelRequests:0};
  });
  await check('页面右上操作入口已移至侧栏，每行主按钮与菜单按钮互为兄弟',async()=>{

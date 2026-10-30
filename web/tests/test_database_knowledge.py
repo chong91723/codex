@@ -158,7 +158,7 @@ class DatabaseKnowledgeTests(unittest.TestCase):
         confirmed = rules.manage({'operation': 'confirm', 'id': draft['id'], 'version': draft['version'], 'expectedHash': draft['hash'],
                                   'confirmation': {'businessOwner': 'Fixture owner', 'dataSteward': 'Fixture steward', 'note': 'Explicit management acknowledgment'}})['rule']
         original_version = self.source['version']
-        self.gateway.manage('freshness', {'id': self.source['id'], 'maxAgeMinutes': 60})
+        self.gateway.manage('freshness', {'id': self.source['id'], 'maxAgeMinutes': 60, 'expectedRevision': 0})
         other = self.gateway.store.save({'engine': 'postgresql', 'name': 'Other independent source policy', 'host': '127.0.0.1', 'database': 'other_fixture', 'username': 'reader'})
         other = self.gateway.store.status(other, 'connected')
         new_task = Gateway(self.temp.name, thread_id='new-metric-task', turn_id='new-metric-turn')
@@ -169,7 +169,7 @@ class DatabaseKnowledgeTests(unittest.TestCase):
             visible = {source['id']: source for source in new_task.available()}
         self.assertEqual(60, visible[self.source['id']]['maxAgeMinutes'])
         self.assertIsNone(visible[other['id']]['maxAgeMinutes'])
-        new_task.manage('freshness', {'id': self.source['id'], 'maxAgeMinutes': 15})
+        new_task.manage('freshness', {'id': self.source['id'], 'maxAgeMinutes': 15, 'expectedRevision': 1})
         self.assertEqual(15, self.gateway.store.get(self.source['id'])['maxAgeMinutes'])
         self.assertEqual(original_version, new_task.store.get(self.source['id'])['version'])
         self.assertEqual([confirmed], rules.available(self.source['id'])['rules'])
@@ -452,17 +452,32 @@ class DatabaseKnowledgeTests(unittest.TestCase):
             self.assertTrue(any('1 条' in warning for warning in state['snapshot']['warnings']))
             self.assertEqual(state['snapshot']['columnCount'], 4)
             self.assertEqual(self.knowledge.catalog(self.source['id'], 'accounts')['tables'][0]['comment'], 'Account observed comment')
-            with self.assertRaisesRegex(ValueError, '容量上限'):
-                self.save('Different account meaning', target={'table': 'accounts'})
-            self.assertEqual(self.state()['revision'], state['revision'])
-            with self.assertRaisesRegex(ValueError, '容量上限'):
-                self.proposed('Different account meaning', target={'table': 'accounts'})
-            self.assertEqual(self.state()['revision'], state['revision'])
-        # Once an operator expands capacity, a proposal lazily materializes the
-        # previously omitted observed comment and surfaces the actual conflict.
-        self.save('Different account meaning', target={'table': 'accounts'})
-        self.assertEqual(len(self.state()['conflicts']), 1)
-        self.assertEqual(self.state()['conflicts'][0]['target'], {'table': 'accounts'})
+            # Automatic observations do not consume the editable topic budget.
+            state=self.save('Different account meaning', target={'table':'accounts'})
+            self.assertEqual(len(state['conflicts']),1)
+            self.assertEqual(state['snapshot']['columnCount'],4)
+            state=self.save('Separate rule',target={'table':'orders'},aspect='scope')
+            with self.assertRaisesRegex(ValueError,'容量上限'):
+                self.save('Third topic',target={'table':'orders'},aspect='units')
+            # Closing a user topic frees active capacity without deleting history.
+            note=next(note for note in state['notes'] if note['content']=='Separate rule')
+            self.mutation('reject',id=note['id'],reason='No longer applicable')
+            self.save('Third topic',target={'table':'orders'},aspect='units')
+
+    def test_large_exploration_does_not_block_repeated_corrections(self):
+        for index in range(510):
+            self.catalog_value['tables'][0]['columns'].append({'name':'extra_'+str(index),'dataType':'text','nullable':True,'comment':'Physical comment '+str(index),'position':index+4})
+        state=self.scan();self.assertEqual(len(state['notes']),500)
+        note=next(note for note in state['notes'] if note['target']=={'table':'orders','column':'amount'})
+        self.decide(note['id'])
+        for content in ['Reviewed amount definition','Corrected amount definition']:
+            state=self.state()
+            state=self.knowledge.correct(self.source['id'],state['snapshot']['id'],{'kind':'note','id':note['id']},content,expected_revision=state['revision'])
+            note=next(note for note in state['notes'] if note['content']==content)
+            self.decide(note['id'])
+        context=self.context(table='orders')
+        self.assertTrue(any(note['content']=='Corrected amount definition' for note in context['notes']))
+        self.assertTrue(any(note['content']=='Tax inclusive amount' for note in self.state()['notes']))
 
     def test_proposal_batch_is_atomic_and_bounded_and_targets_are_valid(self):
         self.scan()

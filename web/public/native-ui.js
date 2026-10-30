@@ -96,11 +96,11 @@ function renderGoalUsageDetails(root,threadId,goal){const usage=goalUsageSnapsho
 
 function threadRuntimeConfig(provider){
   const configured=state.runtimeDefaults||{},memoryConfig=Object.fromEntries(Object.entries(configured.memories||{}).filter(([,value])=>value!==null&&value!==undefined)),enabled=state.analysisUserMemory?.paused!==true&&configured.features?.memories!==false;
-  // Native startup jobs belong to the server-owned maintenance session. A
-  // browser-owned app-server must not claim a lease and die on WS disconnect.
-  // generate_memories independently preserves eligible native rollout history;
-  // the managed MCP provides native-format notes and read-only memory access.
-  return {...(provider==='deepseek'?{model_auto_compact_token_limit_scope:'total',model_post_turn_compact_threshold_percent:100}:{}),features:{memories:false},memories:{...memoryConfig,version:memoryConfig.version||'v2',use_memories:false,generate_memories:enabled,dedicated_tools:false,min_rollout_idle_hours:1,max_rollouts_per_startup:2,extract_model:'deepseek-flash',consolidation_model:'deepseek-flash'}};
+  const persistent=state.status?.nativeProcessLifetime==='web-service';
+  // Native tools may claim background work only in a service-owned process.
+  // Ordinary task context stays thread-local; only explicit durable notes are
+  // shared. Existing eligible historical rollouts and notes remain untouched.
+  return {...(provider==='deepseek'?{model_auto_compact_token_limit_scope:'total',model_post_turn_compact_threshold_percent:100}:{}),features:{memories:persistent&&enabled},memories:{...memoryConfig,version:memoryConfig.version||'v2',use_memories:persistent&&enabled,generate_memories:false,dedicated_tools:persistent&&enabled,disable_on_external_context:true,min_rollout_idle_hours:1,max_rollouts_per_startup:2,extract_model:'deepseek-flash',consolidation_model:'deepseek-flash'}};
 }
 function currentMode(){return state.thread?(state.nativeModes.get(state.thread.id)||state.threadSettings.get(state.thread.id)?.collaborationMode?.mode||'default'):state.draftMode;}
 function turnCollaborationMode(mode=currentMode()){
@@ -109,13 +109,14 @@ function turnCollaborationMode(mode=currentMode()){
     reasoning_effort:$('#effort').value||settings.effort||state.modelDetails?.find(m=>m.model===($('#model').value||settings.model||state.runtimeDefaults?.model))?.defaultReasoningEffort||null,developer_instructions:null}};
 }
 function renderNativeMode(){
-  const node=$('#mode-toggle');if(!node)return;const plan=currentMode()==='plan',automaticPending=typeof analysisModeChangeBlocked==='function'&&analysisModeChangeBlocked(state.thread?.id),pending=!!state.nativeModePending||automaticPending;
-  node.classList.toggle('plan-active',plan);node.setAttribute('role','switch');node.setAttribute('aria-checked',String(plan));node.setAttribute('aria-busy',String(pending));node.ariaLabel='计划模式';
-  node.querySelector('.plan-switch-state').textContent=pending?'切换中…':plan?'开启':'关闭';
-  node.title=plan?'当前为计划模式；退出不会执行已有方案':'通过 /plan 进入计划模式';
+  const node=$('#exit-plan-mode');if(!node)return;
+  const plan=currentMode()==='plan',automaticPending=typeof analysisModeChangeBlocked==='function'&&analysisModeChangeBlocked(state.thread?.id),pending=!!state.nativeModePending||automaticPending;
+  node.hidden=false;
   node.disabled=pending||state.threadLoading||state.restoreError||state.threadArchived||state.threadBusy||state.activeTurns.has(state.thread?.id);
-  const status=$('#analysis-mode-status');if(status){status.hidden=!plan&&!pending;status.textContent=automaticPending?'方案已提出，正在进入计划模式…':state.nativeModePending?'正在切换计划模式…':'计划模式';status.title='先形成并确认整体分析方案；规划期间可能进行只读调查。';}
-  const exit=$('#exit-plan-mode');if(exit){exit.hidden=!plan;exit.disabled=node.disabled;}
+  node.setAttribute('aria-busy',String(pending));
+  node.setAttribute('role','switch');node.setAttribute('aria-checked',String(plan));
+  node.ariaLabel='计划模式';
+  node.title=automaticPending?'正在进入计划模式…':pending?'正在切换计划模式…':plan?'关闭计划模式；已有方案不会自动执行':'开启计划模式，也可输入 /plan';
   renderContextUsage();
 }
 async function setNativeMode(mode){
@@ -215,14 +216,14 @@ async function showNativeStatus(){
 function renderProposedPlan(item,done){
   const node=el('section','message proposed-plan');node.dataset.proposedPlan=item.id;
   node.append(el('h3','','分析方案'),markdown(item.text||'正在形成分析方案…'));
-  if(done){const actions=el('div','card-actions');actions.append(button('确认并执行分析',()=>reviewPlan(item),'solid-button'),button('修改分析方案',async()=>{await setNativeMode('plan');$('#prompt').focus();toast('请说明需要调整的分析思路、指标口径或输出要求');}));node.append(actions,el('p','subtle','此处确认整体分析方案；规划期间可能进行只读调查。具体工具仍按权限请求审批，执行进度按实际步骤更新。'));}
+  if(done){const actions=el('div','card-actions');actions.append(button('确认并执行分析',()=>reviewPlan(item),'solid-button'),button('修改分析方案',async()=>{await setNativeMode('plan');$('#prompt').focus();toast('请说明需要调整的分析思路、指标口径或输出要求');}));node.append(actions,el('p','subtle','方案用于确认执行步骤，不代表数据事实已经核验；规划期间可能进行只读调查。具体工具仍按权限请求审批，执行进度按实际步骤更新。'));}
   return node;
 }
 function reviewPlan(item){
   if(state.activeTurns.has(state.thread?.id))throw new Error('请等待分析方案生成完成');
   openDialog('确认分析方案',root=>{root.append(el('p','','可以修改下方分析方案。确认后退出计划模式，并开始执行整体方案；具体工具仍受现有权限控制。这不等同于逐条 SQL 审批。'));formField(root,'分析方案','approved-plan',{value:item.text||'',multiline:true,required:true});},async root=>{
     const plan=$('#approved-plan',root).value.trim();if(!plan)throw new Error('分析方案不能为空');
-    await setNativeMode('default');await submitPrompt({text:'我已确认以下分析方案，请按照这个版本执行，保留我明确指定的分析思路、指标口径、时间范围和数据来源。若需调整方案，请先说明。开始执行前请使用原生 update_plan 建立分析步骤，并按实际执行结果更新进度，不使用估算百分比。只依据真实查询和计算结果形成结论；存在 resultId 时保留结果引用，复用与本方案口径一致的已有结果。遇到缺少数据或查询失败，请明确说明，不能编造。完成后逐项回答我的问题，并提供方案要求的图表或分析报告。停止后按实际完成情况重新安排剩余步骤，不假定数据库事务可以断点恢复。\n\n'+plan,preserveDraft:true});
+    await setNativeMode('default');await submitPrompt({text:'我已确认以下完整分析方案。本次确认正文替代此前所有任务方案草稿；以本次正文的目标、筛选条件、时间范围、数据来源和输出数量为准。不要从旧方案补回本次已修改或删除的条件，也不要合并旧的排名或数量要求。这只替代任务版本，不改变数据源权限、已确认指标口径和工具审批。若本次正文存在矛盾，请先澄清。开始执行前请使用原生 update_plan 建立分析步骤，写清本次确认的输出约束，并按实际执行结果更新进度，不使用估算百分比。交付前将实际结果与本次确认的输出数量、筛选范围逐项核对，不能因为字段来源已关联就跳过任务要求核对。只依据真实查询和计算结果形成结论；存在 resultId 时保留结果引用，复用与本方案口径一致的已有结果。遇到缺少数据或查询失败，请明确说明，不能编造。完成后只交付本次确认方案要求的结果，并提供方案要求的图表或分析报告。停止后按实际完成情况重新安排剩余步骤，不假定数据库事务可以断点恢复。\n\n'+plan,preserveDraft:true});
   },'确认并执行分析');
 }
 function executionPlanKey(threadId=state.thread?.id){return 'codex.execution-plans.'+state.runtimeInfo?.codexHome+'.'+threadId;}
@@ -347,6 +348,5 @@ window.addEventListener('resize',positionCommandMenu);
 $('#prompt').addEventListener('compositionstart',()=>{state.commandComposing=true;closeCommandMenu();});
 $('#prompt').addEventListener('compositionend',()=>{state.commandComposing=false;updateCommandMenu();});
 $('#unassigned-chat-button').onclick=()=>unassignedChat();
-$('#mode-toggle').onclick=()=>changeModeWithFeedback(currentMode()==='plan'?'default':'plan').catch(report);
-if($('#exit-plan-mode'))$('#exit-plan-mode').onclick=()=>changeModeWithFeedback('default').catch(report);
+if($('#exit-plan-mode'))$('#exit-plan-mode').onclick=()=>changeModeWithFeedback(currentMode()==='plan'?'default':'plan').catch(report);
 renderNativeMode();renderGoalBanner();

@@ -4,7 +4,7 @@ function metricRuleEmptyDefinition(){return {name:'',description:'',table:{name:
 function metricRuleParseDefinition(text){
   let value;try{value=JSON.parse(text);}catch(error){throw new Error('JSON 格式不正确：'+error.message);}
   if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('口径配置必须是 JSON 对象。');
-  // Imported records only contribute their definition, never status/approval.
+  // Pasted records only contribute their definition, never status/approval.
   const definition=value.definition??value;
   if(!definition||typeof definition!=='object'||Array.isArray(definition))throw new Error('definition 必须是 JSON 对象。');
   return definition;
@@ -57,7 +57,7 @@ function showMetricRules(connection){
   function list(){
     reset('list');sourceNote();body.append(el('p','subtle','由业务负责人确定指标含义，数据维护人员配置字段与计算规则；分析人员在对话中使用已确认口径。Agent 可以提出草稿，草稿需要人工确认后才可用于口径检查。'));
     const toolbar=el('div','db-toolbar');toolbar.append(control('新增口径草稿',()=>editor(null),'solid-button'),control('刷新口径列表',load));body.append(toolbar);
-    const list=el('div','metric-rule-list');if(!rules.length)list.append(el('p','metric-rule-empty','此数据源尚无指标口径。可以新建空白配置，或在编辑器中导入维护人员提供的 JSON。'));
+    const list=el('div','metric-rule-list');if(!rules.length)list.append(el('p','metric-rule-empty','此数据源尚无指标口径。可以新建空白配置，或在编辑器中填写维护人员提供的配置。'));
     for(const record of rules){const row=el('article','metric-rule-card'),info=el('div');info.append(el('strong','',record.definition?.name||'未命名口径'),el('p','subtle','版本 '+record.version+' · '+metricRuleStatus(record)));if(record.definition?.description)info.append(el('p','',record.definition.description));row.append(info,control('查看口径',()=>detail(record)));list.append(row);}body.append(list);actions.append(control('关闭',()=>exit(true)));
   }
   async function load(){const ticket=++generation;notice('正在读取此数据源的口径…');const data=await api({operation:'list',sourceId:connection.id});if(!dialog.isConnected||ticket!==generation)return;rules=data.rules||[];list();}
@@ -71,12 +71,11 @@ function showMetricRules(connection){
     if(record.status!=='disabled')actions.append(control('停用此口径',()=>disable(record)));
   }
   function editor(record){
-    reset('editor');sourceNote();body.append(el('h3','',record?'编辑口径 · 保存为新草稿':'新增口径草稿'),el('p','subtle','此处面向配置维护人员。保存仅生成草稿，必须核对字段、范围、单位和公式，再单独确认。导入已有记录时，只采用 definition，不导入确认状态。'));
+    reset('editor');sourceNote();body.append(el('h3','',record?'编辑口径 · 保存为新草稿':'新增口径草稿'),el('p','subtle','此处面向配置维护人员。保存仅生成草稿，必须核对字段、范围、单位和公式，再单独确认。粘贴已有记录时，只采用 definition，不采用确认状态。'));
     if(record?.status==='confirmed')body.append(el('p','db-error metric-rule-edit-warning','保存新草稿后，旧的已确认版本将不能用于新的执行或回答发布；历史记录保留。新版本需要重新确认后才能继续使用。'));
     const label=el('label','db-field'),input=el('textarea','code-editor metric-rule-editor');input.name='metricRuleDefinition';input.ariaLabel='指标口径 JSON';input.spellcheck=false;input.value=JSON.stringify(record?.definition||metricRuleEmptyDefinition(),null,2);input.oninput=()=>{dirty=true;};label.append(el('span','','高级配置 JSON'),input);body.append(label);
-    const importer=el('input');importer.type='file';importer.accept='.json,application/json';importer.hidden=true;importer.ariaLabel='导入口径 JSON 文件';importer.onchange=()=>run(async()=>{const file=importer.files?.[0];importer.value='';if(!file)return;if(file.size>1024*1024)throw new Error('配置文件超过一 MiB，请使用精简的口径定义。');const definition=metricRuleParseDefinition(await file.text());input.value=JSON.stringify(definition,null,2);dirty=true;notice('配置已导入编辑器，尚未保存或确认。');importer.value='';});
     const helper=el('details','metric-rule-help');helper.append(el('summary','','配置字段与支持范围说明'),el('p','','name、description：名称与业务含义；table：表名与可选 schema；fields：别名到真实列、类型和单位的映射；recordKey：唯一记录键，避免重复计算。'),el('p','','parameters：任务参数类型；ranges：起始参数严格小于结束参数的约束；filters：筛选字段、比较符，以及 parameter 或 value；groupBy：分组字段别名。'),el('p','','measures：sum、count、min、max、mean 聚合，count 统计非空字段值，需配置字段、单位、保留小数位、舍入及空值策略；formulas：引用指标 ID 的加减乘除表达式，并配置单位、精度和除零策略。'),el('p','','字段类型支持 decimal、int、text、date；date 使用 YYYY-MM-DD。单位 1 表示无量纲，% 的表达式需要显式乘以 100。小数位为零至十二；舍入支持 HALF_UP、HALF_EVEN、DOWN。当前范围为单表字段、筛选、分组聚合与公式；复杂关联需先由维护人员提供合适的业务表或视图。'));
-    const preview=el('div','metric-rule-preview'),tools=el('div','db-toolbar');tools.append(control('导入 JSON 文件',()=>{importer.disabled=false;importer.click();}),control('预览口径说明',()=>{preview.replaceChildren(metricRuleDefinitionView(metricRuleParseDefinition(input.value)));notice('已生成阅读预览；保存时服务端还会验证结构与单位。');}));body.append(importer,tools,helper,preview);
+    const preview=el('div','metric-rule-preview'),tools=el('div','db-toolbar');tools.append(control('预览口径说明',()=>{preview.replaceChildren(metricRuleDefinitionView(metricRuleParseDefinition(input.value)));notice('已生成阅读预览；保存时服务端还会验证结构与单位。');}));body.append(tools,helper,preview);
     actions.append(control('取消编辑',()=>{if(dirty&&!window.confirm('放弃尚未保存的口径修改？'))return;record?detail(record):list();}),control('保存草稿',async()=>{
       const definition=metricRuleParseDefinition(input.value);notice('正在保存口径草稿…');const payload={operation:'save',sourceId:connection.id,definition};if(record){payload.id=record.id;payload.expectedVersion=record.version;}
       const data=await api(payload);updateRule(data.rule);detail(data.rule);notice('草稿已保存。确认后才能使用此版本进行口径检查。');

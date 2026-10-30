@@ -46,10 +46,17 @@ def tls_context(config):
     if not config.get('verifyTls',True):context.check_hostname=False;context.verify_mode=ssl.CERT_NONE
     return context
 
+def mysql_bit(value):
+    # MySQL's declared BIT wire type is an unsigned bit string, not a BLOB.
+    # Decode only that driver type; arbitrary binary columns remain base64.
+    return int.from_bytes(value, 'big')
+
 class Mysql:
     def __init__(self,config):
         import pymysql
-        self.config=config;kwargs={'host':config['host'],'port':config['port'],'user':config['username'],'password':config['password'],'database':config['database'],'charset':'utf8mb4','autocommit':False,'connect_timeout':5,'read_timeout':12,'write_timeout':12,'local_infile':False}
+        from pymysql.constants import FIELD_TYPE
+        conversions=dict(pymysql.converters.conversions);conversions[FIELD_TYPE.BIT]=mysql_bit
+        self.config=config;kwargs={'host':config['host'],'port':config['port'],'user':config['username'],'password':config['password'],'database':config['database'],'charset':'utf8mb4','autocommit':False,'connect_timeout':5,'read_timeout':12,'write_timeout':12,'local_infile':False,'conv':conversions}
         if config['tls']:kwargs['ssl']=tls_context(config)
         self.connection=pymysql.connect(**kwargs)
         with self.connection.cursor() as cursor:

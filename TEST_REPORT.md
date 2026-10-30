@@ -1,5 +1,163 @@
 # 实际验收报告
 
+## 当前增量：刷新会话首屏（2026-10-30）
+
+修复 RF-01：已有会话刷新时，静态模板及启动等待阶段错误显示“新分析”欢迎页。地址中的会话ID始终保留，原先没有因此真正创建新分析。修改限定在index.html中性初始状态、app.js首个await之前的路由呈现及共用加载／失败标题；不改原生会话恢复、模型、数据库或后台服务。
+
+| 验证层 | 实际结果 | 证据与边界 |
+|---|---|---|
+| 基线复现与截图对照 | 日常8765仅静态页面、app.js下载受控阻塞，第一个rAF实际看见欢迎页／新建会话；修后同尺寸同状态为中性加载且禁提交 | baseline-first-paint、daily-fixed-first-paint各JSON／PNG；不进入日常用户原生会话，源文件hash匹配 |
+| 实际浏览器／原生协议 | 独立53913实际恢复原有Flash历史，10／10；覆盖defer首帧、真实model/list与thread/read响应等待、完整刷新、真实归档分叉、未知ID错误、新分析留稿、切换／后退和迟到响应 | browser/session-refresh-results.json；延迟真实响应但不模拟内容，不用固定延时伪造完成；pageerror0 |
+| 原生任务与历史保护 | 浏览器执行请求0、原生新增任务事件0，本轮记忆job领取0；归档专用fork原生清理，原4条Flash测试历史全部保留 | no-model-and-history-preserved.json、cleanup.json。不是新一轮模型生成或业务数据库验收 |
+| 行为回归／静态 | 新增session_route_state.mjs17／17；完整前端26文件436／436；app及新浏览器脚本语法、diff检查通过 | 首轮421／436的15失败均旧VM夹具未加载新增共用函数；只补真实helper及最小DOM，不放宽原断言。js-summary-first/final及对应完整日志分别保留 |
+
+本轮未修改后端，无前端打包／TypeScript构建步骤，不重复运行数据库和模型测试；前批Python、原生完整性结果仍单独保留，不能算本批新执行。实际截图已查看，日常HTTP返回最终HTML和app.js；无需重启服务或用户现有任务。仅关闭本轮独立53913服务，保留其原生profile和历史，不动8765或42399。公开证据见[session-refresh-2026-10-30](test-results/session-refresh-2026-10-30/)，新脚本为[session_refresh_desktop.mjs](web/tests/session_refresh_desktop.mjs)。
+
+## 当前增量：会话与记忆管理（2026-10-30）
+
+本批保留临时上下文隔离、明确偏好跨会话共享、确认业务知识按数据源管理；继续使用固定原生会话、记忆笔记与后台合并。完整问题见[AUDIT_2026-10-30.md](AUDIT_2026-10-30.md)，公开收据、截图和失败记录见[memory-management-2026-10-30](test-results/memory-management-2026-10-30/)。
+
+| 验证层 | 本批实际结果 | 边界／收据 |
+|---|---|---|
+| 真实 Flash／偏好保存与跨会话读取 | 原生 memories.add_ad_hoc_note 实际保存，另建会话读取；管理页改为新偏好后，新会话使用新版本；删除原聊天后独立notes哈希和编辑保留，新Flash仍读到新偏好 | 四条模型流程独立记账；普通thread memory_mode disabled。首次纠正读取失败保留，修复上下文传输后重跑通过；不认证任意模型语义遵循 |
+| 上下文完整性／MM-06 | 原单值被原生4000字节预算中间截断，新编辑未进入rollout。修后完整分段，用户内容以独立untrusted片段传递；实际rollout含新编辑，最大1893字节／项，页面无JSON气泡 | start真实模型通过；steer构造及Unicode／完整重组有12项行为回归，不称新做了真实运行中的steer模型测试 |
+| 原生维护／生命周期 | 独立B的真实Flash原生全局job done、摘要真实变化、当前回执匹配，登记唯一；内部thread已原生删除、进程退出；运行记录不进普通列表，已移除直链转设置且零resume／turn | background-final-proof.json、ui-background-completed-direct-link.json。浏览器关闭与原生job完成同秒，仅清理时间明确晚于关闭，不声称整段工作在无浏览器期间执行；保留写锁，未新制造强占用删除案例 |
+| 浏览器管理／删除与启停 | 两页编辑陈旧CAS拒绝且草稿保留，核对后保存；关窗轮询停止；生成摘要不回填编辑器，历史摘要空态明确；删除确认的两个管理入口可用、实际删除历史与原生行；同名用户会话保留 | ui-edit-cas.json、ui-delete-independent-memory.json、ui-memory-adjacent.json。启停后原生generate_memories均false，features/use按实际启停；首轮过早断言另存为控制器时序错误 |
+| 桌面展示 | 1440和1024宽度实际浏览器无横溢出，长内容在对话框内滚动；已保存／冷却／真实完成的卡片分别截图查看 | ui-memory-1440.png、ui-memory-1024.png、background/ui-completed-maintenance.png；不覆盖手机端 |
+| 后端／原生协议回归 | 完整Python505项：501通过、4条件跳过；该4项在隔离原生实例实际启用后另4／4通过 | python-full-summary.json、native-optin-summary.json；夹具、无模型原生测试和真实Flash分别计账 |
+| 前端／静态／上游完整性 | 25文件419／419；自有Web102个Python AST、135个JS/MJS/CJS语法通过；diff检查通过；固定源码pristine、发行哈希及四套完整schema相符，176／176方法 | js-summary.json、static-checks-summary.json、upstream-native-verification-summary.json。无前端打包／TypeScript构建步骤；不以语法代替功能 |
+| 日常生效 | 原位优雅重启8765 Web747942→935065、native935501；实际浏览器最终app/learning哈希匹配、Flash/DeepSeek、零模型任务。原生历史重启前后均34行，侧栏首页25条为分页 | daily-restart.json、daily-smoke.json、daily-history-preserved.json。原环境仅RAM继承；将旧generate_memories=true通过原生CAS单键对齐false，features/use保持true，未清空记忆或历史 |
+
+额外完成此前安排的北京时间10月30日16:40自然冷却检查：原42399实例和历史保持，新全局合并与memory_summary.md变化已确认；新Flash实际用户问题未包含预期标题，原生thread/memory/read与注入摘要全文SHA256一致，回答采用“结论摘要 → 数据与限制”，不再用“证据先行”。读取路径是原生全局摘要注入，没有专用read工具调用收据；不冒称逐个历史语义均已保留。[scheduled](test-results/memory-management-2026-10-30/scheduled/)与scheduled-recall-reviewed.json保留独立证据，更新下方当时的未来待测记录。
+
+本轮只关闭自有49941／41931测试服务及浏览器，确认idle和无未完成记忆job后优雅退出，保留profile／历史／notes／摘要；不停止42399或日常8765。未重新执行数据库分析、业务裁决或源时效完整流程，不拿记忆测试替代这些历史验收。仍不承诺删除聊天同步撤回全局摘要、已注入上下文即时消失或任意偏好100%遵循；旧未登记内部会话不按标题批量隐藏／删除。资格检查最终仍由原生claim决定，没有自研总结循环或修改upstream/native。
+
+## 当前增量：本地上传 Skill（2026-10-30）
+
+本节是用户最新确认的安装范围，优先于下方保留的“仅四个内置技能”和在线下载历史记录。产品支持用户在技能管理页上传本地技能，不提供公开 GitHub 在线安装入口；既有下载超时不再是待办或验收阻塞。这是产品安装路径的限制，不是对 Agent 所有网络访问设置出口防火墙。聊天附件仍仅支持图片。
+
+本批在独立配置空间、工作区和真实桌面浏览器验收本地上传，真实模型固定为 `deepseek-flash`。主要样例是明确构造的技能夹具，不包含业务数据库数据；`flash-use.json` 的实际产物、原生输入与脚本成功收据不冒充业务分析正确性证明。归档路径为 [uploaded-skills-2026-10-30](test-results/uploaded-skills-2026-10-30/)，本批收据优先于后续保留的旧批次范围。
+
+| 层次／用例 | 实际结果 | 明确边界 |
+|---|---|---|
+| 原生安装解析／回滚 | ZIP 随包四文件和单 SKILL.md 实际上传，原生发现真实名称／路径并默认停用；无效包、路径穿越、多技能、CSV 拒绝；陈旧删除拒绝 | 零模型安装；不调用安装脚本或下载依赖。归档 `native-install-probe.json`、`native-invalid-and-rollback.json` |
+| 实际浏览器管理 | ZIP／单文档上传，停用卡片、选用及刷新，停用旧草稿拒绝；坏包独立显示并安全移除；installer 本地选择零模型且草稿不变 | UI 收据分别保留；不是用截图替代真实上传或模型调用 |
+| 真实 Flash 使用 | 原生同回合收到 `uploaded-skill-proof` 和 `Uploaded Data Helper`，实际读 reference，运行附带 Python 写出 JSON，原生命令 exit0，真实文件 marker/hash 与输出一致；包 manifest 前后不变 | 只为受控本地验收脚本，不代表任意上传包、运行库或在线服务均兼容；无业务数据与数据库请求 |
+| 执行期配置变更 | 真实脚本运行时 UI 上传／移除／启停禁用；REST 移除及原生停用真实拒绝 | 忙碌／等待／清理／未知回执各状态另由离线与后端回归覆盖，不把一次运行覆盖说成全部状态均真实模型实测 |
+| 新分析与移除 | 新分析可看见并选用两上传技能；移除后发送原选择保留输入，零 turn/start/steer；清理后登记为空、原生仅四内置，实际产物保留 | 同一 profile 共享生效，不是多租户授权；已注入上下文不能追溯撤回。`ui-remove-restore.json` |
+| 完整 JS 离线行为 | 23 文件 369／369，`js-summary.json`、`js-tests.log` | 首轮 364／369，5 个旧 VM 夹具缺真实 helper；修复夹具后完整重跑，首轮失败证据保留。新增上传 28 项包含 installer 零模型路径及三内置结构化调用 |
+| 后端与静态／原生完整性 | 完整后端 478 项：474 通过、4 条件跳过；静态 100 Python／138 JS；固定原生 176／176、pristine 通过 | 本批独立 39193 实例另启用原生条件，4／4 通过（native-opt-in-regression.log）；不以旧批次通过代替本批。没有前端打包或 TypeScript 构建 |
+
+完整 JS 命令清单和控制器复制到本批目录，旧失败、重跑和真实 UI／模型分别记账；测试说明见 [web/tests/README.md](web/tests/README.md)。新增 Skill 包模块由 CodeGraph 覆盖，未纳入 AOCI 受管子集。日常8765已空闲原位重启 Web706812→747942，原参数、目录和环境仅内存继承，未删历史；实际浏览器确认 native748242、Flash／DeepSeek、43条历史、本地上传入口与 installer 文件选择动作，app.js SHA256 为9036ef005409c46ae5e94ff26036ed51ba14edda8780d64e3306ad092fdc12a4，零页面错误／零模型任务（daily-restart.json、daily-smoke.json/png）。此部署检查不替代独立实例真实任务。自有39193服务和浏览器已正常关闭，profile、历史与真实产物保留；42399记忆服务和定时器未触碰（cleanup.json）。
+
+> **当前测试范围调整（用户确认，2026-10-30）：** 官方 Skill 在线下载不再追加测试，既有超时仅保留为历史记录，不再列作待修复或验收阻塞。查询期间人为 SIGKILL 数据库查询 MCP 移出当前必测项，其已执行的故障注入结果保留；不要求本轮补做“强杀后数据库立即取消”。正常用户点击“停止当前分析任务”的原生中断／取消、审批拒绝，以及 MCP 安装、配置、启停和实际使用仍保留验收。既有下载探针访问公开 GitHub，超时原因未确认，不能归因于未登录 ChatGPT。
+
+## 当前增量：数据分析能力生命周期与协作核验（2026-10-30）
+
+本批是独立 34733 配置空间中的真实 `deepseek-flash`／AdventureWorks MySQL／桌面浏览器验收，固定原生提交不变。详见 [本轮问题与覆盖](AUDIT_2026-10-30.md)。原始证据在 `/tmp/codex-capability-20261030/`，交付归档路径为 [capability-lifecycle-2026-10-30](test-results/capability-lifecycle-2026-10-30/)；归档入口为 [cases.json](test-results/capability-lifecycle-2026-10-30/cases.json) 与 [manifest.json](test-results/capability-lifecycle-2026-10-30/manifest.json)，大于600KB的JSON保留为.json.gz，原始失败保留；不归档配置空间、凭据或环境。以下旧批次工程数字保留，本批最终结果以本节为准。
+
+| 层次／功能 | 已实际完成 | 边界与尚未完成 |
+|---|---|---|
+| 原生 Skills | 五项生命周期检查；四个部署路径／源码哈希一致；技能页选用／刷新留稿、停用后发送拒绝、重新启用后实际 Flash 收到结构化 openai-docs skill 并运行原生命令 | 未安装自定义技能；bundled 无独立卸载操作。官方原生 installer 的公开下载探针 120 秒超时，未安装或启用，不标在线安装通过 |
+| 本地 MCP | 真实配置、重载、单工具发现、启动参数编辑、Flash 实际调用、启停持久化、冲突拒绝留稿、移除；独立归一化配置保留检查六项通过 | 首轮 JSON 键顺序比较误报保留；本机测试服务明确为夹具，不称生产外部服务；本批已实际覆盖一次运行中SIGKILL故障及显式恢复，不泛化其他服务／超时／鉴权异常 |
+| MCP 运行中故障与恢复 | 实际原生MCP PID／出生标识＋DB socket＋MySQL executing＋inProgress item 后SIGKILL；工具失败，1 start／1 query，无新query或假发布；同native PID原生重载后，用户显式1次小查询＋发布成功，最终残余为空 | 强退后一秒、native工具结束后五秒查询仍executing；重载前自然结束，六十秒会话预算不等于立即取消，不能冒充Stop合作取消或生产资源隔离 |
+| 国内远端 MCP | 24 好玩实际八工具／一资源目录；Flash 实际 search_templates 只读调用成功，清理保留其他配置 | 远端编辑同值保存曾失败；修复后在明确停用的真实 HTTP 配置上看到“配置未变更”，零 write／reload，不冒充再次网络调用。八工具未逐一调用 |
+| 原生 steer／人工拒绝 | 同一真实分析回合一条 turn/start＋一条 turn/steer，实际新查询遵循补充范围并发布字段；decline 后受控文件不存在 | 导航修复后刷新新连接原生重送requestId=0、实际拒绝、marker不存在、1 turn/start且idle。initialize/config.read/thread.read/resume为0.062/0.143/0.039/0.193秒，非受控A/B，不推断旧114秒等待底因；控制器末尾Path变量错误独立保留，只复核原证据无重发 |
+| 指标→SQL→Python→图表→报告 | 用户确认 v3 的 productinventory Quantity 与真实复合键；Flash 实际全链完成，派生继承 metricDependencies，字段不升级口径认证 | v1／v2 与预算拒绝保留；通过用户确认新版本适配真实类型及十万行预算，不修改物理库或放宽预算 |
+| 原生 child 分析→父任务与过程展示 | 真实Flash child原生spawn／wait／close完成，查询→Decimal派生返回真实resultId；父任务只读同结果、绘图并发布，无重复query；实际展开卡片及刷新子任务过程，看到child已完成工具 | 首次控制器未展开details就点击的前置错误保留；不以只查DOM代替实际子代理执行 |
+| 原生自动压缩→结果复用 | 真实 contextCompaction started／completed；测试阈值十万、未发手动 compact；后续实际 read_result＋publish_answer 使用原派生结果及 v3 依赖，无重查 | 原始控制器误读新 ACK 前旧终态，修正控制器后证据独立保留；不保证压缩保留所有自然语言细节或默认阈值性能 |
+| 口径停用→保护与历史 | 实际停用 v3；旧结果五工具 read_result／analyze_result／run_python／create_chart／publish_answer 均拒绝；report_status=affected，历史数据仍可读取 | 只说明依赖变化需复核，不证明每个历史数值错误，不静默重写报告 |
+| 文件执行中修改 | C05 实际宿主侧确认隔离 runner PID、出生标识及 hrtimer_nanosleep；管理写者重排两条真实 AW 行后，Flash 工具因 source.csv 改变拒绝，无自动重算／成功发布 | file-finish.json 已确认旧 documentId 再用拒绝、新 documentId／新 resultId 计算发布完成，绑定更新后的文件 SHA；不是恢复上传功能 |
+| 工程验证（分层） | 文件提交／指标派生／知识／时效／记忆／报告相邻 114／114；JavaScript 22 文件 341／341（js-summary.json）；局部语法与 diff 检查通过 | 最终语法123 Python／141 JS（当前web98／132）、diff-check exit0和原生pristine／构建哈希／176方法／四套schema一致均已完成；空闲后完整后端442项：438通过、4条件跳过，另原生启用后4／4通过；首轮两超时及环境前置失败保留。native child分析、过程展示、修复后审批刷新均已完成 |
+
+最终独立页面载入final-live-status.json已核对最终app.js哈希、Flash／DeepSeek、idle及仅内置分析MCP；压缩临时阈值恢复原先未显式设置的null，目录默认734003，不称null等于显式配置该值。owned-lab-cleanup.json确认本轮自有Web／native退出、MySQL容器停止、历史／profile保留。随后日常8765经空闲检查原位优雅重启621324→706812，原args／cwd保留、环境仅RAM继承、未删历史（daily-restart.json）；实际浏览器确认native707015、同最终appSHA、Flash／DeepSeek、原生MCP重载ACK、43条历史列表、零pageErrors／零模型任务（daily-smoke.json）。这只证明生效／只读展示，不替代独立真实模型流程。
+
+16:40北京时间的未来全局记忆核验仍为scheduled未验证：宿主确认timer614679出生标识49510062存活，42399 Web607299／native607414、历史与notes保留，未来结果文件尚不存在（memory-timer-preserved.json）；不把保留定时器写成合并完成。
+
+此次核心修复分别是派生链丢失指标当前性依赖、文件／SQL 派生／图表最终保存期间变更未及时拒绝、Skills／MCP管理状态反馈，以及openThread导航前置await prepareAnalysisMemory导致历史／审批恢复等待不相关config/read。已去掉导航前置，真实submitPrompt仍准备记忆，后台NativeMemoryPolicy仍生效；底层114秒config/read等待原因没有因此被认定。派生当前性使用独立依赖字段，不复制 metricProof；已完成报告保留原文并提示复核。原生文件修改没有通用全文件 CAS／自动恢复，不新增完整 Git 管理界面，仅图片上传限制保持。
+
+文件 inflight 前两次控制器没等新 ACK 即判断终态并错过窗口，均没有修改注入，不写成通过或产品未拦截；随后 C05-file-change-real.json 才实际记录宿主 runner 运行、文件变化及工具拒绝。随后 file-finish.json 已独立确认旧引用拒绝与新导入恢复。浏览器控制器断开后只恢复浏览器，Web／native 保持原 PID 和 idle，无任务重发，见 browser-disconnection.json。全部测试坚持一个执行 root，原生 children 仍属于该 root；不作生产多租户／并发容量保证。
+
+## 当前补测与修复（2026-10-30）
+
+详见[完整问题、能力协作与实际验收](AUDIT_2026-10-30.md)及[证据](test-results/native-regression-2026-10-30/)。固定 Codex／deepseek-flash／原生子任务；单 root 仅为资源准入规则。已修复父回合结束后 child 无法停止、Linux Web 强退遗留原生进程、宽明细整页失败及 MCP 分页说明丢失、Decimal 绘图类型指引和查询期连接变更诊断。真实 Flash 子任务停止、零网页后台继续／重开停止、Web SIGKILL 前后、真正待确认 ACK 丢失、原生 goal／queue 冷恢复竞争及 request_user_input 后端准入矩阵均有独立证据。
+
+PG／CH／ES 使用同一 AdventureWorks 只读复制完成实际探索／补充／查询／计算／图表／报告；真实源绑定一分钟时效过期拒绝，原生四个保留技能完成本地指定流程。记忆暂停、恢复、用户编辑跨会话读取与独立原生清空已测试。03:45 的此前定时全局摘要检查已完成；编辑后再次合并另受原生冷却，16:40 有界检查仅为已安排，不算通过。保留全部历史与已保存 notes。
+
+最终后端430项：426通过、4条件跳过；这4项在独立原生实例启用后另4/4通过。JavaScript 20文件315行为测试；97 Python AST、128 JS／MJS语法通过；固定源码／发行文件哈希、176方法及四套schema一致。没有前端打包／TypeScript编译。实际截图与离线HTML图片加载另有记录；不承诺业务自由论述、模型偏好遵循、任意Skill在线安装或生产容量。本节更新下方旧批次的待测状态，不删除历史失败。
+
+
+## 当前增量：单会话执行、持久原生接入与串行验收（2026-10-29）
+
+本批取代下文旧批次的同时执行规则。当前同一用户最多一个 root 执行，历史与草稿不限；等待审批、清理及状态未知继续占用。服务持有固定原生 app-server，每网页独立原生连接，刷新和关闭浏览器不再终止运行时。原生 children、Plan、工具和记忆沿用固定版本，不修改 upstream/native。详见[更新流程图](USER_WORKFLOWS.md)、[问题与覆盖](MULTI_SESSION_AUDIT_2026-10-29.md)、[知识记忆规则](REPORT_MEMORY_LOOP.md)及[证据目录](test-results/single-execution-2026-10-29/README.md)。
+
+两位 tester 依次使用同一独立配置空间、真实 deepseek-flash 与只读 AdventureWorks MySQL；A 自由102.927秒、B 自由237.061秒，A最终清理后才GO-B。保留首次模型未执行、控制器/选择器失败、closed-child清理失败及修复后真实回归。根 Agent 检查机制，不裁判业务答案。
+
+| 验证层 | 本批实际结果与限制 |
+|---|---|
+| 探索、知识、计划与原生子任务 | 70对象479字段；用户页面采用/纠错与历史版本；两轮原生澄清、修订确认、两个真实Flash child；各自文件路径独立 |
+| 执行正确性 | 第二root UI与服务端拒绝且留稿；审批decline后工具failed/result=null未执行；错误Stop不改占用；停止清理期间仍拒绝另一root；真实回收后idle |
+| 依赖与时效 | 业务版本、源时效及受控CSV hash变化拒绝旧计算；重读重查/重新导入后通过；陈旧管理写入HTTP400保留草稿，旧报告不改正文并提示复核 |
+| 生命周期 | 真实查询全关页后完成；刷新/零页面重连保持原root、turn和命令PID，无重复提交；独立观察核验终态 |
+| 报告 | 真实CSV、PNG、Markdown、离线HTML与依据JSON下载可读，HTML含静态图；字段引用通过不认证整篇业务解释 |
+| 工程 | 后端418项：414通过、4条件跳过；JS19文件308例；Python AST94份、JS/MJS语法127份。无打包或TypeScript步骤；CodeGraph同步、diff检查、原生源码及构建完整性通过 |
+| 日常生效 | 8765按原参数/目录原位重启，环境仅内存继承，未删除历史；1440浏览器只读检查0页面错误、无横向溢出、0模型提交。日常只读检查不冒充新的完整模型验收 |
+| 记忆 | 实际原生显式note保存与新会话search/read；旧seed自然闲置一小时后stage1生成1070字摘要。新分析generate_memories=false，显式偏好和确认知识共享，临时历史不自动共享 |
+
+全局记忆后续检查已实际安排在**北京时间2026-10-30 03:45:11**，之后最多只读观察一小时；全部历史、notes与结果保留，独立服务与定时器脱离浏览器运行。[安排收据](test-results/single-execution-2026-10-29/scheduled/launch-receipt.json)仅证明scheduled/notYetTested。未来结果写 `/root/Codex/.local-state/global-memory-2026-10-30/once/result.json`；不宣称已经全局合并、语义读取通过或主机重启后自动恢复。
+
+本轮未覆盖真实SQL查询窗口内修改依赖、历史goal/queue恢复的完整竞争、B单独child停止及独立用户输入等待；A对应原生children/澄清证据分开计。ACK真正丢失或观察失败仍保守阻塞需核实；闲置MCP与运行时墓碑尚无淘汰策略；不证明任意脱离原生管理的OS进程已退出，不约束同profile外部CLI，不证明多租户或生产容量。B测试控制器曾看到同用户列表预览，未进入产品提示，盲测局限保留。
+
+## 前一批记录：双会话真实用户体验与修复（2026-10-29）
+
+见[完整问题与回归记录](MULTI_SESSION_AUDIT_2026-10-29.md)、[流程图与功能说明](USER_WORKFLOWS.md)和[独立证据目录](test-results/multi-session-2026-10-29/)。同一独立配置／工作目录与只读AdventureWorks MySQL，两个测试者分别作为不同会话，全部产品任务为真实deepseek-flash。自由探索A265.083486秒、B277.246602秒，截止后不新增探索操作；修复回归另计。
+
+修复源时效陈旧覆盖、当前编辑记忆检索遗漏、刷新前确认与重连后持久解释、原生子代理任务展示／状态同步、MCP重载反馈。真实执行中更新业务补充，旧计算被产品依赖机制拒绝，模型重读重查后发布；不由根Agent另算业务答案。真实原生子代理两个Flash任务，Plan澄清／修订批准、步骤、图表、报告导出及历史已走通。MCP重载有真实原生请求／成功响应，非假成功。
+
+检查分层：后端282项，278通过／4条件跳过；最终JavaScript行为263／263；Python AST86份、JS／MJS语法125份。无前端打包／TypeScript步骤。固定原生提交与5个构建文件哈希均一致；没有修改原生能力或发行包。这些检查不替代真实任务，真实浏览器／模型证据单列。
+
+未验证：当前分析界面没有共享本地文件编辑入口，本轮未人为恢复已禁上传来制造文件冲突；未穷尽全部技能、审批矩阵、引擎和外部MCP；本轮未重新等待原生一小时历史提取／六小时合并。原生专用memory search的真实调用已在独立探针确认，但普通浏览器会话的专用工具接入仍受后台租约／连接生命周期约束，MS-07明确未完成。日常8765本轮未重启；新UI刷新可加载，托管MCP在空闲后的任务准备中按v7重载，不能声称所有已存进程即时升级。
+
+以下“当前／最新”均保留为历史批次；与本节冲突时按本节和本轮证据解释。
+
+
+## 当前增量：通用字段依据与计划开关（2026-10-29）
+
+本节覆盖下方历史逐数字限制。当前规则为 `data-evidence-v2`／托管 MCP `analysis-publications-v6`：普通术语、用户条件、日期、编号、图片观察和计划正常显示；正式数据字段关联实际执行，文本与数值同等适用。页面及导出分别说明来源、执行、指标范围，不证明整段自由文案和因果。
+
+后台最终 279 项：275 通过、4 条件跳过；跳过的原生 3 项与原始 WebSocket 条件测试已在独立实例分别启用通过。前端最终 256／256；原生 pristine、176 方法及 schema 匹配。受限工具沙箱曾禁止 bwrap NETLINK／本机 socket，授权运行后完整通过，产品隔离未调整。
+
+真实 deepseek-flash＋独立 AdventureWorks MySQL 完成术语／图片／带用户参数的计划、澄清、修改后批准、进度、文本字段来源、独立 SQL 对照、历史恢复和导出。另完成 Python→精确 ECharts、跨轮 HTML、确认指标失效、绑定源的用户时效与自然过期。发现批准稿修改样本数后仍沿用旧 LIMIT 10，修正确认消息后恰好一个样本通过；不把提示词修复当作模型永不偏离的保证。
+
+输入框内单一“计划模式”蓝灰开关，点击启停、保留 `/plan`；1440／1024 实际浏览器、真实原生设置、草稿保留及无任务执行已通过。回答末尾选择器明确为“下载格式”；真实 Flash 的普通讨论、Python 字段发布及下载已通过。知识影响检查改为原生回合完成后执行，避免过早显示未完成。
+
+8765 已原位重启至 PID 4137200，保留原参数／目录，环境只在内存继承；新观察器已返回 v2。长中文核对与旧上传预算分别实测 HTTP 200／413。只有本轮测试服务、线程、数据库和凭据被清理。最终页面截图和所有失败尝试保留，详见[本轮问题清单与边界](DATA_EVIDENCE_SCOPE_2026-10-29.md)及 `test-results/evidence-scope-2026-10-29/`。
+
+没有完整模型同题 A/B 延迟测试；本地字段发布中位约 3.5–5.3 ms 不能等同总等待。普通讨论实测零证明请求。当前机制只匹配引用字段，不认证未引用断言、原始数据真实性、自由 Python 公式适用性或完整业务语义。
+
+
+## 当前增量：仅图片附件（2026-10-29）
+
+用户已取消非图片文件上传。文档／表格／音频读取、HTTP上传接收与大请求豁免、文件转原始文档、指标JSON文件导入和废弃读取函数均已移除；撤销的Excel／资料库方案未部署，新增依赖已卸载。当前仅支持PNG/JPEG/GIF/WebP，沿真实原生Flash识图；图片草稿按会话隔离保存，失败保留，成功后清理。修正实测发现的“三角形”被当作金额的误判，实际数量／金额拦截保留。
+
+后端270项（266通过、4条件跳过后单独实测通过），JavaScript行为258／258；语法另为Python AST85、JS/MJS121，固定原生哈希及176方法完整schema一致。独立Flash图片专项6组、指标界面夹具9项、MySQL真实查询／Python／ECharts及跨轮HTML导出通过。
+
+日常8765已安全重启至PID4075123，后台仅图片规则实际拒绝音频及旧文件接口，真实Flash识别测试图片BIRCH；22工具重载，验收会话已删除。用户18765端口转发刷新后生效。
+
+详见[本轮问题与验证](IMAGE_ATTACHMENTS_2026-10-29.md)及[证据目录](test-results/images-only-2026-10-29/)。以下旧批次的文件上传能力及旧服务PID均为历史状态。
+
+## 当前增量：协作问题修复与实际回归（2026-10-29）
+
+见[本轮问题与验收表](DATA_ANALYSIS_FIXES_2026-10-29.md)及[证据目录](test-results/analysis-fixes-2026-10-29/)。后端最终267项：263通过、4项条件跳过；这4项随后在独立服务的真实浏览器／WebSocket中单独启用通过。JavaScript行为256／256；语法另为Python AST74、JS/MJS119。固定原生文件哈希、176方法和四套完整schema一致。没有前端打包／TypeScript检查步骤。
+
+真实Flash＋独立MySQL AdventureWorks完成复杂多问题、手动／自主计划、修改／确认／进度／停止继续、审批拒绝、实际SQL取消、刷新重连、知识纠错跨会话重算、上传失败恢复、原文件修改、ECharts精确tooltip和跨轮HTML报告、已确认指标、双页连接冲突、500条观察后的纠正，以及源绑定时效自然过期。原生Skills5项、国内匿名只读远端MCP4项通过；在线安装／在线文档未计入通过。
+
+真实偏好历史自然闲置满一小时后由后台生成stage1总结，不改原生状态时间；原偏好页面已关闭。独立服务原位重启后页面恢复原会话和草稿，无重复提交；新Flash会话读到原生旧总结。六小时全局合并冷却未绕过。记忆编辑／跨页／并发／原生清空和报告布局／三格式／离线SVG／PDF打印另有4组真实浏览器回归，报告布局使用明确夹具。
+
+日常8765已按原参数／目录及仅内存环境继承重启：PID4021474，`analysisBridgeVersion=analysis-events-v2`，22个工具重载，真实Flash确认回合通过并删除自有验收会话。所有自有测试容器、远端MCP和临时凭据已清理；原生日常配置／业务数据保留。
+
+早期失败及其重跑均保留；下方各“最新”标题为历史批次，不能替代本轮结果。模型语义漏记、六小时冷却、多租户、生产大库长期负载等边界见本轮表；不宣称全部情形穷尽或Markdown百分之百正确。
+
 ## 最新增量：报告、纠错闭环与离线记忆（2026-10-28～29）
 
 243 项后端测试（239 通过、4 既有条件跳过）、249 项 JavaScript 行为测试通过；最终 Chromium 四组、零页面错误，检查 1024／1440 报告、Markdown／HTML／JSON、离线 ECharts SVG／PDF 打印、跨页记忆编辑、并发草稿和真实原生清空。原生源码 pristine，176 项及完整 schema 匹配；此项目无独立前端打包／TypeScript 检查步骤，未将语法检查称作编译或模型验收。

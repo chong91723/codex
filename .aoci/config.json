@@ -1,0 +1,377 @@
+{
+  "version": 2,
+  "locale": "zh-CN",
+  "index_path": "aoci.txt",
+  "exclude_dirs": [
+    "node_modules",
+    ".next",
+    ".output",
+    "__pycache__",
+    ".venv",
+    "venv",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".tox",
+    ".nox",
+    "htmlcov"
+  ],
+  "exclude_root_dirs": [
+    "backup",
+    "backups",
+    "build",
+    "cache",
+    "coverage",
+    "dist",
+    "target",
+    "tmp",
+    "uploads",
+    "artifacts",
+    "vendor"
+  ],
+  "exclude_files": [
+    "*.backup.*",
+    "*.bak",
+    ".coverage"
+  ],
+  "exclude_exts": [],
+  "curation_exclude": [],
+  "hook_strict": false,
+  "ledger_enabled": true,
+  "line_ending_tolerance": true,
+  "cognition_refresh_threshold": 30,
+  "overview_delivery": {
+    "chunk_tokens": 7000
+  },
+  "managed_scope": {
+    "version": "managed-scope-policy/v2",
+    "profile": "custom",
+    "observe_change_policy": "review_required",
+    "approval_mode": "inherit",
+    "approval_thresholds": {
+      "entry_removal_count": 25,
+      "entry_removal_percent": 25
+    },
+    "rules": [
+      {
+        "rule_id": "local-development-default-exclude",
+        "action": "exclude",
+        "pattern": "**",
+        "pattern_kind": "glob",
+        "reason": "Developer-only core-architecture pilot; full Web symbol coverage is provided by CodeGraph. Exclude upstream, binaries, workspaces, user data and large historical artifacts.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 1,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-1",
+        "action": "index",
+        "pattern": "AGENTS.md",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 100,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-2",
+        "action": "index",
+        "pattern": "README.md",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 101,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-3",
+        "action": "index",
+        "pattern": "REPORT_MEMORY_LOOP.md",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 102,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-4",
+        "action": "index",
+        "pattern": "DATABASE_EXPLORATION.md",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 103,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-5",
+        "action": "index",
+        "pattern": "LOCAL_DEVELOPMENT_TOOLS.md",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 104,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-6",
+        "action": "index",
+        "pattern": "web/start.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 105,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-7",
+        "action": "index",
+        "pattern": "web/server.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 106,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-8",
+        "action": "index",
+        "pattern": "web/database/mcp_server.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 107,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-9",
+        "action": "index",
+        "pattern": "web/database/service.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 108,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-10",
+        "action": "index",
+        "pattern": "web/database/database_knowledge.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 109,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-11",
+        "action": "index",
+        "pattern": "web/database/learning.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 110,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-12",
+        "action": "index",
+        "pattern": "web/database/metric_rules.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 111,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-13",
+        "action": "index",
+        "pattern": "web/analysis_evidence.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 112,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-14",
+        "action": "index",
+        "pattern": "web/native_memory.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 113,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-15",
+        "action": "index",
+        "pattern": "web/memory_scheduler.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 114,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-16",
+        "action": "index",
+        "pattern": "web/public/app.js",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 115,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-17",
+        "action": "index",
+        "pattern": "web/public/analysis-reports.js",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 116,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-18",
+        "action": "index",
+        "pattern": "web/public/analysis-learning.js",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 117,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-19",
+        "action": "index",
+        "pattern": "web/public/memory-history.js",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 118,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-20",
+        "action": "index",
+        "pattern": "web/tests/test_analysis_learning.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 119,
+        "enabled": true
+      },
+      {
+        "rule_id": "core-21",
+        "action": "index",
+        "pattern": "web/tests/test_memory_scheduler.py",
+        "pattern_kind": "file",
+        "reason": "Core architecture, safety boundary or regression anchor for the explicitly scoped local development cognition pilot.",
+        "source": "user",
+        "created_by": "codex-user-authorized-setup",
+        "order": 120,
+        "enabled": true
+      }
+    ]
+  },
+  "cognition_budget": {
+    "version": "cognition-budget-policy/v1",
+    "mode": "enforce",
+    "whole_index": {
+      "target_tokens": 200000,
+      "warning_tokens": 300000,
+      "max_tokens": 400000
+    },
+    "r": [
+      {
+        "min_c": 1,
+        "max_c": 4,
+        "target_tokens": 25,
+        "max_tokens": 50
+      },
+      {
+        "min_c": 5,
+        "max_c": 7,
+        "target_tokens": 45,
+        "max_tokens": 90
+      },
+      {
+        "min_c": 8,
+        "max_c": 8,
+        "target_tokens": 70,
+        "max_tokens": 140
+      },
+      {
+        "min_c": 9,
+        "max_c": 9,
+        "target_tokens": 90,
+        "max_tokens": 180
+      }
+    ],
+    "s": [
+      {
+        "min_c": 1,
+        "max_c": 4,
+        "target_tokens": 20,
+        "max_tokens": 40
+      },
+      {
+        "min_c": 5,
+        "max_c": 7,
+        "target_tokens": 40,
+        "max_tokens": 80
+      },
+      {
+        "min_c": 8,
+        "max_c": 8,
+        "target_tokens": 70,
+        "max_tokens": 140
+      },
+      {
+        "min_c": 9,
+        "max_c": 9,
+        "target_tokens": 100,
+        "max_tokens": 200
+      }
+    ]
+  },
+  "installed_agents": [],
+  "automation": {
+    "mode": "auto"
+  },
+  "ai": {
+    "enabled": false,
+    "provider": "openai-compatible",
+    "base_url": "",
+    "model": "",
+    "api_key_env": "",
+    "timeout_seconds": 0,
+    "max_concurrency": 0,
+    "max_input_tokens": 0,
+    "token_accounting": "auto",
+    "prompt_snapshot": "redacted"
+  }
+}

@@ -113,9 +113,13 @@ class NativeMemory:
                 if db.execute("SELECT count(*) FROM sqlite_master WHERE name='jobs'").fetchone()[0]:
                     query="SELECT kind,status,last_error,lease_until FROM jobs WHERE kind LIKE 'memory_%'";params=()
                     if worker_id:query+=' AND worker_id=?';params=(worker_id,)
-                    jobs += [{'kind':r[0],'status':r[1],'failed':bool(r[2]) and r[1] not in ('done','completed'),'running':r[1]=='running' and (r[3] is None or r[3]>time.time())} for r in db.execute(query,params)]
+                    jobs += [{'kind':r[0],'status':r[1],'failed':bool(r[2]) and r[1] not in ('done','completed'),'running':r[1]=='running' and (r[3] is None or r[3]>time.time()),'v2':path.name.startswith('memories_v2_')} for r in db.execute(query,params)]
         return {'running':any(j['running'] for j in jobs),'failed':any(j['failed'] for j in jobs),'jobs':len(jobs),
-                'extracted':sum(j['kind']=='memory_stage1' and j['status'] in ('done','completed') for j in jobs),'consolidated':any(j['kind']=='memory_consolidate_global' and j['status'] in ('done','completed') for j in jobs)}
+                'extracted':sum(j['kind']=='memory_stage1' and j['status'] in ('done','completed') for j in jobs),'consolidated':any(j['kind']=='memory_consolidate_global' and j['status'] in ('done','completed') for j in jobs),
+                'unfinished':any(j['status']=='running' for j in jobs),
+                'pendingGlobal':any(j['v2'] and j['kind']=='memory_consolidate_global' and j['status']=='pending' for j in jobs),
+                'failedGlobal':any(j['v2'] and j['kind']=='memory_consolidate_global' and j['failed'] for j in jobs),
+                'unfinishedGlobal':any(j['v2'] and j['kind']=='memory_consolidate_global' and j['status']=='running' for j in jobs)}
 
     def summary_databases(self):
         for version,prefix in (('v2','memories_v2_'),('v1','memories_')):
@@ -142,9 +146,13 @@ class NativeMemory:
             return {'path':path.relative_to(self.home).as_posix(),'saved':True,'origin':'agent','notice':'即时笔记已保存，后续任务可读取；尚不代表原生全局摘要已合并。'}
 
     def search(self, query='', offset=0, limit=5):
-        if self.user_record().get('paused'):raise ValueError('长期记忆已暂停。')
+        user=self.user_record()
+        if user.get('paused'):raise ValueError('长期记忆已暂停。')
         if not isinstance(query,str) or len(query)>200 or type(offset) is not int or not 0<=offset<=10000 or type(limit) is not int or not 1<=limit<=20:raise ValueError('记忆查询或分页参数无效。')
         terms=query.casefold().split()[:8];matches=[];unreadable=[]
+        current=user.get('content','')
+        if current and (not terms or any(term in current.casefold() for term in terms)):
+            matches.append({'kind':'user','path':'user-memory:current','revision':user['revision'],'characters':len(current),'preview':current[:300],'truncated':len(current)>300})
         for item in sorted(self.inventory(),key=lambda r:r['modifiedNs'],reverse=True):
             path=item['path']
             if '/rollout_summaries/' in path or path.endswith(('/raw_memories.md','/phase2_workspace_diff.md')) or '-web-user-' in path:continue
@@ -164,6 +172,11 @@ class NativeMemory:
         if self.user_record().get('paused'):raise ValueError('长期记忆已暂停。')
         if not payload.get('path'):return self.summary_read(payload.get('thread_id'),payload.get('version','v2'),payload.get('offset',0),payload.get('limit',8000),payload.get('expected_hash'),agent=True)
         path=payload['path'];offset=payload.get('offset',0);limit=payload.get('limit',8000)
+        if path=='user-memory:current':
+            if type(offset) is not int or not 0<=offset<=1000000 or type(limit) is not int or not 1<=limit<=8000:raise ValueError('记忆路径或分段参数无效。')
+            current=self.user_record();text=current.get('content','');sha=hashlib.sha256(text.encode()).hexdigest()
+            if payload.get('expected_hash') and payload['expected_hash']!=sha:raise ValueError('当前用户记忆已更新，请重新读取，未拼接不同版本。')
+            return {'path':path,'revision':current['revision'],'text':text[offset:offset+limit],'sha256':sha,'offset':offset,'characters':len(text),'nextOffset':min(offset+limit,len(text)),'hasMore':offset+limit<len(text),'notice':'当前用户编辑的偏好与经验；不能批准业务定义或替代数据依据。'}
         if path not in {f['path'] for f in self.inventory()} or type(offset) is not int or not 0<=offset<=1000000 or type(limit) is not int or not 1<=limit<=8000:raise ValueError('记忆路径或分段参数无效。')
         text=self.read(self.home/path);sha=hashlib.sha256(text.encode()).hexdigest()
         if payload.get('expected_hash') and payload['expected_hash']!=sha:raise ValueError('原生记忆已更新，请重新读取，未拼接不同版本。')
@@ -185,10 +198,10 @@ class NativeMemory:
                 if not {'thread_id','source_updated_at','rollout_summary'}<=columns:raise ValueError('原生逐会话记忆结构与锁定版本不一致，未返回不完整内容。')
                 total+=db.execute('SELECT count(*) FROM stage1_outputs WHERE '+where,params).fetchone()[0]
                 for row in db.execute('SELECT thread_id,source_updated_at,substr(rollout_summary,1,300),length(rollout_summary) FROM stage1_outputs WHERE '+where+' ORDER BY source_updated_at DESC LIMIT ?',[*params,offset+limit]):
-                    records.append({'threadId':row[0],'version':version,'sourceUpdatedAt':row[1],'preview':row[2],'characters':row[3],'truncated':row[3]>300})
+                    records.append({'threadId':row[0],'version':version,'sourceUpdatedAt':row[1],'preview':row[2],'characters':row[3],'truncated':row[3]>300,**self.source_state(row[0],row[1])})
         records.sort(key=lambda r:(r['sourceUpdatedAt'],r['threadId']),reverse=True)
         return {'records':records[offset:offset+limit],'total':total,'offset':offset,'hasMore':offset+limit<total,
-                'notice':'原生已提取的逐会话任务摘要；不等待全局合并。历史资料不是当前业务事实或数值证据，当前已确认的数据源知识优先。'}
+                'notice':'已有原生逐会话历史摘要。普通分析关闭自动提取，不保证每个分析会话生成摘要。历史资料不是当前业务事实或数值证据，当前已确认的数据源知识优先。'}
 
     def summary_read(self,thread_id,version='v2',offset=0,limit=8000,expected_hash=None,agent=False):
         if agent and self.user_record().get('paused'):raise ValueError('长期记忆已暂停。')
@@ -200,9 +213,60 @@ class NativeMemory:
         if row is None:raise ValueError('此任务记忆不在当前配置空间中，或已被原生保留策略清理。')
         text,updated=row;sha=hashlib.sha256(text.encode()).hexdigest()
         if expected_hash and expected_hash!=sha:raise ValueError('原生任务记忆已更新，请从开头重新读取，未拼接不同版本。')
-        return {'threadId':thread_id,'version':version,'sourceUpdatedAt':updated,'sha256':sha,'text':text[offset:offset+limit],
+        return {'threadId':thread_id,'version':version,'sourceUpdatedAt':updated,**self.source_state(thread_id,updated),'sha256':sha,'text':text[offset:offset+limit],
                 'offset':offset,'characters':len(text),'hasMore':offset+limit<len(text),'nextOffset':min(offset+limit,len(text)),
                 'notice':'历史任务总结，仅作理解与来源线索；数值和当前业务定义仍须重新核验。'}
+
+    def maintenance_sessions(self):
+        from memory_maintenance import MaintenanceSessions
+        return MaintenanceSessions(self.home).records()
+
+    def maintenance_thread_ids(self):
+        from memory_maintenance import MaintenanceSessions
+        return MaintenanceSessions(self.home).identities()
+
+    def source_state(self,thread_id,source_updated):
+        # These are read-only source-version checks, not a new extraction path.
+        paths=list(self.home.glob('state_*.sqlite'));checked=False;updated=None
+        for path in paths:
+            if path.is_symlink():raise ValueError('原生会话状态路径是符号链接。')
+            with sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True) as db:
+                if not db.execute("SELECT count(*) FROM sqlite_master WHERE name='threads'").fetchone()[0]:continue
+                checked=True
+                row=db.execute('SELECT updated_at FROM threads WHERE id=?',(thread_id,)).fetchone()
+                if row is not None:updated=max(updated or row[0],row[0])
+        state='unknown' if not checked else 'missing' if updated is None else 'stale' if updated>source_updated else 'current'
+        return {'sourceState':state,'sourceThreadUpdatedAt':updated,'historical':True}
+
+    def memory_states(self,user,control,scheduler,pipeline=None):
+        from memory_scheduler import notes_due, notes_token, generated_token
+        notes=self.recent_notes();pending=notes_due(self.home);pipeline=self.pipeline() if pipeline is None else pipeline
+        paused=user.get('paused') is True
+        preference={'state':'paused' if paused else 'saved' if user.get('content') or notes['totalFiles'] else 'empty',
+                    'updatedAt':user.get('updatedAt'),'revision':user['revision'],'noteCount':notes['totalFiles'],
+                    'availableToNewTasks':not paused and bool(user.get('content') or notes['totalFiles']),
+                    'notice':'已保存的用户编辑和即时偏好笔记可供后续任务读取；这不表示全局摘要已合并。'}
+        progress=json.loads(self.read(self.directory/'scheduler-progress.json') or '{}')
+        # A historical success row or generated file alone cannot establish
+        # that the current preference revision was processed by native memory.
+        receipt_matches=bool(progress.get('completedAt') and progress.get('notesToken')==notes_token(self.home)
+                             and progress.get('generatedToken')==generated_token(self.home)
+                             and not any(pipeline.get(key) for key in ('pendingGlobal','failedGlobal','unfinishedGlobal')))
+        raw=control.get('state');state='unknown'
+        if paused:state='paused'
+        elif raw=='waiting_native_busy' or scheduler.get('status')=='running':state='running'
+        elif raw=='waiting_native_retry':state='retrying'
+        elif pipeline.get('failedGlobal') or scheduler.get('status')=='failed':state='failed'
+        elif pipeline.get('unfinishedGlobal'):state='unknown'
+        elif receipt_matches and not pending:state='completed'
+        elif raw=='waiting_native_cooldown':state='cooling_down'
+        elif scheduler.get('status')=='failed':state='failed'
+        elif pending or pipeline.get('pendingGlobal'):state='pending'
+        elif receipt_matches:state='completed'
+        elif scheduler.get('status') in ('native_no_job','no_useful_memory','waiting_for_eligible_history','native_summary_unchanged'):state='no_work'
+        return preference,{'state':state,'pendingNotes':pending,'pendingGlobal':pipeline.get('pendingGlobal',False),'until':control.get('until'),'checkedAt':scheduler.get('checkedAt'),
+                           'lastCompletedAt':datetime.fromisoformat(progress['completedAt']).timestamp() if progress.get('completedAt') else None,'currentReceiptMatches':receipt_matches,
+                           'notice':'全局摘要由原生后台异步整理；历史已完成任务或已有摘要文件不证明最新修改已完成合并。'}
 
     def snapshot(self, offset=0, limit=20):
         if type(offset) is not int or offset<0 or type(limit) is not int or not 1<=limit<=50:raise ValueError('记忆分页无效。')
@@ -210,13 +274,18 @@ class NativeMemory:
         summaries = {name:self.read(self.home/name/'memory_summary.md') for name in ('memories','memories_v2') if (self.home/name/'memory_summary.md').is_file()}
         from memory_scheduler import native_control
         control=native_control(self.home)
+        scheduler=json.loads(self.read(self.directory/'scheduler.json') or '{}')
+        pipeline=self.pipeline()
+        preferences,consolidation=self.memory_states(user,control,scheduler,pipeline)
         version = hashlib.sha256(json.dumps({'user':user,'files':files,'summaries':summaries},sort_keys=True).encode()).hexdigest()
         return {'revision':user['revision'],'version':version,'editVersion':hashlib.sha256(json.dumps({'revision':user['revision'],'content':user['content']},sort_keys=True).encode()).hexdigest(),'content':user['content'],'updatedAt':user.get('updatedAt'),
                 'history':user.get('history',[])[-30:][::-1], 'nativeSummaries':summaries,
                 'files':files[offset:offset+limit], 'total':len(files),'hasMore':offset+limit<len(files),'offset':offset,
-                'paused':user.get('paused',False),'nativePipeline':self.pipeline(),'nativeControl':control,'scheduler':json.loads(self.read(self.directory/'scheduler.json') or '{}'),
+                'paused':user.get('paused',False),'nativePipeline':pipeline,'nativeControl':control,'scheduler':scheduler,
+                'preferenceState':preferences,'consolidationState':consolidation,
+                'maintenanceSessions':self.maintenance_sessions(),'maintenanceSessionIds':sorted(self.maintenance_thread_ids()),
                 'scope':'当前 Codex 配置空间，跨分析会话共享；不是多租户用户隔离。',
-                'notice':'原生逐会话提取至少要求历史闲置一小时，全局摘要每次成功合并后另有六小时冷却。即时笔记与用户编辑不等待合并；编辑作为纠正笔记保存，不覆盖原生生成文件。后续任务立即读取用户编辑。历史会话已读入上下文的内容无法撤回。'}
+                'notice':'普通分析会话不自动提取为共享记忆。已有历史摘要仅作任务线索。原生逐会话提取至少要求允许提取的历史闲置一小时，全局摘要每次成功合并后另有六小时冷却。即时笔记与用户编辑不等待合并；编辑作为纠正笔记保存，不覆盖原生生成文件。后续任务立即读取用户编辑。历史会话已读入上下文的内容无法撤回。'}
 
     def write(self, record):
         temp = self.file.with_suffix('.'+secrets.token_hex(6)+'.partial')
@@ -226,7 +295,7 @@ class NativeMemory:
             temp.replace(self.file)
         finally:temp.unlink(missing_ok=True)
 
-    def manage(self, payload):
+    def manage(self, payload, *, maintenance_locked=False):
         operation = payload.get('operation')
         with self.lock():
             if operation=='state':return self.snapshot(payload.get('offset',0),payload.get('limit',20))
@@ -260,6 +329,7 @@ class NativeMemory:
             if operation=='pause':
                 record=self.user_record();record['paused']=payload.get('paused') is True;self.write(record);return self.snapshot()
             if operation=='clear':
+                if maintenance_locked:return self.clear_native(payload)
                 with self.maintenance_lock():return self.clear_native(payload)
             raise ValueError('未知的记忆管理操作。')
 

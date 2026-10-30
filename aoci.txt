@@ -1,0 +1,60 @@
+#====Codex Web 核心架构认知====
+#Locale: zh-CN
+#===头部索引===
+#【部署】Python 3.11+ 标准库运行 python3 web/start.py --deepseek；原生运行时来自固定 Codex 源码的独立构建；可选分析 MCP 使用独立 Python 环境及本机 ECharts；浏览器验收用 Playwright。
+#【系统】面向数据分析人员的自然语言分析工作台；Python HTTP/WebSocket 转发原生 app-server，原生 Agent 调用只读分析 MCP，原生 HTML/JS 在对话中显示依据、图表和报告；不替代 Codex Agent 循环，不改 upstream 或 native。
+#【范围】本索引只维护明确列入 Managed Scope 的核心架构与关键测试；其余 Web 实现由 CodeGraph 和源码检查补充，不代表全仓实现覆盖。运行数据、业务数据库、工作区、凭据和上游发行内容均不属于开发认知。
+#【约束】实际验证模型使用 deepseek-flash；数值发布匹配执行证据，用户确认的指标规则才证明特定口径；记忆不能代替有效业务知识或批准冲突；历史报告保留原文并提示复核。
+#【整体规范】
+#三分法: #开头为说明；===描述/绝对路径/===开启目录；目录内其余非空行为文件Entry。
+#条目格式: 文件名[标签]: F:功能 | R:关联 | A:接口 | S:信息；四段齐备，无内容用 -。
+#F口径: 写简短明确的核心功能锚点，通常10个字以内，语义完整优先；不翻译文件名或堆砌职责。
+#R口径: 只列理解修改所必需的跨文件强关系，使用仓库相对路径；不机械复制imports。
+#A口径: 只列本文件对外提供的API、入口或协议；不列内部辅助函数。
+#S纪律: 只保留文件名、标签、F、R、A无法推导但修改必须知道的约束；不写版本日期或演进叙事。
+#【正确索引示例】
+#main.go[CRT9OT]: F:进程入口 | R:internal/cli/root.go | A:- | S:MCP模式stdout仅允许JSON-RPC协议流,日志必须写stderr
+#atomic.go[FAT9AT]: F:原子写 | R:- | A:AtomicWrite | S:临时文件必须与目标位于同一目录;失败时必须保留原文件
+#说明: 示例来自真实Go项目,只用于说明F/R/A/S的信息分工与颗粒度;实际标签必须依据当前项目字典判断
+#===索引规范===
+#【标签ABCDE】使用紧凑标签，例如[HK9L]；C为重要度数字，E为源码行数规模。
+#A层级: H-传输与协议入口 S-领域服务 U-浏览器界面 T-回归测试 D-文档 X-启动配置
+#B模块: C-原生会话 N-数值证据 K-数据源知识 M-跨会话记忆 R-报告 G-开发治理
+#C重要度: 9-核心契约 8-关键流程 7-配套能力 5-参考材料 3-辅助
+#D特征(可选): A-后台异步 T-原子性；无明确必要不附加。
+#E规模: L大>400 M中200-400 S小100-200 T微<100
+#S配额: C9-8≤600 C7-4≤200 C3-1≤50
+#===索引规范完毕===
+#===头部索引完毕===
+===/root/Codex/===
+README.md[DC8M]: F:运行与产品边界 | R:web/start.py,web/native_runtime.py,web/skill_packages.py,upstream-lock.json,CAPABILITIES.md,USER_WORKFLOWS.md,REPORT_MEMORY_LOOP.md,TEST_REPORT.md | A:- | S:原生能力优先,不替代Agent循环或改上游;服务持有运行时,断页不杀进程且重连不重发;同用户一root执行,审批清理或回执未知仍占用;真实验证限定deepseek-flash;对话仅图片附件,技能页独立上传ZIP或SKILL.md,登记完整包经原生解析默认停用且不执行安装脚本;管理须idle,移除CAS并保留历史草稿,技能不提升权限,GitHub安装未接入;普通分析关闭历史自动提取,显式偏好与确认业务知识共享;维护会话按确切ID分离,偏好保存与全局整理完成分别呈现;删除历史保留独立偏好和知识,全局影响异步整理;附加上下文完整分段且偏好保持untrusted;口径文本填写,字段关联不认证整篇论述;前端无打包且资源本地提供;共享配置非租户隔离
+AGENTS.md[DG8T]: F:开发协作约定 | R:LOCAL_DEVELOPMENT_TOOLS.md,aoci.txt,.aoci/config.json | A:- | S:可用原生能力优先,不自建会话或Agent循环;开发规则不适用于工作区的业务分析;完整AOCI合同只在编程会话获取;结构索引不能代替源码或测试
+DATABASE_EXPLORATION.md[DK8S]: F:探索使用边界 | R:web/database/database_knowledge.py,web/database/exploration_jobs.py,web/database/schema_explorer.py | A:- | S:探索由用户主动开启,日常分析只按需读取已有资料;物理约束与推测关联分开,解释的采用不改变数据库权限或确认指标公式
+LOCAL_DEVELOPMENT_TOOLS.md[DG7T]: F:开发工具接入 | R:codegraph.json,.aoci/config.json,AGENTS.md | A:- | S:开发MCP只接入编程宿主,不写项目配置以免下属分析工作区继承;CodeGraph不持续监听,变更后显式同步
+REPORT_MEMORY_LOOP.md[DM8S]: F:知识记忆闭环 | R:web/database/learning.py,web/native_memory.py,web/native_memory_policy.py,web/memory_scheduler.py,web/native_runtime.py,web/public/analysis-reports.js | A:- | S:新分析generate_memories=false,显式偏好凭原生note成功收据共享,临时上下文不自动抽取;notes保存、逐会话提取、全局合并不能互证,本轮原生任务与真实输出匹配才确认完成;整理不依赖浏览器,不改时间戳水位冷却租约,限时未观察到任务只能标未确认;维护按登记ID分离并由所属原生连接清理,不猜标题或绕写锁;删除清理对应摘要,全局影响异步整理,独立偏好和确认知识保留;偏好编辑CAS不随只读轮询升级,失败留稿;历史摘要带来源状态且只作线索,不回填偏好;上下文按原生单值预算完整分段,偏好为untrusted,start和steer均传递;业务争议在数据源页裁决,确认知识优于记忆;旧依赖失效保留历史并提示复核;口头确认不等于保存,读取不保证模型遵循,已注入内容不自动撤回
+
+===/root/Codex/web/===
+analysis_evidence.py[SN9M]: F:字段发布凭据 | R:web/database/analysis_tools.py,web/public/analysis-evidence.js,web/markdown_tables.py,web/tests/test_evidence_scope.py | A:Evidence.publish,verify,observe,published_answer,remove_thread | S:按原生成功数据活动确定范围,不识别数词;引用字段重建正文并匹配会话回合与全文哈希;仅显式answer发布稿独立交付,不认证改写或自由论述;重复注册不升级旧历史;外部MCP原文按会话保存
+memory_scheduler.py[SM9L]: F:原生记忆调度 | R:web/native_memory.py,web/memory_maintenance.py,web/server.py,web/database/worker.py | A:ensure_scheduler,maintain,eligible,consolidation_due,native_control,notes_due,notes_token,generated_token,NativeSession | S:只读资格提示对齐交互来源、归档、非空预览、毫秒闲置边界及无输出成功水位,领取仍由原生决定;删除来源留下的pending全局任务不可因stage1为空而漏唤醒;独立thread/start不能触发流水线,须发非空Flash原生turn/start,维护禁止提取自身并停用业务MCP;按确切thread和turn记录终态,合并回执绑定本worker已结束job、返回摘要、notes与生成内容,新笔记还须实际输出变化;限时未见claim仅记未观察,候选减少或已有文件不证明成功;unfinished包含过期租约的running任务,正常超时不杀任务而等待结束;清空与维护启动互斥,确切登记维护身份后由原生delete清理,拒绝时仅释放自有pid/birth进程后重试同ID,保留失败诊断;不按标题迁移旧历史,不改原生时间戳或冷却
+native_memory.py[SM9M]: F:配置空间记忆 | R:web/server.py,web/native_memory_policy.py,web/memory_scheduler.py,web/memory_maintenance.py,web/database/worker.py,web/database/mcp_server.py | A:NativeMemory.manage,snapshot,search,read_entry,summary_search,summary_read,record_note,maintenance_lock,maintenance_sessions,maintenance_thread_ids | S:编辑和兼容笔记追加原生格式,不覆盖生成摘要;当前文档以user-memory:current检索并按hash分段读取,旧编辑保留但不回灌;编辑CAS独立于生成文件,暂停拒绝Agent读写;偏好已保存可供后续任务读取与全局合并分开,当前合并回执须匹配notes和生成内容,原生pending、失败或未终态优先于旧成功;正常冷却与失败退避分别展示;历史摘要带来源当前、更新、缺失或未知状态,仅作历史线索,不能提供当前数值或批准业务定义;维护列表展示最近登记而身份集合保留全部确切ID;清空须服务idle、paused、版本确认及维护锁,拒绝有效原生租约,调用原生命令并核验残留;已注入上下文不能撤回,共享配置不是租户隔离
+server.py[HC9L]: F:原生协议桥接 | R:web/native_runtime.py,web/native_execution.py,web/native_memory_policy.py,web/native_memory.py,web/database_bridge.py,web/analysis_evidence.py,web/image_inputs.py,web/skill_packages.py | A:main,/ws/rpc,/ws/terminal,/api/databases/,/api/skills,/api/skills/upload,/api/skills/remove,/api/status,/api/known-forks,/api/schema/,/api/memory-maintenance | S:服务持有持久原生runtime,各RPC连接独立订阅与审批;单root准入覆盖子任务审批后台命令和清理,断页排空ACK不重发,状态未知保守占用;Stop仅回收本轮已观察终端并核原生状态;维护列表仅按登记ID过滤且保留原生游标,读写返回及错误附维护metadata,登记失败保留原ACK并诊断,不替代原生写锁;管理JSON限128KiB,正文核对限512KiB,技能上传另有界;技能仅内置或登记完整包,上传停用后原生解析,管理与准入同锁须idle,发送重核启用,移除绑定版本;图片检查内容与总量;记忆清空须全局idle、paused、CAS和维护锁并退役旧runtime;独立PTY默认关闭,HttpOnly与同源检查非租户隔离
+start.py[XC8T]: F:隔离模型启动 | R:web/server.py,upstream/codex-rs/models-manager/models.json | A:deepseek_profile,main,--deepseek,--state-dir | S:密钥只经隐藏输入或环境传给子进程;生成目录可更新而既有用户配置不覆盖;DeepSeek使用原生明文委派协议,不修改上游模型文件或引入代理循环
+
+===/root/Codex/web/database/===
+database_knowledge.py[SK9L]: F:业务知识裁决 | R:web/database/learning.py,web/database/exploration_jobs.py,web/database/metadata_catalog.py | A:DatabaseKnowledge.manage,context,catalog,propose,correct | S:物理快照不可改写;同对象主题差异不能穷尽语义冲突;Agent只能提议,用户按知识与结构版本裁决并保留原文;自动观察和关闭历史不占有效主题预算,已有主题可继续纠正
+learning.py[SK9S]: F:知识依赖守门 | R:web/database/database_knowledge.py,web/database/service.py,web/database/analysis_tools.py,web/database/metric_rules.py,web/database/file_inputs.py | A:Learning.record_read,before_query,check,check_result,history,manage | S:同轮凭据累计实际交付正文,相关表与源通用说明需读齐;token反映有效语义,拒绝修订或同结构重采不误伤旧结果;争议阻止全源;旧报告只读复核知识/指标/文件依赖,不改原文
+mcp_server.py[HN9M]: F:分析工具协议 | R:web/database/service.py,web/database/analysis_tools.py,web/database/database_knowledge.py,web/native_memory.py | A:stdio MCP tools/list,tools/call,notifications/cancelled | S:请求从原生元数据绑定会话与回合;stdout仅传JSON-RPC;发布稿原样返回,普通参数和计划不要求执行;明细透传实际nextOffset和预算分页说明;计算指标保留Decimal等数值,格式化文本不能当绘图指标;记忆显式绑定配置空间,禁止目录回退;搜索返回的当前用户path须原样传读取并按hash防混版
+metric_rules.py[SN9L]: F:确认口径执行 | R:web/database/service.py,web/database/snapshots.py,web/database/analysis_tools.py,web/database/learning.py | A:metric_dependencies,MetricRules.manage,available,assert_current,execute,verify | S:只执行当前确认版本,全源先核类型及唯一键再筛选,分数计算最后舍入;证明绑定输入输出指纹;派生仅继承规则有效性而非公式认证,旧链缺祖先拒绝新用;确认角色为用户声明,非业务真理认证
+service.py[SN9M]: F:只读分析网关 | R:web/database/adapters.py,web/database/sql_guard.py,web/database/snapshots.py,web/database/learning.py,web/database/metric_rules.py,web/database/file_inputs.py,web/data_freshness.py,web/database/store.py | A:Gateway.query,result,result_owner,analyze,chart,manage | S:整批SQL先验,Agent查询须读物理表并读齐适用知识;查询后先比连接版本再查状态;Agent新用复核知识/指标/文件与原始时效,历史可读;派生与图表写后复核失败仅删新产物;模型页连续缩量且nextOffset真实;时效CAS独立于连接版本
+
+===/root/Codex/web/public/===
+analysis-learning.js[UK8S]: F:知识记忆交互 | R:web/native_memory.py,web/native_memory_policy.py,web/database/learning.py,web/public/app.js,web/public/analysis-workspace.js,web/public/memory-history.js | A:prepareAnalysisMemory,analysisLearningInstructions,renderLearningReview,refreshLearningReview,renderAnalysisMemorySettings,showKnowledgeHistory,showAnalysisMemory | S:持久runtime优先原生note保存显式偏好,禁止重复MCP写入或shell替代;工具成功才确认保存,普通临时对话和结果不提升共享记忆;确认知识及公式优于记忆,业务争议在数据源页裁决;运行或清理时禁开关和清空,启停始终generate_memories=false,暂停禁止Agent读写;偏好可读与全局合并分别据后台证据展示,旧摘要不证明新合并;可见窗口五秒只读poll,隐藏或忙碌或已有读取时跳过,关闭清理timer,代次拒绝晚到;editorVersion绑定草稿起点,状态刷新不升级dirty草稿CAS,冲突留稿,载入最新值须确认放弃草稿;生成摘要不回填用户编辑器;已注入上下文不能撤回,维护记录保留后台最新顺序
+analysis-reports.js[UR8T]: F:报告阅读导出 | R:web/public/analysis-workspace.js,web/public/analysis-evidence.js,web/public/databases.js | A:decorateReportReading,exportAnalysisReportFormat,refreshVisibleReportKnowledge | S:导出重核服务端范围和导航,保留未核验警示;离线HTML嵌ECharts静态SVG且禁远程资源;旧图仅按字段依赖带入;知识检查等待回合完成,变化提示复核而不改历史
+app.js[UC9L]: F:原生会话交互 | R:web/server.py,web/native_runtime.py,web/skill_packages.py,web/public/index.html,web/public/native-ui.js,web/public/permissions.js,web/public/analysis-workspace.js,web/public/analysis-learning.js,web/public/analysis-evidence.js,web/public/subagents.js,web/image_inputs.py | A:rpc,handleEvent,openThread,submitPrompt,interruptTurn,renderSkills,uploadSkillFile,useAnalysisSkill,writeMcpConfig | S:执行快照权威,单用户单root;回执未知或观察失败禁提交和steer,断线不重发;其他root活动只read历史,发送前resume;Stop绑定原连接并追踪迟到children,原生终态和命令释放才完成;导航代次隔离,快照delta不重放且保留usage/plan/settings;静态首屏中性,首个await前按路由区分恢复与真正空态,恢复或失败不得显示新分析,不依赖尚未加载的nativeUI;草稿保留技能精确身份,空格名按边界匹配,发送重查登记完整性与原生启用,失效留稿;技能管理须idle,默认停用,移除CAS,坏包独立清理,安装器只选本地文件;ACK只清已发版本和附件;MCP原配置比对及用户版本CAS后reload,参数和密钥不回显且留空保留,无变化不写,删除读回辨继承;维护按登记ID分离并接管直链,不凭标题隐藏;删除保留独立偏好和确认知识,全局异步更新;additionalContext完整编号分段且每项≤2000UTF8字节,规则application而偏好和notes为untrusted,start及steer均传;脱敏保留工具schema,子任务只读不改父导航,图片解码且总量16MiB
+memory-history.js[UM7T]: F:历史摘要查阅 | R:web/public/analysis-learning.js,web/native_memory.py | A:createNativeMemoryHistoryPanel | S:逐会话提取只作历史任务线索非当前事实,显示来源ID和提取依据时间及current/stale/missing/unknown状态;普通新分析不因闲置必提取,即时偏好可用不等于全局合并;分段绑定来源版本和内容哈希防混版,纠正进入用户偏好而不改写原生历史摘要
+
+===/root/Codex/web/tests/===
+test_analysis_learning.py[TK8S]: F:知识失效回归 | R:web/database/learning.py,web/database/service.py,web/database/analysis_tools.py,web/analysis_evidence.py | A:unittest AnalysisLearning | S:真实临时注册表与快照,采集和连接探测为显式夹具;覆盖相关分页、真实表、拒绝恢复、无字段方案与历史正文不变;不能冒充真实模型数据库验收
+test_memory_scheduler.py[TM8M]: F:记忆调度回归 | R:web/memory_scheduler.py,web/native_memory.py | A:unittest MemorySchedulerTests,NativeEligibilityParity,NativeMaintenanceLifecycle | S:使用独立SQLite和显式时钟覆盖闲置毫秒边界、禁用及非交互来源、归档和空预览、无输出成功水位、重试资格与原生冷却,不修改真实历史年龄;验证来源删空后的pending仍待合并且尊重冷却;维护协议以模拟NativeSession和受控输出验证非空触发、线程回合关联、无claim不成功、失败不提交回执、无笔记历史合并回执、晚到及过期租约未结束时先drain、释放自有进程后仅重试确切登记ID;这些夹具不证明真实模型合并或所有异步竞态已消除
+
+#代码索引完毕

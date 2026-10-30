@@ -39,6 +39,36 @@ def require(condition, message):
         raise ValueError(message)
 
 
+def metric_dependencies(values, snapshots=None):
+    """Collect rule currentness only; this never certifies a derived formula.
+
+    New artifacts carry an explicit list, including empty lists. Older derived
+    artifacts are followed read-only through their recorded immutable inputs;
+    an unavailable ancestor cannot establish that a saved rule was not used.
+    """
+    pending=list(values);seen=set();result={}
+    while pending:
+        value=pending.pop()
+        stamps=value.get('metricDependencies',[])
+        require(isinstance(stamps,list),'指标依赖记录无效。')
+        if value.get('metricProof') is not None:stamps=[*stamps,value['metricProof']]
+        for stamp in stamps:
+            require(isinstance(stamp,dict) and isinstance(stamp.get('ruleId'),str) and type(stamp.get('version')) is int and isinstance(stamp.get('definitionHash'),str),'指标依赖记录无效。')
+            dependency={key:stamp[key] for key in ('ruleId','version','definitionHash')}
+            result[canonical(dependency)]=dependency
+        if snapshots is not None and 'metricDependencies' not in value and not value.get('metricProof'):
+            identifiers=value.get('inputResultIds',[]) or ([value['parentResultId']] if value.get('parentResultId') else [])
+            require(isinstance(identifiers,list),'旧派生结果的指标依赖记录无效，请重新查询计算。')
+            for identifier in identifiers:
+                if identifier in seen:continue
+                require(len(seen)<256,'旧派生结果的指标依赖链超出核验预算，请重新查询计算；历史仍可查看下载。')
+                seen.add(identifier)
+                try:pending.append(snapshots.metadata(identifier))
+                except ValueError:
+                    raise ValueError('旧派生结果缺少完整指标依赖记录，请重新查询计算；历史仍可查看下载。') from None
+    return [result[key] for key in sorted(result)]
+
+
 def identifier(value):
     require(isinstance(value, str) and IDENTIFIER.fullmatch(value), '名称须为有效的字母、数字或下划线标识。')
     return value
@@ -511,7 +541,7 @@ CREATE TABLE IF NOT EXISTS metric_executions (result_id TEXT PRIMARY KEY, record
         for alias, field in definition['fields'].items():
             native = columns[alias].get('nativeType')
             if field['type'] in ('decimal', 'int'):
-                require(native in ('Decimal', 'int', 'str', None), '治理精确计算不接受浮点源字段，请先在治理视图中明确十进制规则。')
+                require(native in ('Decimal', 'int', 'str', None), '治理精确计算不接受字段 '+alias+' 的源类型 '+str(native)+'；请核对字段映射，浮点字段须在治理视图中明确十进制规则。')
             if field['type'] == 'date':
                 require(native in ('date', 'str', None), '日期口径不能隐式截取时间戳。')
 

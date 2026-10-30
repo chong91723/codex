@@ -12,13 +12,16 @@ import socket
 import struct
 import sys
 import tempfile
+import threading
+import types
 import unittest
 from unittest.mock import patch
 import urllib.parse
 import urllib.request
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from server import ScopePolicy, WEB_NATIVE_OVERRIDES, config_key_parts, config_scope_reason
+from server import ScopePolicy, WEB_NATIVE_OVERRIDES, config_key_parts, config_scope_reason, rpc_bridge, skill_configuration_write, validate_native_skill_inputs
+from skill_packages import SkillPackages
 from start import deepseek_profile
 
 
@@ -147,6 +150,67 @@ class ScopePolicyTests(unittest.TestCase):
         fake.symlink_to(outside)
         self.assertTrue(self.reason('turn/start', {'input': [{'type': 'skill', 'name': 'openai-docs', 'path': str(fake)}]}))
 
+    def uploaded_skill(self):
+        store = SkillPackages(self.home)
+        record = {'id': 'a'*32, 'name': 'registered-local', 'manifest': []}
+        document = store.root/record['id']/'SKILL.md'
+        document.parent.mkdir(parents=True)
+        document.write_text('---\nname: registered-local\ndescription: Local fixture\n---\nUse local references.\n')
+        record['manifest'], _ = store._tree(record)
+        store._write([record])
+        return store, record, str(document)
+
+    def test_registered_local_skill_allowed_in_inputs_and_all_config_routes(self):
+        store, record, path = self.uploaded_skill()
+        for method in ['turn/start', 'turn/steer', 'thread/queue/add', 'thread/queue/update']:
+            with self.subTest(method=method):
+                self.assertIsNone(self.reason(method, {'input': [{'type': 'skill', 'name': record['name'], 'path': path}]}))
+                self.assertTrue(self.reason(method, {'input': [{'type': 'skill', 'name': 'forged', 'path': path}]}))
+        self.assertIsNone(self.reason('skills/config/write', {'path': path, 'enabled': True}))
+        rules = [{'path': path, 'enabled': True}]
+        self.assertIsNone(self.reason('config/value/write', {'keyPath': 'skills.config', 'value': rules}))
+        self.assertIsNone(self.reason('config/batchWrite', {'edits': [{'keyPath': 'skills.config', 'value': rules}]}))
+        self.assertIsNone(self.reason('thread/start', {'config': {'skills': {'config': rules}}}))
+        store._write([])
+        for method, params in [('skills/config/write', {'path': path, 'enabled': True}),
+                               ('turn/start', {'input': [{'type': 'skill', 'name': record['name'], 'path': path}]}),
+                               ('config/batchWrite', {'edits': [{'keyPath': 'skills.config', 'value': rules}]})]:
+            with self.subTest(removed_method=method):
+                self.assertTrue(self.reason(method, params))
+
+    def test_skill_removed_during_admission_cannot_pass_a_stale_pre_lock_check(self):
+        store, record, path = self.uploaded_skill()
+        sent, native, closed = [], [], []
+        message = {'id': 'selected', 'method': 'turn/start', 'params': {'threadId': 'fixture',
+                   'input': [{'type': 'skill', 'name': record['name'], 'path': path}]}}
+        class Socket:
+            def receive(self):
+                if getattr(self, 'received', False):
+                    raise EOFError()
+                self.received = True
+                return message
+            def send(self, value):
+                sent.append(value)
+            def close(self):
+                pass
+        class AdmissionLock:
+            def __enter__(self):
+                store._write([])
+            def __exit__(self, *unused):
+                pass
+        class Runtime:
+            control = AdmissionLock()
+            def open_client(self, *unused):
+                return type('Client', (), {'send': lambda _, value: native.append(value)})()
+            def remove_client(self, client):
+                closed.append(True)
+        settings = type('Settings', (), {'runtime': Runtime(), 'known_forks': object()})()
+        with self.assertRaises(EOFError):
+            rpc_bridge(Socket(), settings)
+        self.assertEqual(native, [])
+        self.assertEqual(sent[0]['error']['data']['type'], 'scopeExcluded')
+        self.assertEqual(closed, [True])
+
     def test_normal_text_and_mcp_configuration_do_not_trigger_string_filters(self):
         self.assertIsNone(self.reason('turn/start', {'input': [{'type': 'text', 'text': '请使用 openai-docs；解释 gpt-6-sol 文档与 imagegen 的区别'}]}))
         self.assertIsNone(self.reason('config/value/write', {'keyPath': 'mcp_servers."openai-docs"', 'value': {'command': 'node', 'args': ['openai-docs'], 'env': {'model': 'gpt-6-sol'}}}))
@@ -204,6 +268,169 @@ class ScopePolicyTests(unittest.TestCase):
         self.assertIn('memories.consolidation_model="deepseek-flash"', WEB_NATIVE_OVERRIDES)
         self.assertIn('memories.extract_model = "deepseek-flash"', config)
         self.assertIn('memories.consolidation_model = "deepseek-flash"', config)
+
+
+
+class NativeSkillAdmissionTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory(prefix='codex-skill-admission-')
+        self.home = Path(self.directory.name)
+        self.env = patch.dict(os.environ, {'CODEX_HOME': str(self.home)})
+        self.env.start()
+        self.store = SkillPackages(self.home)
+        self.record = {'id': 'c'*32, 'name': 'registered-local', 'manifest': []}
+        document = self.store.root/self.record['id']/'SKILL.md'
+        document.parent.mkdir(parents=True)
+        document.write_text('---\nname: registered-local\ndescription: Local fixture\n---\nLocal.\n')
+        self.record['manifest'], _ = self.store._tree(self.record)
+        self.store._write([self.record])
+        self.path = str(document)
+        self.enabled = True
+        self.status = 'idle'
+        self.native, self.observer_calls, self.prepared = [], [], []
+        self.control = threading.RLock()
+        self.write_entered, self.write_release = threading.Event(), threading.Event()
+        self.delay_write = False
+        self.observer = types.SimpleNamespace(call=self.call)
+        self.runtime = types.SimpleNamespace(control=self.control, observer=self.observer,
+            status=lambda: {'execution': {'status': self.status}},
+            open_client=lambda output, *unused: types.SimpleNamespace(send=self.send_native),
+            remove_client=lambda client: None)
+        self.settings = types.SimpleNamespace(runtime=self.runtime, workspace=self.home,
+            known_forks=object(), memory_policy=types.SimpleNamespace(prepare=lambda *args: self.prepared.append(args)))
+
+    def tearDown(self):
+        self.env.stop()
+        self.directory.cleanup()
+
+    def send_native(self, message):
+        self.native.append(message)
+        if message.get('method') == 'turn/start':
+            self.status = 'running'
+
+    def call(self, method, params):
+        self.observer_calls.append((method, params))
+        if method == 'skills/list':
+            return {'data': [{'cwd': str(self.home), 'skills': [{'name': self.record['name'],
+                'path': self.path, 'enabled': self.enabled, 'description': 'Local', 'scope': 'user'}], 'errors': []}]}
+        if method == 'skills/config/write':
+            if self.delay_write:
+                self.write_entered.set()
+                if not self.write_release.wait(5):
+                    raise RuntimeError('fixture write acknowledgement timeout')
+            self.enabled = params['enabled']
+            return {'effectiveEnabled': self.enabled}
+        if method in ('config/value/write', 'config/batchWrite'):
+            return {'status': 'ok', 'version': 'fixture-config-version', 'filePath': str(self.home/'config.toml'), 'overriddenMetadata': None}
+        raise AssertionError('Unexpected observer call '+method)
+
+    def message(self, method='turn/start'):
+        return {'id': method, 'method': method, 'params': {'threadId': 'analysis',
+            'input': [{'type': 'skill', 'name': self.record['name'], 'path': self.path}]}}
+
+    def bridge(self, message, output):
+        class Socket:
+            def receive(self):
+                if getattr(self, 'read_once', False):
+                    raise EOFError()
+                self.read_once = True
+                return message
+            def send(self, value):
+                output.append(value)
+            def close(self):
+                pass
+        try:
+            rpc_bridge(Socket(), self.settings)
+        except EOFError:
+            pass
+
+    def test_disabled_explicit_skill_rejected_on_all_input_routes_before_native_send(self):
+        self.enabled = False
+        for method in ['turn/start', 'turn/steer', 'thread/queue/add', 'thread/queue/update']:
+            output = []
+            self.bridge(self.message(method), output)
+            self.assertEqual(output[0]['error']['data']['type'], 'skillUnavailable')
+        self.assertEqual(self.native, [])
+        self.assertEqual(self.prepared, [])
+        self.assertTrue(all(params['forceReload'] is True for method, params in self.observer_calls if method == 'skills/list'))
+
+    def test_enabled_skill_admitted_but_later_disable_is_busy_and_not_written(self):
+        output = []
+        self.bridge(self.message(), output)
+        self.assertEqual(self.native[0]['method'], 'turn/start')
+        self.assertTrue(self.prepared)
+        output = []
+        self.bridge({'id': 'disable', 'method': 'skills/config/write', 'params': {'path': self.path, 'enabled': False}}, output)
+        self.assertEqual(output[0]['error']['data']['type'], 'userExecutionBusy')
+        self.assertTrue(self.enabled)
+        self.assertFalse(any(method == 'skills/config/write' for method, _ in self.observer_calls))
+
+    def test_skill_config_write_waits_native_ack_under_shared_admission_lock(self):
+        self.delay_write = True
+        write_output, turn_output = [], []
+        write = threading.Thread(target=self.bridge, args=({'id': 'disable', 'method': 'skills/config/write',
+            'params': {'path': self.path, 'enabled': False}}, write_output))
+        write.start()
+        self.assertTrue(self.write_entered.wait(3))
+        # Another tab cannot validate/send a turn while the disable ACK is unknown.
+        self.assertFalse(self.control.acquire(blocking=False))
+        turn = threading.Thread(target=self.bridge, args=(self.message(), turn_output))
+        turn.start()
+        self.write_release.set()
+        write.join(3)
+        turn.join(3)
+        self.assertFalse(write.is_alive())
+        self.assertFalse(turn.is_alive())
+        self.assertEqual(write_output[0], {'id': 'disable', 'result': {'effectiveEnabled': False}})
+        self.assertEqual(turn_output[0]['error']['data']['type'], 'skillUnavailable')
+        self.assertEqual(self.native, [])
+
+    def test_native_config_skill_mutations_are_idle_guarded_and_acknowledged(self):
+        rules = [{'path': self.path, 'enabled': True}]
+        operations = [('config/value/write', {'keyPath': 'skills.config', 'value': rules, 'expectedVersion': 'user-cas'}),
+                      ('config/batchWrite', {'edits': [{'keyPath': 'profiles."analysis".skills', 'value': {'config': rules}}],
+                                             'expectedVersion': 'user-cas', 'reloadUserConfig': True})]
+        for method, params in operations:
+            output = []
+            self.status = 'waitingForApproval'
+            self.bridge({'id': 'blocked', 'method': method, 'params': params}, output)
+            self.assertEqual(output[0]['error']['data']['type'], 'userExecutionBusy')
+            self.assertFalse(self.observer_calls)
+            self.status = 'idle'
+            output = []
+            self.bridge({'id': 'write', 'method': method, 'params': params}, output)
+            self.assertEqual(output[0]['id'], 'write')
+            self.assertIn('result', output[0])
+            self.assertEqual(self.observer_calls[-1], (method, params))
+            self.observer_calls.clear()
+        self.assertEqual(self.native, [])
+
+    def test_unrelated_mcp_payload_and_bad_parameter_shapes_remain_native(self):
+        self.assertFalse(skill_configuration_write('config/batchWrite', {'edits': 7}))
+        self.assertFalse(skill_configuration_write('config/batchWrite', []))
+        self.assertFalse(skill_configuration_write('config/value/write', {'keyPath': 'mcp_servers.owned', 'value': {'skills': {'config': []}}}))
+        self.assertTrue(skill_configuration_write('config/value/write', {'keyPath': 'skills', 'value': None}))
+        for method, params in [('config/batchWrite', {'edits': 7}), ('config/value/write',
+            {'keyPath': 'mcp_servers.owned', 'value': {'skills': {'config': []}}})]:
+            self.status = 'running'
+            output = []
+            self.bridge({'id': method, 'method': method, 'params': params}, output)
+            self.assertEqual(self.native[-1]['params'], params)
+            self.assertEqual(output, [])
+        self.assertFalse(self.observer_calls)
+
+    def test_native_validation_failure_and_exact_identity_rejected_without_turn(self):
+        with patch.object(self.observer, 'call', side_effect=RuntimeError('fixture disconnected')):
+            output = []
+            self.bridge(self.message(), output)
+            self.assertEqual(output[0]['error']['data']['type'], 'skillValidationFailed')
+        mismatch = {'data': [{'skills': [{'name': self.record['name'], 'path': self.path+'-different', 'enabled': True}], 'errors': []}]}
+        with patch.object(self.observer, 'call', return_value=mismatch):
+            output = []
+            self.bridge(self.message(), output)
+            self.assertEqual(output[0]['error']['data']['type'], 'skillUnavailable')
+        self.assertEqual(self.native, [])
+
 
 
 class RawSocket:

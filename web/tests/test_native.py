@@ -33,10 +33,17 @@ class NativeIntegrationTests(unittest.TestCase):
         invalid=self.client.rpc('fs/readFile',{'path':'/tmp/codex-acceptance-missing-'+uuid.uuid4().hex})
         self.assertIn('error',invalid)
 
-    def test_native_command_execution(self):
+    def test_independent_command_cannot_bypass_thread_admission(self):
+        # Native execution stays available inside admitted thread/turn tools.
+        # A standalone command RPC has no root ownership and must not bypass
+        # the configured per-user execution limit.
+        before=self.client.fetch_api('/api/status')['nativeRuntime']['execution']
         response=self.client.rpc('command/exec',{'command':['/usr/bin/printf','CODEX_NATIVE_TOOL_OK'],'timeoutMs':5000})
-        self.assertEqual(response['result']['exitCode'],0)
-        self.assertIn('CODEX_NATIVE_TOOL_OK',response['result']['stdout'])
+        self.assertEqual(response['error']['code'],-32002)
+        self.assertIn('当前会话',response['error']['message'])
+        after=self.client.fetch_api('/api/status')['nativeRuntime']['execution']
+        for key in ('ownerThreadId','activeTurns','cleanupHolds','pendingNativeAcks'):
+            self.assertEqual(before.get(key),after.get(key))
 
 
 if __name__=='__main__':unittest.main()

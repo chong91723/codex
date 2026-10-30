@@ -41,7 +41,7 @@ async function dispatch(method,params,alias){
   const sent=new Promise(resolve=>sentResolve=resolve);
   const receipt={method,origin:'browser:protocol-panel-button',startedAt:new Date().toISOString(),status:'pending'};
   const action=ui.then(async()=>{
-    await page.locator('[data-view="protocol"]').click();
+    if(await page.evaluate(()=>state.view)!=='protocol'){await page.locator('[data-view="settings"]').click();const advanced=page.locator('#analysis-advanced-settings');if(!await advanced.evaluate(node=>node.open))await page.locator('#analysis-advanced-settings > summary').click();await page.getByRole('button',{name:'打开原生协议',exact:true}).click();}
     await page.locator('.protocol-search').fill(method);
     await page.getByRole('button',{name:method,exact:true}).click();
     if(method==='thread/sample/cancel'&&aliases.has(params?.requestId))params={...params,requestId:aliases.get(params.requestId)};

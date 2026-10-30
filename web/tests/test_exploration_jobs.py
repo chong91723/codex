@@ -101,14 +101,16 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual(value['status'],'queued')
         self.assertEqual(self.jobs.status(self.source['id'])['status'],'failed')
 
-    def test_business_history_capacity_preserves_previous_version(self):
+    def test_business_history_is_separate_from_active_note_capacity(self):
         self.knowledge.save_business(self.source['id'],0,'original')
         self.knowledge.save_business(self.source['id'],1,'original')
         self.assertEqual(self.knowledge.state(self.source['id'])['businessContext']['revision'],1)
         with patch('database_knowledge.MAX_NOTES',1):
-            with self.assertRaisesRegex(ValueError,'容量上限'):
-                self.knowledge.save_business(self.source['id'],1,'changed')
-        self.assertEqual(self.knowledge.state(self.source['id'])['businessContext']['content'],'original')
+            self.knowledge.save_business(self.source['id'],1,'changed')
+        self.assertEqual(self.knowledge.state(self.source['id'])['businessContext']['content'],'changed')
+        with self.gateway.store.connect() as database:
+            rows=database.execute('SELECT record FROM database_business_context_history WHERE source_id=? ORDER BY revision',(self.source['id'],)).fetchall()
+        self.assertEqual([json.loads(row[0])['content'] for row in rows],['original','changed'])
 
     def test_process_death_is_explicit_and_does_not_report_success(self):
         job = self.start()

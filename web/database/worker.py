@@ -8,7 +8,7 @@ def main():
         request=json.load(sys.stdin)
         payload=request.get('payload') or {}
         # Existing servers already forward the result operation to this worker.
-        # Keep numerical verification usable during a frontend-first upgrade.
+        # Keep data evidence usable during a frontend-first upgrade.
         evidence=payload.get('analysisEvidence') if request['action']=='result' else None
         if isinstance(evidence,dict):
             from pathlib import Path
@@ -25,7 +25,8 @@ def main():
                 from database_bridge import database_status
                 result=database_status(evidence.get('workspace'))
             elif evidence.get('action')=='verify':result=store.verify(evidence.get('threadId'),evidence.get('turnId'),evidence.get('text'),evidence.get('requireEvidence') is True)
-            else:raise ValueError('未知的数值依据操作。')
+            elif evidence.get('action')=='published_answer':result=store.published_answer(evidence.get('threadId'),evidence.get('turnId'))
+            else:raise ValueError('未知的数据依据操作。')
         elif request['action']=='result' and isinstance(payload.get('nativeMemory'),dict):
             from pathlib import Path
             sys.path.insert(0,str(Path(__file__).resolve().parents[1]))

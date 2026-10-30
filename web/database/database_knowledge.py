@@ -207,8 +207,13 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
         database.execute('INSERT INTO database_knowledge_notes VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET record=excluded.record', (note['id'], note['sourceId'], canonical(note)))
 
     @staticmethod
-    def _capacity(notes, count=1):
-        require(len(notes) + count <= MAX_NOTES, '知识历史已达到容量上限；请联系维护人员调整存储策略。不会自动删除历史或悄悄丢弃候选。')
+    def _capacity(notes, candidate):
+        # Physical observations and closed history never consume the authored
+        # topic budget. Revisions of an existing topic remain possible at capacity.
+        authored=[note for note in notes if note['origin'] in ('user','agent') and note['status'] in ACTIVE]
+        keys={note['key'] for note in authored}
+        require(any(note['key']==candidate['key'] and note['status'] in ACTIVE for note in notes) or len(keys)<MAX_NOTES, '当前有效知识主题已达到容量上限；请在知识管理中拒绝不再适用的主题后重试。历史保留，已有主题仍可纠正。')
+        require(sum(note['key']==candidate['key'] and note['status']=='pending' for note in authored)<20, '此主题已有较多待审修订，请先采用、拒绝或合并已有候选后继续。历史不会删除。')
 
     @staticmethod
     def _same(notes, candidate, snapshot, include_closed=False):
@@ -236,7 +241,6 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                 require(len(observed['content']) <= MAX_CONTENT, '此对象的物理注释超出候选内容预算，请维护人员先明确可管理的说明。原注释仍在完整结构中。')
                 normalized = self._candidate(observed, snapshot)
                 if not self._same(notes, normalized, snapshot, True):
-                    self._capacity(notes)
                     note = self._new_note(normalized, snapshot, 'observed')
                     self._write_note(database, note)
                     notes.append(note)
@@ -278,7 +282,7 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                     continue
                 if self._same(notes, candidate, snapshot, True):
                     continue
-                if len(notes) >= MAX_NOTES:
+                if sum(note['origin']=='observed' for note in notes) >= MAX_NOTES:
                     omitted += 1
                     continue
                 note = self._new_note(candidate, snapshot, 'observed')
@@ -317,8 +321,6 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                 previous = {k: v for k, v in state['businessContext'].items() if k != 'stale'}
                 database.execute('INSERT OR IGNORE INTO database_business_context_history VALUES (?,?,?)',
                                  (source_id, previous['revision'], canonical(previous)))
-            count = database.execute('SELECT COUNT(*) FROM database_business_context_history WHERE source_id=?', (source_id,)).fetchone()[0]
-            require(count < MAX_NOTES, '业务补充历史已达到容量上限，请联系维护人员调整存储策略；未删除旧记录。')
             database.execute('INSERT INTO database_business_context_history VALUES (?,?,?)',
                              (source_id, record['revision'], canonical(record)))
             database.execute('INSERT INTO database_business_context VALUES (?,?) ON CONFLICT(source_id) DO UPDATE SET record=excluded.record',
@@ -361,7 +363,7 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                 original_candidate = self._candidate(dict(candidate, content=business['content']), snapshot)
                 original = next((n for n in notes if n.get('businessRevision') == business_revision and n['key'] == self._business_key() and n['content'] == business['content'] and n['status'] == 'accepted'), None)
                 if original is None:
-                    self._capacity(notes, 2)
+                    self._capacity(notes, original_candidate)
                     original = self._new_note(original_candidate, snapshot, 'user', 'accepted')
                     original.update(businessRevision=business_revision, correctionOf=dict(reference), decision='savedByUser')
                     self._write_note(database, original)
@@ -375,7 +377,7 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                 original_content = str(finding['message']) + ('：' + str(finding['detail']) if finding.get('detail') else '')
                 original_candidate = self._candidate(dict(candidate, content=original_content), snapshot)
                 if not self._same(notes, original_candidate, snapshot, True):
-                    self._capacity(notes, 2)
+                    self._capacity(notes, original_candidate)
                     original = self._new_note(original_candidate, snapshot, 'explorer')
                     original['correctionOf'] = dict(reference)
                     self._write_note(database, original)
@@ -393,7 +395,7 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
             if existing:
                 require(existing['content'] != original_content if kind == 'finding' else existing['id'] != original['id'], '修订内容与原文相同，无需提交。')
                 return self._state(database, source_id)
-            self._capacity(notes)
+            self._capacity(notes, candidate)
             note = self._new_note(candidate, snapshot, origin)
             note['correctionOf'] = dict(reference)
             if business_revision is not None:
@@ -415,7 +417,7 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
             notes = self._notes(database, source_id)
             changed = self._materialize_comment(database, notes, candidate, snapshot)
             if not self._same(notes, candidate, snapshot):
-                self._capacity(notes)
+                self._capacity(notes, candidate)
                 note = self._new_note(candidate, snapshot, origin)
                 self._write_note(database, note)
                 changed = True
@@ -460,12 +462,12 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                 require(not self._materialize_comment(database, notes, first, snapshot), '发现尚未登记的物理注释，请先重新探索结构并查看候选差异后决定。')
                 clone = operation == 'merge' or self._stale(first, source, snapshot)
                 if clone:
-                    self._capacity(notes)
                     candidate = {key: first[key] for key in ('key', 'target', 'aspect', 'content', 'evidence')}
                     if operation == 'merge':
                         candidate['content'] = text(payload['content'])
                         candidate['evidence'] = list({canonical(evidence): evidence for note in chosen for evidence in note['evidence']}.values())
                     candidate = self._candidate({key: candidate[key] for key in ('target', 'aspect', 'content', 'evidence')}, snapshot)
+                    self._capacity(notes, candidate)
                     winner = self._new_note(candidate, snapshot, 'user', 'accepted', reason, ids)
                     if first.get('correctionOf'):
                         winner['correctionOf'] = first['correctionOf']
@@ -496,8 +498,6 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
             return business['revision']
         previous = {k: v for k, v in business.items() if k != 'stale'}
         database.execute('INSERT OR IGNORE INTO database_business_context_history VALUES (?,?,?)', (source_id, business['revision'], canonical(previous)))
-        count = database.execute('SELECT COUNT(*) FROM database_business_context_history WHERE source_id=?', (source_id,)).fetchone()[0]
-        require(count < MAX_NOTES, '业务补充历史已达到容量上限；未删除旧记录。')
         record = dict(revision=business['revision'] + 1, content=content, sourceVersion=source['version'], schemaHash=snapshot['schemaHash'],
                       updatedAt=now(), origin='user', decision='correctionReview', reason=reason)
         database.execute('INSERT INTO database_business_context_history VALUES (?,?,?)', (source_id, record['revision'], canonical(record)))
@@ -521,7 +521,7 @@ CREATE TABLE IF NOT EXISTS database_knowledge_notes (id TEXT PRIMARY KEY, source
                     proposed.append(existing['id'])
                     outcomes.append({'id': existing['id'], 'status': existing['status'], 'origin': existing['origin'], 'deduplicated': True})
                     continue
-                self._capacity(notes)
+                self._capacity(notes, candidate)
                 note = self._new_note(candidate, snapshot, 'agent')
                 self._write_note(database, note)
                 notes.append(note)

@@ -7,7 +7,7 @@ import sys,tempfile,unittest
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[2]
 sys.path[:0]=[str(ROOT/'web'),str(ROOT/'web/database')]
-from analysis_evidence import has_number,Evidence
+from analysis_evidence import Evidence
 from analysis_tools import AnalysisTools
 from data_freshness import receipt,check_freshness
 from service import Gateway
@@ -26,35 +26,33 @@ class DataFreshnessTests(unittest.TestCase):
         self.tools.remember(result);return result
     @staticmethod
     def ref(result,column='amount'):return {'result_id':result['resultId'],'row':0,'column':column}
-    def test_shared_language_corpus_and_strict_financial_number_rejection(self):
-        corpus=json.loads((ROOT/'web/tests/numeric_language_cases.json').read_text())
-        for text in corpus['positive']:self.assertTrue(has_number(text),text)
-        for text in corpus['negative']:self.assertFalse(has_number(text),text)
+    def test_text_only_and_numeric_data_require_the_same_explicit_field_contract(self):
         evidence=Evidence(self.temp.name)
-        for text in ['一共十二','壹佰元']:
+        evidence.observe({'method':'turn/started','params':{'threadId':'fixture','turn':{'id':'task-a'}}})
+        for text in ['三角函数','一共十二','壹佰元','字段为一致格式','类别A出现最多']:
+            self.assertEqual(evidence.verify('fixture','task-a',text)['status'],'notRequired')
             self.assertEqual(evidence.verify('fixture','task-a',text,True)['status'],'rejected')
-            with self.assertRaisesRegex(ValueError,'未引用'):self.tools.publish(text,{})
-        self.assertEqual(evidence.verify('fixture','task-a','字段为一致格式',True)['status'],'notRequired')
+            with self.assertRaisesRegex(ValueError,'实际字段'):self.tools.publish(text,{})
     def test_source_bound_setting_persists_and_late_probe_cannot_overwrite_it(self):
         other=self.gateway.store.save({'engine':'mysql','name':'other','host':'127.0.0.1','database':'other','username':'reader'})
-        value=self.gateway.store.set_freshness(self.record['id'],30)
+        value=self.gateway.store.set_freshness(self.record['id'],30,expected_revision=self.gateway.store.get(self.record['id']).get('freshnessRevision',0))
         self.assertEqual(value['version'],self.record['version']);self.assertEqual(value['status'],'connected')
         self.gateway.store.status(self.record,'connected')
         self.assertEqual(self.gateway.store.get(self.record['id'])['maxAgeMinutes'],30)
         self.assertIsNone(self.gateway.store.get(other['id'])['maxAgeMinutes'])
-        self.gateway.store.set_freshness(self.record['id'],None)
+        self.gateway.store.set_freshness(self.record['id'],None,expected_revision=self.gateway.store.get(self.record['id']).get('freshnessRevision',0))
         self.assertIsNone(self.gateway.store.get(self.record['id'])['maxAgeMinutes'])
         for bad in [-1,True,1.2,'30',525601]:
-            with self.subTest(bad=bad),self.assertRaises(ValueError):self.gateway.store.set_freshness(self.record['id'],bad)
+            with self.subTest(bad=bad),self.assertRaises(ValueError):self.gateway.store.set_freshness(self.record['id'],bad,expected_revision=self.gateway.store.get(self.record['id']).get('freshnessRevision',0))
     def test_configured_age_boundary_unknown_and_task_only_rule(self):
         source=receipt('database','fixture','task-a',self.record['id']);source['retrievedAt']=(self.now-timedelta(minutes=30)).isoformat()
-        metadata={'acquisition':[source]};self.gateway.store.set_freshness(self.record['id'],30)
+        metadata={'acquisition':[source]};self.gateway.store.set_freshness(self.record['id'],30,expected_revision=self.gateway.store.get(self.record['id']).get('freshnessRevision',0))
         check_freshness([metadata],self.gateway.store.get,'fixture','task-b',now=self.now)
         with self.assertRaisesRegex(ValueError,'复用时长'):check_freshness([metadata],self.gateway.store.get,'fixture','task-b',now=self.now+timedelta(microseconds=1))
         for bad_time in [None,'invalid','2026-01-01T00:00:00',(self.now+timedelta(seconds=1)).isoformat()]:
             source['retrievedAt']=bad_time
             with self.subTest(time=bad_time),self.assertRaises(ValueError):check_freshness([metadata],self.gateway.store.get,'fixture','task-b',now=self.now)
-        self.gateway.store.set_freshness(self.record['id'],0)
+        self.gateway.store.set_freshness(self.record['id'],0,expected_revision=self.gateway.store.get(self.record['id']).get('freshnessRevision',0))
         check_freshness([metadata],self.gateway.store.get,'fixture','task-a',now=self.now)
         with self.assertRaises(ValueError):check_freshness([metadata],self.gateway.store.get,'fixture','task-b',now=self.now)
     def test_unconfigured_reuse_is_explicit_and_changing_rule_enforces_on_existing_snapshot(self):
@@ -62,27 +60,27 @@ class DataFreshnessTests(unittest.TestCase):
         with patch.object(self.gateway,'probe',return_value=dict(self.record,status='connected')):
             answer=self.tools.publish('金额 {{v}}',{'v':self.ref(result)})
             checks=answer['publicationChecks'];self.assertEqual(checks['freshness'][0]['status'],'notConfigured')
-            self.gateway.store.set_freshness(self.record['id'],30)
+            self.gateway.store.set_freshness(self.record['id'],30,expected_revision=self.gateway.store.get(self.record['id']).get('freshnessRevision',0))
             with self.assertRaisesRegex(ValueError,'复用时长'):self.tools.publish('金额 {{v}}',{'v':self.ref(result)})
         # Viewing/downloading immutable history remains available.
         self.assertEqual(self.gateway.result(result['resultId'])['rows'][0]['amount'],'3.50')
         self.assertTrue(Path(self.gateway.export(result['resultId'],'csv')['path']).is_file())
     def test_actual_python_and_duckdb_keep_original_source_time(self):
-        result=self.snapshot(age=20);self.gateway.store.set_freshness(self.record['id'],30)
+        result=self.snapshot(age=20);self.gateway.store.set_freshness(self.record['id'],30,expected_revision=self.gateway.store.get(self.record['id']).get('freshnessRevision',0))
         with patch.object(self.gateway,'probe',return_value=dict(self.record,status='connected')):
             output=self.tools.calculate("result=[{'value':sum(row['amount'] for row in datasets[parameters['id']])}]",[result['resultId']],parameters={'id':result['resultId']})
             analyzed=self.gateway.analyze(result['resultId'],'SELECT SUM(amount) AS value FROM result')
         for derived in [output,analyzed]:
             self.assertEqual(derived['acquisition'],result['acquisition']);self.assertNotEqual(derived['createdAt'],result['createdAt'])
             self.tools.remember(derived)
-            self.gateway.store.set_freshness(self.record['id'],10)
+            self.gateway.store.set_freshness(self.record['id'],10,expected_revision=self.gateway.store.get(self.record['id']).get('freshnessRevision',0))
             with patch.object(self.gateway,'probe',return_value=dict(self.record,status='connected')):
                 with self.assertRaisesRegex(ValueError,'复用时长'):self.tools.publish('值 {{v}}',{'v':self.ref(derived,'value')})
-            self.gateway.store.set_freshness(self.record['id'],30)
+            self.gateway.store.set_freshness(self.record['id'],30,expected_revision=self.gateway.store.get(self.record['id']).get('freshnessRevision',0))
     def test_strictest_of_multiple_sources_and_legacy_derived_age_is_unknown(self):
         first=self.snapshot(age=20)
         second=self.gateway.store.save({'engine':'mysql','name':'second','host':'127.0.0.1','database':'second','username':'reader'})
-        self.gateway.store.set_freshness(self.record['id'],30);self.gateway.store.set_freshness(second['id'],10)
+        self.gateway.store.set_freshness(self.record['id'],30,expected_revision=self.gateway.store.get(self.record['id']).get('freshnessRevision',0));self.gateway.store.set_freshness(second['id'],10,expected_revision=self.gateway.store.get(second['id']).get('freshnessRevision',0))
         sources=[dict(first['acquisition'][0]),dict(first['acquisition'][0],connectionId=second['id'])]
         with self.assertRaisesRegex(ValueError,'second'):check_freshness([{'acquisition':sources}],self.gateway.store.get,'fixture','task-a',now=self.now)
         legacy={'sourceKind':'python','createdAt':self.now.isoformat(),'connectionDependencies':[{'id':self.record['id']} ]}

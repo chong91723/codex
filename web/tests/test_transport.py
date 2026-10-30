@@ -92,6 +92,11 @@ class HttpBoundaryTests(unittest.TestCase):
         for path in ['/api/schema/../server.py','/../server.py','/%2e%2e/server.py']:
             with self.request(path,{'Cookie':'codex_web=local-test-token'})as response:self.assertEqual(response.status,404)
 
+    def test_analysis_deployment_rejects_independent_cli_terminal(self):
+        with patch.dict('os.environ', {'CODEX_WEB_DIAGNOSTIC_TERMINAL':'0'}):
+            with self.request('/ws/terminal', {'Cookie':'codex_web=local-test-token'}) as response:
+                self.assertEqual(response.status,409)
+
     def test_database_post_and_download_require_same_origin_session(self):
         for headers,expected in [({},401),({'Origin':'https://attacker.example','Cookie':'codex_web=local-test-token'},403)]:
             with self.request('/api/databases/query',headers,b'{}') as response:self.assertEqual(response.status,expected)

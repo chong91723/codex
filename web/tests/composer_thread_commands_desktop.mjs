@@ -1,3 +1,4 @@
+import {imageFixture} from './image_fixture.mjs';
 // Genuine native storage fixtures and visible composer commands; zero model calls.
 // Transport gates hold real responses only; no successful result is fabricated.
 import fs from 'node:fs';
@@ -42,7 +43,7 @@ try{
   await choose(a);return{allFiveRequireExistingConversation:true,noImplicitThreadStart:true,noModelTurn:true,commandsPreserved:true};
  });
  await check('带附件发送五项本地功能明确拒绝并保留命令及附件',async()=>{
-  await page.locator('#file-input').setInputFiles({name:'composer-owned-unsent.txt',mimeType:'text/plain',buffer:Buffer.from(nonce+'_UNSENT_ATTACHMENT')});await page.waitForFunction(()=>!state.attachmentLoads&&state.attachments.length===1);const original=(await snapshot()).attachments;
+  await page.locator('#file-input').setInputFiles(imageFixture('composer-owned-unsent.png'));await page.waitForFunction(()=>!state.attachmentLoads&&state.attachments.length===1);const original=(await snapshot()).attachments;
   for(const command of commands){await selection(command);const start=calls.length;await page.locator('#prompt').press('Enter');await page.waitForFunction(()=>!composerState().pending);await waitToast('不接收附件');assert.equal(await page.locator('#prompt').inputValue(),'/'+command);assert.deepEqual((await snapshot()).attachments,original);assert.deepEqual(actionable(calls.slice(start)),[]);}
   await page.locator('#attachments .attachment button').click();assert.equal((await snapshot()).attachments.length,0);return{allFiveRejectAttachments:true,textAndAttachmentRetained:true,zeroTaskOrThreadActionRequests:true};
  });

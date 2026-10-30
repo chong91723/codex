@@ -7,6 +7,7 @@ const resultItem=(extra={})=>({id:'tool-A',type:'mcpToolCall',server:'codex_web_
 const answer=(extra={})=>({id:'answer-A',type:'agentMessage',phase:'final_answer',text:'本月销售额为 123，较上月增长 8%。',...extra});
 class Node {
  constructor(tag,text=''){this.tagName=tag;this.textContent=text;this.children=[];this.dataset={};this.className='';this.hidden=false;this.style={};this.isConnected=true;this.attributes={};this.parentNode=null;this.classList={add:(...names)=>{this.className=[...new Set([...this.className.split(' ').filter(Boolean),...names])].join(' ');}};}
+ prepend(...children){for(const node of [...children].reverse()){node.parentNode=this;this.children.unshift(node);}}
  append(...children){for(const node of children){if(node.parentNode)node.parentNode.children=node.parentNode.children.filter(child=>child!==node);node.parentNode=this;this.children.push(node);}}replaceChildren(...children){for(const node of this.children)node.parentNode=null;this.children=[];this.append(...children);}setAttribute(name,value){this[name]=value;this.attributes[name]=String(value);}getAttribute(name){return this.attributes[name]??null;}removeAttribute(name){delete this.attributes[name];}addEventListener(type,fn){this['on'+type]=fn;}remove(){if(this.parentNode)this.parentNode.children=this.parentNode.children.filter(node=>node!==this);this.parentNode=null;this.isConnected=false;}focus(){this.focused=true;}
  querySelector(selector){return this.querySelectorAll(selector)[0]||null;}
  querySelectorAll(selector){const matches=node=>selector.startsWith('.')?node.className.split(' ').includes(selector.slice(1)):selector==='[data-export-analysis-report]'?!!node.dataset.exportAnalysisReport:selector==='[data-analysis-result-id]'?!!node.dataset.analysisResultId:selector==='[data-analysis-result-host]'?!!node.dataset.analysisResultHost:selector.startsWith('[role=')?node.role===selector.match(/role=["']?([^"'\]]+)/)[1]:node.tagName===selector;return this.children.flatMap(node=>[...(matches(node)?[node]:[]),...node.querySelectorAll(selector)]);}
@@ -15,7 +16,7 @@ class Node {
 const pageData=(offset=0,rowCount=42)=>({rowCount,offset,columns:[{name:'amount'}],rows:Array.from({length:Math.max(0,Math.min(20,rowCount-offset))},(_,index)=>({amount:offset+index+1})),executedQuery:'SELECT amount FROM sales'});
 function fixture(transport=async(action,payload)=>pageData(payload.offset)){
  const state={thread:{id:'thread-A',name:'销售分析'},navigationGeneration:7,threadLoading:false,restoreError:false,turns:[{id:'turn-A',status:'completed'}],items:new Map()},downloads=[],opened=[],apiCalls=[];
- const context=vm.createContext({state,Map,Set,JSON,Error,Object,Number,String,Array,Blob,Date,window:{addEventListener:()=>{}},document:{addEventListener:()=>{}},Option:function(text,value){const node=new Node('option',text);node.value=value;return node;},setTimeout,clearTimeout,queueMicrotask,el:(tag,cls,text)=>{const node=new Node(tag,text);node.className=cls||'';return node;},button:(label,fn,cls)=>{const node=new Node('button',label);node.className=cls||'';node.onclick=fn;return node;},pretty:JSON.stringify,redact:value=>value,nativeErrorMessage:error=>error.message,downloadDatabaseBlob:(blob,name)=>downloads.push({blob,name}),showDatabaseResult:id=>opened.push(id),databaseApi:(action,payload)=>{apiCalls.push({action,payload});return transport(action,payload);},databaseTable:(columns,rows)=>{const node=new Node('table');node.data={columns,rows};return node;}});
+ const context=vm.createContext({state,Map,Set,JSON,Error,Object,Number,String,Array,Blob,Date,window:{addEventListener:()=>{}},document:{addEventListener:()=>{}},Option:function(text,value){const node=new Node('option',text);node.value=value;return node;},setTimeout,clearTimeout,queueMicrotask,el:(tag,cls,text)=>{const node=new Node(tag,text);node.className=cls||'';return node;},button:(label,fn,cls)=>{const node=new Node('button',label);node.className=cls||'';node.onclick=fn;return node;},pretty:JSON.stringify,redact:value=>value,nativeErrorMessage:error=>error.message,downloadDatabaseBlob:(blob,name)=>downloads.push({blob,name}),showDatabaseResult:id=>opened.push(id),databaseApi:(action,payload)=>{apiCalls.push({action,payload});return payload.analysisEvidence?.action==='verify'?Promise.resolve(state.verificationReply||state.items.get('answer-A')?.node.analysisEvidence||{status:'notRequired',verificationScope:'conversation'}):transport(action,payload);},databaseTable:(columns,rows)=>{const node=new Node('table');node.data={columns,rows};return node;}});
  const chartSource=fs.readFileSync(new URL('../public/databases.js',import.meta.url),'utf8');vm.runInContext(chartSource.slice(chartSource.indexOf('function validDatabaseChart('),chartSource.indexOf('function downloadDatabaseBlob(')),context);vm.runInContext(source,context);vm.runInContext(fs.readFileSync(new URL('../public/analysis-reports.js',import.meta.url),'utf8'),context);
  const add=(item,turnId='turn-A',done=true,node=new Node('div'))=>{state.items.set(item.id,{item,turnId,done,node});return state.items.get(item.id);};add(answer());
  return {state,context,downloads,opened,apiCalls,add};
@@ -72,6 +73,24 @@ test('report snapshots include exactly the chosen actual answer and same-turn co
 test('same-turn failed or error tool results never become report query evidence',()=>{
  const f=fixture();f.add(resultItem({status:'failed'}));f.add(resultItem({id:'error-tool',result:{isError:true,structuredContent:{resultId:idB}}}));assert.deepEqual(plain(f.context.analysisReportSnapshot('answer-A').results),[]);
 });
+test('explicit verified history references include earlier charts without unrelated or future artifacts',()=>{
+ const f=fixture();f.state.turns=[{id:'earlier',status:'completed'},{id:'turn-A',status:'completed'},{id:'future',status:'completed'}];
+ const chart={version:1,resultId:idB,title:'Earlier exact chart',rows:[],option:{series:[]}};
+ f.add(resultItem({id:'old-data',result:{structuredContent:{resultId:idB,connectionName:'Earlier source',rowCount:2}}}),'earlier');
+ f.add(resultItem({id:'unrelated-data'}),'earlier');
+ f.add(resultItem({id:'old-chart',tool:'create_chart',result:{structuredContent:{codexWebChart:chart}}}),'earlier');
+ f.add(resultItem({id:'future-chart',tool:'create_chart',result:{structuredContent:{codexWebChart:{...chart,title:'Future chart'}}}}),'future');
+ f.state.items.get('answer-A').node.analysisEvidence={status:'verified',evidence:[{resultId:idB}],sources:{}};
+ const snapshot=f.context.analysisReportSnapshot('answer-A');assert.deepEqual(plain(snapshot.results.map(item=>item.id)),[idB]);assert.equal(snapshot.charts.length,1);assert.equal(snapshot.charts[0].title,'Earlier exact chart');
+});
+test('derived report values trace actual parent datasets to earlier charts',()=>{
+ const f=fixture();f.state.turns=[{id:'earlier',status:'completed'},{id:'turn-A',status:'completed'}];
+ f.add(resultItem({id:'old-data',result:{structuredContent:{resultId:idB,rowCount:2}}}),'earlier');
+ f.add(resultItem({id:'old-chart',tool:'create_chart',result:{structuredContent:{codexWebChart:{version:1,resultId:idB,title:'Parent chart',rows:[],option:{series:[]}}}}}),'earlier');
+ f.add(resultItem({id:'derived',tool:'run_python',result:{structuredContent:{resultId:idC,inputResultIds:[idB],inputSources:[{resultId:idB}]}}}));
+ f.state.items.get('answer-A').node.analysisEvidence={status:'verified',evidence:[{resultId:idC}],sources:{[idC]:{inputSources:[{resultId:idB}]}}};
+ const snapshot=f.context.analysisReportSnapshot('answer-A');assert.deepEqual(new Set(snapshot.results.map(item=>item.id)),new Set([idB,idC]));assert.equal(snapshot.charts.length,1);
+});
 for(const [name,item,done,turnStatus]of [['pending answer',answer(),false,'completed'],['commentary',answer({phase:'commentary'}),true,'completed'],['running turn',answer(),true,'inProgress'],['failed turn',answer(),true,'failed'],['interrupted turn',answer(),true,'interrupted'],['proposal',answer({text:'<proposed_plan>先查看指标口径</proposed_plan>'}),true,'completed'],['non-answer',resultItem({id:'answer-A'}),true,'completed']])test('report rejects '+name,()=>{
  const f=fixture();f.add(item,'turn-A',done);f.state.turns[0].status=turnStatus;assert.throws(()=>f.context.analysisReportSnapshot('answer-A'),/不能作为分析结论导出/);assert.equal(f.downloads.length,0);
 });
@@ -89,7 +108,7 @@ test('Markdown export contains actual selected answer and same-turn ids without 
  const f=fixture();f.add(resultItem());f.add(resultItem({id:'other-tool',result:{structuredContent:{resultId:idB}}}),'turn-B');f.state.thread.name='销售/分析\n2026';await f.context.exportAnalysisReport('answer-A','thread-A',7);assert.equal(f.downloads.length,1);const exported=f.downloads[0],text=await exported.blob.text();assert.equal(exported.name,'销售-分析-2026.md');assert.equal(exported.blob.type,'text/markdown;charset=utf-8');assert(text.includes(answer().text));assert(text.includes(idA));assert(!text.includes(idB));assert(text.startsWith('# 销售/分析 2026\n'));
 });
 test('answer download is attached inside existing message actions and bound to its original navigation',async()=>{
- const f=fixture(),node=new Node('div'),actions=new Node('div');actions.className='message-actions';const copy=new Node('button','复制');actions.append(copy);node.append(actions);f.context.decorateAnalysisAnswer(node,answer(),true);assert.equal(node.children.length,1);assert.equal(actions.children[0],copy);const download=actions.children[2];assert.equal(download.dataset.exportAnalysisReport,'answer-A');f.state.navigationGeneration++;await assert.rejects(download.onclick(),/当前分析已切换/);assert.equal(f.downloads.length,0);
+ const f=fixture(),node=new Node('div'),actions=new Node('div');actions.className='message-actions';const copy=new Node('button','复制');actions.append(copy);node.append(actions);f.context.decorateAnalysisAnswer(node,answer(),true);assert.equal(node.children.length,1);assert.equal(actions.children[0],copy);const download=actions.querySelector('[data-export-analysis-report]');assert.equal(download.dataset.exportAnalysisReport,'answer-A');f.state.navigationGeneration++;await assert.rejects(download.onclick(),/当前分析已切换/);assert.equal(f.downloads.length,0);
 });
 test('pending, commentary and proposal messages receive no conclusion download action',()=>{
  const f=fixture();for(const [item,done]of [[answer(),false],[answer({phase:'commentary'}),true],[answer({text:'<proposed_plan>计划</proposed_plan>'}),true]]){const node=new Node('div');f.context.decorateAnalysisAnswer(node,item,done);assert.equal(node.children.length,0);}
@@ -100,16 +119,16 @@ test('download visibility follows actual completed turn status rather than done 
 
 test('legacy and unknown verification warnings survive actual Markdown download',async()=>{
  for(const status of ['legacy','unknown']){
-  const f=fixture(),entry=f.state.items.get('answer-A');entry.node.dataset.analysisVerification=status;
+  const f=fixture(),entry=f.state.items.get('answer-A');entry.node.dataset.analysisVerification=status;f.state.verificationReply={status};
   await f.context.exportAnalysisReport('answer-A','thread-A',7);const text=await f.downloads[0].blob.text();
-  assert.match(text,status==='legacy'?/历史回答：未按当前数值规则核验/:/未取得可确认的数值核验状态/);assert(text.includes(entry.item.text));
+  assert.match(text,status==='legacy'?/历史内容未按当前字段依据规则关联/:/未关联可确认的字段执行依据/);assert(text.includes(entry.item.text));
  }
 });
 test('report keeps proof version and acquisition policy while copying a stable evidence snapshot',()=>{
  const f=fixture(),entry=f.state.items.get('answer-A');entry.node.dataset.analysisVerification='verified';
  entry.node.analysisEvidence={status:'verified',publicationChecks:{version:'analysis-publication-v2',freshness:[{maxAgeMinutes:30,status:'notConfigured',retrievedAt:'2026-10-01T00:00:00Z'}]},evidence:[{value:'123'}],sources:{}};
  const snapshot=f.context.analysisReportSnapshot('answer-A');entry.node.analysisEvidence.evidence[0].value='tampered-later';
- const text=f.context.analysisReportMarkdown(snapshot);assert.match(text,/不能据此认定为最新/);assert.equal(snapshot.verification.publicationChecks.freshness[0].retrievedAt,'2026-10-01T00:00:00Z');assert(!text.includes('retrievedAt'));assert.equal(snapshot.verification.publicationChecks.version,'analysis-publication-v2');assert(!text.includes('tampered-later'));assert.match(text,/业务字段来源、公式口径/);
+ const text=f.context.analysisReportMarkdown(snapshot);assert.match(text,/不能认定为最新/);assert.equal(snapshot.verification.publicationChecks.freshness[0].retrievedAt,'2026-10-01T00:00:00Z');assert(!text.includes('retrievedAt'));assert.equal(snapshot.verification.publicationChecks.version,'analysis-publication-v2');assert(!text.includes('tampered-later'));assert.match(text,/正文其他断言、解释和因果关系未作语义认证/);
  entry.node.analysisEvidence={status:'verified'};assert.match(f.context.analysisReportMarkdown(f.context.analysisReportSnapshot('answer-A')),/旧规则记录/);
 });
 
@@ -120,5 +139,46 @@ test('metric execution exposes only its final dataset card, not proof input snap
 test('download retains confirmed metric version and field scope without upgrading ordinary values',()=>{
  const f=fixture(),entry=f.state.items.get('answer-A');entry.node.dataset.analysisVerification='verified';
  entry.node.analysisEvidence={status:'verified',evidence:[{value:'123',metric:{name:'实际指标',ruleId:'rule-a',version:2,unit:'CNY',proofHash:'execution-proof'}},{value:'8'}],sources:{}};
- const snapshot=f.context.analysisReportSnapshot('answer-A'),text=f.context.analysisReportMarkdown(snapshot);assert.match(text,/部分指标引用/);assert.match(text,/只对应记录中的指标字段/);assert.equal(snapshot.verification.evidence[0].metric.proofHash,'execution-proof');assert.equal(snapshot.verification.evidence[0].metric.ruleId,'rule-a');assert(!text.includes('execution-proof'));assert(text.indexOf(answer().text)<text.indexOf('数值依据状态'));
+ const snapshot=f.context.analysisReportSnapshot('answer-A'),text=f.context.analysisReportMarkdown(snapshot);assert.match(text,/使用已确认口径/);assert.match(text,/仅下列字段与执行记录匹配/);assert.equal(snapshot.verification.evidence[0].metric.proofHash,'execution-proof');assert.equal(snapshot.verification.evidence[0].metric.ruleId,'rule-a');assert(!text.includes('execution-proof'));assert(text.indexOf(answer().text)<text.indexOf('数据依据范围'));
+});
+
+test('export rechecks server-owned field status rather than trusting a DOM badge',async()=>{
+ const f=fixture(),entry=f.state.items.get('answer-A');entry.node.dataset.analysisVerification='verified';entry.node.analysisEvidence={status:'verified',evidence:[{name:'v',value:999}]};f.state.verificationReply={status:'rejected',verificationScope:'none'};
+ await f.context.exportAnalysisReportFormat('answer-A','thread-A',7,'markdown');
+ const text=await f.downloads[0].blob.text();assert.match(text,/本文件不能作为已核验数据结果/);assert(!text.includes('来源已关联：'));assert(f.apiCalls.some(call=>call.payload.analysisEvidence?.action==='verify'));
+});
+test('unlinked body remains exportable with its unverified scope and no successful-field claim',async()=>{
+ const f=fixture(),entry=f.state.items.get('answer-A');entry.node.dataset.analysisVerification='rejected';entry.node.analysisEvidence={status:'rejected',verificationScope:'none'};
+ await f.context.exportAnalysisReport('answer-A','thread-A',7);const text=await f.downloads[0].blob.text();assert(text.includes(answer().text));assert.match(text,/不能作为已核验数据结果/);
+});
+test('field appendix escapes source text rather than allowing Markdown injection',()=>{
+ const f=fixture(),entry=f.state.items.get('answer-A');entry.node.analysisEvidence={status:'verified',evidence:[{name:'text',value:'![x](https://example.com/a)',column:'<script>',sourceName:'**source**'}]};
+ const text=f.context.analysisReportMarkdown(f.context.analysisReportSnapshot('answer-A'));assert(text.includes('\\!\\[x\\]'));assert(!text.includes('；字段 <script>'));
+});
+
+test('server-authoritative export scope excludes historical artifacts injected through stale DOM proof',async()=>{
+ const f=fixture();f.state.turns.unshift({id:'older',status:'completed'});f.add(resultItem({id:'old-result',result:{structuredContent:{resultId:idB}}}),'older');f.add(resultItem());
+ const entry=f.state.items.get('answer-A');entry.node.analysisEvidence={status:'verified',evidence:[{resultId:idB}],sources:{}};f.state.verificationReply={status:'rejected',verificationScope:'none'};
+ await f.context.exportAnalysisReportFormat('answer-A','thread-A',7,'evidence');const value=JSON.parse(await f.downloads[0].blob.text());assert(value.results.some(result=>result.id===idA));assert(!value.results.some(result=>result.id===idB));assert.equal(value.verification.status,'rejected');
+});
+
+test('report formats explicitly describe downloads rather than response rendering',()=>{
+ const f=fixture(),node=f.state.items.get('answer-A').node;
+ f.context.decorateAnalysisAnswer(node,answer(),true);
+ const label=node.querySelector('.analysis-report-download-format'),select=label.querySelector('select');
+ assert.equal(label.textContent,'下载格式');assert.equal(select.ariaLabel,'下载格式');
+ assert.deepEqual(select.children.map(option=>option.textContent),['文本文档（.md）','网页报告（含图表）','技术依据（.json）']);
+ assert.deepEqual(select.children.map(option=>option.value),['markdown','html','evidence']);
+});
+
+test('field linkage before turn completion defers knowledge check, then native completion refreshes it',async()=>{
+ const f=fixture(async()=>({status:'current'})),entry=f.state.items.get('answer-A');
+ entry.node.dataset.analysisVerification='verified';entry.node.analysisEvidence={status:'verified',evidence:[],sources:{}};
+ f.state.turns[0].status='inProgress';await f.context.refreshReportKnowledge(entry);
+ assert.equal(f.apiCalls.length,0);assert.equal(entry.node.querySelector('.analysis-report-knowledge'),null);
+ f.state.turns[0].status='completed';
+ f.context.analysisUIEvent({method:'turn/completed',params:{threadId:'thread-A',turn:{id:'turn-A',status:'completed'}}});await flush();await flush();
+ assert.equal(f.apiCalls.filter(call=>call.payload.learning?.operation==='report_status').length,1);
+ assert.equal(entry.node.querySelector('.analysis-report-knowledge').dataset.status,'current');
+ assert.doesNotMatch(entry.node.querySelector('.analysis-report-knowledge').textContent,/尚未完成/);
 });

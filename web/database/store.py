@@ -9,7 +9,7 @@ import secrets
 import sqlite3
 import time
 
-PUBLIC_FIELDS=('id','name','engine','host','port','database','schema','username','tls','verifyTls','caFile','enabled','status','error','checkedAt','version','maxAgeMinutes')
+PUBLIC_FIELDS=('id','name','engine','host','port','database','schema','username','tls','verifyTls','caFile','enabled','status','error','checkedAt','version','maxAgeMinutes','freshnessRevision')
 DEFAULT_PORTS={'mysql':3306,'postgresql':5432,'clickhouse':8123,'elasticsearch':9200}
 
 def state_directory():
@@ -21,7 +21,7 @@ def fingerprint(record):
     return hashlib.sha256(json.dumps(fields,sort_keys=True).encode()).hexdigest()
 
 def public(record):
-    value={key:record.get(key) for key in PUBLIC_FIELDS};value['readOnly']=True;value['hasPassword']=bool(record.get('password'));return value
+    value={key:record.get(key) for key in PUBLIC_FIELDS};value['freshnessRevision']=record.get('freshnessRevision',0);value['readOnly']=True;value['hasPassword']=bool(record.get('password'));return value
 
 class Store:
     def __init__(self,directory=None):
@@ -45,7 +45,6 @@ class Store:
     def save(self,payload):
         if payload.get('readOnly',True) is not True:
             raise ValueError('所有数据库强制只读，不能授权写入。')
-        old=self.get(payload['id']) if payload.get('id') else None
         engine=payload.get('engine');name=str(payload.get('name','')).strip();host=str(payload.get('host','')).strip();database=str(payload.get('database','')).strip();username=str(payload.get('username','')).strip()
         if engine not in DEFAULT_PORTS:raise ValueError('不支持的数据库类型。')
         if not name or len(name)>100 or not host or len(host)>253 or any(c in host for c in '/@?#\\\x00 \t\n'):raise ValueError('请填写有效的名称和主机地址。')
@@ -53,20 +52,37 @@ class Store:
         if engine=='elasticsearch' and any(c in database for c in '/?#\\\x00 \t\n'):raise ValueError('索引名称或匹配模式无效。')
         port=int(payload.get('port') or DEFAULT_PORTS[engine]);schema=str(payload.get('schema') or 'public')
         if not 1<=port<=65535:raise ValueError('端口范围为 1–65535。')
-        if len(self.all())>=32 and not old:raise ValueError('最多配置 32 个数据库连接。')
-        password=payload.get('password') or (old or {}).get('password','')
-        record={'id':(old or {}).get('id') or secrets.token_hex(12),'name':name,'engine':engine,'host':host,'port':port,'database':database,'schema':schema,'username':username,'password':password,'tls':payload.get('tls') is True,'verifyTls':payload.get('verifyTls',True) is True,'caFile':str(payload.get('caFile') or ''),'enabled':payload.get('enabled',True) is True,'maxAgeMinutes':(old or {}).get('maxAgeMinutes'),'status':'unverified','error':None,'checkedAt':None,'version':(old or {}).get('version',0)+1}
-        with self.connect() as db:db.execute('INSERT INTO connections VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET version=excluded.version,record=excluded.record',(record['id'],record['version'],json.dumps(record)))
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            old=self._current(db,payload['id'],payload.get('expectedVersion')) if payload.get('id') else None
+            if not old and db.execute('SELECT count(*) FROM connections').fetchone()[0]>=32:raise ValueError('最多配置 32 个数据库连接。')
+            password=payload.get('password') or (old or {}).get('password','')
+            record={'id':(old or {}).get('id') or secrets.token_hex(12),'name':name,'engine':engine,'host':host,'port':port,'database':database,'schema':schema,'username':username,'password':password,'tls':payload.get('tls') is True,'verifyTls':payload.get('verifyTls',True) is True,'caFile':str(payload.get('caFile') or ''),'enabled':payload.get('enabled',True) is True,'maxAgeMinutes':(old or {}).get('maxAgeMinutes'),'freshnessRevision':(old or {}).get('freshnessRevision',0),'status':'unverified','error':None,'checkedAt':None,'version':(old or {}).get('version',0)+1}
+            db.execute('INSERT INTO connections VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET version=excluded.version,record=excluded.record',(record['id'],record['version'],json.dumps(record)))
         return record
-    def set_freshness(self,identifier,minutes):
+
+    @staticmethod
+    def _current(db,identifier,expected=None):
+        row=db.execute('SELECT record FROM connections WHERE id=?',(identifier,)).fetchone()
+        if not row:raise ValueError('数据库连接不存在或已删除。')
+        record=json.loads(row[0])
+        if expected is not None and (type(expected) is not int or expected!=record['version']):
+            raise ValueError('连接已在其他页面变更；当前输入已保留，请核对最新配置后再保存或操作。')
+        return record
+    def set_freshness(self,identifier,minutes,expected_revision=None):
         if minutes is not None and (isinstance(minutes,bool) or not isinstance(minutes,int) or not 0<=minutes<=525600):
             raise ValueError('复用时长请输入零至一年之间的整数分钟，留空表示未设置。')
-        self.get(identifier)
-        # Policy edits do not change connectivity or invalidate every snapshot.
+        if type(expected_revision) is not int or expected_revision<0:
+            raise ValueError('缺少有效的数据时效版本，请读取最新规则后再保存；当前输入已保留。')
+        # Independent CAS: policy edits must not invalidate connectivity or snapshots.
         with self.connect() as db:
-            changed=db.execute("UPDATE connections SET record=json_set(record,'$.maxAgeMinutes',?) WHERE id=?",(minutes,identifier)).rowcount
-            if not changed:raise ValueError('数据库连接已删除。')
-        return self.get(identifier)
+            db.execute('BEGIN IMMEDIATE')
+            record=self._current(db,identifier)
+            if record.get('freshnessRevision',0)!=expected_revision:
+                raise ValueError('数据时效已在其他页面更新。当前输入已保留，请读取最新规则并核对后再保存。')
+            record.update(maxAgeMinutes=minutes,freshnessRevision=expected_revision+1)
+            db.execute('UPDATE connections SET record=? WHERE id=?',(json.dumps(record),identifier))
+        return record
     def status(self,record,status,error=None):
         checked=datetime.now(timezone.utc).isoformat()
         # A probe begun before a policy edit must not overwrite the new policy.
@@ -75,10 +91,13 @@ class Store:
             if not changed:raise ValueError('连接配置已经变更，请重新测试连接。')
             current=json.loads(db.execute('SELECT record FROM connections WHERE id=?',(record['id'],)).fetchone()[0])
         return current
-    def toggle(self,identifier,enabled):
-        record=self.get(identifier);record['enabled']=enabled;record['version']+=1;record.update(status='unverified',error=None,checkedAt=None)
-        with self.connect() as db:db.execute('UPDATE connections SET version=?,record=? WHERE id=?',(record['version'],json.dumps(record),identifier))
+    def toggle(self,identifier,enabled,expected=None):
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            record=self._current(db,identifier,expected);record['enabled']=enabled;record['version']+=1;record.update(status='unverified',error=None,checkedAt=None)
+            db.execute('UPDATE connections SET version=?,record=? WHERE id=?',(record['version'],json.dumps(record),identifier))
         return record
-    def remove(self,identifier):
-        self.get(identifier)
-        with self.connect() as db:db.execute('DELETE FROM connections WHERE id=?',(identifier,))
+    def remove(self,identifier,expected=None):
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE');self._current(db,identifier,expected)
+            db.execute('DELETE FROM connections WHERE id=?',(identifier,))

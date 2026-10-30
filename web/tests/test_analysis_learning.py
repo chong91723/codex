@@ -49,6 +49,38 @@ class AnalysisLearning(unittest.TestCase):
         self.assertEqual('Source-wide required rule',page['requiredBusinessContext']['content'])
         self.gateway.learning.before_query(self.source['id'])
 
+    def test_unrelated_empty_page_cannot_attest_relevant_table_knowledge(self):
+        state=self.scan()
+        note=next(note for note in state['notes'] if note['target']=={'table':'orders','column':'amount'})
+        self.decide(note['id'])
+        page=knowledge_tool(self.gateway,'read_database_context',{'connection_id':self.source['id'],'table':'accounts','limit':1})
+        self.assertEqual(page['notes'],[])
+        with self.assertRaisesRegex(ValueError,'适用'):self.gateway.learning.before_query(self.source['id'],{'orders'})
+        with patch('service.connect') as connector:
+            with self.assertRaisesRegex(ValueError,'适用'):self.gateway.query(self.source['id'],'SELECT amount FROM orders')
+            connector.assert_not_called()
+        knowledge_tool(self.gateway,'read_database_context',{'connection_id':self.source['id'],'table':'orders'})
+        self.gateway.learning.before_query(self.source['id'],{'orders'})
+
+    def test_delivered_pages_accumulate_and_unrelated_notes_are_not_required(self):
+        self.scan()
+        for content,aspect,target in [('Relevant meaning','meaning',{'table':'orders'}),('Relevant units','units',{'table':'orders'}),('Account rule','scope',{'table':'accounts'})]:
+            state=base.DatabaseKnowledgeTests.save(self,content,target=target,aspect=aspect)
+            note=next(note for note in state['notes'] if note['content']==content)
+            self.decide(note['id'])
+        first=knowledge_tool(self.gateway,'read_database_context',{'connection_id':self.source['id'],'table':'orders','limit':1})
+        self.assertTrue(first['hasMore'])
+        with self.assertRaisesRegex(ValueError,'适用'):self.gateway.learning.before_query(self.source['id'],{'orders'})
+        knowledge_tool(self.gateway,'read_database_context',{'connection_id':self.source['id'],'table':'orders','offset':1,'limit':1})
+        self.gateway.learning.before_query(self.source['id'],{'orders'})
+        with self.assertRaisesRegex(ValueError,'适用'):self.gateway.learning.before_query(self.source['id'],{'accounts'})
+
+    def test_cte_shadowing_does_not_hide_physical_table_dependencies(self):
+        from sql_guard import physical_tables
+        import sqlglot
+        tree=sqlglot.parse_one('WITH orders AS (SELECT * FROM public.orders) SELECT * FROM orders',read='postgres')
+        self.assertEqual([(table.db,table.name) for table in physical_tables(tree)],[('public','orders')])
+
     def test_pending_correction_blocks_and_rejection_restores_validity(self):
         self.scan();self.business('Original');stamp=self.read()['knowledgeReceipt'];meta=self.snapshot(stamp)
         note=self.correction('Incorrect proposed rule')
@@ -86,10 +118,10 @@ class AnalysisLearning(unittest.TestCase):
     def test_empty_reference_publication_still_checks_read_knowledge(self):
         self.scan();self.business('Original');self.read()
         tools=AnalysisTools(self.gateway,self.gateway.thread_id)
-        answer=tools.publish('Qualitative report',{})
+        answer=tools.publish('Qualitative plan',{},purpose='plan')
         self.assertTrue(answer['publicationChecks']['knowledge'])
         note=self.correction();self.decide(note['id'])
-        with self.assertRaisesRegex(ValueError,'业务知识'):tools.publish('Another report',{})
+        with self.assertRaisesRegex(ValueError,'业务知识'):tools.publish('Another plan',{},purpose='plan')
 
     def test_permanent_thread_cleanup_keeps_source_knowledge(self):
         self.scan();self.business('Original');self.read()

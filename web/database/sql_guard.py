@@ -16,6 +16,11 @@ SAFE_NORMALIZED_FUNCTION_TYPES=(exp.TsOrDsToDate,)
 class ReadOnlyError(ValueError):
     pass
 
+def physical_tables(tree):
+    """Resolve CTE/derived scopes instead of dropping every matching table name."""
+    from sqlglot.optimizer.scope import traverse_scope
+    return [source for scope in traverse_scope(tree) for _,source in scope.selected_sources.values() if isinstance(source,exp.Table)]
+
 def validate_query(query,connection,enforce_limit=False):
     if not isinstance(query,str) or not query.strip() or len(query)>30000:
         raise ReadOnlyError('请输入不超过 30000 字符的只读查询。')

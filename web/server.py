@@ -2,7 +2,7 @@
 """Dependency-free local UI transport for the unmodified Codex executable.
 
 The bridge does not implement agent behavior: in-scope JSON-RPC stays native.
-Each browser connection owns one app-server process, including approvals.
+The Web service owns the pinned app-server; browsers use native client connections.
 """
 from __future__ import annotations
 
@@ -34,81 +34,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parent
+from image_inputs import image_inputs_reason
+from skill_packages import SkillPackages, HTTP_BYTES as SKILL_HTTP_BYTES
+
 MAX_MESSAGE = 32 * 1024 * 1024
 
 
-class WebSocket:
-    """RFC 6455 framing, including fragmented browser messages and ping/pong."""
-
-    def __init__(self, handler):
-        self.reader, self.sock = handler.rfile, handler.connection
-        self.lock = threading.Lock()
-        self.closed = False
-
-    def exact(self, size):
-        result = self.reader.read(size)
-        if len(result) != size:
-            raise EOFError()
-        return result
-
-    def send(self, value, opcode=1):
-        payload = json.dumps(value, ensure_ascii=False).encode() if not isinstance(value, bytes) else value
-        length = len(payload)
-        header = bytes([0x80 | opcode])
-        if length < 126:
-            header += bytes([length])
-        elif length < 65536:
-            header += bytes([126]) + struct.pack('!H', length)
-        else:
-            header += bytes([127]) + struct.pack('!Q', length)
-        with self.lock:
-            if not self.closed:
-                self.sock.sendall(header + payload)
-
-    def receive(self):
-        fragments, initial_opcode = bytearray(), None
-        while True:
-            first, second = self.exact(2)
-            opcode, final = first & 15, bool(first & 128)
-            length, masked = second & 127, bool(second & 128)
-            if first & 0x70 or not masked:
-                raise ValueError('Invalid browser WebSocket frame')
-            if length == 126:
-                length = struct.unpack('!H', self.exact(2))[0]
-            elif length == 127:
-                length = struct.unpack('!Q', self.exact(8))[0]
-            if length > MAX_MESSAGE or len(fragments) + length > MAX_MESSAGE:
-                raise ValueError('Message exceeds 32 MiB')
-            if opcode >= 8 and (not final or length > 125):
-                raise ValueError('Invalid control frame')
-            mask = self.exact(4)
-            payload = bytes(byte ^ mask[i % 4] for i, byte in enumerate(self.exact(length)))
-            if opcode == 8:
-                self.send(payload, opcode=8)
-                raise EOFError()
-            if opcode == 9:
-                self.send(payload, opcode=10)
-                continue
-            if opcode == 10:
-                continue
-            if opcode in (1, 2):
-                if initial_opcode is not None:
-                    raise ValueError('Nested fragmented message')
-                initial_opcode = opcode
-            elif opcode != 0 or initial_opcode is None:
-                raise ValueError('Invalid continuation')
-            fragments.extend(payload)
-            if final:
-                if initial_opcode != 1:
-                    raise ValueError('Expected a JSON text message')
-                return json.loads(fragments.decode('utf-8'))
-
-    def close(self):
-        self.closed = True
-        try:
-            self.sock.shutdown(socket.SHUT_RDWR)
-        except OSError:
-            pass
+from native_transport import WebSocket
 
 
 def stop_process(process):
@@ -382,8 +314,9 @@ def retained_skill(name=None, path=None):
     document = Path(path)
     skill_name = document.parent.name
     try:
-        return (skill_name in RETAINED_BUNDLED_SKILLS and (name is None or name == skill_name)
-                and document.resolve() == root/skill_name/'SKILL.md')
+        return ((skill_name in RETAINED_BUNDLED_SKILLS and (name is None or name == skill_name)
+                 and document.resolve() == root/skill_name/'SKILL.md')
+                or SkillPackages().allows(name, path))
     except (OSError, RuntimeError, ValueError):
         return False
 
@@ -418,7 +351,7 @@ def config_scope_reason(value, path=()):
                 return 'OpenAI/ChatGPT 模型服务不在当前范围。'
     if key == 'config' and 'skills' in path and isinstance(value, list):
         if any(isinstance(rule, dict) and rule.get('enabled') is not False and not retained_skill(rule.get('name'), rule.get('path')) for rule in value):
-            return '只保留 Codex 源码自带的 openai-docs、review-agent、skill-creator、skill-installer；其他技能不能启用。'
+            return '只能启用当前实例保留的 Codex 原生技能或已登记上传的技能。'
     if isinstance(value, dict):
         for child, item in value.items():
             # Native thread config permits dotted keys as well as nested tables.
@@ -517,11 +450,14 @@ class ScopePolicy:
                 return '该历史会话使用已移除的 OpenAI/ChatGPT 模型；请保留历史并显式创建第三方模型会话。'
         if method in ('turn/start', 'turn/steer', 'thread/queue/add', 'thread/queue/update'):
             inputs = params.get('input')
+            reason = image_inputs_reason(inputs)
+            if reason:
+                return reason
             for item in inputs if isinstance(inputs, list) else []:
                 if isinstance(item, dict) and item.get('type') == 'skill' and not retained_skill(item.get('name'), item.get('path')):
-                    return '只能调用当前实例中保留的四个 Codex 原生技能；生图和自定义技能已移除。'
+                    return '只能调用当前实例保留的 Codex 原生技能或已登记上传的技能。'
         if method == 'skills/config/write' and params.get('enabled') is not False and not retained_skill(params.get('name'), params.get('path')):
-            return '只能启用当前实例中保留的四个 Codex 原生技能。'
+            return '只能启用当前实例保留的 Codex 原生技能或已登记上传的技能。'
         edits = [params] if method == 'config/value/write' else params.get('edits', []) if method == 'config/batchWrite' else []
         for edit in edits if isinstance(edits, list) else []:
             if not isinstance(edit, dict):
@@ -543,54 +479,121 @@ class ScopePolicy:
         return True
 
 
+
+def skill_configuration_write(method, params):
+    """Recognize native Skill configuration mutations, excluding MCP payloads."""
+    if not isinstance(params, dict):
+        return False
+    if method == 'skills/config/write':
+        return True
+    def contains(value, path):
+        if 'mcp_servers' in path or 'plugins' in path:
+            return False
+        if 'skills' in path:
+            return True
+        return isinstance(value, dict) and any(contains(item, path + config_key_parts(key)) for key, item in value.items())
+    edits = [params] if method == 'config/value/write' else params.get('edits', []) if method == 'config/batchWrite' else []
+    return any(isinstance(edit, dict) and contains(edit.get('value'), config_key_parts(edit.get('keyPath')))
+               for edit in (edits if isinstance(edits, list) else []))
+
+
+def validate_native_skill_inputs(settings, method, params):
+    """An explicit disabled Skill is silently skipped by native: reject it first.
+
+    The caller holds runtime.control through this reload and turn admission.
+    Skill mutations use the same lock through their native write acknowledgement.
+    """
+    if method not in ('turn/start', 'turn/steer', 'thread/queue/add', 'thread/queue/update'):
+        return
+    inputs = params.get('input')
+    selected = [item for item in inputs if isinstance(item, dict) and item.get('type') == 'skill'] if isinstance(inputs, list) else []
+    if not selected:
+        return
+    from native_runtime import NativeRPCError
+    try:
+        native, _ = SkillPackages._native_skills(settings.runtime, settings.workspace)
+    except Exception as error:
+        raise NativeRPCError({'code': -32003, 'message': '无法核实技能的原生启用状态，尚未发送；请刷新技能列表后重试。',
+                              'data': {'type': 'skillValidationFailed'}}) from error
+    for item in selected:
+        if not any(entry.get('path') == item.get('path') and entry.get('name') == item.get('name')
+                   and entry.get('enabled') is True for entry in native):
+            raise NativeRPCError({'code': -32004, 'message': '所选技能已停用、移除或无法被原生解析；尚未发送，输入已保留。请刷新技能列表。',
+                                  'data': {'type': 'skillUnavailable'}})
+
+
+class MemoryThreadPresentation:
+    """Separate registered maintenance records in browser presentation only.
+
+    Native lifecycle operations and writer checks remain authoritative. Identity
+    comes from the profile registry, never a title or a guessed directory name.
+    """
+    METHODS = frozenset(('thread/list', 'thread/read', 'thread/resume', 'thread/delete', 'thread/archive'))
+
+    def __init__(self, memory):
+        self.memory = memory
+        self.pending = {}
+        self.lock = threading.Lock()
+
+    def track(self, message):
+        if message.get('method') in self.METHODS and isinstance(message.get('id'), (str, int)):
+            params = message.get('params') or {}
+            with self.lock:
+                self.pending[message['id']] = (message['method'], params.get('threadId') if isinstance(params, dict) else None)
+
+    def present(self, message):
+        if message.get('method') or not isinstance(message.get('id'), (str, int)):
+            return message, None
+        with self.lock:
+            request = self.pending.pop(message['id'], None)
+        if request is None or self.memory is None:
+            return message, None
+        try:
+            identifiers = self.memory.maintenance_thread_ids()
+            method, identity = request
+            result = message.get('result')
+            if method == 'thread/list' and isinstance(result, dict) and isinstance(result.get('data'), list):
+                visible = [thread for thread in result['data'] if not isinstance(thread, dict) or thread.get('id') not in identifiers]
+                return dict(message, result=dict(result, data=visible)), None
+            if identity not in identifiers:
+                return message, None
+            record = next((entry for entry in self.memory.maintenance_sessions() if entry.get('threadId') == identity),
+                          {'threadId': identity, 'state': 'historical'})
+            if isinstance(message.get('error'), dict):
+                error = message['error']
+                data = error.get('data')
+                data = dict(data) if isinstance(data, dict) else ({'nativeData': data} if data is not None else {})
+                data['webMemoryMaintenance'] = record
+                return dict(message, error=dict(error, data=data)), None
+            if isinstance(result, dict):
+                return dict(message, result=dict(result, webMemoryMaintenance=record)), None
+            return message, None
+        except Exception as error:
+            # Optional presentation must not discard a native ACK or falsely
+            # hide unknown user history. Keep the response with diagnostics.
+            return message, '后台记忆会话登记读取失败，保留原生返回；请在记忆设置核对：' + str(error)
+
+
 def rpc_bridge(ws, settings):
-    process = subprocess.Popen(
-        [settings.codex, *[arg for setting in WEB_NATIVE_OVERRIDES for arg in ('-c', setting)],
-         'app-server', '--listen', 'stdio://'],
-        cwd=settings.workspace, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE, start_new_session=True,
-    )
-    settings.register(process)
+    # Native connections are independent; only the service owns the runtime.
+    # Disconnecting this browser unsubscribes it, without killing agent work.
     policy = ScopePolicy()
     forks = KnownForksObserver(settings.known_forks)
-    from analysis_evidence import Evidence
-    number_evidence = Evidence()
+    memory_view = MemoryThreadPresentation(getattr(settings, 'memory', None))
 
-    def forward_output():
+    def forward_output(message):
+        policy.observe(message)
+        warning = None
         try:
-            for line in process.stdout:
-                if line.strip():
-                    # Preserve native payloads; observe identity to guard inherited sessions.
-                    message = json.loads(line)
-                    try:
-                        number_evidence.observe(message)
-                    except (OSError, ValueError) as error:
-                        ws.send({'bridge': 'warning', 'message': '数值依据状态更新失败，请检查状态目录与清理结果：' + str(error)})
-                        raise
-                    policy.observe(message)
-                    warning = None
-                    try:
-                        forks.observe(message)
-                    except (OSError, ValueError) as error:
-                        warning = '分叉发现索引保存失败：' + str(error)
-                    ws.send(message)
-                    if warning:
-                        ws.send({'bridge': 'warning', 'message': warning})
-            ws.send({'bridge': 'exit', 'code': process.wait()})
-        except (OSError, ValueError):
-            pass
-        finally:
-            ws.close()
+            forks.observe(message)
+        except (OSError, ValueError) as error:
+            warning = '分叉发现索引保存失败：' + str(error)
+        message, memory_warning = memory_view.present(message)
+        ws.send(message)
+        if warning or memory_warning:
+            ws.send({'bridge': 'warning', 'message': '；'.join(filter(None, (warning, memory_warning)))})
 
-    def forward_stderr():
-        try:
-            for line in process.stderr:
-                ws.send({'bridge': 'stderr', 'text': line.decode(errors='replace')})
-        except OSError:
-            pass
-
-    threading.Thread(target=forward_output, daemon=True).start()
-    threading.Thread(target=forward_stderr, daemon=True).start()
+    client = settings.runtime.open_client(forward_output, ws.close, ws.send)
     try:
         while True:
             message = ws.receive()
@@ -598,12 +601,57 @@ def rpc_bridge(ws, settings):
                 raise ValueError('JSON-RPC message must be an object')
             if policy.reject(ws, message):
                 continue
-            forks.track(message)
-            process.stdin.write(json.dumps(message, ensure_ascii=False).encode() + b'\n')
-            process.stdin.flush()
+            memory_view.track(message)
+            from native_runtime import NativeRPCError
+            from native_execution import ExecutionBusy
+            try:
+                with settings.runtime.control:
+                    # Installation/removal shares this admission lock. Recheck after
+                    # acquiring it so a stale pre-lock Skill selection cannot execute.
+                    if policy.reject(ws, message):
+                        continue
+                    method, params = message.get('method'), message.get('params') or {}
+                    if skill_configuration_write(method, params):
+                        try:
+                            SkillPackages._idle(settings.runtime)
+                        except ValueError:
+                            raise ExecutionBusy(settings.runtime.status()['execution']) from None
+                        # The observer performs the same native RPC. Waiting for
+                        # its ACK closes the disable/turn-admission race across tabs.
+                        result = settings.runtime.observer.call(method, params)
+                        if 'id' in message:
+                            forward_output({'id': message['id'], 'result': result})
+                        continue
+                    validate_native_skill_inputs(settings, method, params)
+                    if method in ('thread/start','thread/fork','thread/resume'):
+                        message = dict(message, params=settings.memory_policy.configured(params))
+                        params = message['params']
+                    if method == 'turn/start':
+                        settings.memory_policy.prepare(params.get('threadId'))
+                    elif method == 'thread/resume' and settings.runtime.status()['execution']['status'] == 'idle':
+                        settings.memory_policy.prepare(params.get('threadId'), params)
+                    if method in ('config/batchWrite','config/value/write'):
+                        edits = params.get('edits',[]) if method == 'config/batchWrite' else [params]
+                        if any(str(edit.get('keyPath','')).startswith(('memories','features.memories')) for edit in (edits if isinstance(edits, list) else []) if isinstance(edit,dict)):
+                            if settings.runtime.status()['execution']['status'] != 'idle':
+                                raise ExecutionBusy(settings.runtime.status()['execution'])
+                    forks.track(message)
+                    if method in ('thread/start', 'thread/fork'):
+                        with settings.runtime.control:
+                            result = settings.runtime.create_thread(method, params)
+                            settings.memory_policy.created(result)
+                        forward_output({'id': message['id'], 'result': result})
+                    else:
+                        client.send(message)
+            except ExecutionBusy as error:
+                forward_output({'id': message.get('id'), 'error': {'code': -32002,
+                    'message': '当前已有分析正在执行或清理，请先完成该会话的任务；输入已保留。',
+                    'data': {'type':'userExecutionBusy','execution':error.snapshot}}})
+            except NativeRPCError as error:
+                forward_output({'id': message.get('id'), 'error': error.error})
+
     finally:
-        stop_process(process)
-        settings.unregister(process)
+        settings.runtime.remove_client(client)
 
 
 def terminal_bridge(ws, settings, query):
@@ -683,7 +731,14 @@ class Settings:
             raise ValueError('Remote binding requires CODEX_WEB_TOKEN')
         self.children, self.lock = set(), threading.Lock()
         self.known_forks = KnownForks(os.environ.get('CODEX_HOME', Path.home()/'.codex'))
+        self.skill_packages = SkillPackages()
         self.schema_dir = tempfile.TemporaryDirectory(prefix='codex-web-schema-')
+        from native_runtime import NativeRuntime
+        self.runtime = NativeRuntime(self.codex, self.workspace, WEB_NATIVE_OVERRIDES, stop_process, self.register, self.unregister)
+        from native_memory import NativeMemory
+        from native_memory_policy import NativeMemoryPolicy
+        self.memory = NativeMemory(self.codex)
+        self.memory_policy = NativeMemoryPolicy(self.runtime, self.memory)
         self.version = subprocess.check_output([self.codex, '--version'], text=True).strip()
         subprocess.run([self.codex, 'app-server', 'generate-json-schema', '--experimental', '--out', self.schema_dir.name], check=True)
 
@@ -696,17 +751,53 @@ class Settings:
             self.children.discard(process)
 
     def close(self):
+        self.runtime.close()
         with self.lock:
             processes = list(self.children)
         for process in processes:
             stop_process(process)
         self.schema_dir.cleanup()
 
+    def manage_memory(self, payload):
+        # Serialize policy mutations against native turn admission across tabs.
+        # Clearing intentionally retires the idle foreground runtime: otherwise
+        # a pre-lease memory startup could write back after the native clear.
+        from native_execution import ExecutionBusy
+        operation = payload.get('operation')
+        with self.runtime.control:
+            if self.runtime.status()['execution']['status'] != 'idle':
+                raise ValueError('请先结束正在运行、等待审批或清理中的分析，再更改长期记忆。')
+            if operation != 'clear':return self.memory.manage(payload)
+            with self.memory.maintenance_lock():
+                state = self.memory.snapshot()
+                if payload.get('expectedVersion') != state['version']:
+                    raise ValueError('记忆已更新，请刷新后重试；尚未清空。')
+                if payload.get('confirmation') != 'CLEAR_MEMORY' or not state['paused']:
+                    raise ValueError('请先暂停长期记忆并明确确认清空。')
+                if state['nativePipeline']['running']:
+                    raise ValueError('原生记忆正在整理，请等待结束后清空；尚未清空。')
+                self.runtime.close()
+                try:
+                    value = self.memory.manage(payload, maintenance_locked=True)
+                finally:
+                    from native_runtime import NativeRuntime
+                    from native_memory_policy import NativeMemoryPolicy
+                    self.runtime = NativeRuntime(self.codex,self.workspace,WEB_NATIVE_OVERRIDES,stop_process,self.register,self.unregister)
+                    self.memory_policy = NativeMemoryPolicy(self.runtime,self.memory)
+                return value
+
+    def manage_skills(self, operation, payload):
+        if operation == 'upload':
+            return self.skill_packages.upload(payload, self.runtime, self.workspace)
+        if operation == 'remove':
+            return self.skill_packages.remove(payload, self.runtime, self.workspace)
+        raise ValueError('Unknown skill operation')
+
     def status(self):
         manifest = ROOT.parent / 'upstream-lock.json'
         baseline = json.loads(manifest.read_text()) if manifest.exists() else None
         return {'version': self.version, 'runtimePath': self.codex, 'workspace': str(self.workspace), 'baseline': baseline, 'build': self.provenance,
-                'transport': 'stdio', 'analysisEvidenceVersion':'numeric-evidence-v1', 'pid': os.getpid(), 'modelWindows': self.model_windows(), 'knownForksSupported': True}
+                'transport': 'native-unix-websocket', 'nativeProcessLifetime': 'web-service', 'nativeRuntime': self.runtime.status(), 'analysisEvidenceVersion':'data-evidence-v2', 'analysisBridgeVersion':'analysis-events-v2', 'pid': os.getpid(), 'modelWindows': self.model_windows(), 'knownForksSupported': True}
 
     def model_windows(self):
         # Expose only public model metadata; never return config credentials.
@@ -784,6 +875,8 @@ class Handler(BaseHTTPRequestHandler):
         authorized=self.authorize()
         if authorized is None:return
         parsed,query,cookie=authorized
+        if parsed.path.startswith('/api/skills/'):
+            return self.skill_post(parsed.path.removeprefix('/api/skills/'))
         if not parsed.path.startswith('/api/databases/'):
             return self.reject(404,'Not found')
         action=parsed.path.removeprefix('/api/databases/')
@@ -793,20 +886,53 @@ class Handler(BaseHTTPRequestHandler):
             return self.reject(415,'JSON required')
         try:
             size=int(self.headers.get('Content-Length','0'))
-            if not 0<size<=128*1024:return self.reject(413,'Invalid request size')
+            if not 0<size<=(512*1024 if action in ('result','verify_answer') else 128*1024):return self.reject(413,'Invalid request size')
             payload=json.loads(self.rfile.read(size))
             if not isinstance(payload,dict):raise ValueError('JSON object required')
+            if size>128*1024 and action!='verify_answer' and not (isinstance(payload.get('analysisEvidence'),dict) and payload['analysisEvidence'].get('action')=='verify'):
+                return self.reject(413,'Invalid request size')
             if action=='verify_answer':
                 from analysis_evidence import Evidence
                 value=Evidence().verify(payload.get('threadId'),payload.get('turnId'),payload.get('text'),payload.get('requireEvidence') is True)
             else:
-                from database_bridge import manage_database
-                value=manage_database(action,payload)
+                memory_payload = payload.get('nativeMemory') if action == 'result' else None
+                if isinstance(memory_payload,dict) and memory_payload.get('operation') in ('pause','clear'):
+                    value=self.server.settings.manage_memory(memory_payload)
+                else:
+                    from database_bridge import manage_database
+                    value=manage_database(action,payload)
             return self.send_bytes(200,json.dumps(value,ensure_ascii=False).encode())
         except (ValueError,KeyError) as error:self.reject(400,str(error))
         except subprocess.TimeoutExpired:self.reject(504,'数据库请求超时，请缩小查询范围。')
         except (BrokenPipeError,ConnectionResetError):pass
         except Exception:self.reject(500,'数据库请求失败，请检查本机服务。')
+
+    def skill_post(self, operation):
+        if operation not in ('upload', 'remove'):
+            return self.reject(404, 'Unknown skill operation')
+        if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
+            self.close_connection = True
+            return self.reject(415, 'JSON required')
+        try:
+            size = int(self.headers.get('Content-Length', '0'))
+            limit = SKILL_HTTP_BYTES if operation == 'upload' else 4096
+            if not 0 < size <= limit:
+                self.close_connection = True
+                return self.reject(413, '技能请求超过大小限制。')
+            payload = json.loads(self.rfile.read(size))
+            if not isinstance(payload, dict):
+                raise ValueError('JSON object required')
+            value = self.server.settings.manage_skills(operation, payload)
+            return self.send_bytes(200, json.dumps(value, ensure_ascii=False).encode())
+        except (ValueError, KeyError) as error:
+            return self.reject(400, str(error))
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        except Exception as error:
+            from native_runtime import NativeRPCError
+            if isinstance(error, NativeRPCError):
+                return self.reject(409, 'Codex 原生技能操作失败：' + str(error.error.get('message', '请检查本机服务。')))
+            return self.reject(500, '技能操作失败，请检查本机服务；未确认成功。')
 
     def do_GET(self):
         authorized=self.authorize(bootstrap=True)
@@ -814,6 +940,11 @@ class Handler(BaseHTTPRequestHandler):
         parsed,query,cookie=authorized
         settings=self.server.settings
         try:
+            if parsed.path == '/api/memory-maintenance':
+                return self.send_bytes(200, json.dumps({'sessions': settings.memory.maintenance_sessions(),
+                    'threadIds': sorted(settings.memory.maintenance_thread_ids())}, ensure_ascii=False).encode())
+            if parsed.path == '/api/skills':
+                return self.send_bytes(200, json.dumps(settings.skill_packages.list(), ensure_ascii=False).encode())
             if parsed.path.startswith('/api/databases/results/'):
                 import re
                 match=re.fullmatch(r'/api/databases/results/([0-9a-f]{32})\.(csv|parquet|json)',parsed.path)
@@ -846,6 +977,8 @@ class Handler(BaseHTTPRequestHandler):
                     return self.reject(404, 'Schema not found')
                 return self.send_bytes(200, path.read_bytes())
             if parsed.path in ('/ws/rpc', '/ws/terminal'):
+                if parsed.path == '/ws/terminal' and os.environ.get('CODEX_WEB_DIAGNOSTIC_TERMINAL') != '1':
+                    return self.reject(409,'分析工作台不开放独立 CLI 终端；请通过当前分析会话执行原生任务。')
                 if self.headers.get('Upgrade', '').lower() != 'websocket':
                     return self.reject(426, 'WebSocket required')
                 key = self.headers.get('Sec-WebSocket-Key', '')

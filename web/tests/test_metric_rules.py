@@ -305,6 +305,17 @@ class MetricRulesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '指纹'):
             self.rules.manage({'operation': 'proof', 'resultId': result['resultId']})
 
+    def test_published_report_is_affected_when_its_metric_rule_is_disabled(self):
+        from analysis_tools import AnalysisTools
+        record=self.confirmed();result=self.execute(record)
+        tools=AnalysisTools(self.gateway,self.gateway.thread_id);tools.remember(result)
+        answer=tools.publish('Amount {{amount}}',{'amount':{'result_id':result['resultId'],'row':0,'column':'total'}})
+        request={'operation':'report_status','threadId':self.gateway.thread_id,'turnId':self.gateway.turn_id,'answerId':answer['answerId']}
+        self.assertEqual(self.gateway.learning.manage(request)['status'],'current')
+        self.rules.manage({'operation':'disable','id':record['id'],'version':record['version'],'expectedHash':record['hash']})
+        status=self.gateway.learning.manage(request)
+        self.assertEqual(status['status'],'affected');self.assertTrue(any(item['reason']=='metric_changed_or_unavailable' for item in status['changes']))
+
     def test_current_rule_and_source_changes_block_republication_but_history_survives(self):
         record = self.confirmed()
         result = self.execute(record)

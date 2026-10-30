@@ -15,6 +15,7 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--live-url',required=True)
 parser.add_argument('--report-dir',default=str(ROOT/'test-results/adventureworks-user-audit-rerun'))
 parser.add_argument('--phases',default='corrections,analysis,manual-plan,reject-query,resilience,running-cancel,report-presentation,configuration,learning-loop')
+parser.add_argument('--capability-checks',default='')
 args=parser.parse_args()
 if os.environ.get('CODEX_CONFIRM_LIVE_MODEL_TEST')!='1':raise SystemExit('Explicit live Flash test authorization required.')
 out=Path(args.report_dir);out.mkdir(parents=True,exist_ok=True)
@@ -46,6 +47,8 @@ try:
   receipt=Path(directory)/'source.json'
   env={key:os.environ[key] for key in ('PATH','LANG','LC_ALL') if key in os.environ}
   env.update(CODEX_CONFIRM_LIVE_MODEL_TEST='1',CODEX_WEB_URL=args.live_url,CODEX_DISCOVERY_FIXTURE=str(private),CODEX_AUDIT_SOURCE=str(receipt),REPORT_DIR=str(out),PLAYWRIGHT_MODULE=str(ROOT/'.toolchains/playwright/node_modules/playwright/index.mjs'),CHROMIUM_BIN=str(ROOT/'.toolchains/playwright-browsers/chromium-1248/chrome-linux64/chrome'))
+  if args.capability_checks:env['CODEX_CAPABILITY_CHECKS']=args.capability_checks
+  if os.environ.get('CODEX_EVIDENCE_SCOPE_CHECKS'):env['CODEX_EVIDENCE_SCOPE_CHECKS']=os.environ['CODEX_EVIDENCE_SCOPE_CHECKS']
   def node(script,phase=None):
    current=dict(env)
    if phase:current['CODEX_AUDIT_PHASE']=phase
@@ -54,8 +57,8 @@ try:
    subprocess.run([str(ROOT/'.toolchains/databases/bin/python'),'-B',str(ROOT/'web/tests/adventureworks_oracles.py'),str(private),str(out)],check=True,timeout=60)
    node('adventureworks_exploration_live.mjs')
    for phase in args.phases.split(','):
-    if phase not in ('corrections','analysis','manual-plan','reject-query','resilience','running-cancel','report-presentation','configuration','learning-loop','native-memory-loop'):raise ValueError('Unsupported audit phase')
-    node('adventureworks_analyst_live.mjs',phase)
+    if phase not in ('corrections','analysis','manual-plan','reject-query','resilience','running-cancel','report-presentation','configuration','learning-loop','native-memory-loop','capability-fixes','evidence-scope'):raise ValueError('Unsupported audit phase')
+    node('evidence_scope_flash_desktop.mjs' if phase=='evidence-scope' else 'analysis_cross_feature_live.mjs' if phase=='capability-fixes' else 'adventureworks_analyst_live.mjs',phase)
   finally:
    if receipt.exists():
     try:node('adventureworks_audit_cleanup.mjs');cleanup.update(json.loads((out/'cleanup.json').read_text()))

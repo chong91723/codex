@@ -14,7 +14,8 @@ const retained = ['openai-docs', 'review-agent', 'skill-creator', 'skill-install
 fs.mkdirSync(out, {recursive:true});
 const browser = await chromium.launch({headless:true, executablePath:process.env.CHROMIUM_BIN, args:['--no-sandbox']});
 const page = await browser.newPage({viewport:{width:1440,height:900}});
-const results = [], errors = [], sent = [];
+const results = [], errors = [], sent = [], uploads = [];
+page.on('request',request=>{if(new URL(request.url()).pathname==='/api/skills/upload')uploads.push({method:request.method()});});
 let home, workspace, nativeSkills = [];
 page.on('pageerror', e => errors.push(e.message));
 page.on('websocket', socket => socket.on('framesent', frame => {
@@ -42,16 +43,17 @@ async function check(name, fn) {
   fs.writeFileSync(out+'/results.json',JSON.stringify({results,errors,sent},null,2));
 }
 async function select(name) {
+  assert.notEqual(name,'skill-installer','Installer product action selects a local file; it must not start an agent task');
   await page.locator('#new-chat').click();
+  await page.locator('[data-view="settings"]').click();
+  await page.locator('#analysis-advanced-settings').waitFor();
+  if(!await page.locator('#analysis-advanced-settings').evaluate(node=>node.open))await page.locator('#analysis-advanced-settings > summary').click();
   await page.locator('#model').selectOption('deepseek-flash');
   await page.locator('#effort').selectOption('low');
-  await page.locator('#prompt').fill('/'+name);
-  await page.waitForFunction(() => state.commandMenu && !state.commandMenu.catalog.loading);
-  const option = page.locator(`#command-menu [data-skill-name="${name}"]`);
-  await option.waitFor();
-  await option.click();
+  await page.locator('[data-view="skills"]').click();
+  const card=page.locator('.skill-card[data-skill-name="'+name+'"]');
+  await card.getByRole('button',{name:'在分析中使用',exact:true}).click();
   assert.equal(await page.locator('#prompt').inputValue(),'$'+name+' ');
-  assert(await page.locator('#command-menu').isHidden());
 }
 async function selectedTurn(name,text,timeout=240000) {
   await select(name);
@@ -101,15 +103,14 @@ try {
     }
     const image = nativeSkills.find(item=>item.name==='imagegen');
     if(image)assert.equal(image.enabled,false,'Excluded imagegen must be disabled natively');
-    await page.locator('#new-chat').click();await page.locator('#prompt').fill('/');
-    await page.waitForFunction(()=>state.commandMenu&&!state.commandMenu.catalog.loading);
-    assert.deepEqual((await page.locator('#command-menu [data-skill-name]').evaluateAll(nodes=>nodes.map(node=>node.dataset.skillName))).sort(),retained);
-    await page.screenshot({path:out+'/native-skill-menu.png'});
-    await page.locator('#prompt').press('Escape');
+    await page.locator('[data-view="skills"]').click();
+    await page.locator('.skill-card').first().waitFor();
+    assert.deepEqual((await page.locator('.skill-card').evaluateAll(nodes=>nodes.map(node=>node.dataset.skillName))).sort(),[...retained].sort());
+    await page.screenshot({path:out+'/native-skills-page.png'});
     return{embedded:discovered,retained,allRetainedFilesMatchSource:true,hashes,imagegenNativeDisabled:!image||image.enabled===false,nonNativeListed:false};
   });
 
-  await check('review-agent：菜单选择、原生 Skill 输入与真实只读缺陷审查',async()=>{
+  await check('review-agent：技能页选择、原生 Skill 输入与真实只读缺陷审查',async()=>{
     const target = path.join(workspace,'native-review-case-'+Date.now());
     fs.mkdirSync(target,{recursive:true});
     function git(args){const result=spawnSync('git',args,{cwd:target,encoding:'utf8'});assert.equal(result.status,0,result.stderr);}
@@ -127,17 +128,29 @@ try {
 
   await check('skill-creator：运行源码自带验证器校验原生技能，不新建自定义技能',async()=>{
     const root=home+'/skills/.system';
-    const {commands,evidence}=await selectedTurn('skill-creator',`对已经安装的原生技能做一次离线结构验收，不创建、安装或修改任何技能。请实际运行 python3 ${root}/skill-creator/scripts/quick_validate.py，分别验证 ${root}/skill-creator、${root}/skill-installer、${root}/openai-docs、${root}/review-agent 四个目录。运行原生命令工具，sandbox_permissions="use_default"，省略 justification/prefix_rule。依据真实标准输出报告，不联网。`);
+    const {commands,evidence}=await selectedTurn('skill-creator',`对已经安装的原生技能做一次离线结构验收，不创建、安装或修改任何技能。请实际运行 python3 -B ${root}/skill-creator/scripts/quick_validate.py，分别验证 ${root}/skill-creator、${root}/skill-installer、${root}/openai-docs、${root}/review-agent 四个目录。运行原生命令工具，sandbox_permissions="use_default"，省略 justification/prefix_rule。依据真实标准输出报告，不联网。`);
     assert(commands.some(item=>String(item.command).includes('quick_validate.py')),'Native validator was not run');
     assert(commands.filter(item=>item.exitCode===0).map(item=>item.aggregatedOutput||'').join('\n').match(/Skill is valid!/g)?.length>=4,'Four native validations did not complete');
     return{...evidence,nativeValidatorActuallyExecuted:true,validatedNativeSkills:retained,customSkillCreated:false};
   });
 
-  await check('skill-installer：原生离线入口可运行，GitHub 下载明确未验证',async()=>{
-    const root=home+'/skills/.system/skill-installer';
-    const {commands,evidence}=await selectedTurn('skill-installer',`本项目仅保留 Codex 源码自带技能，不允许安装其他技能，网络仅允许 DeepSeek 官方 API 和国内公网。这里只检查本地安装器入口，请实际执行 python3 ${root}/scripts/list-skills.py --help 及 python3 ${root}/scripts/install-skill-from-github.py --help，确认参数入口可运行。不要联网、列取 GitHub 目录或安装任何技能。明确说明本轮没有验证 GitHub 在线列表和安装流程。使用原生命令工具，sandbox_permissions="use_default"，省略 justification/prefix_rule。`);
-    for(const script of ['list-skills.py','install-skill-from-github.py'])assert(commands.some(item=>item.exitCode===0&&String(item.command).includes(script)&&String(item.command).includes('--help')),'Native CLI help missing: '+script);
-    return{...evidence,offlineEntrypointsPassed:true,onlineListing:'not_verified_network_scope',onlineInstallation:'not_verified_nonNativeSkillsExcluded',skillInstalled:false};
+  await check('skill-installer：本地上传入口，不触发模型或在线下载安装',async()=>{
+    await page.locator('[data-view="skills"]').click();
+    const card=page.locator('.skill-card[data-skill-name="skill-installer"]');
+    await card.waitFor();
+    assert.equal(await card.getByRole('button',{name:'在分析中使用',exact:true}).count(),0);
+    await card.getByText(/GitHub 在线下载流程未接入本产品/).waitFor();
+    const before=sent.filter(item=>['turn/start','turn/steer'].includes(item.method)).length,uploaded=uploads.length;
+    const draft=await page.evaluate(()=>({text:document.querySelector('#prompt').value,skills:composerState().skills||[]}));
+    const [chooser]=await Promise.all([page.waitForEvent('filechooser'),card.getByRole('button',{name:'上传本地技能',exact:true}).click()]);
+    assert.equal(chooser.isMultiple(),false);
+    assert.equal(await page.locator('#skill-upload-file').evaluate(node=>node.files.length),0);
+    assert.equal(await page.locator('#skill-upload-file').getAttribute('accept'),'.zip,.md');
+    assert.equal(await page.locator('.skill-upload').getByRole('button',{name:'上传技能',exact:true}).count(),1);
+    assert.equal(sent.filter(item=>['turn/start','turn/steer'].includes(item.method)).length,before);
+    assert.equal(uploads.length,uploaded);
+    assert.deepEqual(await page.evaluate(()=>({text:document.querySelector('#prompt').value,skills:composerState().skills||[]})),draft);
+    return{localFileChooserOpened:true,agentTasksStarted:0,uploadsSubmitted:0,skillInstalled:false,onlineListing:'outside_product_install_path',onlineInstallation:'outside_product_install_path'};
   });
 
   await check('openai-docs：保留原生绑定与离线参考读取，官方在线检索受网络条件阻塞',async()=>{
@@ -147,7 +160,7 @@ try {
     return{...evidence,nativeReferenceRead:true,officialOnlineDocumentation:'blocked_by_target_network_scope',chatgptLoginUsed:false};
   });
 } finally {
-  const report={scope:'Pinned-source built-in skills only; real DeepSeek Flash turns and native structured skill inputs; no custom skill fixtures, no ChatGPT auth, no online installations',results,errors,sent,conditions:{onlineSkillInstallation:'not_verified',openaiDocsOnlineRetrieval:'not_verified_target_network_scope'}};
+  const report={scope:'Pinned-source built-in skills only; real DeepSeek Flash turns and native structured skill inputs; no custom skill fixtures, no ChatGPT auth, installer card opens local file chooser without model execution or online installations',results,errors,sent,conditions:{onlineSkillInstallation:'outside_product_install_path',openaiDocsOnlineRetrieval:'not_verified_target_network_scope'}};
   fs.writeFileSync(out+'/results.json',JSON.stringify(report,null,2));
   await browser.close();
   console.log(JSON.stringify({passed:results.filter(item=>item.status==='passed').length,failed:results.filter(item=>item.status==='failed').length,errors}));

@@ -9,33 +9,30 @@ from contextlib import nullcontext
 import re
 import secrets
 import shutil
-import unicodedata
 from markdown_tables import validate_published_tables
 
-POLICY_VERSION = 'numeric-evidence-v1'
+POLICY_VERSION = 'data-evidence-v2'
+LEGACY_VERSION = 'numeric-evidence-v1'
 REFERENCE = re.compile(r'\{\{([a-zA-Z][a-zA-Z0-9_]*)\}\}')
-# Shared behaviour is checked against the same corpus by Python and JavaScript.
-CHINESE_DIGITS = '零〇一二三四五六七八九十百千万亿兆两兩壹贰貳叁參肆伍陆陸柒捌玖拾佰仟萬億'
-CHINESE_NUMBER = re.compile('[负負'+CHINESE_DIGITS+']+')
-NUMBER_UNIT = re.compile(r'^(?:个|條|条|笔|天|日|月|年|元|圆|圓|角|分|倍|成|位|次|项|组|类|种|页|行|列|份|点|步|轮|名|户|家|只|支|股|吨|克|米|秒|%|％)')
-NUMBER_PREFIX = re.compile(r'(?:一共|总共|共有|共计|总计|合计|数量|总额|金额|平均值|平均额|结果|答案|记录数|最大值|最小值|等于|达到|为|是|：|:)\s*$')
-ENGLISH_NUMBER = re.compile(r'\b(?:zero|nought|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion|trillion|half|quarter|once|twice)\b',re.I|re.ASCII)
+DATA_TOOLS = frozenset(('query_database','read_result','analyze_result','run_python','execute_metric',
+                        'fetch_data','import_data_file','import_mcp_result','create_chart','publish_answer'))
 
-def has_number(text):
-    for phrase in ('百分点','百分比','百分率','百分数','千位分隔符','一致','一律','统一','唯一','一并','一般','一起','一旦','一键','万一','进一步'):
-        text = text.replace(phrase, '')
-    if any(unicodedata.category(c) in ('Nd', 'Nl', 'No') for c in text) or ENGLISH_NUMBER.search(text):return True
-    # Consume each numeral run once. A greedy run plus a mandatory suffix can
-    # backtrack quadratically on long malformed model output.
-    boundary = '，。；：、（）()'
-    for match in CHINESE_NUMBER.finditer(text):
-        if not any(c in CHINESE_DIGITS for c in match[0]):continue
-        before,after = text[max(0,match.start()-30):match.start()],text[match.end():match.end()+4]
-        if NUMBER_UNIT.match(after) or before.endswith(('百分之','第')):return True
-        next_char = after[:1]
-        if NUMBER_PREFIX.search(before) and (not next_char or not re.match(r'[\u4e00-\u9fffA-Za-z]',next_char)):return True
-        if (not before or before[-1].isspace() or before[-1] in boundary) and (not after or after[0].isspace() or after[0] in boundary):return True
-    return False
+
+def field_text(value):
+    text = '—' if value is None else str(value)
+    return re.sub(r'([\\`*_{}\[\]<>!|])', r'\\\1', text.replace('\n', ' '))
+
+
+def assurance(record):
+    """Independent, field-scoped facts; never a semantic certificate for prose."""
+    fields = record.get('evidence', [])
+    return {'scope':'referenced-fields',
+            'source':{'status':'linked' if fields else 'none','fields':[item['name'] for item in fields]},
+            'execution':{'status':'recorded' if fields else 'none',
+                         'kinds':sorted({item.get('sourceKind','unknown') for item in fields})},
+            'metric':{'status':'confirmed-rule-executed' if any(item.get('metric') for item in fields) else 'not-applied',
+                      'fields':[item['name'] for item in fields if item.get('metric')]},
+            'narrative':{'status':'not-assessed','reason':'解释、比较与因果判断未作语义正确性认证；仅所列字段引用与执行记录匹配。'}}
 
 
 def canonical(text):
@@ -73,7 +70,7 @@ class Evidence:
 
     def remove_thread(self, thread):
         thread=self.identity(thread)
-        for kind in ('turns','datasets','documents','answers'):
+        for kind in ('turns','datasets','documents','answers','tool_outputs','activities'):
             path=self.root/kind/thread
             try:shutil.rmtree(path)
             except FileNotFoundError:pass
@@ -88,12 +85,52 @@ class Evidence:
         if message.get('method')=='thread/deleted':
             self.remove_thread((message.get('params') or {}).get('threadId'))
             return
+        if message.get('method')=='item/completed':
+            self.record_activity(message.get('params') or {})
+            self.capture_tool_output(message.get('params') or {})
+            return
         if message.get('method') != 'turn/started':
             return
         params = message.get('params') or {}
         thread, turn = params.get('threadId'), (params.get('turn') or {}).get('id')
         if thread and turn:
-            self.write(self.path('turns', thread, turn), {'version': POLICY_VERSION, 'threadId': thread, 'turnId': turn})
+            path=self.path('turns', thread, turn)
+            if not path.exists():self.write(path, {'version': POLICY_VERSION, 'threadId': thread, 'turnId': turn})
+
+    def record_activity(self, params):
+        item=params.get('item') or {}
+        if item.get('type')!='mcpToolCall' or not params.get('threadId') or not params.get('turnId') or not item.get('id'):return
+        if item.get('server')=='codex_web_databases' and item.get('tool') not in DATA_TOOLS:return
+        thread,turn=self.identity(params['threadId']),self.identity(params['turnId'])
+        identity=hashlib.sha256(str(item['id']).encode()).hexdigest()
+        path=self.path('activities',thread,turn).with_suffix('')/(identity+'.json')
+        self.write(path,{'tool':item.get('tool'),'server':item.get('server'),'status':item.get('status'),
+                         'successful':item.get('status')=='completed' and not (item.get('result') or {}).get('isError')})
+
+    def context(self, thread, turn):
+        path=self.path('turns',thread,turn or 'unknown-turn')
+        version=json.loads(path.read_text()).get('version') if path.is_file() else None
+        activity=self.path('activities',thread,turn or 'unknown-turn').with_suffix('')
+        return {'version':version,'dataActivity':activity.is_dir() and any(json.loads(item.read_text()).get('successful') for item in activity.glob('*.json'))}
+
+    def capture_tool_output(self,params):
+        item=params.get('item') or {};result=item.get('result')
+        if item.get('type')!='mcpToolCall' or item.get('status')!='completed' or item.get('server') in (None,'codex_web_databases') or not isinstance(result,dict) or result.get('isError'):return
+        if not params.get('threadId') or not params.get('turnId') or not item.get('id'):return
+        thread,turn=self.identity(params.get('threadId')),self.identity(params.get('turnId'))
+        output=hashlib.sha256(json.dumps([thread,turn,item.get('id'),item['server'],item.get('tool')]).encode()).hexdigest()[:32]
+        text=json.dumps(result,ensure_ascii=False,allow_nan=False);created=datetime.now(timezone.utc).isoformat()
+        info={'outputId':output,'threadId':thread,'turnId':turn,'server':item['server'],'tool':item.get('tool'),'createdAt':created,'bytes':len(text.encode())}
+        if info['bytes']>4*1024*1024:
+            self.write(self.path('tool_outputs',thread,output),dict(info,available=False,reason='工具输出超过文档预算，请在原服务分页或缩小范围。'));return
+        digest=hashlib.sha256(text.encode()).hexdigest();path=self.path('documents',thread,output)
+        if path.exists():
+            if json.loads(path.read_text()).get('sha256')!=digest:raise ValueError('相同原生工具调用返回了不一致内容，未覆盖原文。')
+            return
+        record={'documentId':output,'threadId':thread,'format':'json','text':text,'sha256':digest,
+                'source':{'kind':'mcp','server':item['server'],'tool':item.get('tool'),'outputId':output},
+                'acquisition':[{'kind':'mcp','threadId':thread,'turnId':turn,'retrievedAt':created}]}
+        self.write(path,record);self.write(self.path('tool_outputs',thread,output),dict(info,available=True,documentId=output,sha256=digest))
 
     def remember(self, thread, metadata):
         self.write(self.path('datasets', thread, metadata['resultId']), {
@@ -109,7 +146,7 @@ class Evidence:
         if record['sha256'] != metadata['sha256']:
             raise ValueError('数据集指纹不匹配，不能发布数值。')
 
-    def publish(self, thread, template, references, resolve, turn=None, check_sources=None, commit_guard=None):
+    def publish(self, thread, template, references, resolve, turn=None, check_sources=None, commit_guard=None, purpose='answer'):
         self.identity(thread)
         self.identity(turn)
         if not isinstance(template, str) or not template.strip() or len(template) > 80000:
@@ -121,16 +158,17 @@ class Evidence:
             raise ValueError('模板含字面反斜杠换行。请在 template 字符串中使用实际换行；保留代码块与路径的真实转义，不要输出 JSON 转义后的正文。')
         names = REFERENCE.findall(template)
         skeleton = REFERENCE.sub('', template)
-        if '{{' in skeleton or '}}' in skeleton or has_number(skeleton) or re.search(r'!\[[^\]]*\]\(|<(?:img|svg|iframe)\b', skeleton, re.I):
-            raise ValueError('回答含未引用的数字；数值、日期和编号须使用 {{字段名}} 引用真实查询或 Python 结果。序号请使用无数字的项目符号。')
+        if '{{' in skeleton or '}}' in skeleton or re.search(r'!\[[^\]]*\]\(|<(?:img|svg|iframe)\b', skeleton, re.I):
+            raise ValueError('字段占位符或正文格式无效；图表须通过 ECharts 展示。')
+        if purpose=='answer' and not references:
+            raise ValueError('正式数据结果必须关联实际字段引用；普通说明、用户参数和计划无需调用发布工具。')
         if set(names) != set(references):
             raise ValueError('模板占位符与引用名称不一致。')
         values, evidence, sources = {}, [], {}
         for name in dict.fromkeys(names):
             value, proof = resolve(references[name])
             # A field is text, never executable Markdown/HTML from an external source.
-            text = '—' if value is None else str(value)
-            values[name] = re.sub(r'([\\`*_{}\[\]<>!|])', r'\\\1', text.replace('\n', ' '))
+            values[name] = field_text(value)
             sources.setdefault(proof['resultId'], {}).update({key: proof.pop(key) for key in ('query','pythonCode','inputSources','metricContext') if key in proof})
             evidence.append(dict(name=name, value=value, **proof))
         with commit_guard() if commit_guard else nullcontext():
@@ -140,28 +178,52 @@ class Evidence:
             digest = hashlib.sha256(canonical(text).encode()).hexdigest()
             record = {'version': POLICY_VERSION, 'answerId': digest, 'threadId': thread, 'turnId': turn,
                       'text': text, 'template': template, 'evidence': evidence, 'sources': sources, 'publicationChecks':checks,
-                      'createdAt': datetime.now(timezone.utc).isoformat()}
+                      'createdAt': datetime.now(timezone.utc).isoformat(), 'purpose':purpose}
+            record['assurance']=assurance(record)
             self.write(self.path('answers', thread, digest).parent/self.identity(turn)/(digest+'.json'), record)
         return record
 
+    def published_answer(self,thread,turn):
+        """Return an explicit published report, never certify a different text."""
+        thread,turn=self.identity(thread),self.identity(turn)
+        folder=self.path('answers',thread,'placeholder').parent/turn
+        records=[json.loads(path.read_text()) for path in folder.glob('*.json')]
+        records=[record for record in records if record.get('purpose')=='answer' and record.get('evidence') and record.get('threadId')==thread and record.get('turnId')==turn]
+        if not records:return {'status':'unavailable'}
+        record=max(records,key=lambda item:item['createdAt'])
+        checked=self.verify(thread,turn,record['text'],True)
+        if checked['status']!='verified':raise ValueError('已发布报告的正文校验失败。')
+        return dict(checked,text=record['text'],delivery='published-report',nativeMessageMatched=False)
+
     def verify(self, thread, turn, text, require_evidence=False):
         if not isinstance(text, str) or len(text) > 100000:
-            raise ValueError('待核验回答过长或格式无效。')
+            raise ValueError('待核对内容过长或格式无效。')
         self.identity(thread)
-        strict = require_evidence or bool(turn and self.path('turns', thread, turn).is_file())
-        if not has_number(text) and not re.search(r'!\[[^\]]*\]\(|<(?:img|svg|iframe)\b', text, re.I):
-            return {'status': 'notRequired', 'strict': strict, 'version': POLICY_VERSION}
-        digest = hashlib.sha256(canonical(text).encode()).hexdigest()
-        path = self.path('answers', thread, digest).parent/self.identity(turn or 'unknown-turn')/(digest+'.json')
+        context=self.context(thread,turn)
+        digest=hashlib.sha256(canonical(text).encode()).hexdigest()
+        directory=self.path('answers',thread,digest).parent/self.identity(turn or 'unknown-turn')
+        path=directory/(digest+'.json')
         if path.is_file():
-            record = json.loads(path.read_text())
-            if record.get('version') != POLICY_VERSION or has_number(REFERENCE.sub('',record.get('template',''))):
-                raise ValueError('保存的回答模板不符合当前数值依据规则，请重新发布。')
-            if record.get('threadId') != thread or record.get('turnId') != turn or hashlib.sha256(canonical(record['text']).encode()).hexdigest() != digest:
-                raise ValueError('回答证据记录不一致。')
-            return {'status': 'verified', 'strict': strict, 'answerId': digest,
-                    'evidence': record['evidence'], 'sources': record.get('sources',{}),
-                    'publicationChecks':record.get('publicationChecks',{'version':'legacy'}), 'version': POLICY_VERSION}
-        return {'status': 'rejected' if strict else 'legacy', 'strict': strict,
-                'reason': '回答中的数字没有匹配的查询或 Python 执行证据。请要求 Codex 补充查询或 Python 计算后重新回答；不会自动重发任务。',
-                'version': POLICY_VERSION}
+            record=json.loads(path.read_text())
+            if record.get('version') not in (POLICY_VERSION,LEGACY_VERSION):raise ValueError('保存的依据记录版本不受支持。')
+            fields=record.get('evidence',[])
+            values={item['name']:field_text(item['value']) for item in fields}
+            template=record.get('template','')
+            if set(REFERENCE.findall(template))!=set(values):raise ValueError('保存的字段引用与正文不一致。')
+            reconstructed=REFERENCE.sub(lambda match:values[match[1]],template)
+            if (record.get('threadId')!=thread or record.get('turnId')!=turn
+                    or canonical(reconstructed)!=canonical(record.get('text',''))
+                    or hashlib.sha256(canonical(record.get('text','')).encode()).hexdigest()!=digest):
+                raise ValueError('保存的正文或字段依据不一致。')
+            return {'status':'verified' if fields else 'notRequired','strict':True,'answerId':digest,
+                    'version':record['version'],'verificationScope':'referenced-fields' if fields else 'conversation',
+                    'assurance':assurance(record),'evidence':fields,'sources':record.get('sources',{}),
+                    'publicationChecks':record.get('publicationChecks',{'version':'legacy'})}
+        published=directory.is_dir() and any(json.loads(item.read_text()).get('evidence') for item in directory.glob('*.json'))
+        required=context['dataActivity'] or published or require_evidence
+        if required:
+            return {'status':'rejected','strict':True,'version':POLICY_VERSION,'verificationScope':'none',
+                    'reason':'内容未关联可匹配的执行字段。可阅读原文，但不能视为已核验数据结果；请补充实际来源。'}
+        return {'status':'notRequired' if context['version']==POLICY_VERSION else 'legacy',
+                'strict':False,'version':POLICY_VERSION,'verificationScope':'conversation',
+                'reason':'对话内容未作数据事实认证；是否包含数字不决定校验。'}

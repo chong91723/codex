@@ -4,6 +4,7 @@ Version receipts are captured when context is read, carried through datasets and
 checked at execution/publication. Historical answers remain immutable.
 """
 import json
+from pathlib import Path
 from database_knowledge import DatabaseKnowledge, canonical, digest, now, require
 
 
@@ -33,13 +34,24 @@ class Learning:
         require(stamp['sourceVersion'] == context['sourceVersion'] and stamp['businessRevision'] == context['businessContextRevision'] and stamp['knowledgeRevision'] == context['revision'],
                 '读取期间业务知识已变化，请重新读取 read_database_context。')
         if self.gateway.thread_id and self.gateway.turn_id:
-            record = dict(stamp, readAt=now())
+            delivered = {self.note_receipt(note) for note in context.get('notes', []) if note.get('content') is not None}
             with self.store.connect() as db:
+                db.execute('BEGIN IMMEDIATE')
+                previous = db.execute('SELECT record FROM analysis_knowledge_reads WHERE thread_id=? AND turn_id=? AND source_id=?',
+                                      (self.gateway.thread_id, self.gateway.turn_id, source_id)).fetchone()
+                previous = json.loads(previous[0]) if previous else {}
+                if previous.get('token') == stamp['token']:
+                    delivered.update(previous.get('deliveredKnowledge', []))
+                record = dict(stamp, readAt=now(), deliveredKnowledge=sorted(delivered))
                 db.execute('INSERT OR REPLACE INTO analysis_knowledge_reads VALUES (?,?,?,?)',
                            (self.gateway.thread_id, self.gateway.turn_id, source_id, canonical(record)))
         return stamp
 
-    def before_query(self, source_id):
+    @staticmethod
+    def note_receipt(note):
+        return digest({'target':note.get('target', {}), 'aspect':note['aspect'], 'content':note['content']})
+
+    def before_query(self, source_id, tables=None):
         stamp = self.stamp(source_id)
         if self.gateway.thread_id:
             require(not stamp['businessStale'], '数据源连接或结构已变化，业务补充需在数据源页面重新确认后才能分析；历史记忆不能代替确认。')
@@ -50,6 +62,19 @@ class Learning:
                                      (self.gateway.thread_id, self.gateway.turn_id, source_id)).fetchone()
                 require(row and json.loads(row[0])['token'] == stamp['token'],
                         '本轮尚未读取当前业务知识，或知识已纠正。请先 read_database_context，再按最新定义重新查询。历史记忆不能替代此检查。')
+                delivered = set(json.loads(row[0]).get('deliveredKnowledge', []))
+                scope = None if tables is None else {name.casefold() for name in tables}
+                missing = []
+                for note in self.knowledge.state(source_id)['notes']:
+                    target = note.get('target', {})
+                    if note['status'] != 'accepted' or note['stale'] or note['key'] == self.knowledge._business_key():
+                        continue
+                    if scope is not None and target.get('table') and target['table'].casefold() not in scope:
+                        continue
+                    if self.note_receipt(note) not in delivered:
+                        missing.append(target.get('table') or '数据源通用说明')
+                require(not missing, '本轮尚未读取查询适用的已确认业务说明：'+', '.join(sorted(set(missing)))+
+                        '。请 read_database_context 按有关 table 读取并根据 hasMore 继续分页，再执行查询。无关表或搜索空页不能代替。')
         return stamp
 
     def current_reads(self):
@@ -138,6 +163,27 @@ class Learning:
             record = json.loads(path.read_text())
             stamps = record.get('publicationChecks', {}).get('knowledge', [])
             changes = self.check(stamps)
-            return {'status': 'affected' if changes else 'current' if stamps else 'untracked', 'changes': changes,
-                    'notice': '知识版本变化只表示报告需复核，不证明每个数值都错误；历史正文不会被静默改写。'}
+            metrics=record.get('publicationChecks',{}).get('metrics') or [item['metric'] for item in record.get('evidence',[]) if item.get('metric')]
+            if not metrics and record.get('publicationChecks',{}).get('metricDependenciesComplete') is not True:
+                # Pre-upgrade reports can reference derivatives whose metadata
+                # omitted rule dependencies. Inspect recorded inputs without
+                # rewriting the original report or upgrading its certification.
+                from metric_rules import metric_dependencies
+                identifiers={item['resultId'] for item in record.get('evidence',[]) if item.get('resultId')}
+                try:metrics=metric_dependencies([self.gateway.snapshots.metadata(identifier) for identifier in identifiers],self.gateway.snapshots)
+                except ValueError:changes.append({'reason':'metric_dependency_unavailable'})
+            if metrics:
+                from metric_rules import MetricRules
+                rules=MetricRules(self.gateway)
+                for metric in metrics:
+                    try:rules.assert_current(metric['ruleId'],metric['version'],metric['definitionHash'])
+                    except (ValueError,KeyError):changes.append({'reason':'metric_changed_or_unavailable','ruleId':metric.get('ruleId')})
+            files=record.get('publicationChecks',{}).get('files',[])
+            if files:
+                from file_inputs import check_files
+                for file in files:
+                    try:check_files([{'fileDependencies':[file]}])
+                    except ValueError:changes.append({'reason':'file_changed_or_unavailable','name':Path(file['path']).name})
+            return {'status': 'affected' if changes else 'current' if stamps or metrics or files else 'untracked', 'changes': changes,
+                    'notice': '依赖变化只表示报告需复核，不证明每个数值都错误；历史正文不会被静默改写。'}
         raise ValueError('未知的知识协作操作。')

@@ -10,11 +10,13 @@ from charts import build_chart
 from snapshots import Snapshots
 from pathlib import Path
 import secrets,os,csv
-from sql_guard import validate_queries,MAX_ROWS,ReadOnlyError
+from sql_guard import validate_queries,physical_tables,MAX_ROWS,ReadOnlyError
 from store import Store,public
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from data_freshness import receipt,acquisitions,check_freshness
+from file_inputs import check_files
+from metric_rules import metric_dependencies
 
 class Gateway:
     def __init__(self,directory=None,cancellation=None,thread_id=None,turn_id=None,parent_thread_id=None):self.turn_id=turn_id;self.parent_thread_id=parent_thread_id;self.thread_id=thread_id;self.cancel=cancellation or Cancellation();self.store=Store(directory);self.snapshots=Snapshots(self.store.directory,self.cancel)
@@ -24,6 +26,12 @@ class Gateway:
             from learning import Learning
             self._learning = Learning(self)
         return self._learning
+    @property
+    def metric_rules(self):
+        if not hasattr(self,'_metric_rules'):
+            from metric_rules import MetricRules
+            self._metric_rules=MetricRules(self)
+        return self._metric_rules
     def probe(self,record):
         adapter=None
         try:
@@ -60,7 +68,7 @@ class Gateway:
         finally:
             if adapter:adapter.close()
     def query(self,identifier,query):
-        record=self.require(identifier);scope=[record]
+        record=self.require(identifier);scope=[record];table_scopes={identifier:set()}
         if record['engine']!='elasticsearch':
             for other in self.store.all():
                 if other['id']!=identifier and other['engine']==record['engine'] and other['host'].lower()==record['host'].lower() and other['port']==record['port'] and other['enabled'] and other['status']=='connected' and (record['engine']!='postgresql' or other['database']==record['database']):scope.append(other)
@@ -70,16 +78,26 @@ class Gateway:
             if self.thread_id:
                 for sql in queries:
                     tree=sqlglot.parse_one(sql,read={'mysql':'mysql','postgresql':'postgres','clickhouse':'clickhouse'}[record['engine']])
-                    ctes={cte.alias_or_name for cte in tree.find_all(sqlglot.exp.CTE)}
-                    if not any(table.name not in ctes for table in tree.find_all(sqlglot.exp.Table)):
+                    if not physical_tables(tree):
                         raise DatabaseError('该查询没有读取实际数据表；外部数据或纯计算请使用 fetch_data/import_data_file 与 run_python，不能借数据库生成结果编号。')
-            referenced={table.db for sql in queries for table in sqlglot.parse_one(sql,read={'mysql':'mysql','postgresql':'postgres','clickhouse':'clickhouse'}[record['engine']]).find_all(sqlglot.exp.Table) if table.db}
+            referenced={table.db for sql in queries for table in physical_tables(sqlglot.parse_one(sql,read={'mysql':'mysql','postgresql':'postgres','clickhouse':'clickhouse'}[record['engine']])) if table.db}
             for other in scope[1:]:
                 name=other['schema'] if other['engine']=='postgresql' else other['database']
                 if name in referenced and self.probe(other)['status']!='connected':raise DatabaseError('跨库查询所需的数据库已断开连接。')
             scope=[record,*[other for other in scope[1:] if (other['schema'] if other['engine']=='postgresql' else other['database']) in referenced]]
-        else:queries=[query]
-        knowledge_stamps=[self.learning.before_query(dependency['id']) for dependency in scope]
+            for dependency in scope:
+                namespace=dependency['schema'] if dependency['engine']=='postgresql' else dependency['database']
+                names=set()
+                for sql in queries:
+                    tree=sqlglot.parse_one(sql,read={'mysql':'mysql','postgresql':'postgres','clickhouse':'clickhouse'}[record['engine']])
+                    for table in physical_tables(tree):
+                        if table.db and table.db.casefold()!=namespace.casefold():continue
+                        if not table.db and dependency['id']!=identifier:continue
+                        names.update((table.name,namespace+'.'+table.name))
+                table_scopes[dependency['id']]=names
+        else:
+            queries=[query];table_scopes[identifier]={record['database']}
+        knowledge_stamps=[self.learning.before_query(dependency['id'],table_scopes[dependency['id']]) for dependency in scope]
         started=time.monotonic();adapter=None;results=[]
         try:
             adapter=connect(record,self.cancel)
@@ -92,8 +110,9 @@ class Gateway:
                     value['nativeResponseAvailable']=True
                     self.snapshots.path(value['resultId']).with_suffix('.json').write_text(json.dumps(value,ensure_ascii=False))
                 for dependency in scope:
-                    current=self.require(dependency['id'])
-                    if current['version']!=dependency['version']:raise DatabaseError('查询期间连接配置已变更，结果未返回。')
+                    current=self.store.get(dependency['id'])
+                    if current['version']!=dependency['version']:raise DatabaseError('查询期间连接配置已变更，结果未返回。请核对并测试当前连接后重新查询。')
+                    self.require(dependency['id'])
                 if self.learning.check(knowledge_stamps):raise DatabaseError('查询期间业务知识发生变化，请重新读取知识并查询；旧结果未用于回答。')
                 results.append(value)
         except Exception as error:
@@ -110,10 +129,28 @@ class Gateway:
             from analysis_tools import AnalysisTools
             AnalysisTools(self,self.thread_id).remember(metadata)
         page=self.snapshots.page(result_id,offset,limit,columns)
-        if model and len(json.dumps({'columns':page['columns'],'rows':page['rows']},ensure_ascii=False))>5000:raise DatabaseError('本页明细超过上下文单次预算。请减少行数或字段；完整结果仍保留，可在网页查看和下载。')
+        if model:
+            def size(count):
+                return len(json.dumps({'columns':page['columns'],'rows':page['rows'][:count]},ensure_ascii=False))
+            if size(len(page['rows']))>5000:
+                # Page the immutable result within the model context budget.
+                # Never coerce cells, omit fields, or imply a complete scan.
+                if not page['rows'] or size(1)>5000:
+                    raise DatabaseError('所选字段或单行内容超过上下文单次预算。请用 columns 选择必要字段，或用 analyze_result/run_python 对完整结果聚合；完整结果仍可在网页查看和下载。')
+                low,high=1,len(page['rows'])
+                while low<high:
+                    middle=(low+high+1)//2
+                    if size(middle)<=5000:low=middle
+                    else:high=middle-1
+                page.update(rows=page['rows'][:low],returnedRows=low,hasMore=offset+low<page['rowCount'],requestedLimit=limit,pageLimitedByContext=True,
+                            contextNotice='本页按模型上下文预算返回连续的部分明细，完整结果未截断。必要时按 nextOffset 继续读取；全量计算直接使用完整 resultId。')
+            page['nextOffset']=offset+page['returnedRows'] if page['hasMore'] else None
         return page
     def result_owner(self,metadata,checked=None):
+        check_files([metadata])
         if self.thread_id:self.learning.check_result(metadata)
+        for dependency in metric_dependencies([metadata],self.snapshots):
+            self.metric_rules.assert_current(dependency['ruleId'],dependency['version'],dependency['definitionHash'])
         def connected(record):
             key=(record['id'],record['version'])
             if checked is not None and key in checked:return True
@@ -136,15 +173,26 @@ class Gateway:
         if self.thread_id:check_freshness([metadata],self.store.get,self.thread_id,self.turn_id)
         return primary
     def analyze(self,result_id,query):
-        metadata=self.snapshots.metadata(result_id);self.result_owner(metadata)
-        return self.snapshots.write({key:metadata[key] for key in ('connectionId','connectionName','engine','connectionVersion','connectionDependencies','knowledgeDependencies') if key in metadata}|{'acquisition':acquisitions(metadata),'sourceKind':'python','sourceName':'本地快照 SQL 计算','ownerThreadId':self.thread_id or metadata.get('ownerThreadId'),'inputResultIds':[result_id],'inputSources':[{'kind':'dataset','resultId':result_id,'sha256':metadata['sha256']}],'pythonCode':'# Python Snapshots.analyze executes this read-only DuckDB query\n'+query,'query':query,'parentResultId':result_id},self.snapshots.analyze(result_id,query))
+        metadata=self.snapshots.metadata(result_id);checked=set();self.result_owner(metadata,checked)
+        result=self.snapshots.write({key:metadata[key] for key in ('connectionId','connectionName','engine','connectionVersion','connectionDependencies','knowledgeDependencies','fileDependencies') if key in metadata}|{'metricDependencies':metric_dependencies([metadata],self.snapshots),'acquisition':acquisitions(metadata),'sourceKind':'python','sourceName':'本地快照 SQL 计算','ownerThreadId':self.thread_id or metadata.get('ownerThreadId'),'inputResultIds':[result_id],'inputSources':[{'kind':'dataset','resultId':result_id,'sha256':metadata['sha256']}],'pythonCode':'# Python Snapshots.analyze executes this read-only DuckDB query\n'+query,'query':query,'parentResultId':result_id},self.snapshots.analyze(result_id,query))
+        try:self.result_owner(metadata,checked)
+        except Exception:
+            for suffix in ('.json','.parquet'):self.snapshots.path(result['resultId']).with_suffix(suffix).unlink(missing_ok=True)
+            raise
+        return result
     def chart(self,result_id,kind,x,ys,title=None):
-        metadata=self.snapshots.metadata(result_id);self.result_owner(metadata)
+        metadata=self.snapshots.metadata(result_id);checked=set();self.result_owner(metadata,checked)
         if metadata['rowCount']>20000:raise DatabaseError('完整数据已保留，但图表点数过多。请显式使用 analyze_result 对完整结果进行分组或筛选，再生成图表；不会自动抽样或丢弃明细。')
         pages=[self.snapshots.page(result_id,offset,min(200,metadata['rowCount']-offset)) for offset in range(0,metadata['rowCount'],200)]
         data=dict(metadata,rows=[row for page in pages for row in page['rows']])
         if len(json.dumps(data['rows'],ensure_ascii=False).encode())>4*1024*1024:raise DatabaseError('完整图表数据超过页面预算，请显式聚合或选择更小的查询范围。')
-        self.cancel.check();value=build_chart(data,kind,x,ys,title,self.cancel);self.cancel.check();identifier=secrets.token_hex(16);directory=self.store.directory/'charts';directory.mkdir(mode=0o700,exist_ok=True);path=directory/(identifier+'.json');path.write_text(json.dumps(value,ensure_ascii=False));path.chmod(0o600)
+        self.cancel.check();value=build_chart(data,kind,x,ys,title,self.cancel);self.cancel.check();identifier=secrets.token_hex(16);directory=self.store.directory/'charts';directory.mkdir(mode=0o700,exist_ok=True);path=directory/(identifier+'.json')
+        try:
+            path.write_text(json.dumps(value,ensure_ascii=False));path.chmod(0o600)
+            self.result_owner(metadata,checked)
+        except Exception:
+            path.unlink(missing_ok=True)
+            raise
         return {'version':2,'chartId':identifier,'resultId':result_id,'title':value['title'],'rowCount':metadata['rowCount'],'complete':True}
     def read_chart(self,identifier):
         self.snapshots.path(identifier);path=self.store.directory/'charts'/(identifier+'.json')
@@ -184,15 +232,15 @@ class Gateway:
         if action=='save':return {'connection':public(self.store.save(payload))}
         if action=='freshness':
             if 'maxAgeMinutes' not in payload:raise ValueError('请提供复用时长，清除规则须显式传入空值。')
-            return {'connection':public(self.store.set_freshness(payload['id'],payload['maxAgeMinutes']))}
+            return {'connection':public(self.store.set_freshness(payload['id'],payload['maxAgeMinutes'],payload.get('expectedRevision')))}
         if action=='test':
             record=self.store.get(payload['id']);value=self.probe(record)
             return {'connection':public(value),'success':value['status']=='connected'}
         if action=='toggle':
             if not isinstance(payload.get('enabled'),bool):raise ValueError('请提供启用状态。')
-            record=self.store.toggle(payload['id'],payload['enabled']);record=self.probe(record) if record['enabled'] else record
+            record=self.store.toggle(payload['id'],payload['enabled'],payload.get('expectedVersion'));record=self.probe(record) if record['enabled'] else record
             return {'connection':public(record),'success':not record['enabled'] or record['status']=='connected'}
-        if action=='remove':self.store.remove(payload['id']);return {'removed':True}
+        if action=='remove':self.store.remove(payload['id'],payload.get('expectedVersion'));return {'removed':True}
         if action=='schema':return self.schema(payload['id'],payload.get('table'))
         if action=='query':return self.query(payload['id'],payload['query'])
         if action=='result':return self.result(payload['resultId'],int(payload.get('offset',0)),int(payload.get('limit',100)),payload.get('columns'))

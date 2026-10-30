@@ -15,7 +15,7 @@ from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path[:0]=[str(ROOT/'web'),str(ROOT/'web/database')]
-from analysis_evidence import Evidence,has_number
+from analysis_evidence import Evidence
 from analysis_tools import AnalysisTools
 from calculation import run_python
 from cancellation import Cancelled
@@ -87,11 +87,13 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(verified['evidence'][0]['sha256'],result['sha256'])
         self.assertIn('pythonCode',verified['sources'][result['resultId']])
 
-    def test_literal_numbers_dates_percentages_numbered_lists_and_unicode_rejected(self):
-        self.assertFalse(has_number('请检查千位分隔符，核对结果一致，异常时一律停止。'))
-        for template in ['The count is twelve.','合计十','金额为 十二','一、结果','金额为 999','保留三位小数','共有两项结果','2026-10-27 的结果','上涨5%','1. 结果','总数为十二','百分之五','３．５０','Ⅳ 项','½ 倍']:
-            with self.subTest(template=template),self.assertRaisesRegex(ValueError,'未引用'):
-                self.tools.publish(template,{})
+    def test_literals_are_not_the_trigger_but_formal_data_answer_needs_fields(self):
+        for text in ['三角函数与三角形','2025年范围，分3步检查','HTTP 401','一共十二','壹佰元']:
+            with self.subTest(text=text):
+                self.assertEqual(self.evidence.verify('thread-A','turn-A',text)['status'],'notRequired')
+                with self.assertRaisesRegex(ValueError,'实际字段'):self.tools.publish(text,{})
+                plan=self.tools.publish(text,{},purpose='plan')
+                self.assertEqual(self.evidence.verify('thread-A','turn-A',plan['text'])['status'],'notRequired')
 
     def test_percentage_units_and_literal_escaped_paragraphs(self):
         from mcp_server import tool_result
@@ -139,17 +141,17 @@ class EvidenceTests(unittest.TestCase):
     def test_same_text_in_a_new_turn_cannot_reuse_an_old_publication(self):
         result=self.compute();answer=self.tools.publish('值 {{v}}',{'v':self.ref(result)})
         self.evidence.observe({'method':'turn/started','params':{'threadId':'thread-A','turn':{'id':'turn-B'}}})
-        self.assertEqual(self.evidence.verify('thread-A','turn-B',answer['text'])['status'],'rejected')
+        self.assertEqual(self.evidence.verify('thread-A','turn-B',answer['text'],True)['status'],'rejected')
         self.gateway.turn_id='turn-B';self.tools.publish('值 {{v}}',{'v':self.ref(result)})
         self.assertEqual(self.evidence.verify('thread-A','turn-B',answer['text'])['status'],'verified')
         self.assertEqual(self.evidence.verify('thread-A','turn-A',answer['text'])['status'],'verified')
 
-    def test_numeric_chart_titles_need_publication_and_calculation_titles_stay_qualitative(self):
-        result=self.compute()
-        with self.assertRaisesRegex(ValueError,'标题'):self.tools.check_chart_title('价格999')
-        with self.assertRaisesRegex(ValueError,'标题'):self.compute(title='合计999')
-        answer=self.tools.publish('价格 {{v}}',{'v':self.ref(result)})
-        self.tools.check_chart_title(answer['text'])
+    def test_calculation_titles_may_include_user_ranges_without_certifying_title(self):
+        result=self.compute(title='2025年范围与三角形')
+        answer=self.tools.publish('1. 说明：2025年。实际字段 {{v}}',{'v':self.ref(result)})
+        checked=self.evidence.verify('thread-A','turn-A',answer['text'])
+        self.assertEqual(checked['assurance']['scope'],'referenced-fields')
+        self.assertEqual(checked['assurance']['narrative']['status'],'not-assessed')
 
     def test_native_parent_can_explicitly_read_child_output_but_unrelated_thread_cannot(self):
         child=Gateway(directory=self.temp.name,thread_id='child',turn_id='child-turn',parent_thread_id='thread-A')
@@ -160,7 +162,7 @@ class EvidenceTests(unittest.TestCase):
 
     def test_legacy_answers_are_labelled_and_live_turns_require_evidence(self):
         self.assertEqual(self.evidence.verify('thread-A','old-turn','历史结果 99')['status'],'legacy')
-        self.assertEqual(self.evidence.verify('thread-A','turn-A','新结果 99')['status'],'rejected')
+        self.assertEqual(self.evidence.verify('thread-A','turn-A','新结果 99')['status'],'notRequired')
         self.assertEqual(self.evidence.verify('thread-A','turn-A','无法读取数据，请检查连接。')['status'],'notRequired')
 
     def test_proposed_plan_wrapper_can_match_native_body_without_changing_numbers(self):

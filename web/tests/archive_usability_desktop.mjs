@@ -1,3 +1,4 @@
+import {imageFixture} from './image_fixture.mjs';
 // Real native storage and browser controls; no model calls or user conversations.
 import {openThreadMenu,threadAction} from './thread_menu_helpers.mjs';
 import fs from 'node:fs';
@@ -145,7 +146,7 @@ try{
   await check('最近会话可取消永久删除，确认后原生历史实际消失',async()=>{
     await page.locator('#thread-search').fill(marker);await choose(first);await page.locator('#prompt').fill(marker+'_OTHER_THREAD_DRAFT');
     await choose(second);await page.locator('#prompt').fill(marker+'_DELETE_THREAD_DRAFT');
-    await page.locator('#file-input').setInputFiles({name:'archive-unsent-draft.txt',mimeType:'text/plain',buffer:Buffer.from(marker+' — unsent local attachment')});
+    await page.locator('#file-input').setInputFiles(imageFixture('archive-unsent-draft.png'));
     await page.waitForFunction(()=>state.attachments.length===1&&!state.attachmentLoads);
     const initialDraft=await draftSnapshot(second);assert.equal(initialDraft.text,marker+'_DELETE_THREAD_DRAFT');assert.equal(initialDraft.storedText,initialDraft.text);assert.equal(initialDraft.attachments,1);
     assert.equal(await page.locator('#thread-action').count(),0);assert(await row(second).locator('.menu-trigger').isVisible());

@@ -11,7 +11,9 @@ const saveStart=source.indexOf('function saveComposer('),saveEnd=source.indexOf(
 assert(submitStart>=0&&submitEnd>submitStart&&draftsStart>=0&&draftsEnd>draftsStart&&saveEnd>saveStart,'Exercise actual submission and draft functions');
 const commandStart=source.indexOf('function validateComposerCommand(');assert(commandStart>=0&&commandStart<submitStart);
 const planParseStart=source.indexOf('function parsePlanPrompt('),localCommandStart=planParseStart>=0?Math.min(commandStart,planParseStart):commandStart;
-const implementation=[source.slice(localCommandStart,submitStart),source.slice(draftsStart,draftsEnd),source.slice(saveStart,saveEnd),source.slice(submitStart,submitEnd)].join('\n');
+const attachmentStart=source.indexOf('const IMAGE_ATTACHMENT_BUDGET='),attachmentEnd=source.indexOf('async function fileBrowser(',attachmentStart);
+const skillHelpersStart=source.indexOf('function isRetainedNativeSkill('),skillHelpersEnd=source.indexOf('function skillMutationReason(',skillHelpersStart);assert(skillHelpersStart>=0&&skillHelpersEnd>skillHelpersStart);
+const implementation=[source.slice(skillHelpersStart,skillHelpersEnd),source.slice(attachmentStart,attachmentEnd),source.slice(localCommandStart,submitStart),source.slice(draftsStart,draftsEnd),source.slice(saveStart,saveEnd),source.slice(submitStart,submitEnd)].join('\n');
 const native=fs.readFileSync(new URL('../public/native-ui.js',import.meta.url),'utf8');
 const reviewStart=native.indexOf('function reviewPlan('),reviewEnd=native.indexOf('\nfunction executionPlanKey(',reviewStart);assert(reviewStart>=0&&reviewEnd>reviewStart);
 const reviewImplementation=native.slice(reviewStart,reviewEnd);
@@ -19,13 +21,13 @@ const approved='APPROVED_PLAN_SENTINEL: use $openai-docs only if this approved t
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};}
 function fixture(transport=async()=>({turn:{id:'turn-approved',status:'inProgress'}}),modeTransport=async()=>{}){
   const storage=new Map(),calls=[],notifications=[],modeChanges=[],dialogs=[];
-  const attachment={name:'unsent.png',input:{type:'image',url:'data:image/png;base64,UNSENT_ATTACHMENT'}};
+  const attachment={name:'unsent.png',input:{type:'image',url:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jP1sAAAAASUVORK5CYII='}};
   const skill={name:'openai-docs',path:'/tmp/test-profile/skills/.system/openai-docs/SKILL.md'};
   const sentinel='UNSENT_DRAFT_SENTINEL $openai-docs';
   const draft={text:sentinel,attachments:[attachment],skills:[skill],pending:false,revision:0,follow:false};
-  const state={ready:true,thread:{id:'thread-A'},composerKey:'thread-A',composers:new Map([['thread-A',draft]]),stopOperations:new Map(),threadSettings:new Map([['thread-A',{model:'deepseek-flash',modelProvider:'deepseek'}]]),activeTurns:new Map(),finishedTurns:new Set(),navigationGeneration:1,selectedCwd:'/tmp/test-workspace',selectedProject:null,modelDetails:[{model:'deepseek-flash',inputModalities:['text','image']}],runtimeDefaults:{model:'deepseek-flash'}};
+  const state={runtimeInfo:{codexHome:'/tmp/test-profile'},ready:true,thread:{id:'thread-A'},composerKey:'thread-A',composers:new Map([['thread-A',draft]]),stopOperations:new Map(),threadSettings:new Map([['thread-A',{model:'deepseek-flash',modelProvider:'deepseek'}]]),activeTurns:new Map(),finishedTurns:new Set(),navigationGeneration:1,selectedCwd:'/tmp/test-workspace',selectedProject:null,modelDetails:[{model:'deepseek-flash',inputModalities:['text','image']}],runtimeDefaults:{model:'deepseek-flash'}};
   const nodes={'#prompt':{value:sentinel},'#model':{value:'deepseek-flash'},'#effort':{value:'low'}};
-  const context={state,$:selector=>{assert(nodes[selector],'Unexpected DOM access '+selector);return nodes[selector];},
+  const context={state,atob,$:selector=>{assert(nodes[selector],'Unexpected DOM access '+selector);return nodes[selector];},
     sessionStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
     closeCommandMenu(){},toast:message=>notifications.push(message),selectedModelProvider:()=> 'deepseek',modelProvider:()=> 'deepseek',isRemovedModel:()=>false,currentMode:()=> 'default',
     nativeSlashActions:()=>({}),nativeSlashCommand:async()=>false,turnCollaborationMode:mode=>({mode,settings:{model:'deepseek-flash'}}),ensureThread:async captured=>captured.thread,
@@ -33,7 +35,7 @@ function fixture(transport=async()=>({turn:{id:'turn-approved',status:'inProgres
     el:(tag,className,text)=>({tag,className,text}),formField:(root,label,id,options)=>{nodes['#'+id]={value:options.value};},
     openDialog:(title,build,submit,submitLabel)=>{const root={children:[],append(...items){this.children.push(...items);}};build(root);dialogs.push({title,root,submit,submitLabel});},
     runtimeModelContext:()=>undefined,updateSend(){},renderNativeMode(){},resizePrompt(){},renderAttachments(){},scrollMessages(){},
-    rpc:async(method,params)=>{calls.push({method,params});if(method==='skills/list')return {data:[{skills:[{...skill,enabled:true}]}]};assert(['turn/start','turn/steer'].includes(method),'Unexpected RPC '+method);return transport(method,params);},
+    rpc:async(method,params)=>{calls.push({method,params});if(method==='skills/list')return {data:[{skills:[{...skill,scope:'system',enabled:true}]}]};assert(['turn/start','turn/steer'].includes(method),'Unexpected RPC '+method);return transport(method,params);},
   };
   const api=vm.runInNewContext(implementation+'\n'+reviewImplementation+'\n({submitPrompt,saveComposer,reviewPlan});',context);
   return {state,draft,nodes,calls,storage,sentinel,attachment,skill,notifications,modeChanges,dialogs,...api};
@@ -77,6 +79,7 @@ test('ordinary delayed acknowledgement keeps later edits and newly added attachm
 test('repeated confirmation while pending produces exactly one protocol request',async()=>{
   const gate=deferred(),f=fixture(()=>gate.promise),first=f.submitPrompt({text:approved,preserveDraft:true});
   await f.submitPrompt({text:'DUPLICATE_APPROVAL_MUST_NOT_SEND',preserveDraft:true});
+  for(let attempt=0;attempt<80&&!turns(f).length;attempt++)await Promise.resolve();
   assert.equal(f.draft.pending,true);assert.equal(turns(f).length,1);
   gate.resolve({turn:{id:'turn-approved',status:'inProgress'}});await first;
   assert.equal(turns(f).length,1);assert.equal(turns(f)[0].params.input[0].text,approved);assert.equal(f.draft.pending,false);
@@ -95,7 +98,7 @@ test('ordinary transport rejection also retains its original input and attachmen
 
 test('actual analysis confirmation uses the edited whole plan, genuine progress instructions and preserved user draft',async()=>{
   const f=fixture();f.reviewPlan({text:'ORIGINAL_ANALYSIS_PLAN'});assert.equal(f.dialogs.length,1);const dialog=f.dialogs[0];assert.equal(dialog.title,'确认分析方案');assert.equal(dialog.submitLabel,'确认并执行分析');assert(dialog.root.children.some(node=>/不等同于逐条 SQL 审批/.test(node.text)));assert.equal(turns(f).length,0);assert.deepEqual(f.modeChanges,[]);
-  f.nodes['#approved-plan'].value='EDITED_ANALYSIS_PLAN: 月度收入，按付款日期，结果 resultId=OWN_RESULT';await dialog.submit(dialog.root);assert.deepEqual(f.modeChanges,['default']);assert.equal(turns(f).length,1);const text=turns(f)[0].params.input[0].text;assert.match(text,/EDITED_ANALYSIS_PLAN/);assert.doesNotMatch(text,/ORIGINAL_ANALYSIS_PLAN/);for(const required of ['update_plan','指标口径','数据来源','真实查询','resultId','断点恢复'])assert(text.includes(required),required);assert.equal(f.draft.text,f.sentinel);assert.equal(f.nodes['#prompt'].value,f.sentinel);assert.deepEqual(f.draft.attachments,[f.attachment]);assert.deepEqual(f.draft.skills,[f.skill]);
+  f.nodes['#approved-plan'].value='EDITED_ANALYSIS_PLAN: 月度收入，按付款日期，结果 resultId=OWN_RESULT';await dialog.submit(dialog.root);assert.deepEqual(f.modeChanges,['default']);assert.equal(turns(f).length,1);const text=turns(f)[0].params.input[0].text;assert.match(text,/EDITED_ANALYSIS_PLAN/);assert.doesNotMatch(text,/ORIGINAL_ANALYSIS_PLAN/);for(const required of ['update_plan','指标口径','数据来源','真实查询','resultId','断点恢复','替代此前所有任务方案草稿','本次确认的输出数量'])assert(text.includes(required),required);assert.equal(f.draft.text,f.sentinel);assert.equal(f.nodes['#prompt'].value,f.sentinel);assert.deepEqual(f.draft.attachments,[f.attachment]);assert.deepEqual(f.draft.skills,[f.skill]);
 });
 test('native mode-switch rejection aborts analysis confirmation without submitting a task or losing the draft',async()=>{
   const f=fixture(undefined,async()=>{throw Error('OWN_ANALYSIS_MODE_REJECTED');});f.reviewPlan({text:'OWN_ANALYSIS_PLAN'});await assert.rejects(f.dialogs[0].submit(f.dialogs[0].root),/OWN_ANALYSIS_MODE_REJECTED/);assert.deepEqual(f.modeChanges,['default']);assert.equal(turns(f).length,0);assert.equal(f.draft.text,f.sentinel);assert.deepEqual(f.draft.attachments,[f.attachment]);
